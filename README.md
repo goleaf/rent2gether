@@ -1,58 +1,82 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# rent2gether
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+`rent2gether` is a Laravel application prepared for Blade, Livewire, Flux UI Pro, and Tailwind CSS development.
 
-## About Laravel
+The project contract is documented for agents and humans in [AGENTS.md](AGENTS.md). Read it before changing code.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Area | Current Choice |
+| --- | --- |
+| Runtime | PHP 8.5 |
+| Framework | Laravel 13.16 |
+| Frontend | Blade server-rendered views with Livewire 4 |
+| Database | SQLite locally |
+| Query layer | Eloquent models and relationships only |
+| Components | Flux UI Pro 2.14 |
+| CSS/build | Tailwind CSS 4 and Vite |
+| Tests | PHPUnit 12 via `php artisan test` |
+| Agent tooling | Laravel Boost MCP |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Filament is part of the intended admin-panel conventions, but it is not installed in this checkout yet.
+Flux Pro is installed from the local `_data/flux-pro` Composer path repository. The proprietary package payload is ignored by Git.
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Local Setup
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm install
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Laravel Herd serves the project locally at the project `.test` domain. Agents should use Laravel Boost `get-absolute-url` before sharing URLs.
 
-## Contributing
+## Common Commands
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Command | Purpose |
+| --- | --- |
+| `php artisan migrate` | Run database migrations |
+| `php artisan route:list --except-vendor` | Inspect application routes |
+| `php artisan test --compact` | Run the test suite |
+| `php artisan test --compact --filter=testName` | Run a focused test |
+| `vendor/bin/pint --dirty --format agent` | Format changed PHP files |
+| `npm run dev` | Start Vite during frontend work |
+| `npm run build` | Build production frontend assets |
 
-## Code of Conduct
+Do not use `php artisan serve` for normal local work because Herd already serves the app.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Architecture
 
-## Security Vulnerabilities
+- Keep controllers thin.
+- Put business behavior in actions, services, model scopes/methods, policies, jobs, events/listeners, and observers.
+- Use Form Requests for validation.
+- Use Policies for authorization.
+- Use Eloquent relationships and scopes for all data access.
+- Pass fully prepared data into Blade views.
+- Avoid business logic in Blade and Filament resources.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+See [docs/architecture.md](docs/architecture.md) for file placement conventions and the current app map.
 
-## License
+## Query Policy
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This codebase follows a strict Eloquent-only policy:
+
+- No raw SQL strings.
+- No unbounded `Model::all()`.
+- No queries in Blade templates or loops.
+- Eager load relationships used by views and tables.
+- Use `withCount`, `withSum`, `withAvg`, `withMin`, `withMax`, and `withExists` for aggregates.
+- Inspect schema and indexes before query-sensitive changes.
+
+## Documentation
+
+- [AGENTS.md](AGENTS.md): canonical agent rules.
+- [CLAUDE.md](CLAUDE.md): compact mirror for Claude-based tools.
+- [docs/architecture.md](docs/architecture.md): app structure, current state, and placement rules.
+- [docs/component-system.md](docs/component-system.md): Blade, Tailwind, Livewire, and Flux component rules.
+- [docs/development-workflow.md](docs/development-workflow.md): implementation workflow and verification checklist.
+- [docs/flux-pro-integration.md](docs/flux-pro-integration.md): Flux Pro installation and maintenance runbook.
+- [docs/decisions/ADR-001-laravel-blade-eloquent-architecture.md](docs/decisions/ADR-001-laravel-blade-eloquent-architecture.md): accepted stack and data-access decision.

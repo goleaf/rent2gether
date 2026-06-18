@@ -1,3 +1,43 @@
+# CLAUDE.md - rent2gether
+
+Use [AGENTS.md](AGENTS.md) as the canonical project instruction file. This file exists for tools that load `CLAUDE.md` first.
+
+## Critical Contract
+
+- Laravel Herd serves the app. Do not start `php artisan serve` unless explicitly asked.
+- Use Laravel Boost MCP tools when they apply:
+  - `application_info` on new implementation sessions.
+  - `search-docs` before Laravel ecosystem API changes.
+  - `database-schema` before migrations, models, scopes, filters, or relationship-heavy queries.
+  - `get-absolute-url` before sharing URLs.
+- Current verified stack: Laravel `13.16.1`, PHP `8.5`, SQLite, Livewire `4.3.1`, Flux UI Pro `2.14.1`, Tailwind `4.3.1`, PHPUnit `12.5.30`.
+- Filament is a target admin-panel convention, but it is not installed yet.
+- Flux Pro is installed from the local `_data/flux-pro` Composer path repository.
+- Frontend is Blade server-side rendering only. Do not add React, Vue, Inertia, or SPA architecture without approval.
+- Eloquent is the query layer. Do not write raw SQL strings.
+- Do not query inside Blade, loops, Filament renderers, or conditionals.
+- Do not use unbounded `Model::all()`.
+- Use eager loading and aggregate loaders for relationships and counts.
+- Put business logic in actions, services, model scopes/methods, policies, jobs, events/listeners, or observers.
+- Use Form Requests for HTTP validation and Policies for authorization.
+- Routes must be named, grouped by middleware/prefix/name, and use route model binding.
+- Use PHPUnit tests and factories. Run focused tests before finalizing code changes.
+- Run `vendor/bin/pint --dirty --format agent` after PHP edits.
+- Use `.agents/skills/fluxui-development` for Flux Pro UI work.
+- Do not run `php artisan flux:activate` or create `auth.json` unless switching to official Composer authentication.
+
+## Required Reading
+
+- [AGENTS.md](AGENTS.md)
+- [README.md](README.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/component-system.md](docs/component-system.md)
+- [docs/development-workflow.md](docs/development-workflow.md)
+- [docs/flux-pro-integration.md](docs/flux-pro-integration.md)
+- [docs/decisions/ADR-001-laravel-blade-eloquent-architecture.md](docs/decisions/ADR-001-laravel-blade-eloquent-architecture.md)
+
+===
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
@@ -12,6 +52,9 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - php - 8.5
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
+- livewire/flux (FLUXUI_FREE) - v2
+- livewire/flux-pro (FLUXUI_PRO) - v2
+- livewire/livewire (LIVEWIRE) - v4
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1
