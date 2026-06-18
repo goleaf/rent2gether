@@ -51,6 +51,9 @@ class Room extends Model
 
     public function scopeGender(Builder $query, GenderType $gender): void
     {
-        $query->where('gender_type', $gender)->orWhere('gender_type', GenderType::Mixed);
+        $query->where(function (Builder $builder) use ($gender): void {
+            $builder->where('gender_type', $gender)
+                ->orWhere('gender_type', GenderType::Mixed);
+        });
     }
 }

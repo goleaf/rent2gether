@@ -17,15 +17,15 @@ enum BedType: string
     public function label(): string
     {
         return match ($this) {
-            self::Single => 'Single bed',
-            self::Double => 'Double bed',
-            self::BunkTop => 'Bunk (top)',
-            self::BunkBottom => 'Bunk (bottom)',
-            self::Sofa => 'Sofa',
-            self::SofaBed => 'Sofa bed',
-            self::Mattress => 'Mattress',
-            self::FoldOut => 'Fold-out bed',
-            self::Capsule => 'Capsule',
+            self::Single => __('app.bed_type.single'),
+            self::Double => __('app.bed_type.double'),
+            self::BunkTop => __('app.bed_type.bunk_top'),
+            self::BunkBottom => __('app.bed_type.bunk_bottom'),
+            self::Sofa => __('app.bed_type.sofa'),
+            self::SofaBed => __('app.bed_type.sofa_bed'),
+            self::Mattress => __('app.bed_type.mattress'),
+            self::FoldOut => __('app.bed_type.fold_out'),
+            self::Capsule => __('app.bed_type.capsule'),
         };
     }
 

@@ -12,10 +12,10 @@ enum CancellationPolicy: string
     public function label(): string
     {
         return match ($this) {
-            self::Flexible => 'Flexible',
-            self::Moderate => 'Moderate',
-            self::Strict => 'Strict',
-            self::NonRefundable => 'Non-refundable',
+            self::Flexible => __('app.cancellation_policy.flexible'),
+            self::Moderate => __('app.cancellation_policy.moderate'),
+            self::Strict => __('app.cancellation_policy.strict'),
+            self::NonRefundable => __('app.cancellation_policy.non_refundable'),
         };
     }
 

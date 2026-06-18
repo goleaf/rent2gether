@@ -63,6 +63,33 @@ class Bed extends Model
         return $this->hasMany(BedAvailability::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(WaitlistEntry::class);
+    }
+
+    public function averageRating(): ?float
+    {
+        $avg = $this->reviews()->where('type', 'guest_to_place')->avg('overall_rating');
+
+        return $avg ? round($avg, 1) : null;
+    }
+
+    public function reviewCount(): int
+    {
+        return $this->reviews()->where('type', 'guest_to_place')->count();
+    }
+
     public function scopeActive(Builder $query): void
     {
         $query->where('status', BedStatus::Active);

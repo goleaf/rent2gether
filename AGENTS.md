@@ -3,223 +3,159 @@
 This is the canonical instruction file for AI agents working in this repository.
 Follow it before local preference, generated defaults, or framework guesses.
 
-## Project Snapshot
+## Project identity
 
-- Project: `rent2gether`
-- Current app state: Laravel baseline with `User`, SQLite, cache, jobs, sessions, tests, Livewire 4, Flux UI Pro, shared app layout, and a Flux-backed welcome screen.
-- Runtime: Laravel Herd serves the app at the project `.test` domain. Do not start a local web server unless the user explicitly asks.
-- Verified by Laravel Boost on 2026-06-18:
-  - PHP `8.5`
-  - Laravel `13.16.1`
-  - Laravel Boost `2.4.10`
-  - Laravel MCP `0.8.1`
-  - Laravel Pail `1.2.7`
-  - Laravel Pint `1.29.3`
-  - Livewire `4.3.1`
-  - Flux UI `2.14.1`
-  - Flux UI Pro `2.14.1`
-  - PHPUnit `12.5.30`
-  - Tailwind CSS `4.3.1`
-  - Database engine: SQLite
-- Planned/allowed stack: Laravel, Filament admin, Blade server-side rendering, Eloquent-only query layer.
-- Frontend rule: Blade only. Do not introduce React, Vue, Inertia, or a SPA framework without explicit approval.
-- Component system: Blade + Tailwind CSS v4 + Livewire 4 + Flux UI Pro.
+This project is a mobile-first Laravel 13 + Livewire 4 + Flux Pro marketplace for renting individual sleeping places inside rooms and properties.
 
-## Hard Rules
+The user can be:
+- Guest
+- Host
+- Guest + Host
 
-- Never write raw SQL strings anywhere in the codebase.
-- Never use `DB::select()`, `DB::statement()`, or `DB::raw()` outside a model's internal scope.
-- Never query inside Blade views, `@foreach`, or `@if` blocks.
-- Never call `count()`, `sum()`, or any aggregate inside a loop.
-- Never use `Model::all()` without a limit, scope, or pagination.
-- Never add a new query when an eager-loaded relationship already covers the data.
-- Never duplicate controller logic. Extract reusable behavior to model scopes, actions, services, or policies.
-- Never put business logic in Blade templates or Filament resources directly.
-- Never register routes in `routes/web.php` without middleware, prefix, and name grouping.
-- Never store secrets, API keys, or credentials in code. Use `.env` plus `config()`.
-- Never access `env()` outside config files.
-- Never change dependencies without explicit approval.
-- Never create documentation files unless the user asks for documentation. This file set was created because the user explicitly asked for project Markdown guidance.
+Do not build any admin panel yet.
+Do not create administrator, moderator, support, finance, cleaner, helper, or property manager areas.
+Do not use Filament.
+Do not use Livewire Volt.
+Do not use Inertia.
+Do not build a SPA with Vue/React.
+Use Livewire class components and Blade views.
 
-## Laravel Boost And MCP
+## Core stack
 
-- Use Laravel Boost tools for this application whenever they apply.
-- On each new implementation session, call Boost `application_info` before version-specific work.
-- Use Boost `search-docs` before code changes that depend on Laravel ecosystem APIs.
-- Use Boost `database-schema` before writing migrations, models, scopes, filters, or relationship-heavy queries.
-- Use Boost `database-query` only for read-only inspection.
-- Use Boost `get-absolute-url` before sharing project URLs.
-- Use Boost `browser-logs` for recent browser-side errors.
-- Run Artisan commands directly with `--no-interaction` where supported.
-- Prefer tests over one-off verification scripts or tinker snippets.
+- Laravel 13
+- PHP 8.3+
+- Livewire 4
+- Flux Pro
+- Tailwind CSS
+- SQLite
+- Laravel localization
+- Laravel migrations, seeders, factories, policies, form validation, tests
 
-## Architecture Rules
+## Product goal
 
-- Controllers stay thin and delegate to actions, services, form requests, policies, events, listeners, and jobs.
-- Business logic belongs in `App\Actions\`, `App\Services\`, model methods/scopes, policies, observers, jobs, events, or listeners.
-- Validation belongs in Form Requests for HTTP inputs.
-- Authorization belongs in policies. Do not hide sensitive actions only in the UI.
-- JSON responses use API Resources.
-- Side effects should be decoupled with events/listeners.
-- Work that may take more than 200 ms belongs in a queued job.
-- Create framework files with `php artisan make:* --no-interaction` when possible.
-- Follow sibling file conventions before introducing a new pattern.
+Build a friendly mobile website where:
+- Hosts can create properties, rooms, sleeping places, prices, rules, calendars, media, and availability.
+- Guests can search, filter, compare, favorite, request, book, pay, check in, extend, check out, review, complain, and manage trips.
+- The main rental unit is a sleeping place, not a whole apartment.
+- The system automatically calculates nights, calendar days, price, discounts, deposit, fees, refund estimates, and availability.
+- The system supports Russian and English from day one and can add more languages later.
 
-## Eloquent And Query Rules
+## Mandatory mobile-first rules
 
-- Use Eloquent models and relationships only.
-- Use `with()`, `load()`, and `loadMissing()` to prevent N+1 queries.
-- Use `withCount()`, `withSum()`, `withAvg()`, `withMin()`, `withMax()`, and `withExists()` for aggregates.
-- Prefer model scopes for repeated constraints such as `active`, `verified`, tenant, visibility, region, or status filters.
-- Scope methods must do one thing and chain cleanly.
-- Select the required columns intentionally inside scopes and query builders; avoid accidental payload bloat.
-- Use pagination for user-facing collections.
-- Use `cursorPaginate()` for large append-only data, `simplePaginate()` when total counts are not needed, and regular pagination only when totals matter.
-- Use `chunkById()`, `lazyById()`, `lazy()`, or `cursor()` for large background iteration.
-- Add indexes in migrations for foreign keys and frequently filtered or ordered columns.
-- If a query can touch more than 10k rows, inspect schema/indexes and use explain tooling before shipping.
+Design every page first for 320px–430px wide screens.
+The UI must work on old Android devices, including Samsung S4-class devices.
+Assume slow 3G.
+Avoid large DOM trees.
+Avoid heavy JS.
+Avoid client-side rendering frameworks.
+Avoid large modal stacks.
+Avoid huge select lists.
+Avoid loading maps, galleries, or filters until needed.
+Prefer progressive disclosure, drawers, bottom sheets, accordions, and step-by-step forms.
+Use Flux components where practical.
+Keep tap targets large.
+Keep forms short per step.
+Show skeletons and loading states for every network action.
+Use Livewire data-loading styling and wire:loading where appropriate.
+Use wire:navigate for internal navigation where it improves perceived speed.
+Use lazy loading for below-the-fold Livewire components.
 
-## Blade Rules
+## Livewire rules
 
-- All Blade data must arrive preloaded from the controller, view model, DTO, view composer, or Livewire/Filament layer.
-- Blade templates contain presentation only.
-- Use anonymous Blade components for reusable UI and class-based components only when meaningful PHP logic is needed.
-- Put `@props(...)` at the top of every component.
-- Use `@forelse` instead of bare `@foreach` for user-facing lists.
-- Use `@csrf` on all POST, PUT, PATCH, and DELETE forms.
-- Use method spoofing for PUT, PATCH, and DELETE forms.
-- Use `old()` and `$errors->first('field')` for validation feedback.
-- Do not call unloaded relationships or model methods from loops.
+Use Livewire class components.
+Do not use Livewire Volt.
+Keep public properties small.
+Never store huge arrays in Livewire public properties.
+Store IDs, filters, and compact state only.
+Use computed properties for derived data.
+Use form objects or dedicated component state when useful.
+Use wire:model.blur for most text fields.
+Use wire:model.change for selects, checkboxes, radios.
+Use wire:model.live.debounce.500ms or slower only for search fields that need live results.
+Never use live typing updates for long textareas.
+Use pagination or cursor pagination for lists.
+Use URL query state for search filters that should be shareable.
+Use events carefully and keep component boundaries simple.
+Use WithFileUploads only for upload components.
+Validate every action server-side.
+Show friendly validation errors in the active locale.
 
-## Flux Pro Rules
+## SQLite rules
 
-Flux Pro is installed from the local `_data/flux-pro` Composer path repository. When a task mentions Flux, Flux Pro, Livewire UI components, or Laravel component system work:
+SQLite is the selected database.
+Use migrations for all schema.
+Use foreign keys.
+Use indexes for every search, filter, join, calendar lookup, booking lookup, and translation lookup.
+Use composite indexes for common queries.
+Use cursor pagination for large datasets where possible.
+Avoid offset pagination for very large search result pages.
+Avoid N+1 queries.
+Use eager loading with selected columns.
+Use query scopes.
+Use EXPLAIN QUERY PLAN for critical queries.
+Enable WAL mode in local/dev setup documentation where appropriate.
+Keep seeders realistic but not enormous by default.
 
-- Use the `fluxui-development` project skill.
-- Read [docs/flux-pro-integration.md](docs/flux-pro-integration.md) and [docs/component-system.md](docs/component-system.md).
-- Do not run `php artisan flux:activate` or create `auth.json` unless switching from the local path repository to official Composer authentication.
-- Do not commit `auth.json`, Flux license material, or `_data/flux-pro`.
-- Prefer Flux primitives over custom Tailwind markup for standard UI controls after Flux is installed.
-- Publish only the Flux components that require project-level customization.
+## Localization rules
 
-## Filament Rules
+The app must support at least:
+- English: en
+- Russian: ru
 
-Filament is part of the target stack, but the package is not currently installed in this checkout. When it is introduced:
+Every UI string must use translation keys.
+No hard-coded visible text in Blade or Livewire components.
+Support future languages without schema rewrites.
+Use localized routes or locale middleware.
+Store user locale preference.
+Allow switching language on mobile.
+Use fallback locale when a translation is missing.
+Translatable user-generated content must be stored separately from base records.
+For listings, rooms, sleeping places, rules, amenities, and help text, support translations per locale.
 
-- Keep resource forms and tables in dedicated schema methods/classes.
-- Override `getEloquentQuery()` in every resource to apply default scopes and eager loads.
-- Eager load relationships used by table columns.
-- Use relationship columns for belongs-to labels, never raw foreign key IDs.
-- Use filters and actions that push work to the database/query layer.
-- Add `->authorize()` to every action and bulk action.
-- Use confirmation modals for destructive work.
-- Use Filament notifications for feedback.
-- Do not run raw queries in widgets. Use scoped and cached model aggregate methods.
-- Scope resource queries to the current tenant when multi-tenancy exists.
+## Geo data rules
 
-## Routing Rules
+Countries and cities must come from open data sources, not manually typed lists.
+Use offline imports into SQLite, not live API calls during search.
+Use GeoNames for cities and populated places.
+Use ISO 3166-compatible country codes.
+Use Natural Earth only if map/country shape data is needed.
+Use Nominatim/OpenStreetMap only for occasional geocoding with respect for usage limits; do not bulk-geocode through public Nominatim.
 
-- Routes must be grouped by middleware, prefix, and name prefix.
-- Use named routes.
-- Use route model binding rather than manual `find()` calls.
-- Use scoped bindings for nested resources.
-- Keep `web.php` for Blade/web routes and `api.php` for JSON APIs.
+## Friendly UX rules
 
-## Models, Migrations, And Config
+The system tone must be calm, simple, and helpful.
+Avoid scary technical messages.
+Every empty state must explain the next action.
+Every error must explain how to fix it.
+Every booking calculation must be transparent.
+Every price must show what is included and what is refundable.
+Every rule must be visible before booking.
+Every important action must have a confirmation step.
 
-- Every model must define fillable fields or explicit guarded behavior; this project currently uses Laravel 13 attributes such as `#[Fillable]` and `#[Hidden]`.
-- Define casts for booleans, dates, enums, JSON, and sensitive values.
-- Use PHP enums for status fields.
-- Use factories for seeders and tests.
-- Use observers for audit logs, cache busting, notifications, and other cross-cutting model behavior.
-- One concern per migration.
-- Always define reversible migrations unless the migration explicitly documents why it is irreversible.
-- Never modify migrations that may already have run in a shared/production environment.
-- Every new `.env` key needs `config/*` support and an `.env.example` entry.
+## Testing rules
 
-## Testing And Formatting
+Every feature must include tests.
+Use feature tests for routes and Livewire components.
+Use unit tests for pricing, availability, date calculation, refund calculation, and compatibility scoring.
+Use factories and seeders.
+Run:
+- php artisan test
+- ./vendor/bin/pint
+- npm run build
 
-- Tests must be PHPUnit classes.
-- Create tests with `php artisan make:test --phpunit`.
-- Prefer feature tests for HTTP behavior and unit tests for action/service/model logic.
-- Use factories, not manual inserts.
-- Use fakes for external HTTP, events, notifications, queues, and mail.
-- Run the focused relevant tests before finalizing a code change.
-- Run `vendor/bin/pint --dirty --format agent` after modifying PHP files.
-- For this project, the standard full suite command is `php artisan test --compact`.
+## Prohibited for now
 
-## Required Response Format For Code Tasks
-
-When writing, reviewing, or refactoring code, structure the final response with:
-
-1. `PROBLEM` - what is wrong or what is being built.
-2. `SOLUTION` - implementation summary and file placement.
-3. `QUERY DELTA` - before/after query count or estimate, if query-related.
-4. `REUSABLE SNIPPET` - extracted scope, action, component, trait, or reusable pattern.
-5. `BLADE USAGE` - controller-to-view data flow, if Blade-related.
-6. `FILAMENT INTEGRATION` - resource/widget/action integration, if applicable.
-7. `TESTS` - focused tests run or added.
-8. `CAVEATS` - index requirements, cache invalidation, version notes, or MCP checks.
-
-For tiny non-code tasks, keep the response short and explain only what changed.
-
-## Pre-Commit Self-Check
-
-- [ ] No query inside a loop, Blade view, or Filament renderer.
-- [ ] No accidental `SELECT *` where a focused select is appropriate.
-- [ ] No unbounded `Model::all()`.
-- [ ] Relationships used by views/tables are eager loaded.
-- [ ] HTTP input is validated by Form Requests.
-- [ ] Filament actions and bulk actions are authorized.
-- [ ] New routes are named, grouped, and use route model binding.
-- [ ] New environment values are represented in config and `.env.example`.
-- [ ] Focused tests pass.
-- [ ] Query count and index impact are checked for query-sensitive changes.
-
-## Project Docs
-
-- Read [README.md](README.md) for setup and command basics.
-- Read [docs/architecture.md](docs/architecture.md) for the current architecture map and file placement conventions.
-- Read [docs/component-system.md](docs/component-system.md) for Blade/Tailwind/Flux component rules.
-- Read [docs/development-workflow.md](docs/development-workflow.md) for implementation workflow, MCP usage, and verification.
-- Read [docs/flux-pro-integration.md](docs/flux-pro-integration.md) before installing or changing Flux.
-- Read [docs/decisions/ADR-001-laravel-blade-eloquent-architecture.md](docs/decisions/ADR-001-laravel-blade-eloquent-architecture.md) before changing the framework, frontend, query layer, or admin stack.
-
-===
-
-<laravel-boost-guidelines>
-=== foundation rules ===
-
-# Laravel Boost Guidelines
-
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
-
-## Foundational Context
-
-This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
-
-- php - 8.5
-- laravel/framework (LARAVEL) - v13
-- laravel/prompts (PROMPTS) - v0
-- livewire/flux (FLUXUI_FREE) - v2
-- livewire/flux-pro (FLUXUI_PRO) - v2
-- livewire/livewire (LIVEWIRE) - v4
-- laravel/boost (BOOST) - v2
-- laravel/mcp (MCP) - v0
-- laravel/pail (PAIL) - v1
-- laravel/pint (PINT) - v1
-- phpunit/phpunit (PHPUNIT) - v12
-- tailwindcss (TAILWINDCSS) - v4
-
-## Skills Activation
-
-This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
-
-## Conventions
-
-- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
-- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
-- Check for existing components to reuse before writing a new one.
+Do not build:
+- Admin dashboard
+- Moderator tools
+- Support staff tools
+- Finance staff tools
+- Cleaner tools
+- Property manager tools
+- Filament resources
+- Livewire Volt components
+- Inertia pages
+- React/Vue frontend
 
 ## Verification Scripts
 

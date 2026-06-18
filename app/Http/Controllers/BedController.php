@@ -7,7 +7,7 @@ use Illuminate\View\View;
 
 class BedController extends Controller
 {
-    public function show(Bed $bed): View
+    public function show(string $locale, Bed $bed): View
     {
         $bed->load([
             'room.property.host',

@@ -3,7 +3,9 @@
 namespace Database\Factories;
 
 use App\Enums\BookingStatus;
+use App\Enums\BookingType;
 use App\Enums\CancellationPolicy;
+use App\Enums\PaymentStatus;
 use App\Models\Bed;
 use App\Models\Booking;
 use App\Models\User;
@@ -31,21 +33,37 @@ class BookingFactory extends Factory
         return [
             'bed_id' => Bed::factory(),
             'guest_id' => User::factory(),
+            'host_id' => User::factory(),
+            'property_id' => null,
+            'room_id' => null,
+            'booking_type' => BookingType::HostApproval->value,
             'check_in' => $checkIn->format('Y-m-d'),
             'check_out' => $checkOut->format('Y-m-d'),
             'guests_count' => 1,
             'nights' => $nights,
+            'calendar_days_count' => $nights + 1,
             'price_per_night' => $pricePerNight,
             'subtotal' => $subtotal,
             'discount_amount' => 0,
             'cleaning_fee' => 5.00,
             'deposit' => 30.00,
             'service_fee' => $serviceFee,
+            'tax_amount' => 0,
+            'city_fee_amount' => 0,
             'total' => $subtotal + 5.00 + 30.00 + $serviceFee,
             'currency' => 'EUR',
             'status' => BookingStatus::Confirmed->value,
-            'payment_status' => 'paid',
+            'payment_status' => PaymentStatus::Paid->value,
+            'payment_method' => 'demo',
             'cancellation_policy' => CancellationPolicy::Flexible->value,
+            'requires_document_check' => false,
+            'requires_phone_check' => false,
+            'requires_identity_check' => false,
+            'refund_status' => 'none',
+            'has_dispute' => false,
+            'has_complaint' => false,
+            'guest_review_left' => false,
+            'host_review_left' => false,
         ];
     }
 }

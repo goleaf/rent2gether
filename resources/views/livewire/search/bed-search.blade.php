@@ -6,30 +6,30 @@
             <div class="flex flex-wrap gap-3 items-end">
 
                 <flux:field class="flex-1 min-w-40">
-                    <flux:label>City</flux:label>
-                    <flux:input wire:model.live.debounce.400ms="city" placeholder="e.g. Berlin" icon="map-pin" />
+                    <flux:label>{{ __('app.search.city') }}</flux:label>
+                    <flux:input wire:model.live.debounce.400ms="city" placeholder="{{ __('app.search.city_placeholder') }}" icon="map-pin" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
-                    <flux:label>Check-in</flux:label>
+                    <flux:label>{{ __('app.search.check_in') }}</flux:label>
                     <flux:input type="date" wire:model.live="checkIn" :min="now()->toDateString()" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
-                    <flux:label>Check-out</flux:label>
+                    <flux:label>{{ __('app.search.check_out') }}</flux:label>
                     <flux:input type="date" wire:model.live="checkOut" :min="$checkIn ?: now()->addDay()->toDateString()" />
                 </flux:field>
 
                 <flux:field class="min-w-28">
-                    <flux:label>Max €/night</flux:label>
+                    <flux:label>{{ __('app.search.max_price') }}</flux:label>
                     <flux:input type="number" wire:model.live.debounce.400ms="priceMax" placeholder="Any" min="1" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
-                    <flux:label>Sort</flux:label>
+                    <flux:label>{{ __('app.search.sort') }}</flux:label>
                     <flux:select wire:model.live="sort">
-                        <flux:select.option value="price_asc">Cheapest first</flux:select.option>
-                        <flux:select.option value="price_desc">Most expensive</flux:select.option>
+                        <flux:select.option value="price_asc">{{ __('app.search.sort_price_asc') }}</flux:select.option>
+                        <flux:select.option value="price_desc">{{ __('app.search.sort_price_desc') }}</flux:select.option>
                     </flux:select>
                 </flux:field>
 
@@ -43,12 +43,12 @@
         <aside class="hidden lg:block w-56 shrink-0">
             <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-5 sticky top-28">
 
-                <flux:heading size="sm">Filters</flux:heading>
+                <flux:heading size="sm">{{ __('app.search.filters') }}</flux:heading>
 
                 <flux:field>
-                    <flux:label>Bed type</flux:label>
+                    <flux:label>{{ __('app.search.bed_type') }}</flux:label>
                     <flux:select wire:model.live="bedType">
-                        <flux:select.option value="">Any type</flux:select.option>
+                        <flux:select.option value="">{{ __('app.search.any_type') }}</flux:select.option>
                         @foreach($this->bedTypeOptions() as $value => $label)
                             <flux:select.option :value="$value">{{ $label }}</flux:select.option>
                         @endforeach
@@ -56,9 +56,9 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Room gender</flux:label>
+                    <flux:label>{{ __('app.search.room_gender') }}</flux:label>
                     <flux:select wire:model.live="genderType">
-                        <flux:select.option value="">Any</flux:select.option>
+                        <flux:select.option value="">{{ __('app.search.any_gender') }}</flux:select.option>
                         @foreach($this->genderOptions() as $value => $label)
                             <flux:select.option :value="$value">{{ $label }}</flux:select.option>
                         @endforeach
@@ -68,9 +68,9 @@
                 <flux:separator />
 
                 <div class="space-y-3">
-                    <flux:checkbox wire:model.live="instantOnly" label="Instant book only" />
-                    <flux:checkbox wire:model.live="hasLocker" label="Personal locker" />
-                    <flux:checkbox wire:model.live="hasWifi" label="Wi-Fi included" />
+                    <flux:checkbox wire:model.live="instantOnly" label="{{ __('app.search.instant_only') }}" />
+                    <flux:checkbox wire:model.live="hasLocker" label="{{ __('app.search.locker_only') }}" />
+                    <flux:checkbox wire:model.live="hasWifi" label="{{ __('app.search.wifi_only') }}" />
                 </div>
 
                 @if($city || $checkIn || $checkOut || $priceMax || $bedType || $genderType || $instantOnly || $hasLocker || $hasWifi)
@@ -78,7 +78,7 @@
                         variant="ghost" size="sm" class="w-full"
                         wire:click="$set('city', ''), $set('checkIn', ''), $set('checkOut', ''), $set('priceMax', ''), $set('bedType', ''), $set('genderType', ''), $set('instantOnly', false), $set('hasLocker', false), $set('hasWifi', false)"
                     >
-                        Clear all filters
+                        {{ __('app.search.clear_all') }}
                     </flux:button>
                 @endif
             </div>
@@ -90,9 +90,9 @@
             <div class="flex items-center justify-between mb-4">
                 <flux:text size="sm" class="text-zinc-500">
                     @if($this->nights > 0)
-                        {{ $this->nights }} {{ Str::plural('night', $this->nights) }} &middot;
+                        {{ __('app.search.results_nights', ['count' => $this->nights]) }} &middot;
                     @endif
-                    {{ $this->beds->count() }} beds found
+                    {{ $this->beds->count() }} {{ __('app.search.found') }}
                 </flux:text>
 
                 @if($this->nights > 0)
@@ -105,8 +105,8 @@
             @if($this->beds->isEmpty())
                 <div class="text-center py-20">
                     <flux:icon name="magnifying-glass" class="mx-auto size-12 text-zinc-300 mb-4" />
-                    <flux:heading size="lg">No beds found</flux:heading>
-                    <flux:text class="text-zinc-500 mt-2">Try adjusting the city, dates, or filters.</flux:text>
+                    <flux:heading size="lg">{{ __('app.search.no_results') }}</flux:heading>
+                    <flux:text class="text-zinc-500 mt-2">{{ __('app.search.no_results_text') }}</flux:text>
                 </div>
             @else
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

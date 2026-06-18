@@ -15,7 +15,7 @@ class SearchPageTest extends TestCase
 
     public function test_search_page_loads(): void
     {
-        $response = $this->get(route('search.index'));
+        $response = $this->get(route('search.index', ['locale' => 'en']));
 
         $response->assertStatus(200);
     }
@@ -27,7 +27,7 @@ class SearchPageTest extends TestCase
         $room = Room::factory()->for($property)->create(['status' => 'active']);
         Bed::factory()->for($room)->create(['title' => 'Test Bed Alpha', 'status' => 'active']);
 
-        $response = $this->get(route('search.index'));
+        $response = $this->get(route('search.index', ['locale' => 'en']));
 
         $response->assertStatus(200);
         $response->assertSee('Test Bed Alpha');
@@ -43,7 +43,7 @@ class SearchPageTest extends TestCase
         Bed::factory()->for($roomBerlin)->create(['title' => 'Berlin Bed', 'status' => 'active']);
         Bed::factory()->for($roomParis)->create(['title' => 'Paris Bed', 'status' => 'active']);
 
-        $response = $this->get(route('search.index', ['city' => 'Berlin']));
+        $response = $this->get(route('search.index', ['locale' => 'en', 'city' => 'Berlin']));
 
         $response->assertStatus(200);
         $response->assertSee('Berlin Bed');
@@ -57,7 +57,7 @@ class SearchPageTest extends TestCase
         $room = Room::factory()->for($property)->create(['status' => 'active']);
         $bed = Bed::factory()->for($room)->create(['status' => 'active', 'title' => 'Cozy Single']);
 
-        $response = $this->get(route('beds.show', $bed));
+        $response = $this->get(route('beds.show', ['locale' => 'en', 'bed' => $bed]));
 
         $response->assertStatus(200);
         $response->assertSee('Cozy Single');
@@ -70,7 +70,7 @@ class SearchPageTest extends TestCase
         $room = Room::factory()->for($property)->create(['status' => 'active']);
         $bed = Bed::factory()->for($room)->create(['status' => 'active']);
 
-        $response = $this->get(route('beds.show', $bed));
+        $response = $this->get(route('beds.show', ['locale' => 'en', 'bed' => $bed]));
 
         $response->assertStatus(200);
         $response->assertSee('Jane Host');
