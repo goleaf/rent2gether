@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Host;
 
+use App\Models\Bed;
 use App\Models\Property;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
@@ -26,7 +27,7 @@ class PropertyShow extends Component
 
     public function deleteBed(int $bedId): void
     {
-        \App\Models\Bed::where('id', $bedId)
+        Bed::where('id', $bedId)
             ->whereHas('room', fn ($q) => $q->where('property_id', $this->property->id))
             ->delete();
 

@@ -8,4 +8,9 @@ enum PropertyStatus: string
     case Active = 'active';
     case Hidden = 'hidden';
     case Suspended = 'suspended';
+
+    public function label(): string
+    {
+        return __('statuses.property.'.$this->value);
+    }
 }

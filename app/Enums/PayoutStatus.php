@@ -9,4 +9,9 @@ enum PayoutStatus: string
     case Completed = 'completed';
     case Failed = 'failed';
     case OnHold = 'on_hold';
+
+    public function label(): string
+    {
+        return __('statuses.payout.'.$this->value);
+    }
 }

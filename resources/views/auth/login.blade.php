@@ -1,16 +1,16 @@
-<x-layouts.guest title="Sign in">
+<x-layouts.guest :title="__('auth.login.title')">
 
     <flux:card class="space-y-6">
         <div>
-            <flux:heading size="lg">Welcome back</flux:heading>
-            <flux:text class="text-zinc-500 mt-1">Sign in to your rent2gether account.</flux:text>
+            <flux:heading size="lg">{{ __('auth.login.heading') }}</flux:heading>
+            <flux:text class="text-zinc-500 mt-1">{{ __('auth.login.helper') }}</flux:text>
         </div>
 
         <form method="POST" action="{{ route('auth.login.store') }}" class="space-y-4">
             @csrf
 
             <flux:field>
-                <flux:label>Email</flux:label>
+                <flux:label>{{ __('auth.email') }}</flux:label>
                 <flux:input
                     type="email"
                     name="email"
@@ -26,7 +26,7 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>Password</flux:label>
+                <flux:label>{{ __('auth.password_label') }}</flux:label>
                 <flux:input
                     type="password"
                     name="password"
@@ -40,19 +40,19 @@
             </flux:field>
 
             <div class="flex items-center justify-between">
-                <flux:checkbox name="remember" label="Remember me" />
+                <flux:checkbox name="remember" :label="__('auth.login.remember')" />
             </div>
 
             <flux:button type="submit" variant="primary" class="w-full">
-                Sign in
+                {{ __('auth.login.submit') }}
             </flux:button>
         </form>
 
-        <flux:separator text="or" />
+        <flux:separator :text="__('auth.or')" />
 
         <flux:text class="text-center text-sm text-zinc-500">
-            No account yet?
-            <flux:link href="{{ route('auth.register') }}" class="font-medium">Create one</flux:link>
+            {{ __('auth.login.no_account') }}
+            <flux:link href="{{ route('auth.register') }}" class="font-medium">{{ __('auth.login.create_account') }}</flux:link>
         </flux:text>
     </flux:card>
 

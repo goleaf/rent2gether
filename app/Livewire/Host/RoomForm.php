@@ -87,10 +87,10 @@ class RoomForm extends Component
 
         if ($this->room) {
             $this->room->update($data);
-            session()->flash('success', 'Room updated.');
+            session()->flash('success', __('notifications.flash.room_updated'));
         } else {
             Room::create($data);
-            session()->flash('success', 'Room created.');
+            session()->flash('success', __('notifications.flash.room_created'));
         }
 
         $this->redirect(route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $this->property]));

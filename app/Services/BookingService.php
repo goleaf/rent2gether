@@ -26,25 +26,25 @@ class BookingService
         $checkOutDate = Carbon::parse($checkOut);
 
         if ($checkOutDate->lte($checkInDate)) {
-            return ['success' => false, 'error' => 'Check-out must be after check-in.'];
+            return ['success' => false, 'error' => __('booking.errors.checkout_after_checkin')];
         }
 
         $nights = $checkInDate->diffInDays($checkOutDate);
 
         if ($nights < $bed->min_nights) {
-            return ['success' => false, 'error' => "Minimum stay is {$bed->min_nights} nights."];
+            return ['success' => false, 'error' => __('booking.errors.minimum_stay', ['count' => $bed->min_nights])];
         }
 
         if ($bed->max_nights && $nights > $bed->max_nights) {
-            return ['success' => false, 'error' => "Maximum stay is {$bed->max_nights} nights."];
+            return ['success' => false, 'error' => __('booking.errors.maximum_stay', ['count' => $bed->max_nights])];
         }
 
         if ($guestsCount > $bed->max_guests) {
-            return ['success' => false, 'error' => "This bed accepts maximum {$bed->max_guests} guests."];
+            return ['success' => false, 'error' => __('booking.errors.maximum_guests', ['count' => $bed->max_guests])];
         }
 
         if (! $this->availability->isAvailable($bed, $checkIn, $checkOut)) {
-            return ['success' => false, 'error' => 'This bed is not available for the selected dates.'];
+            return ['success' => false, 'error' => __('booking.errors.not_available')];
         }
 
         $price = $this->calculator->calculate($bed, $checkIn, $checkOut);

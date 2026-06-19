@@ -1,8 +1,8 @@
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('My Properties') }}</flux:heading>
+        <flux:heading size="xl">{{ __('host.my_properties') }}</flux:heading>
         <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus">
-            {{ __('Add Property') }}
+            {{ __('host.add_property') }}
         </flux:button>
     </div>
 
@@ -15,8 +15,8 @@
                     </a>
                     <flux:text size="sm" class="text-zinc-500">
                         {{ $property->city }}, {{ $property->country }}
-                        &middot; {{ $property->rooms_count }} {{ __('rooms') }}
-                        &middot; {{ $property->beds_count }} {{ __('beds') }}
+                        &middot; {{ $property->rooms_count }} {{ __('app.units.rooms') }}
+                        &middot; {{ $property->beds_count }} {{ __('app.units.beds') }}
                     </flux:text>
                     <flux:badge size="sm">{{ $property->type->label() }}</flux:badge>
                     <flux:badge size="sm" color="{{ $property->status->value === 'active' ? 'green' : 'zinc' }}">{{ $property->status->label() }}</flux:badge>
@@ -25,7 +25,7 @@
             </flux:card>
         @empty
             <flux:card>
-                <flux:text class="text-center text-zinc-500 py-8">{{ __('No properties yet. Add your first property to start hosting.') }}</flux:text>
+                <flux:text class="text-center text-zinc-500 py-8">{{ __('host.empty_properties') }}</flux:text>
             </flux:card>
         @endforelse
     </div>

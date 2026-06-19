@@ -15,5 +15,14 @@
                     <div class="mt-1 font-medium">{{ config('database.default') }}</div>
                 </div>
             </div>
+
+            <flux:button
+                href="{{ route('home', ['locale' => app()->getLocale()]) }}"
+                variant="primary"
+                icon="arrow-left"
+                wire:navigate
+            >
+                {{ __('app.back_home') }}
+            </flux:button>
         </flux:card>
     </div>

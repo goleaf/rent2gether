@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto space-y-6">
-    <flux:heading size="xl">{{ __('Messages') }}</flux:heading>
+    <flux:heading size="xl">{{ __('search.messages.title') }}</flux:heading>
 
     <div class="space-y-2">
         @forelse($this->conversations as $conversation)
@@ -31,7 +31,7 @@
             </a>
         @empty
             <flux:card>
-                <flux:text class="text-center text-zinc-500 py-8">{{ __('No conversations yet.') }}</flux:text>
+                <flux:text class="text-center text-zinc-500 py-8">{{ __('search.messages.empty') }}</flux:text>
             </flux:card>
         @endforelse
     </div>

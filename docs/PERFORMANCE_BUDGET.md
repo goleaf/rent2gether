@@ -1,25 +1,50 @@
 # Performance Budget
 
-## Targets
+## Mobile baseline
 
-- Keep first render small enough for weak mobile connections.
-- Keep JS minimal and avoid loading large libraries on initial screens.
-- Keep Livewire payloads compact.
-- Keep search results paginated.
-- Keep images lazy loaded and responsive.
+Design and test at 320px-430px, including a slow 3G profile and an older Android-class CPU. Server-render useful content before optional enhancement.
 
-## Rules
+The 2026-06-19 production build baseline is:
 
-- Search autocomplete must wait for at least 2 characters.
-- Search requests should debounce at 500ms or slower.
-- Public lists should use pagination or cursor pagination.
-- The first screen should not load maps.
-- Filters should move into bottom sheets or drawers on mobile.
-- Use selected columns in queries.
+| Asset | Raw | Gzip |
+|---|---:|---:|
+| Application CSS | 288.37 kB | 38.35 kB |
+| Application JS | 0.00 kB | 0.02 kB |
+
+Flux and Livewire framework assets are separate from the application entry. Do not add a large client library to reproduce behavior they already provide.
+
+## Budgets
+
+| Surface | Budget |
+|---|---:|
+| Home page application queries | 0 |
+| Health page application queries | 0 |
+| Public card-list queries | 5 per initial request |
+| Application JS entry | 50 kB gzip maximum |
+| Application CSS entry | 50 kB gzip maximum |
+| Initial listing cards | 20 maximum |
+| Autocomplete results | 10 maximum |
+| Search debounce | 500 ms minimum |
+
+## Loading rules
+
+- Do not load a map library on the home page or initial search render.
+- Lazy-load below-the-fold components, maps, and image galleries.
+- Use responsive images with explicit dimensions and native lazy loading outside the first viewport.
+- Do not preload entire country, city, amenity, or rule datasets into HTML or Livewire state.
+- Use cursor pagination for large or append-only result sets.
+- Keep the DOM small; render disclosed content when requested instead of hiding large trees.
+
+## Query rules
+
+- Select only the columns required by a mobile card.
+- Eager-load every relationship rendered in a list.
+- Use `withCount`, `withExists`, and other Eloquent aggregates before entering loops.
+- Add indexes that match each filter and ordering combination.
+- Record `EXPLAIN QUERY PLAN` findings for search, availability overlap, and booking lookup changes.
 
 ## Verification
 
-- Prefer feature tests for route and component rendering.
-- Inspect query counts when changing browse or booking flows.
-- Run browser checks only for pages that visually changed.
-
+- Guard public query counts in feature tests.
+- Run `npm run build` and compare the gzip totals above whenever frontend dependencies or imports change.
+- Use a mobile browser trace after visual changes and verify a clean console, accessible names, and no unexpected network requests.

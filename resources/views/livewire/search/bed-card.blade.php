@@ -26,13 +26,13 @@
         {{-- Badges --}}
         <div class="flex flex-wrap gap-1.5">
             @if($bed->instant_book)
-                <flux:badge color="green" size="sm" icon="bolt">{{ __('app.bed.instant_book') }}</flux:badge>
+                <flux:badge color="green" size="sm" icon="bolt">{{ __('listing.bed.instant_book') }}</flux:badge>
             @endif
             @if($bed->has_locker)
-                <flux:badge color="zinc" size="sm" icon="lock-closed">{{ __('app.bed.personal_locker') }}</flux:badge>
+                <flux:badge color="zinc" size="sm" icon="lock-closed">{{ __('listing.bed.personal_locker') }}</flux:badge>
             @endif
             @if($bed->cancellation_policy->value === 'flexible')
-                <flux:badge color="blue" size="sm">{{ __('app.cancellation_policy.flexible') }}</flux:badge>
+                <flux:badge color="blue" size="sm">{{ __('listing.cancellation_policy.flexible') }}</flux:badge>
             @endif
         </div>
 
@@ -42,12 +42,12 @@
                 <span class="text-lg font-semibold text-zinc-900 dark:text-white">
                     €{{ number_format($bed->price_per_night, 0) }}
                 </span>
-                <span class="text-sm text-zinc-500 dark:text-zinc-400">/{{ __('app.bed.nightly_rate') }}</span>
+                <span class="text-sm text-zinc-500 dark:text-zinc-400">/{{ __('listing.bed.nightly_rate') }}</span>
             </div>
 
             @if($nights > 0)
                 <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
-                    €{{ number_format($this->priceSummary['total'] ?? 0, 0) }} {{ __('app.search.price_total') }}
+                    €{{ number_format($this->priceSummary['total'] ?? 0, 0) }} {{ __('search.price_total') }}
                 </flux:text>
             @endif
         </div>

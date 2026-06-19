@@ -61,7 +61,7 @@ class RequestExtension extends Component
             return;
         }
 
-        session()->flash('success', 'Extension request submitted.');
+        session()->flash('success', __('notifications.flash.extension_requested'));
         $this->redirect(route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $this->booking]));
     }
 

@@ -39,3 +39,9 @@ Rules:
   geo:import-countries
   geo:import-geonames-cities
   geo:rebuild-search-index
+- Add docs/GEO_DATA_SOURCES.md with source, license, attribution, import steps, update steps.
+
+Для городов лучше использовать GeoNames: он покрывает все страны и более 11 млн географических названий, а также даёт ежедневные extract-файлы вроде allCountries.zip. (geonames.org)
+Для картографических слоёв можно использовать Natural Earth, потому что он описан как public domain map dataset. (naturalearthdata.com)
+Для Nominatim/OpenStreetMap нельзя делать массовые запросы: публичная политика Nominatim указывает максимум 1 запрос в секунду, обязательный User-Agent/Referer и attribution. (operations.osmfoundation.org)
+Для кодов стран можно опираться на ISO 3166, который определяет международные коды стран и подразделений. (ISO)

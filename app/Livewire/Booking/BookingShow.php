@@ -46,7 +46,7 @@ class BookingShow extends Component
 
         if ($success) {
             $this->showCancelModal = false;
-            session()->flash('success', 'Booking cancelled.');
+            session()->flash('success', __('notifications.flash.booking_cancelled'));
             $this->booking->refresh();
         }
     }

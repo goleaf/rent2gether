@@ -1,16 +1,16 @@
 <div class="max-w-2xl mx-auto space-y-6">
-    <flux:heading size="xl">{{ __('Write a Review') }}</flux:heading>
+    <flux:heading size="xl">{{ __('booking.review.title') }}</flux:heading>
 
     <flux:card>
         <flux:text class="text-zinc-500">
             {{ $booking->bed->title }} &middot;
-            {{ $booking->check_in->format('M d') }} - {{ $booking->check_out->format('M d, Y') }}
+            {{ $booking->check_in->translatedFormat('d M') }} - {{ $booking->check_out->translatedFormat('d M Y') }}
         </flux:text>
     </flux:card>
 
     <form wire:submit="submit" class="space-y-6">
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('Ratings') }}</flux:heading>
+            <flux:heading size="sm">{{ __('booking.review.ratings') }}</flux:heading>
 
             @php
                 $ratingFields = $type === 'guest_to_place'
@@ -32,14 +32,14 @@
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('Comments') }}</flux:heading>
-            <flux:textarea wire:model="commentOverall" label="{{ __('Overall comment') }}" rows="4" :error="$errors->first('commentOverall')" />
-            <flux:textarea wire:model="commentPros" label="{{ __('Pros') }}" rows="2" />
-            <flux:textarea wire:model="commentCons" label="{{ __('Cons') }}" rows="2" />
+            <flux:heading size="sm">{{ __('booking.review.comments') }}</flux:heading>
+            <flux:textarea wire:model="commentOverall" label="{{ __('booking.review.overall') }}" rows="4" :error="$errors->first('commentOverall')" />
+            <flux:textarea wire:model="commentPros" label="{{ __('booking.review.pros') }}" rows="2" />
+            <flux:textarea wire:model="commentCons" label="{{ __('booking.review.cons') }}" rows="2" />
         </flux:card>
 
-        <flux:checkbox wire:model="wouldRecommend" label="{{ __('Would recommend') }}" />
+        <flux:checkbox wire:model="wouldRecommend" label="{{ __('booking.review.recommend') }}" />
 
-        <flux:button type="submit" variant="primary">{{ __('Submit review') }}</flux:button>
+        <flux:button type="submit" variant="primary">{{ __('booking.review.submit') }}</flux:button>
     </form>
 </div>

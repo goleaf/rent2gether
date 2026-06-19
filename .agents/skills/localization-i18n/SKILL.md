@@ -10,7 +10,7 @@ Locales:
 - ru
 
 Rules:
-- No hard-coded visible strings in Blade, Livewire PHP, validation messages, notifications, emails, or seed labels.
+- No hard-coded visible strings in Blade, Livewire, PHP responses, validation messages, notifications, emails, or seed labels.
 - Use translation keys for all UI.
 - Store user-selected locale.
 - Support locale in URL, session, and user settings.
@@ -21,7 +21,14 @@ Rules:
 - Every amenity/rule label must be translatable.
 - User-generated listing content must support translations:
   title, summary, description, house rules, check-in instructions, check-out instructions, safety notes, cancellation text.
-- Use separate translation tables for important public content.
+- Use separate translation tables for important public content:
+  property_translations
+  room_translations
+  sleeping_place_translations
+  amenity_translations
+  rule_translations
 - Translation tables require locale index and unique constraints.
 - Add tests that switch locale and verify strings change.
 - Add an Artisan command to report missing translation keys.
+
+Laravel 13 localization docs confirm that Laravel provides localization features for retrieving strings in different languages and supporting multiple languages. (Laravel)

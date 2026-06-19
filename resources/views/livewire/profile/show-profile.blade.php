@@ -6,18 +6,18 @@
         <div>
             <flux:heading size="xl">{{ $user->name }}</flux:heading>
             <flux:text class="text-zinc-500">
-                {{ __('Member since') }} {{ $user->created_at->format('M Y') }}
+                {{ __('app.profile.member_since') }} {{ $user->created_at->translatedFormat('M Y') }}
                 @if($user->city) &middot; {{ $user->city }}@endif
             </flux:text>
             @if($user->is_host)
-                <flux:badge color="blue" size="sm" class="mt-1">{{ __('Host') }}</flux:badge>
+                <flux:badge color="blue" size="sm" class="mt-1">{{ __('app.profile.host') }}</flux:badge>
             @endif
         </div>
     </div>
 
     @if($user->bio)
         <flux:card>
-            <flux:heading size="sm">{{ __('About') }}</flux:heading>
+            <flux:heading size="sm">{{ __('app.profile.about') }}</flux:heading>
             <flux:text>{{ $user->bio }}</flux:text>
         </flux:card>
     @endif
@@ -25,27 +25,27 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <flux:card class="text-center">
             <div class="text-2xl font-bold">{{ number_format($user->rating_as_guest ?? 0, 1) }}</div>
-            <flux:text size="sm" class="text-zinc-500">{{ __('Guest rating') }}</flux:text>
+            <flux:text size="sm" class="text-zinc-500">{{ __('app.profile.guest_rating') }}</flux:text>
         </flux:card>
         <flux:card class="text-center">
             <div class="text-2xl font-bold">{{ $user->completed_stays_count ?? 0 }}</div>
-            <flux:text size="sm" class="text-zinc-500">{{ __('Stays') }}</flux:text>
+            <flux:text size="sm" class="text-zinc-500">{{ __('app.profile.stays') }}</flux:text>
         </flux:card>
         @if($user->is_host)
             <flux:card class="text-center">
                 <div class="text-2xl font-bold">{{ number_format($user->rating_as_host ?? 0, 1) }}</div>
-                <flux:text size="sm" class="text-zinc-500">{{ __('Host rating') }}</flux:text>
+                <flux:text size="sm" class="text-zinc-500">{{ __('app.profile.host_rating') }}</flux:text>
             </flux:card>
             <flux:card class="text-center">
                 <div class="text-2xl font-bold">{{ $user->hosted_stays_count ?? 0 }}</div>
-                <flux:text size="sm" class="text-zinc-500">{{ __('Hosted') }}</flux:text>
+                <flux:text size="sm" class="text-zinc-500">{{ __('app.profile.hosted') }}</flux:text>
             </flux:card>
         @endif
     </div>
 
     @if($this->reviews->isNotEmpty())
         <div class="space-y-4">
-            <flux:heading size="lg">{{ __('Reviews') }}</flux:heading>
+            <flux:heading size="lg">{{ __('app.profile.reviews') }}</flux:heading>
             @foreach($this->reviews as $review)
                 <flux:card class="space-y-2">
                     <div class="flex items-center justify-between">

@@ -3,25 +3,35 @@
 namespace App\Models;
 
 use Database\Factories\FavoriteFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable([
-    'user_id', 'bed_id', 'collection', 'note', 'price_at_save',
-    'notify_available', 'notify_price_drop',
-])]
 class Favorite extends Model
 {
     /** @use HasFactory<FavoriteFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'price_at_save' => 'decimal:2',
-        'notify_available' => 'boolean',
-        'notify_price_drop' => 'boolean',
+    protected $fillable = [
+        'user_id',
+        'bed_id',
+        'sleeping_place_id',
+        'collection',
+        'note',
+        'price_at_save',
+        'notify_available',
+        'notify_price_drop',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'price_at_save' => 'decimal:2',
+            'notify_available' => 'boolean',
+            'notify_price_drop' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {
@@ -33,9 +43,13 @@ class Favorite extends Model
         return $this->belongsTo(Bed::class);
     }
 
-    public function priceChanged(): bool
+    public function sleepingPlace(): BelongsTo
     {
-        return $this->price_at_save !== null
-            && (float) $this->price_at_save !== (float) $this->bed->price_per_night;
+        return $this->belongsTo(SleepingPlace::class);
+    }
+
+    public function scopeForGuest(Builder $query, int $userId): Builder
+    {
+        return $query->where('user_id', $userId);
     }
 }

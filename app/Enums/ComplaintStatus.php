@@ -10,4 +10,9 @@ enum ComplaintStatus: string
     case Resolved = 'resolved';
     case Closed = 'closed';
     case Dismissed = 'dismissed';
+
+    public function label(): string
+    {
+        return __('statuses.complaint.'.$this->value);
+    }
 }

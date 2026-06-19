@@ -93,7 +93,7 @@ class CreateReview extends Component
             $this->booking->update(['host_review_left' => true]);
         }
 
-        session()->flash('success', 'Review submitted. Thank you!');
+        session()->flash('success', __('notifications.flash.review_submitted'));
         $this->redirect(route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $this->booking]));
     }
 

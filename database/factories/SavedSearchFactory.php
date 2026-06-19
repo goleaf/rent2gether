@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\City;
 use App\Models\SavedSearch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -15,10 +16,25 @@ class SavedSearchFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'name' => $this->faker->words(3, true),
+            'city_id' => City::factory(),
+            'locale' => 'en',
+            'name' => 'My search',
             'city' => $this->faker->city(),
-            'price_max' => $this->faker->randomFloat(2, 15, 50),
-            'notify_new_places' => false,
+            'district' => null,
+            'check_in' => now()->addWeek()->toDateString(),
+            'check_out' => now()->addDays(10)->toDateString(),
+            'nights' => 3,
+            'price_min' => 10,
+            'price_max' => 50,
+            'room_type' => 'shared',
+            'bed_type' => 'single',
+            'amenities' => ['wifi'],
+            'filters' => ['quiet' => true],
+            'filters_json' => ['quiet' => true],
+            'notify_new_places' => true,
+            'notify_price_drop' => false,
+            'notify_available' => true,
+            'notify_frequency' => 'daily',
             'is_active' => true,
         ];
     }

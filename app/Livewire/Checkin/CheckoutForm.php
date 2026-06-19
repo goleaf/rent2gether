@@ -53,7 +53,7 @@ class CheckoutForm extends Component
             'status' => 'checked_out',
         ]);
 
-        session()->flash('success', 'Check-out recorded.');
+        session()->flash('success', __('notifications.flash.checkout_recorded'));
         $this->redirect(route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $this->booking]));
     }
 

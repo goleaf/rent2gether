@@ -1,5 +1,5 @@
 <div class="max-w-2xl mx-auto space-y-6">
-    <flux:heading size="xl">{{ __('Extension Request') }}</flux:heading>
+    <flux:heading size="xl">{{ __('booking.extension.request_title') }}</flux:heading>
 
     @if(session('success'))
         <flux:badge color="green">{{ session('success') }}</flux:badge>
@@ -17,19 +17,19 @@
         </div>
 
         <div class="text-sm space-y-2">
-            <div class="flex justify-between"><span class="text-zinc-500">{{ __('Original checkout') }}</span><span>{{ $extension->original_check_out->format('M d, Y') }}</span></div>
-            <div class="flex justify-between"><span class="text-zinc-500">{{ __('New checkout') }}</span><span>{{ $extension->new_check_out->format('M d, Y') }}</span></div>
-            <div class="flex justify-between"><span class="text-zinc-500">{{ __('Extra nights') }}</span><span>{{ $extension->extra_nights }}</span></div>
-            <div class="flex justify-between font-semibold"><span>{{ __('Extra amount') }}</span><span>&euro;{{ number_format($extension->extra_amount, 2) }}</span></div>
+            <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.extension.original_checkout') }}</span><span>{{ $extension->original_check_out->translatedFormat('d M Y') }}</span></div>
+            <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.extension.new_checkout') }}</span><span>{{ $extension->new_check_out->translatedFormat('d M Y') }}</span></div>
+            <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.extension.extra_nights') }}</span><span>{{ $extension->extra_nights }}</span></div>
+            <div class="flex justify-between font-semibold"><span>{{ __('booking.extension.extra_amount') }}</span><span>&euro;{{ number_format($extension->extra_amount, 2) }}</span></div>
         </div>
 
-        <flux:badge>{{ ucfirst($extension->status) }}</flux:badge>
+        <flux:badge>{{ __('statuses.extension.'.$extension->status) }}</flux:badge>
     </flux:card>
 
     @if($extension->status === 'pending')
         <div class="flex gap-3">
-            <flux:button wire:click="approve" variant="primary">{{ __('Approve') }}</flux:button>
-            <flux:button wire:click="reject" variant="danger">{{ __('Reject') }}</flux:button>
+            <flux:button wire:click="approve" variant="primary">{{ __('host.manage_booking.approve') }}</flux:button>
+            <flux:button wire:click="reject" variant="danger">{{ __('host.manage_booking.reject') }}</flux:button>
         </div>
     @endif
 </div>

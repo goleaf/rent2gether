@@ -18,4 +18,9 @@ enum ComplaintType: string
     case PaymentIssue = 'payment_issue';
     case RefundIssue = 'refund_issue';
     case Other = 'other';
+
+    public function label(): string
+    {
+        return __('statuses.complaint_type.'.$this->value);
+    }
 }

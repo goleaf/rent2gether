@@ -23,7 +23,7 @@
                     <flux:text size="sm" class="text-zinc-400 mt-0.5 {{ $message->sender_id === auth()->id() ? 'text-right' : '' }}">
                         {{ $message->created_at->format('H:i') }}
                         @if($message->sender_id === auth()->id() && $message->read_at)
-                            &middot; {{ __('Read') }}
+                            &middot; {{ __('search.messages.read') }}
                         @endif
                     </flux:text>
                 @endif
@@ -32,7 +32,7 @@
     </div>
 
     <form wire:submit="send" class="flex gap-2">
-        <flux:input wire:model="body" placeholder="{{ __('Type a message...') }}" class="flex-1" />
+        <flux:input wire:model="body" placeholder="{{ __('search.messages.placeholder') }}" class="flex-1" />
         <flux:button type="submit" variant="primary" icon="paper-airplane" />
     </form>
 </div>

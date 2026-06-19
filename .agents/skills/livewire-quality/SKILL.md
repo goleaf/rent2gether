@@ -26,3 +26,6 @@ Livewire rules:
   action succeeds
   unauthorized action fails
   locale strings display correctly
+
+Livewire 4 docs say default wire:model does not send a network request on every input update unless timing modifiers are used, .live has debounce behavior, and wire:model.blur/.change are available. This is important for old phones and 3G. (Laravel)
+Livewire 4 также поддерживает loading states/data-loading, real-time validation через #[Validate], file uploads через WithFileUploads, computed properties и wire:navigate. (Laravel)

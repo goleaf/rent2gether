@@ -1,16 +1,16 @@
-<x-layouts.guest title="Create account">
+<x-layouts.guest :title="__('auth.register.title')">
 
     <flux:card class="space-y-6">
         <div>
-            <flux:heading size="lg">Create your account</flux:heading>
-            <flux:text class="text-zinc-500 mt-1">Start booking or listing beds today.</flux:text>
+            <flux:heading size="lg">{{ __('auth.register.heading') }}</flux:heading>
+            <flux:text class="text-zinc-500 mt-1">{{ __('auth.register.helper') }}</flux:text>
         </div>
 
         <form method="POST" action="{{ route('auth.register.store') }}" class="space-y-4">
             @csrf
 
             <flux:field>
-                <flux:label>Full name</flux:label>
+                <flux:label>{{ __('auth.register.full_name') }}</flux:label>
                 <flux:input
                     type="text"
                     name="name"
@@ -26,7 +26,7 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>Email</flux:label>
+                <flux:label>{{ __('auth.email') }}</flux:label>
                 <flux:input
                     type="email"
                     name="email"
@@ -41,7 +41,7 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>Password</flux:label>
+                <flux:label>{{ __('auth.password_label') }}</flux:label>
                 <flux:input
                     type="password"
                     name="password"
@@ -55,7 +55,7 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>Confirm password</flux:label>
+                <flux:label>{{ __('auth.register.confirm_password') }}</flux:label>
                 <flux:input
                     type="password"
                     name="password_confirmation"
@@ -66,15 +66,15 @@
             </flux:field>
 
             <flux:button type="submit" variant="primary" class="w-full">
-                Create account
+                {{ __('auth.register.submit') }}
             </flux:button>
         </form>
 
-        <flux:separator text="or" />
+        <flux:separator :text="__('auth.or')" />
 
         <flux:text class="text-center text-sm text-zinc-500">
-            Already have an account?
-            <flux:link href="{{ route('auth.login') }}" class="font-medium">Sign in</flux:link>
+            {{ __('auth.register.has_account') }}
+            <flux:link href="{{ route('auth.login') }}" class="font-medium">{{ __('auth.register.sign_in') }}</flux:link>
         </flux:text>
     </flux:card>
 

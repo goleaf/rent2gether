@@ -47,7 +47,7 @@ class CheckinForm extends Component
             'status' => 'checked_in',
         ]);
 
-        session()->flash('success', 'Check-in recorded.');
+        session()->flash('success', __('notifications.flash.checkin_recorded'));
         $this->redirect(route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $this->booking]));
     }
 

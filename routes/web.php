@@ -14,10 +14,15 @@ use App\Livewire\Complaints\CreateComplaint;
 use App\Livewire\Extensions\ManageExtension;
 use App\Livewire\Extensions\RequestExtension;
 use App\Livewire\Favorites\FavoritesList;
+use App\Livewire\Host\BedForm;
 use App\Livewire\Host\Dashboard as HostDashboard;
 use App\Livewire\Host\HostBookings;
 use App\Livewire\Host\HostEarnings;
 use App\Livewire\Host\ManageBooking;
+use App\Livewire\Host\PropertyForm;
+use App\Livewire\Host\PropertyList;
+use App\Livewire\Host\PropertyShow;
+use App\Livewire\Host\RoomForm;
 use App\Livewire\Messages\ChatWindow;
 use App\Livewire\Messages\ConversationList;
 use App\Livewire\Pages\HealthPage;
@@ -33,10 +38,10 @@ Route::redirect('/', '/en');
 Route::redirect('/search', '/en/search');
 Route::redirect('/health', '/en/health');
 
-Route::pattern('locale', 'en|ru');
+Route::pattern('locale', implode('|', config('localization.supported_locales')));
 
 Route::prefix('{locale}')
-    ->whereIn('locale', ['en', 'ru'])
+    ->whereIn('locale', config('localization.supported_locales'))
     ->middleware(SetLocale::class)
     ->group(function (): void {
         Route::get('/', HomePage::class)->name('home');
@@ -51,19 +56,19 @@ Route::prefix('{locale}')
         });
     });
 
-Route::middleware('guest')->prefix('auth')->name('auth.')->group(function (): void {
+Route::middleware([SetLocale::class, 'guest'])->prefix('auth')->name('auth.')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware([SetLocale::class, 'auth'])->group(function (): void {
     Route::post('/auth/logout', [LoginController::class, 'destroy'])->name('auth.logout');
 });
 
 Route::prefix('{locale}')
-    ->whereIn('locale', ['en', 'ru'])
+    ->whereIn('locale', config('localization.supported_locales'))
     ->middleware([SetLocale::class, 'auth'])
     ->group(function (): void {
 
@@ -104,5 +109,14 @@ Route::prefix('{locale}')
             Route::get('/bookings/{booking}', ManageBooking::class)->name('bookings.manage');
             Route::get('/bookings/{booking}/extension/{extension}', ManageExtension::class)->name('extensions.manage');
             Route::get('/earnings', HostEarnings::class)->name('earnings');
+
+            Route::get('/properties', PropertyList::class)->name('properties.index');
+            Route::get('/properties/create', PropertyForm::class)->name('properties.create');
+            Route::get('/properties/{property}', PropertyShow::class)->name('properties.show');
+            Route::get('/properties/{property}/edit', PropertyForm::class)->name('properties.edit');
+            Route::get('/properties/{property}/rooms/create', RoomForm::class)->name('rooms.create');
+            Route::get('/properties/{property}/rooms/{room}/edit', RoomForm::class)->name('rooms.edit');
+            Route::get('/rooms/{room}/beds/create', BedForm::class)->name('beds.create');
+            Route::get('/rooms/{room}/beds/{bed}/edit', BedForm::class)->name('beds.edit');
         });
     });

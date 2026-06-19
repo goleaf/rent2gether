@@ -32,3 +32,5 @@ Rules:
 - Use EXPLAIN QUERY PLAN notes in docs for critical queries.
 - Document WAL mode setup for local/dev and production if applicable.
 - Keep seeders small by default; large geo imports should be command-driven.
+
+SQLite официально поддерживает PRAGMA journal_mode=WAL, а документация SQLite по query planner прямо говорит, что понимание планировщика помогает создавать лучшие индексы. (SQLite)

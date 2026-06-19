@@ -8,4 +8,9 @@ enum ReviewStatus: string
     case Published = 'published';
     case Hidden = 'hidden';
     case Flagged = 'flagged';
+
+    public function label(): string
+    {
+        return __('statuses.review.'.$this->value);
+    }
 }

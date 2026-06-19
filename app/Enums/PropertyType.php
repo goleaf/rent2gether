@@ -15,15 +15,6 @@ enum PropertyType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Apartment => 'Apartment',
-            self::House => 'House',
-            self::Studio => 'Studio',
-            self::Hostel => 'Hostel',
-            self::GuestHouse => 'Guest House',
-            self::Dormitory => 'Dormitory',
-            self::Cottage => 'Cottage',
-            self::Other => 'Other',
-        };
+        return __('statuses.property_type.'.$this->value);
     }
 }

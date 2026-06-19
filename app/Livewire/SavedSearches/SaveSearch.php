@@ -61,7 +61,7 @@ class SaveSearch extends Component
 
         $this->showModal = false;
         $this->reset('name');
-        session()->flash('success', 'Search saved!');
+        session()->flash('success', __('notifications.flash.search_saved'));
     }
 
     public function render()

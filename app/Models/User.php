@@ -4,30 +4,61 @@ namespace App\Models;
 
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable([
-    'name', 'email', 'password', 'phone', 'phone_verified', 'avatar', 'date_of_birth',
-    'gender', 'country', 'city', 'languages', 'bio', 'occupation', 'travel_purpose',
-    'is_smoker', 'has_pets', 'has_allergies', 'prefers_quiet', 'sleep_schedule',
-    'willing_to_share_room', 'preferred_room_gender',
-    'identity_verified', 'identity_verified_at',
-    'is_host', 'host_description', 'host_experience_years', 'host_lives_on_site',
-    'preferred_contact_method',
-    'rating_as_guest', 'rating_as_host', 'completed_stays_count', 'hosted_stays_count',
-    'cancellations_count', 'complaints_count', 'status', 'last_active_at',
-])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'phone',
+        'phone_verified',
+        'avatar',
+        'date_of_birth',
+        'gender',
+        'country',
+        'city',
+        'languages',
+        'bio',
+        'occupation',
+        'travel_purpose',
+        'is_smoker',
+        'has_pets',
+        'has_allergies',
+        'prefers_quiet',
+        'sleep_schedule',
+        'willing_to_share_room',
+        'preferred_room_gender',
+        'identity_verified',
+        'identity_verified_at',
+        'is_host',
+        'host_description',
+        'host_experience_years',
+        'host_lives_on_site',
+        'preferred_contact_method',
+        'rating_as_guest',
+        'rating_as_host',
+        'completed_stays_count',
+        'hosted_stays_count',
+        'cancellations_count',
+        'complaints_count',
+        'status',
+        'last_active_at',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     protected function casts(): array
     {
@@ -53,8 +84,27 @@ class User extends Authenticatable
         ];
     }
 
-    // Host relationships
+    public function profile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function guestPreference(): HasOne
+    {
+        return $this->hasOne(GuestPreference::class);
+    }
+
+    public function hostProfile(): HasOne
+    {
+        return $this->hasOne(HostProfile::class);
+    }
+
     public function properties(): HasMany
+    {
+        return $this->hasMany(Property::class, 'host_user_id');
+    }
+
+    public function legacyProperties(): HasMany
     {
         return $this->hasMany(Property::class);
     }
@@ -64,10 +114,14 @@ class User extends Authenticatable
         return $this->hasMany(Payout::class, 'host_id');
     }
 
-    // Guest relationships
     public function bookings(): HasMany
     {
-        return $this->hasMany(Booking::class, 'guest_id');
+        return $this->hasMany(Booking::class, 'guest_user_id');
+    }
+
+    public function hostedBookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'host_user_id');
     }
 
     public function favorites(): HasMany
@@ -80,12 +134,21 @@ class User extends Authenticatable
         return $this->hasMany(SavedSearch::class);
     }
 
+    public function setting(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
+    }
+
     public function waitlistEntries(): HasMany
     {
         return $this->hasMany(WaitlistEntry::class);
     }
 
-    // Shared relationships
+    public function waitlistItems(): HasMany
+    {
+        return $this->hasMany(WaitlistItem::class);
+    }
+
     public function reviewsWritten(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewer_id');
@@ -101,6 +164,16 @@ class User extends Authenticatable
         return $this->hasMany(Conversation::class, 'participant_one_id');
     }
 
+    public function guestMessageThreads(): HasMany
+    {
+        return $this->hasMany(MessageThread::class, 'guest_user_id');
+    }
+
+    public function hostMessageThreads(): HasMany
+    {
+        return $this->hasMany(MessageThread::class, 'host_user_id');
+    }
+
     public function complaintsReported(): HasMany
     {
         return $this->hasMany(Complaint::class, 'reporter_id');
@@ -111,21 +184,29 @@ class User extends Authenticatable
         return $this->hasMany(Complaint::class, 'reported_user_id');
     }
 
-    // Scopes
-    public function scopeHosts(Builder $query): void
+    public function appNotifications(): HasMany
     {
-        $query->where('is_host', true);
+        return $this->hasMany(Notification::class);
     }
 
-    public function scopeVerified(Builder $query): void
+    public function scopeHosts(Builder $query): Builder
     {
-        $query->where('identity_verified', true);
+        return $query->where('is_host', true);
     }
 
-    // Helpers
+    public function scopeVerified(Builder $query): Builder
+    {
+        return $query->where('identity_verified', true);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', UserStatus::Active->value);
+    }
+
     public function isHost(): bool
     {
-        return $this->is_host;
+        return (bool) $this->is_host || $this->hostProfile()->exists();
     }
 
     public function age(): ?int
@@ -136,7 +217,7 @@ class User extends Authenticatable
     public function profileCompleteness(): int
     {
         $fields = ['name', 'avatar', 'phone', 'date_of_birth', 'country', 'city', 'languages', 'bio'];
-        $filled = collect($fields)->filter(fn (string $f) => ! empty($this->$f))->count();
+        $filled = collect($fields)->filter(fn (string $field) => ! empty($this->{$field}))->count();
 
         return (int) round(($filled / count($fields)) * 100);
     }
@@ -146,9 +227,11 @@ class User extends Authenticatable
         if ($this->identity_verified && $this->completed_stays_count >= 3 && $this->complaints_count === 0) {
             return 'trusted';
         }
+
         if ($this->identity_verified) {
             return 'verified';
         }
+
         if ($this->phone_verified && $this->email_verified_at) {
             return 'confirmed';
         }
@@ -159,5 +242,10 @@ class User extends Authenticatable
     public function hasFavorited(Bed $bed): bool
     {
         return $this->favorites()->where('bed_id', $bed->id)->exists();
+    }
+
+    public function hasFavoritedSleepingPlace(SleepingPlace $sleepingPlace): bool
+    {
+        return $this->favorites()->where('sleeping_place_id', $sleepingPlace->id)->exists();
     }
 }

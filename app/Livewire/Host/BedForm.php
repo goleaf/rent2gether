@@ -137,10 +137,10 @@ class BedForm extends Component
 
         if ($this->bed) {
             $this->bed->update($data);
-            session()->flash('success', 'Bed updated.');
+            session()->flash('success', __('notifications.flash.bed_updated'));
         } else {
             Bed::create($data);
-            session()->flash('success', 'Bed created.');
+            session()->flash('success', __('notifications.flash.bed_created'));
         }
 
         $this->redirect(route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $this->room->property]));

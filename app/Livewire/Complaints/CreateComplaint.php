@@ -55,7 +55,7 @@ class CreateComplaint extends Component
             'desired_resolution' => $this->desiredResolution ?: null,
         ]);
 
-        session()->flash('success', 'Complaint submitted. Reference: '.$complaint->reference);
+        session()->flash('success', __('notifications.flash.complaint_submitted', ['reference' => $complaint->reference]));
         $this->redirect(route('guest.bookings.index', ['locale' => app()->getLocale()]));
     }
 

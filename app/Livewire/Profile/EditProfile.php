@@ -92,7 +92,7 @@ class EditProfile extends Component
             'preferred_room_gender' => $this->preferredRoomGender ?: null,
         ]);
 
-        session()->flash('success', 'Profile updated.');
+        session()->flash('success', __('notifications.flash.profile_updated'));
     }
 
     public function render(): View

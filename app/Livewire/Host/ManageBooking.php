@@ -33,7 +33,7 @@ class ManageBooking extends Component
     {
         app(BookingService::class)->confirmByHost($this->booking);
         $this->booking->refresh();
-        session()->flash('success', 'Booking approved.');
+        session()->flash('success', __('notifications.flash.booking_approved'));
     }
 
     public function reject(): void
@@ -41,7 +41,7 @@ class ManageBooking extends Component
         app(BookingService::class)->rejectByHost($this->booking, $this->rejectReason ?: null);
         $this->booking->refresh();
         $this->showRejectModal = false;
-        session()->flash('success', 'Booking rejected.');
+        session()->flash('success', __('notifications.flash.booking_rejected'));
     }
 
     public function cancel(): void
@@ -49,7 +49,7 @@ class ManageBooking extends Component
         app(CancellationService::class)->cancelByHost($this->booking, $this->cancelReason ?: null);
         $this->booking->refresh();
         $this->showCancelModal = false;
-        session()->flash('success', 'Booking cancelled with full refund.');
+        session()->flash('success', __('notifications.flash.booking_refunded'));
     }
 
     public function confirmCheckIn(): void

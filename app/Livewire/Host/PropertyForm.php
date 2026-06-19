@@ -86,10 +86,10 @@ class PropertyForm extends Component
 
         if ($this->property) {
             $this->property->update($data);
-            session()->flash('success', 'Property updated.');
+            session()->flash('success', __('notifications.flash.property_updated'));
         } else {
             $this->property = Property::create($data);
-            session()->flash('success', 'Property created.');
+            session()->flash('success', __('notifications.flash.property_created'));
         }
 
         $this->redirect(route('host.properties.index', ['locale' => app()->getLocale()]));

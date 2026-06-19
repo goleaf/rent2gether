@@ -6,7 +6,10 @@ use App\Enums\ReviewStatus;
 use App\Enums\ReviewType;
 use App\Models\Bed;
 use App\Models\Booking;
+use App\Models\Property;
 use App\Models\Review;
+use App\Models\Room;
+use App\Models\SleepingPlace;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,25 +26,28 @@ class ReviewFactory extends Factory
             'reviewee_id' => User::factory(),
             'type' => ReviewType::GuestToPlace->value,
             'bed_id' => Bed::factory(),
-            'overall_rating' => $this->faker->numberBetween(3, 5),
-            'cleanliness_rating' => $this->faker->numberBetween(3, 5),
-            'safety_rating' => $this->faker->numberBetween(3, 5),
-            'communication_rating' => $this->faker->numberBetween(3, 5),
-            'value_rating' => $this->faker->numberBetween(3, 5),
+            'sleeping_place_id' => SleepingPlace::factory(),
+            'room_id' => Room::factory(),
+            'property_id' => Property::factory(),
+            'overall_rating' => 5,
+            'cleanliness_rating' => 5,
+            'safety_rating' => 5,
+            'location_rating' => 5,
+            'accuracy_rating' => 5,
+            'bed_comfort_rating' => 5,
+            'amenities_rating' => 5,
+            'communication_rating' => 5,
+            'neighbors_rating' => 5,
+            'value_rating' => 5,
+            'rule_compliance_rating' => 5,
+            'tidiness_rating' => 5,
+            'punctuality_rating' => 5,
             'positive_comment' => $this->faker->sentence(),
+            'negative_comment' => null,
+            'advice' => null,
             'would_recommend' => true,
+            'would_return' => true,
             'status' => ReviewStatus::Published->value,
         ];
-    }
-
-    public function hostToGuest(): static
-    {
-        return $this->state(fn () => [
-            'type' => ReviewType::HostToGuest->value,
-            'bed_id' => null,
-            'rule_compliance_rating' => $this->faker->numberBetween(3, 5),
-            'tidiness_rating' => $this->faker->numberBetween(3, 5),
-            'punctuality_rating' => $this->faker->numberBetween(3, 5),
-        ]);
     }
 }

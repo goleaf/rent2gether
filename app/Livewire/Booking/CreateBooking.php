@@ -115,7 +115,7 @@ class CreateBooking extends Component
             return;
         }
 
-        session()->flash('success', 'Booking created successfully!');
+        session()->flash('success', __('notifications.flash.booking_created'));
         $this->redirect(route('guest.bookings.show', [
             'locale' => app()->getLocale(),
             'booking' => $result['booking'],

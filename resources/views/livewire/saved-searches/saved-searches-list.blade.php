@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto space-y-6">
-    <flux:heading size="xl">{{ __('Saved Searches') }}</flux:heading>
+    <flux:heading size="xl">{{ __('search.saved.title') }}</flux:heading>
 
     <div class="space-y-4">
         @forelse($this->searches as $search)
@@ -13,16 +13,16 @@
                     </flux:text>
                 </div>
                 <div class="flex items-center gap-2">
-                    <flux:button size="sm" wire:click="runSearch({{ $search->id }})" icon="magnifying-glass">{{ __('Search') }}</flux:button>
+                    <flux:button size="sm" wire:click="runSearch({{ $search->id }})" icon="magnifying-glass">{{ __('app.actions.search') }}</flux:button>
                     <flux:button size="sm" wire:click="toggleNotifications({{ $search->id }})" variant="{{ $search->notify_email ? 'primary' : 'ghost' }}" icon="bell">
-                        {{ $search->notify_email ? __('On') : __('Off') }}
+                        {{ $search->notify_email ? __('search.saved.enabled') : __('search.saved.disabled') }}
                     </flux:button>
-                    <flux:button size="sm" wire:click="delete({{ $search->id }})" variant="ghost" icon="trash" wire:confirm="{{ __('Delete this saved search?') }}" />
+                    <flux:button size="sm" wire:click="delete({{ $search->id }})" variant="ghost" icon="trash" wire:confirm="{{ __('search.saved.delete_confirmation') }}" />
                 </div>
             </flux:card>
         @empty
             <flux:card>
-                <flux:text class="text-center text-zinc-500 py-8">{{ __('No saved searches yet. Save a search from the search page.') }}</flux:text>
+                <flux:text class="text-center text-zinc-500 py-8">{{ __('search.saved.empty') }}</flux:text>
             </flux:card>
         @endforelse
     </div>

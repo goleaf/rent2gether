@@ -23,11 +23,11 @@ class ExtensionService
         $newCheckOutDate = Carbon::parse($newCheckOut);
 
         if ($newCheckOutDate->lte($booking->check_out)) {
-            return ['success' => false, 'error' => 'New check-out must be after current check-out.'];
+            return ['success' => false, 'error' => __('booking.errors.extension_checkout')];
         }
 
         if (! $this->availability->isAvailable($bed, $currentCheckOut, $newCheckOut)) {
-            return ['success' => false, 'error' => 'Bed is not available for the extended dates.'];
+            return ['success' => false, 'error' => __('booking.errors.extension_unavailable')];
         }
 
         $extraNights = $booking->check_out->diffInDays($newCheckOutDate);

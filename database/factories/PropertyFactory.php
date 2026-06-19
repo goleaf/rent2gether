@@ -4,7 +4,10 @@ namespace Database\Factories;
 
 use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Property;
+use App\Models\Region;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,28 +16,59 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class PropertyFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'host_user_id' => User::factory(),
+            'country_id' => Country::factory(),
+            'region_id' => Region::factory(),
+            'city_id' => City::factory(),
             'title' => $this->faker->sentence(3),
             'type' => $this->faker->randomElement(PropertyType::cases())->value,
             'description' => $this->faker->paragraph(),
-            'country' => 'Germany',
+            'country' => 'Lithuania',
             'city' => $this->faker->city(),
             'district' => $this->faker->word(),
             'street' => $this->faker->streetName(),
             'building' => $this->faker->buildingNumber(),
             'floor' => $this->faker->numberBetween(1, 10),
             'has_elevator' => $this->faker->boolean(),
+            'lat' => $this->faker->latitude(54.5, 55.0),
+            'lng' => $this->faker->longitude(25.0, 25.5),
+            'show_exact_address' => false,
+            'nearest_transport' => $this->faker->streetName(),
             'amenities' => ['wifi', 'kitchen', 'washer'],
-            'rules' => ['no_smoking', 'no_parties'],
+            'rules' => ['no_smoking', 'quiet_hours'],
             'status' => PropertyStatus::Active->value,
+            'address_line_1' => $this->faker->streetAddress(),
+            'house_number' => $this->faker->buildingNumber(),
+            'latitude' => $this->faker->latitude(54.5, 55.0),
+            'longitude' => $this->faker->longitude(25.0, 25.5),
+            'approximate_latitude' => $this->faker->latitude(54.5, 55.0),
+            'approximate_longitude' => $this->faker->longitude(25.0, 25.5),
+            'show_exact_address_before_booking' => false,
+            'show_exact_address_after_payment' => true,
+            'distance_to_center_meters' => $this->faker->numberBetween(500, 8000),
+            'total_area' => $this->faker->randomFloat(2, 35, 120),
+            'rooms_count' => $this->faker->numberBetween(1, 5),
+            'bathrooms_count' => 1,
+            'showers_count' => 1,
+            'kitchens_count' => 1,
+            'balconies_count' => $this->faker->numberBetween(0, 2),
+            'max_guests' => $this->faker->numberBetween(1, 8),
+            'current_guests_count' => 0,
+            'noise_level' => 'moderate',
+            'cleanliness_level' => 'good',
+            'safety_level' => 'good',
+            'repair_state' => 'good',
+            'has_heating' => true,
+            'has_air_conditioning' => false,
+            'has_hot_water' => true,
+            'has_parking' => $this->faker->boolean(30),
+            'has_security' => $this->faker->boolean(40),
+            'has_cctv_common_areas' => $this->faker->boolean(25),
+            'emergency_contact_name' => $this->faker->name(),
+            'emergency_contact_phone' => $this->faker->phoneNumber(),
         ];
     }
 }

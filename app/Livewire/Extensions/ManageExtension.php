@@ -22,14 +22,14 @@ class ManageExtension extends Component
     {
         app(ExtensionService::class)->approve($this->extension);
         $this->extension->refresh();
-        session()->flash('success', 'Extension approved.');
+        session()->flash('success', __('notifications.flash.extension_approved'));
     }
 
     public function reject(): void
     {
         app(ExtensionService::class)->reject($this->extension);
         $this->extension->refresh();
-        session()->flash('success', 'Extension rejected.');
+        session()->flash('success', __('notifications.flash.extension_rejected'));
     }
 
     public function render(): View
