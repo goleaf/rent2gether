@@ -1,5 +1,5 @@
 <div class="space-y-3">
-    <flux:button type="button" variant="ghost" icon="list-checks" wire:click="show">
+    <flux:button type="button" variant="ghost" icon="information-circle" wire:click="show">
         {{ __('compatibility.actions.open_details') }}
     </flux:button>
 
@@ -10,7 +10,7 @@
                     <flux:heading size="lg">{{ __('compatibility.details_title') }}</flux:heading>
                     <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('compatibility.details_helper') }}</flux:text>
                 </div>
-                <flux:button type="button" variant="ghost" size="sm" icon="x" wire:click="close" aria-label="{{ __('compatibility.actions.close_details') }}" />
+                <flux:button type="button" variant="ghost" size="sm" icon="x-mark" wire:click="close" aria-label="{{ __('compatibility.actions.close_details') }}" />
             </div>
 
             @if($result)
@@ -29,8 +29,8 @@
                     @endforeach
 
                     <div class="grid gap-2">
-                        <flux:button variant="primary" icon="sliders-horizontal">{{ __('compatibility.suggestions.change_filter') }}</flux:button>
-                        <flux:button variant="ghost" icon="message-circle">{{ __('compatibility.suggestions.ask_host') }}</flux:button>
+                        <flux:button variant="primary" icon="adjustments-horizontal">{{ __('compatibility.suggestions.change_filter') }}</flux:button>
+                        <flux:button variant="ghost" icon="chat-bubble-left-right">{{ __('compatibility.suggestions.ask_host') }}</flux:button>
                     </div>
                 </div>
             @else

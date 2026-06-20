@@ -15,7 +15,7 @@
         <flux:checkbox wire:model.change="showWarnings" label="{{ __('compatibility.filter.show_warnings') }}" />
     </div>
 
-    <flux:button type="button" variant="primary" class="w-full" icon="filter" wire:click="apply">
+    <flux:button type="button" variant="primary" class="w-full" icon="adjustments-horizontal" wire:click="apply">
         {{ __('compatibility.actions.apply_filter') }}
     </flux:button>
 </div>

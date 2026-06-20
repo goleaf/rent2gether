@@ -5,7 +5,7 @@
     </div>
 
     @error('compatibility')
-        <flux:callout color="red" icon="circle-alert">{{ $message }}</flux:callout>
+        <flux:callout color="red" icon="exclamation-triangle">{{ $message }}</flux:callout>
     @enderror
 
     @if($result)
@@ -22,7 +22,7 @@
             <flux:button type="button" variant="primary" icon="check" wire:click="continueAnyway">
                 {{ __('compatibility.before_booking.continue_anyway') }}
             </flux:button>
-            <flux:button type="button" variant="ghost" icon="search">
+            <flux:button type="button" variant="ghost" icon="magnifying-glass">
                 {{ __('compatibility.before_booking.choose_another') }}
             </flux:button>
         </div>
