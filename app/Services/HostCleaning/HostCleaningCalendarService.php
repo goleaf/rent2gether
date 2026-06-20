@@ -50,6 +50,12 @@ class HostCleaningCalendarService
 
     public function releaseCalendarAfterCleaning(HostCleaningTask $task): void
     {
+        if (! $task->sleeping_place_id || ! $task->scheduled_date) {
+            $this->syncHostCalendarEvent($task);
+
+            return;
+        }
+
         if (! $this->readiness->canMarkPlaceReady($task)) {
             if ($task->needs_repair && $task->sleeping_place_id && $task->scheduled_date) {
                 $date = $this->dateString($task->scheduled_date);
