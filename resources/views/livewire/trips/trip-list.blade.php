@@ -25,9 +25,7 @@
     </div>
 
     <div class="space-y-3">
-        @forelse($bookings as $booking)
-            @php($card = $cards[$booking->id])
-
+        @forelse($cards as $card)
             <flux:card class="space-y-3">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 space-y-1">
@@ -55,11 +53,11 @@
                     </div>
                     <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
                         <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('booking.trips.reference') }}</div>
-                        <div class="truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $booking->reference }}</div>
+                        <div class="truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $card['booking']->reference }}</div>
                     </div>
                 </div>
 
-                <flux:button href="{{ route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $card['booking']]) }}" wire:navigate variant="primary" class="w-full">
                     {{ __('booking.trips.actions.open_detail') }}
                 </flux:button>
             </flux:card>

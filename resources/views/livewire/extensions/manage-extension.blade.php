@@ -1,15 +1,3 @@
-@php
-    $booking = $extension->booking;
-    $place = $booking->sleepingPlace;
-    $placeTitle = $place?->translations?->firstWhere('locale', app()->getLocale())?->title
-        ?: $place?->translations?->firstWhere('locale', config('app.fallback_locale', 'en'))?->title
-        ?: $place?->display_name
-        ?: __('booking.bed');
-    $statusValue = $extension->status instanceof \App\Enums\BookingExtensionStatus
-        ? $extension->status->value
-        : (string) $extension->status;
-@endphp
-
 <div class="mx-auto max-w-2xl space-y-5 px-4 py-4 pb-24 sm:px-6">
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('booking.extension.host_eyebrow') }}</flux:badge>

@@ -1,12 +1,3 @@
-@php
-    $place = $offer->sleepingPlace;
-    $title = $place?->translations?->firstWhere('locale', app()->getLocale())?->title
-        ?: $place?->translations?->firstWhere('locale', config('app.fallback_locale', 'en'))?->title
-        ?: $place?->display_name
-        ?: $place?->place_number;
-    $item = $offer->waitlistItem;
-@endphp
-
 <div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
     <section class="space-y-2">
         <flux:badge color="{{ $offer->status === 'active' ? 'green' : 'zinc' }}">{{ __('waitlist.offer_available') }}</flux:badge>

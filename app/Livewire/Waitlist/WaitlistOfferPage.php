@@ -48,8 +48,22 @@ class WaitlistOfferPage extends Component
 
     public function render(): View
     {
+        $offer = $this->waitlistOffer->loadMissing(['sleepingPlace.translations', 'sleepingPlace.property', 'waitlistItem']);
+
         return view('livewire.waitlist.waitlist-offer-page', [
-            'offer' => $this->waitlistOffer->loadMissing(['sleepingPlace.translations', 'sleepingPlace.property', 'waitlistItem']),
+            'offer' => $offer,
+            'title' => $this->title($offer),
+            'item' => $offer->waitlistItem,
         ]);
+    }
+
+    private function title(WaitlistOffer $offer): ?string
+    {
+        $place = $offer->sleepingPlace;
+
+        return $place?->translations?->firstWhere('locale', app()->getLocale())?->title
+            ?: $place?->translations?->firstWhere('locale', config('localization.fallback_locale', 'en'))?->title
+            ?: $place?->display_name
+            ?: $place?->place_number;
     }
 }

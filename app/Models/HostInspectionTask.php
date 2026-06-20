@@ -77,4 +77,9 @@ class HostInspectionTask extends Model
     {
         return $this->belongsTo(BookingCheckOut::class, 'booking_check_out_id');
     }
+
+    public function bookingCheckOut(): BelongsTo
+    {
+        return $this->checkOut();
+    }
 }

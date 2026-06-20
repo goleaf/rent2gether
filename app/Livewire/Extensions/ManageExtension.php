@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Extensions;
 
+use App\Enums\BookingExtensionStatus;
 use App\Models\Booking;
 use App\Models\BookingExtension;
 use App\Services\ExtensionService;
@@ -80,12 +81,34 @@ class ManageExtension extends Component
 
     public function render(): View
     {
+        $extension = $this->extension();
+
         return view('livewire.extensions.manage-extension', [
-            'extension' => $this->extension(),
+            'extension' => $extension,
+            'booking' => $extension->booking,
+            'placeTitle' => $this->placeTitle($extension),
+            'statusValue' => $this->statusValue($extension),
             'declineReasons' => $this->declineReasons(),
         ])->layout('layouts.app', [
             'title' => __('booking.extension.manage_title'),
         ]);
+    }
+
+    private function placeTitle(BookingExtension $extension): string
+    {
+        $place = $extension->booking?->sleepingPlace;
+
+        return $place?->translations?->firstWhere('locale', app()->getLocale())?->title
+            ?: $place?->translations?->firstWhere('locale', config('localization.fallback_locale', 'en'))?->title
+            ?: $place?->display_name
+            ?: __('booking.bed');
+    }
+
+    private function statusValue(BookingExtension $extension): string
+    {
+        return $extension->status instanceof BookingExtensionStatus
+            ? $extension->status->value
+            : (string) $extension->status;
     }
 
     private function extension(): BookingExtension

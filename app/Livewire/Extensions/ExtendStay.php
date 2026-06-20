@@ -164,13 +164,37 @@ class ExtendStay extends Component
 
     public function render(): View
     {
+        $booking = $this->booking();
+        $extension = $this->activeExtension();
+
         return view('livewire.extensions.extend-stay', [
-            'booking' => $this->booking(),
-            'extension' => $this->activeExtension(),
+            'booking' => $booking,
+            'extension' => $extension,
+            'placeTitle' => $this->placeTitle($booking),
+            'statusValue' => $this->statusValue($extension),
             'canUseDemoPayment' => app()->environment(['local', 'testing']),
         ])->layout('layouts.app', [
             'title' => __('booking.extension.title'),
         ]);
+    }
+
+    private function placeTitle(Booking $booking): string
+    {
+        $place = $booking->sleepingPlace;
+
+        return $place?->translations?->firstWhere('locale', app()->getLocale())?->title
+            ?: $place?->translations?->firstWhere('locale', config('localization.fallback_locale', 'en'))?->title
+            ?: $place?->display_name
+            ?: __('booking.bed');
+    }
+
+    private function statusValue(?BookingExtension $extension): ?string
+    {
+        if ($extension?->status instanceof BookingExtensionStatus) {
+            return $extension->status->value;
+        }
+
+        return $extension?->status ?: ($this->preview['next_status'] ?? null);
     }
 
     /**

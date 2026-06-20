@@ -44,6 +44,11 @@ class BookingForgottenItem extends Model
         return $this->belongsTo(BookingCheckOut::class, 'booking_check_out_id');
     }
 
+    public function bookingCheckOut(): BelongsTo
+    {
+        return $this->checkOut();
+    }
+
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

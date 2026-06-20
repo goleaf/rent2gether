@@ -1,14 +1,3 @@
-@php
-    $place = $booking->sleepingPlace;
-    $placeTitle = $place?->translations?->firstWhere('locale', app()->getLocale())?->title
-        ?: $place?->translations?->firstWhere('locale', config('app.fallback_locale', 'en'))?->title
-        ?: $place?->display_name
-        ?: __('booking.bed');
-    $statusValue = $extension?->status instanceof \App\Enums\BookingExtensionStatus
-        ? $extension->status->value
-        : ($extension?->status ?: ($preview['next_status'] ?? null));
-@endphp
-
 <section class="space-y-4">
     @if(session('success'))
         <flux:callout color="green" icon="check-circle">

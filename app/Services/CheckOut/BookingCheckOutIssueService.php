@@ -28,7 +28,7 @@ class BookingCheckOutIssueService
             'deposit_related' => ['nullable', 'boolean'],
             'repair_needed' => ['nullable', 'boolean'],
             'cleaning_needed' => ['nullable', 'boolean'],
-        ], [], __('check_out.validation.attributes'))->validate();
+        ], [], trans('check_out.validation.attributes'))->validate();
 
         $issue = BookingCheckOutIssueReport::query()->create([
             'booking_check_out_id' => $checkOut->id,

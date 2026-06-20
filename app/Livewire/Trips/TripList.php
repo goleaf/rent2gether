@@ -34,7 +34,10 @@ class TripList extends Component
         return view('livewire.trips.trip-list', [
             'bookings' => $bookings,
             'cards' => $bookings->getCollection()
-                ->mapWithKeys(fn ($booking): array => [$booking->id => $presenter->card($booking)]),
+                ->map(fn ($booking): array => [
+                    'booking' => $booking,
+                    ...$presenter->card($booking),
+                ]),
             'scope' => $this->scope,
         ])->layout('layouts.app', [
             'title' => __('booking.trips.scopes.'.$this->scope.'.title'),
