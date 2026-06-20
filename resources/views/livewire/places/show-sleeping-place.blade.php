@@ -90,6 +90,14 @@
             </div>
         </flux:card>
 
+        <livewire:hints.listing-detail-hints
+            :sleeping-place-id="$place->id"
+            :check-in="$checkIn"
+            :check-out="$checkOut"
+            :key="'detail-hints-'.$place->id.'-'.$checkIn.'-'.$checkOut"
+            lazy
+        />
+
         <flux:card class="space-y-3">
             <div>
                 <flux:heading size="lg">{{ __('listing.detail.flow.title') }}</flux:heading>

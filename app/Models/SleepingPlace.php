@@ -23,6 +23,15 @@ class SleepingPlace extends Model
     /** @use HasFactory<SleepingPlaceFactory> */
     use HasFactory, SoftDeletes;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (SleepingPlace $place): void {
+            $place->listingHintSnapshots()->delete();
+            $place->guestHintDismissals()->delete();
+            $place->guestHintImpressions()->delete();
+        });
+    }
+
     protected $fillable = [
         'room_id',
         'property_id',
@@ -238,6 +247,21 @@ class SleepingPlace extends Model
     public function compatibilityResults(): HasMany
     {
         return $this->hasMany(CompatibilityResult::class);
+    }
+
+    public function listingHintSnapshots(): HasMany
+    {
+        return $this->hasMany(ListingHintSnapshot::class);
+    }
+
+    public function guestHintDismissals(): HasMany
+    {
+        return $this->hasMany(GuestHintDismissal::class);
+    }
+
+    public function guestHintImpressions(): HasMany
+    {
+        return $this->hasMany(GuestHintImpression::class);
     }
 
     public function amenities(): BelongsToMany

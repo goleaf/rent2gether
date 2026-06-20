@@ -124,6 +124,14 @@
         </div>
     @endif
 
+    <livewire:hints.before-booking-hints
+        :sleeping-place-id="$sleepingPlaceId"
+        :check-in="$checkIn"
+        :check-out="$checkOut"
+        :key="'before-booking-hints-'.$sleepingPlaceId.'-'.$checkIn.'-'.$checkOut"
+        lazy
+    />
+
     <livewire:bookings.guest-intake.guest-intake-wizard :sleeping-place-id="$sleepingPlaceId" :key="'guest-intake-'.$sleepingPlaceId" />
 
     <livewire:booking.booking-rules-accept :sleeping-place-id="$sleepingPlaceId" :key="'booking-rules-'.$sleepingPlaceId" />
