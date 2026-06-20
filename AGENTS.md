@@ -17,6 +17,23 @@ Do not use Inertia.
 Do not build a SPA with Vue/React.
 Use Livewire class components and Blade views.
 
+## Current file placement contract
+
+This project is controllerless for web UI. Do not create or recreate `app/Http/Controllers/`.
+Do not create controller-backed routes, `resources/views/auth/`, or `resources/views/search/`.
+Use Livewire class components for user-facing pages and actions.
+
+Before creating any new PHP or Blade file, read `docs/PROJECT_STRUCTURE.md` and extend the existing folder listed there.
+If a generic Laravel tool suggests a controller, route closure, Filament resource, or old auth/search Blade wrapper, treat that suggestion as incompatible with this project.
+
+Current replacements for deleted legacy surfaces:
+- login/register: `app/Livewire/Auth/LoginPage.php`, `app/Livewire/Auth/RegisterPage.php`
+- logout: `app/Livewire/Auth/LogoutButton.php`
+- search: `app/Livewire/Search/SleepingPlaceSearch.php`
+- legacy bed detail: `app/Livewire/Beds/ShowBed.php`
+- canonical sleeping-place detail: `app/Livewire/Places/ShowSleepingPlace.php`
+- profile index/edit: `app/Livewire/Profile/EditProfile.php`
+
 ## Core stack
 
 - Laravel 13
@@ -32,6 +49,7 @@ Use Livewire class components and Blade views.
 
 - Prefer Flux UI components over custom Blade/Tailwind markup when a documented Flux component exists.
 - Before creating or modifying UI, check `docs/flux-ui-components.md` for the relevant Flux component.
+- Treat every user-provided `https://fluxui.dev/...` documentation URL as authoritative project UI guidance.
 - Use only documented Flux UI props, variants, events, slots, child components, and patterns.
 - Do not guess Flux UI APIs. If a required behavior is not documented, ask for clarification or implement the smallest safe Laravel-compatible solution.
 - Keep Flux component usage consistent across Blade views and Livewire components.
@@ -40,7 +58,11 @@ Use Livewire class components and Blade views.
 - When documentation conflicts with existing code, prefer the official Flux UI documentation unless this project has an explicit override.
 - When a new Flux UI documentation link is provided, update both `AGENTS.md` and `docs/flux-ui-components.md` before implementing related UI changes.
 - For UI, Blade, Livewire, forms, layout, navigation, modal, table, or Flux work, read this file first, then read `docs/flux-ui-components.md`, then inspect existing sibling components before editing.
-- Current reviewed Flux reference pages are documented in `docs/flux-ui-components.md` and include Flux principles, patterns, theming, dark mode, customization, header/sidebar layouts, accordion, autocomplete, avatar, badge, brand, button, breadcrumbs, calendar, callout, card, carousel, and chart.
+- If a Flux documentation URL cannot be accessed, do not infer the API from memory; ask the user to paste the relevant documentation before recording rules or implementing related UI.
+- For every Flux documentation update, record the source URL, review date, documented props/attributes, slots or child components, Livewire binding notes, styling options, project rules, and mistakes to avoid in `docs/flux-ui-components.md`.
+- Flux principles are binding for UI work: prefer simple syntax first, use documented composition for advanced layouts, keep component naming consistent, rely on native browser/CSS behavior where Flux provides it, and handle page spacing/layout in the application rather than by overriding Flux internals.
+- Use Flux Select only for bounded choices. For lists of up to 5 items, consider documented Radio or Checkbox patterns first; for large datasets such as countries/cities, use Autocomplete or documented backend-search Select/Combobox patterns and never preload huge option lists.
+- Current reviewed Flux reference pages are documented in `docs/flux-ui-components.md` and include Flux principles, patterns, theming, dark mode, customization, header/sidebar layouts, accordion, autocomplete, avatar, badge, brand, button, breadcrumbs, calendar, callout, card, carousel, chart, checkbox, color picker, command, composer, context, date picker, dropdown, editor, field, file upload, heading, icon, input, modal, navbar, OTP input, pillbox, popover, profile, progress, radio, select, separator, skeleton, slider, switch, table, tabs, text, textarea, time picker, timeline, toast, and tooltip.
 
 ## Product goal
 
@@ -596,7 +618,7 @@ The app must support at least:
 
 Every UI string must use translation keys.
 No hard-coded visible text in Blade or Livewire components.
-Never use `@php`, `@endphp`, or `@php(...)` in Blade templates. Prepare values in controllers, Livewire classes, class-based Blade components, presenters, services, or DTO arrays before rendering.
+Never use `@php`, `@endphp`, or `@php(...)` in Blade templates. Prepare values in Livewire classes, class-based Blade components, presenters, services, or DTO arrays before rendering.
 Support future languages without schema rewrites.
 Use localized routes or locale middleware.
 Store user locale preference.
@@ -826,7 +848,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Do Things the Laravel Way
 
-- Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using `php artisan list` and check their parameters with `php artisan [command] --help`.
+- Use `php artisan make:` commands to create new files when compatible with this project (for example migrations, models, requests, tests, and Livewire class components). Do not use `make:controller` in this checkout.
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
 
