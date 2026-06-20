@@ -23,6 +23,9 @@ class DepositRecord extends Model
         'withhold_reason',
     ];
 
+    /**
+     * Defines how Laravel converts stored Deposit Record attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -33,6 +36,9 @@ class DepositRecord extends Model
         ];
     }
 
+    /**
+     * Links this Deposit Record to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

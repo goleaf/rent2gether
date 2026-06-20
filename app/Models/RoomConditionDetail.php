@@ -43,6 +43,9 @@ class RoomConditionDetail extends Model
         'host_condition_note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Condition Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -61,6 +64,9 @@ class RoomConditionDetail extends Model
         ];
     }
 
+    /**
+     * Links this Room Condition Detail to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

@@ -29,6 +29,9 @@ class ListingPublicationCheck extends Model
         'fixed_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Listing Publication Check attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -39,31 +42,49 @@ class ListingPublicationCheck extends Model
         ];
     }
 
+    /**
+     * Links this Listing Publication Check to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Listing Publication Check to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Listing Publication Check to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Listing Publication Check to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Adds the open query filter for reusable Listing Publication Check lookups.
+     */
     public function scopeOpen(Builder $query): Builder
     {
         return $query->where('status', 'open');
     }
 
+    /**
+     * Adds the blocking query filter for reusable Listing Publication Check lookups.
+     */
     public function scopeBlocking(Builder $query): Builder
     {
         return $query->where('is_blocking', true);

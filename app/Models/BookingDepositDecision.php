@@ -32,6 +32,9 @@ class BookingDepositDecision extends Model
         'resolved_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Deposit Decision attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -45,26 +48,41 @@ class BookingDepositDecision extends Model
         ];
     }
 
+    /**
+     * Links this Booking Deposit Decision to the Booking Check Out record used by its check out relation.
+     */
     public function checkOut(): BelongsTo
     {
         return $this->belongsTo(BookingCheckOut::class, 'booking_check_out_id');
     }
 
+    /**
+     * Links this Booking Deposit Decision to the Booking record used by its booking check out relation.
+     */
     public function bookingCheckOut(): BelongsTo
     {
         return $this->checkOut();
     }
 
+    /**
+     * Links this Booking Deposit Decision to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Booking Deposit Decision to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Booking Deposit Decision to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');

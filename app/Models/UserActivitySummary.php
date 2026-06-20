@@ -30,6 +30,9 @@ class UserActivitySummary extends Model
         'last_activity_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Activity Summary attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -50,6 +53,9 @@ class UserActivitySummary extends Model
         ];
     }
 
+    /**
+     * Links this User Activity Summary to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

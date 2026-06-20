@@ -43,6 +43,9 @@ class SleepingPlaceCompatibilityProfile extends Model
         'instant_booking_enabled',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Compatibility Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -72,6 +75,9 @@ class SleepingPlaceCompatibilityProfile extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Compatibility Profile to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

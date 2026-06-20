@@ -122,6 +122,9 @@ class Property extends Model
         'archived_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -167,6 +170,9 @@ class Property extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Property records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (Property $property): void {
@@ -187,166 +193,265 @@ class Property extends Model
         });
     }
 
+    /**
+     * Links this Property to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');
     }
 
+    /**
+     * Links this Property to the User record used by its legacy host relation.
+     */
     public function legacyHost(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Links this Property to the Country record used by its country model relation.
+     */
     public function countryModel(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_id');
     }
 
+    /**
+     * Links this Property to the Country record used by its country relation.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Links this Property to the Region record used by its region relation.
+     */
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
     }
 
+    /**
+     * Links this Property to the City record used by its city model relation.
+     */
     public function cityModel(): BelongsTo
     {
         return $this->belongsTo(City::class, 'city_id');
     }
 
+    /**
+     * Links this Property to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * Lists related Property Translation records for this Property.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(PropertyTranslation::class);
     }
 
+    /**
+     * Fetches the single Property Location Detail record used by this Property.
+     */
     public function locationDetails(): HasOne
     {
         return $this->hasOne(PropertyLocationDetail::class);
     }
 
+    /**
+     * Fetches the single Property Condition Detail record used by this Property.
+     */
     public function conditionDetails(): HasOne
     {
         return $this->hasOne(PropertyConditionDetail::class);
     }
 
+    /**
+     * Fetches the single Property Access Detail record used by this Property.
+     */
     public function accessDetails(): HasOne
     {
         return $this->hasOne(PropertyAccessDetail::class);
     }
 
+    /**
+     * Fetches the single Property Address record used by this Property.
+     */
     public function address(): HasOne
     {
         return $this->hasOne(PropertyAddress::class);
     }
 
+    /**
+     * Lists related Room records for this Property.
+     */
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class);
     }
 
+    /**
+     * Lists related Sleeping Place records for this Property.
+     */
     public function sleepingPlaces(): HasMany
     {
         return $this->hasMany(SleepingPlace::class);
     }
 
+    /**
+     * Lists related Booking Guest Intake records for this Property.
+     */
     public function bookingGuestIntakes(): HasMany
     {
         return $this->hasMany(BookingGuestIntake::class);
     }
 
+    /**
+     * Lists related Host Listing Wizard Session records for this Property.
+     */
     public function listingWizardSessions(): HasMany
     {
         return $this->hasMany(HostListingWizardSession::class);
     }
 
+    /**
+     * Lists related Listing Publication Check records for this Property.
+     */
     public function publicationChecks(): HasMany
     {
         return $this->hasMany(ListingPublicationCheck::class);
     }
 
+    /**
+     * Lists related Listing Readiness Check records for this Property.
+     */
     public function readinessChecks(): HasMany
     {
         return $this->hasMany(ListingReadinessCheck::class);
     }
 
+    /**
+     * Lists related Listing Creation Draft records for this Property.
+     */
     public function listingCreationDrafts(): HasMany
     {
         return $this->hasMany(ListingCreationDraft::class);
     }
 
+    /**
+     * Lists related Host Calendar Event records for this Property.
+     */
     public function hostCalendarEvents(): HasMany
     {
         return $this->hasMany(HostCalendarEvent::class);
     }
 
+    /**
+     * Lists related Host Calendar Note records for this Property.
+     */
     public function hostCalendarNotes(): HasMany
     {
         return $this->hasMany(HostCalendarNote::class);
     }
 
+    /**
+     * Lists related Host Current Stay Snapshot records for this Property.
+     */
     public function hostCurrentStaySnapshots(): HasMany
     {
         return $this->hasMany(HostCurrentStaySnapshot::class);
     }
 
+    /**
+     * Lists related Host Guest Stay Note records for this Property.
+     */
     public function hostGuestStayNotes(): HasMany
     {
         return $this->hasMany(HostGuestStayNote::class);
     }
 
+    /**
+     * Lists related Bed records reached through an intermediate model from this Property.
+     */
     public function beds(): HasManyThrough
     {
         return $this->hasManyThrough(Bed::class, Room::class);
     }
 
+    /**
+     * Connects this Property to related Amenity records through a pivot relation.
+     */
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class, 'property_amenity')->withTimestamps();
     }
 
+    /**
+     * Lists related Property Amenity records for this Property.
+     */
     public function amenityRecords(): HasMany
     {
         return $this->hasMany(PropertyAmenity::class);
     }
 
+    /**
+     * Connects this Property to related Rule records through a pivot relation.
+     */
     public function rules(): BelongsToMany
     {
         return $this->belongsToMany(Rule::class, 'property_rule')->withTimestamps();
     }
 
+    /**
+     * Lists related Property Rule records for this Property.
+     */
     public function ruleRecords(): HasMany
     {
         return $this->hasMany(PropertyRule::class);
     }
 
+    /**
+     * Lists related Property Photo records for this Property.
+     */
     public function photos(): HasMany
     {
         return $this->hasMany(PropertyPhoto::class);
     }
 
+    /**
+     * Lists related Media Item records attached to this Property through a polymorphic relation.
+     */
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    /**
+     * Lists related Host Hint Snapshot records for this Property.
+     */
     public function hostHintSnapshots(): HasMany
     {
         return $this->hasMany(HostHintSnapshot::class);
     }
 
+    /**
+     * Lists related Host Hint Dismissal records for this Property.
+     */
     public function hostHintDismissals(): HasMany
     {
         return $this->hasMany(HostHintDismissal::class);
     }
 
+    /**
+     * Fetches the single Media Item record attached to this Property through a polymorphic relation.
+     */
     public function cardMedia(): MorphOne
     {
         return $this->morphOne(MediaItem::class, 'mediable')
@@ -357,51 +462,81 @@ class Property extends Model
             ->orderBy('id');
     }
 
+    /**
+     * Adds the active query filter for reusable Property lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', PropertyStatus::Active->value);
     }
 
+    /**
+     * Adds the visible query filter for reusable Property lookups.
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where('status', PropertyStatus::Active->value);
     }
 
+    /**
+     * Adds the translated query filter for reusable Property lookups.
+     */
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
         return $query->whereHas('translations', fn (Builder $translation) => $translation->where('locale', $locale));
     }
 
+    /**
+     * Adds the in city query filter for reusable Property lookups.
+     */
     public function scopeInCity(Builder $query, int $cityId): Builder
     {
         return $query->where('city_id', $cityId);
     }
 
+    /**
+     * Adds the for host query filter for reusable Property lookups.
+     */
     public function scopeForHost(Builder $query, int $userId): Builder
     {
         return $query->where('host_user_id', $userId);
     }
 
+    /**
+     * Adds the in district query filter for reusable Property lookups.
+     */
     public function scopeInDistrict(Builder $query, string $district): Builder
     {
         return $query->where('district', $district);
     }
 
+    /**
+     * Adds the with elevator query filter for reusable Property lookups.
+     */
     public function scopeWithElevator(Builder $query): Builder
     {
         return $query->where('has_elevator', true);
     }
 
+    /**
+     * Adds the with free places query filter for reusable Property lookups.
+     */
     public function scopeWithFreePlaces(Builder $query): Builder
     {
         return $query->where('free_sleeping_places_count', '>', 0);
     }
 
+    /**
+     * Adds the self check in query filter for reusable Property lookups.
+     */
     public function scopeSelfCheckIn(Builder $query): Builder
     {
         return $query->whereHas('accessDetails', fn (Builder $details): Builder => $details->where('self_check_in_available', true));
     }
 
+    /**
+     * Adds the with parking query filter for reusable Property lookups.
+     */
     public function scopeWithParking(Builder $query): Builder
     {
         return $query->whereHas('locationDetails', fn (Builder $details): Builder => $details
@@ -410,16 +545,25 @@ class Property extends Model
             ->orWhere('has_paid_parking', true));
     }
 
+    /**
+     * Adds the safe district query filter for reusable Property lookups.
+     */
     public function scopeSafeDistrict(Builder $query): Builder
     {
         return $query->whereHas('locationDetails', fn (Builder $details): Builder => $details->whereIn('district_safety_level', ['good', 'high']));
     }
 
+    /**
+     * Adds the quiet district query filter for reusable Property lookups.
+     */
     public function scopeQuietDistrict(Builder $query): Builder
     {
         return $query->whereHas('locationDetails', fn (Builder $details): Builder => $details->whereIn('district_noise_level', ['quiet', 'low']));
     }
 
+    /**
+     * Adds the good condition query filter for reusable Property lookups.
+     */
     public function scopeGoodCondition(Builder $query): Builder
     {
         return $query->whereHas('conditionDetails', fn (Builder $details): Builder => $details
@@ -427,16 +571,25 @@ class Property extends Model
             ->whereIn('cleanliness_level', ['good', 'high']));
     }
 
+    /**
+     * Adds the for guest query filter for reusable Property lookups.
+     */
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->whereHas('sleepingPlaces.bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
     }
 
+    /**
+     * Adds the available between query filter for reusable Property lookups.
+     */
     public function scopeAvailableBetween(Builder $query, string $start, string $end): Builder
     {
         return $query->whereHas('sleepingPlaces', fn (Builder $sleepingPlace) => $sleepingPlace->availableBetween($start, $end));
     }
 
+    /**
+     * Checks whether the given User owns this Property.
+     */
     public function isOwnedBy(User $user): bool
     {
         return (int) $this->host_user_id === (int) $user->id

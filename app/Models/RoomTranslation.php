@@ -37,6 +37,9 @@ class RoomTranslation extends Model
         'shared_space_instructions',
     ];
 
+    /**
+     * Links this Room Translation to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

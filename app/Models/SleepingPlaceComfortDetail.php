@@ -57,6 +57,9 @@ class SleepingPlaceComfortDetail extends Model
         'noise_level',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Comfort Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -96,6 +99,9 @@ class SleepingPlaceComfortDetail extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Comfort Detail to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

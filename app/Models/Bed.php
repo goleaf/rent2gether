@@ -48,36 +48,57 @@ class Bed extends Model
         'has_towel' => 'boolean',
     ];
 
+    /**
+     * Links this Bed to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Lists related Booking records for this Bed.
+     */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * Lists related Bed Availability records for this Bed.
+     */
     public function availabilities(): HasMany
     {
         return $this->hasMany(BedAvailability::class);
     }
 
+    /**
+     * Lists related Review records for this Bed.
+     */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
+    /**
+     * Lists related Favorite records for this Bed.
+     */
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
     }
 
+    /**
+     * Lists related Waitlist Entry records for this Bed.
+     */
     public function waitlistEntries(): HasMany
     {
         return $this->hasMany(WaitlistEntry::class);
     }
 
+    /**
+     * Calculates the average published review rating for this legacy Bed.
+     */
     public function averageRating(): ?float
     {
         $avg = $this->reviews()->where('type', 'guest_to_place')->avg('overall_rating');
@@ -85,16 +106,25 @@ class Bed extends Model
         return $avg ? round($avg, 1) : null;
     }
 
+    /**
+     * Returns the review count number for this Bed.
+     */
     public function reviewCount(): int
     {
         return $this->reviews()->where('type', 'guest_to_place')->count();
     }
 
+    /**
+     * Adds the active query filter for reusable Bed lookups.
+     */
     public function scopeActive(Builder $query): void
     {
         $query->where('status', BedStatus::Active);
     }
 
+    /**
+     * Adds the available for period query filter for reusable Bed lookups.
+     */
     public function scopeAvailableForPeriod(Builder $query, string $checkIn, string $checkOut): void
     {
         // Use whereDate() to strip time component — SQLite stores dates as datetime strings

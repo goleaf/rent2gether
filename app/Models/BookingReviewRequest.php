@@ -23,6 +23,9 @@ class BookingReviewRequest extends Model
         'expires_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Review Request attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -32,16 +35,25 @@ class BookingReviewRequest extends Model
         ];
     }
 
+    /**
+     * Links this Booking Review Request to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Booking Review Request to the User record used by its reviewer relation.
+     */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewer_user_id');
     }
 
+    /**
+     * Links this Booking Review Request to the User record used by its reviewee relation.
+     */
     public function reviewee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewee_user_id');

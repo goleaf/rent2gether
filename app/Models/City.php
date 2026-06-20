@@ -39,6 +39,9 @@ class City extends Model
         'is_active',
     ];
 
+    /**
+     * Defines how Laravel converts stored City attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -50,6 +53,9 @@ class City extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep City records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (City $city): void {
@@ -62,37 +68,58 @@ class City extends Model
         });
     }
 
+    /**
+     * Links this City to the Country record used by its country relation.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Links this City to the Region record used by its region relation.
+     */
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
     }
 
+    /**
+     * Lists related Property records for this City.
+     */
     public function properties(): HasMany
     {
         return $this->hasMany(Property::class);
     }
 
+    /**
+     * Lists related City Translation records for this City.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(CityTranslation::class);
     }
 
+    /**
+     * Adds the active query filter for reusable City lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_ACTIVE)
             ->where('is_active', true);
     }
 
+    /**
+     * Adds the visible query filter for reusable City lookups.
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->active();
     }
 
+    /**
+     * Adds the translated query filter for reusable City lookups.
+     */
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
         $locales = CountryTranslation::localeCandidates($locale);
@@ -104,21 +131,33 @@ class City extends Model
         ]);
     }
 
+    /**
+     * Adds the in country query filter for reusable City lookups.
+     */
     public function scopeInCountry(Builder $query, int $countryId): Builder
     {
         return $query->where('country_id', $countryId);
     }
 
+    /**
+     * Adds the name prefix query filter for reusable City lookups.
+     */
     public function scopeNamePrefix(Builder $query, string $value): Builder
     {
         return $query->where('name_normalized', 'like', GeoNameNormalizer::normalize($value).'%');
     }
 
+    /**
+     * Adds the name contains query filter for reusable City lookups.
+     */
     public function scopeNameContains(Builder $query, string $value): Builder
     {
         return $query->where('name_normalized', 'like', '%'.GeoNameNormalizer::normalize($value).'%');
     }
 
+    /**
+     * Adds the name contains in locale query filter for reusable City lookups.
+     */
     public function scopeNameContainsInLocale(Builder $query, string $value, ?string $locale = null): Builder
     {
         $normalized = GeoNameNormalizer::normalize($value);
@@ -134,6 +173,9 @@ class City extends Model
             ));
     }
 
+    /**
+     * Returns the localized name text for this City.
+     */
     public function localizedName(?string $locale = null): string
     {
         $locale = CountryTranslation::normalizeLocale($locale ?: app()->getLocale());

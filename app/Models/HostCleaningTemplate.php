@@ -25,6 +25,9 @@ class HostCleaningTemplate extends Model
         'is_default' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Cleaning Template attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -33,6 +36,9 @@ class HostCleaningTemplate extends Model
         ];
     }
 
+    /**
+     * Links this Host Cleaning Template to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

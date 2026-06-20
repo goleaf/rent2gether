@@ -24,6 +24,9 @@ class ListingCreationDraft extends Model
         'last_saved_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Listing Creation Draft attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -33,21 +36,33 @@ class ListingCreationDraft extends Model
         ];
     }
 
+    /**
+     * Links this Listing Creation Draft to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Listing Creation Draft to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Listing Creation Draft to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Listing Creation Draft to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

@@ -24,6 +24,9 @@ class RefundRequest extends Model
         'resolved_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Refund Request attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -33,11 +36,17 @@ class RefundRequest extends Model
         ];
     }
 
+    /**
+     * Links this Refund Request to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Refund Request to the User record used by its requested by relation.
+     */
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id');

@@ -37,6 +37,9 @@ class ListingHintSnapshot extends Model
         'expires_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Listing Hint Snapshot attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -54,26 +57,41 @@ class ListingHintSnapshot extends Model
         ];
     }
 
+    /**
+     * Links this Listing Hint Snapshot to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Listing Hint Snapshot to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Listing Hint Snapshot to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Listing Hint Snapshot to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * Adds the fresh query filter for reusable Listing Hint Snapshot lookups.
+     */
     public function scopeFresh(Builder $query): Builder
     {
         return $query

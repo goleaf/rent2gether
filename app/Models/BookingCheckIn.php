@@ -53,6 +53,9 @@ class BookingCheckIn extends Model
         'last_reminder_sent_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Check In attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -81,46 +84,73 @@ class BookingCheckIn extends Model
         ];
     }
 
+    /**
+     * Links this Booking Check In to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Booking Check In to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Booking Check In to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');
     }
 
+    /**
+     * Links this Booking Check In to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Booking Check In to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Booking Check In to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Lists related Booking Check In Checklist Item records for this Booking Check In.
+     */
     public function checklistItems(): HasMany
     {
         return $this->hasMany(BookingCheckInChecklistItem::class);
     }
 
+    /**
+     * Lists related Booking Check In Problem Report records for this Booking Check In.
+     */
     public function problemReports(): HasMany
     {
         return $this->hasMany(BookingCheckInProblemReport::class);
     }
 
+    /**
+     * Lists related Booking Check In Alert records for this Booking Check In.
+     */
     public function alerts(): HasMany
     {
         return $this->hasMany(BookingCheckInAlert::class);

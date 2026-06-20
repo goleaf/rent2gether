@@ -45,6 +45,9 @@ class CoLivingProfile extends Model
         'profile_completed_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Co Living Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -65,16 +68,25 @@ class CoLivingProfile extends Model
         ];
     }
 
+    /**
+     * Links this Co Living Profile to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Co Living Profile to the Country record used by its country relation.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Links this Co Living Profile to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);

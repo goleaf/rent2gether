@@ -51,6 +51,9 @@ class UserProfile extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -70,16 +73,25 @@ class UserProfile extends Model
         ];
     }
 
+    /**
+     * Links this User Profile to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this User Profile to the Country record used by its country relation.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Links this User Profile to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);

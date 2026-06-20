@@ -61,6 +61,9 @@ class Review extends Model
         'flagged_words_json',
     ];
 
+    /**
+     * Defines how Laravel converts stored Review attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -76,11 +79,17 @@ class Review extends Model
         ];
     }
 
+    /**
+     * Adds the published query filter for reusable Review lookups.
+     */
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ReviewStatus::Published->value);
     }
 
+    /**
+     * Adds the visible query filter for reusable Review lookups.
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where(function (Builder $visible): void {
@@ -96,51 +105,81 @@ class Review extends Model
         });
     }
 
+    /**
+     * Adds the guest to place query filter for reusable Review lookups.
+     */
     public function scopeGuestToPlace(Builder $query): Builder
     {
         return $query->where('type', ReviewType::GuestToPlace->value);
     }
 
+    /**
+     * Adds the host to guest query filter for reusable Review lookups.
+     */
     public function scopeHostToGuest(Builder $query): Builder
     {
         return $query->where('type', ReviewType::HostToGuest->value);
     }
 
+    /**
+     * Links this Review to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Review to the User record used by its reviewer relation.
+     */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewer_id');
     }
 
+    /**
+     * Links this Review to the User record used by its reviewee relation.
+     */
     public function reviewee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewee_id');
     }
 
+    /**
+     * Links this Review to the Bed record used by its bed relation.
+     */
     public function bed(): BelongsTo
     {
         return $this->belongsTo(Bed::class);
     }
 
+    /**
+     * Links this Review to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Review to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Review to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Lists related Media Item records attached to this Review through a polymorphic relation.
+     */
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');

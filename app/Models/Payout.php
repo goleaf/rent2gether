@@ -30,6 +30,9 @@ class Payout extends Model
         'paid_date' => 'date',
     ];
 
+    /**
+     * Registers lifecycle hooks that keep Payout records consistent.
+     */
     protected static function booted(): void
     {
         static::creating(function (Payout $payout) {
@@ -39,11 +42,17 @@ class Payout extends Model
         });
     }
 
+    /**
+     * Links this Payout to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_id');
     }
 
+    /**
+     * Links this Payout to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

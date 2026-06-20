@@ -22,6 +22,9 @@ class BookingPriceLine extends Model
         'metadata_json',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Price Line attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -31,6 +34,9 @@ class BookingPriceLine extends Model
         ];
     }
 
+    /**
+     * Links this Booking Price Line to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

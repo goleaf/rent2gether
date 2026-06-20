@@ -96,6 +96,9 @@ class Booking extends Model
         'review_deadline_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -151,6 +154,9 @@ class Booking extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Booking records consistent.
+     */
     protected static function booted(): void
     {
         static::creating(function (Booking $booking): void {
@@ -189,71 +195,113 @@ class Booking extends Model
         });
     }
 
+    /**
+     * Links this Booking to the Bed record used by its bed relation.
+     */
     public function bed(): BelongsTo
     {
         return $this->belongsTo(Bed::class);
     }
 
+    /**
+     * Links this Booking to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Booking to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');
     }
 
+    /**
+     * Links this Booking to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Booking to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Booking to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Lists related Booking Guest records for this Booking.
+     */
     public function bookingGuests(): HasMany
     {
         return $this->hasMany(BookingGuest::class);
     }
 
+    /**
+     * Lists related Booking Price Line records for this Booking.
+     */
     public function priceLines(): HasMany
     {
         return $this->hasMany(BookingPriceLine::class);
     }
 
+    /**
+     * Lists related Booking Status History records for this Booking.
+     */
     public function statusHistories(): HasMany
     {
         return $this->hasMany(BookingStatusHistory::class);
     }
 
+    /**
+     * Fetches the single Booking Guest Intake record used by this Booking.
+     */
     public function guestIntake(): HasOne
     {
         return $this->hasOne(BookingGuestIntake::class);
     }
 
+    /**
+     * Lists related Payment Record records for this Booking.
+     */
     public function paymentRecords(): HasMany
     {
         return $this->hasMany(PaymentRecord::class);
     }
 
+    /**
+     * Lists related Deposit Record records for this Booking.
+     */
     public function depositRecords(): HasMany
     {
         return $this->hasMany(DepositRecord::class);
     }
 
+    /**
+     * Lists related Refund Request records for this Booking.
+     */
     public function refundRequests(): HasMany
     {
         return $this->hasMany(RefundRequest::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Booking lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', [
@@ -263,6 +311,9 @@ class Booking extends Model
         ]);
     }
 
+    /**
+     * Adds the upcoming query filter for reusable Booking lookups.
+     */
     public function scopeUpcoming(Builder $query): Builder
     {
         return $query->where('check_in_date', '>=', now()->toDateString())
@@ -278,117 +329,186 @@ class Booking extends Model
             ]);
     }
 
+    /**
+     * Adds the for host query filter for reusable Booking lookups.
+     */
     public function scopeForHost(Builder $query, int $userId): Builder
     {
         return $query->where('host_user_id', $userId);
     }
 
+    /**
+     * Adds the for guest query filter for reusable Booking lookups.
+     */
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->where('guest_user_id', $userId);
     }
 
+    /**
+     * Checks whether this Booking is still in a cancellable state.
+     */
     public function isCancellable(): bool
     {
         return ! $this->status->isCancelled()
             && ! in_array($this->status, [BookingStatus::CheckedIn, BookingStatus::InProgress, BookingStatus::ActiveStay, BookingStatus::Completed], true);
     }
 
+    /**
+     * Checks whether this Booking can still be cancelled for free.
+     */
     public function canCancelFree(): bool
     {
         return $this->free_cancel_before && now()->lt($this->free_cancel_before);
     }
 
+    /**
+     * Lists related Review records for this Booking.
+     */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
+    /**
+     * Lists related Booking Extension records for this Booking.
+     */
     public function extensions(): HasMany
     {
         return $this->hasMany(BookingExtension::class);
     }
 
+    /**
+     * Fetches the single Checkin Record record used by this Booking.
+     */
     public function checkinRecord(): HasOne
     {
         return $this->hasOne(CheckinRecord::class);
     }
 
+    /**
+     * Fetches the single Booking Check In record used by this Booking.
+     */
     public function checkIn(): HasOne
     {
         return $this->hasOne(BookingCheckIn::class);
     }
 
+    /**
+     * Fetches the single Checkout Record record used by this Booking.
+     */
     public function bookingCheckIn(): HasOne
     {
         return $this->checkIn();
     }
 
+    /**
+     * Fetches the single Checkout Record record used by this Booking.
+     */
     public function checkoutRecord(): HasOne
     {
         return $this->hasOne(CheckoutRecord::class);
     }
 
+    /**
+     * Fetches the single Booking Check Out record used by this Booking.
+     */
     public function checkOut(): HasOne
     {
         return $this->hasOne(BookingCheckOut::class);
     }
 
+    /**
+     * Fetches the single Complaint record used by this Booking.
+     */
     public function bookingCheckOut(): HasOne
     {
         return $this->checkOut();
     }
 
+    /**
+     * Lists related Complaint records for this Booking.
+     */
     public function complaints(): HasMany
     {
         return $this->hasMany(Complaint::class);
     }
 
+    /**
+     * Fetches the single Payout record used by this Booking.
+     */
     public function payout(): HasOne
     {
         return $this->hasOne(Payout::class);
     }
 
+    /**
+     * Fetches the single Room Occupant Snapshot record used by this Booking.
+     */
     public function occupantSnapshot(): HasOne
     {
         return $this->hasOne(RoomOccupantSnapshot::class);
     }
 
+    /**
+     * Lists related Host Calendar Event records for this Booking.
+     */
     public function hostCalendarEvents(): HasMany
     {
         return $this->hasMany(HostCalendarEvent::class);
     }
 
+    /**
+     * Lists related Host Calendar Note records for this Booking.
+     */
     public function hostCalendarNotes(): HasMany
     {
         return $this->hasMany(HostCalendarNote::class);
     }
 
+    /**
+     * Fetches the single Host Current Stay Snapshot record used by this Booking.
+     */
     public function hostCurrentStaySnapshot(): HasOne
     {
         return $this->hasOne(HostCurrentStaySnapshot::class);
     }
 
+    /**
+     * Lists related Host Guest Stay Note records for this Booking.
+     */
     public function hostGuestStayNotes(): HasMany
     {
         return $this->hasMany(HostGuestStayNote::class);
     }
 
+    /**
+     * Lists related Host Guest Stay Flag records for this Booking.
+     */
     public function hostGuestStayFlags(): HasMany
     {
         return $this->hasMany(HostGuestStayFlag::class);
     }
 
+    /**
+     * Lists related Booking Review Request records for this Booking.
+     */
     public function reviewRequests(): HasMany
     {
         return $this->hasMany(BookingReviewRequest::class);
     }
 
+    /**
+     * Returns the guest-to-place review written for this Booking.
+     */
     public function guestReview(): ?Review
     {
         return $this->reviews()->where('type', 'guest_to_place')->first();
     }
 
+    /**
+     * Returns the host-to-guest review written for this Booking.
+     */
     public function hostReview(): ?Review
     {
         return $this->reviews()->where('type', 'host_to_guest')->first();

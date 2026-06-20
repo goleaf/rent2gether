@@ -67,6 +67,9 @@ class PropertyLocationDetail extends Model
         'parking_usually_full',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Location Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -100,6 +103,9 @@ class PropertyLocationDetail extends Model
         ];
     }
 
+    /**
+     * Links this Property Location Detail to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

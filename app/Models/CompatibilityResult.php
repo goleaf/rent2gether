@@ -30,6 +30,9 @@ class CompatibilityResult extends Model
         'expires_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Compatibility Result attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -45,26 +48,41 @@ class CompatibilityResult extends Model
         ];
     }
 
+    /**
+     * Links this Compatibility Result to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Compatibility Result to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Compatibility Result to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Compatibility Result to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Adds the fresh query filter for reusable Compatibility Result lookups.
+     */
     public function scopeFresh(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {

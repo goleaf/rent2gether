@@ -26,6 +26,9 @@ class PriceRule extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Price Rule attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -37,6 +40,9 @@ class PriceRule extends Model
         ];
     }
 
+    /**
+     * Links this Price Rule to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

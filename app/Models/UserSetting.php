@@ -39,6 +39,9 @@ class UserSetting extends Model
         'account_role' => self::ROLE_GUEST,
     ];
 
+    /**
+     * Defines how Laravel converts stored User Setting attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -47,6 +50,9 @@ class UserSetting extends Model
         ];
     }
 
+    /**
+     * Links this User Setting to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

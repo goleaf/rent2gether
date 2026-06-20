@@ -38,6 +38,9 @@ class CoLivingVisibilitySetting extends Model
         'allow_profile_after_confirmed_booking',
     ];
 
+    /**
+     * Defines how Laravel converts stored Co Living Visibility Setting attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -66,6 +69,9 @@ class CoLivingVisibilitySetting extends Model
         ];
     }
 
+    /**
+     * Links this Co Living Visibility Setting to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

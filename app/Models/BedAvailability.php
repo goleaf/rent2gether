@@ -19,6 +19,9 @@ class BedAvailability extends Model
         'price_override' => 'decimal:2',
     ];
 
+    /**
+     * Links this Bed Availability to the Bed record used by its bed relation.
+     */
     public function bed(): BelongsTo
     {
         return $this->belongsTo(Bed::class);

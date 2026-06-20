@@ -65,6 +65,9 @@ class SleepingPlacePositionDetail extends Model
         'position_note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Position Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -116,6 +119,9 @@ class SleepingPlacePositionDetail extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Position Detail to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

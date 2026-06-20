@@ -35,6 +35,9 @@ class SleepingPlaceCalendarDay extends Model
         'blocked_by_host' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Calendar Day attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -46,11 +49,17 @@ class SleepingPlaceCalendarDay extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Calendar Day to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Sleeping Place Calendar Day to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

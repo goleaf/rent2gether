@@ -22,6 +22,9 @@ class SleepingPlaceCreationBatch extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Creation Batch attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -30,16 +33,25 @@ class SleepingPlaceCreationBatch extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Creation Batch to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Sleeping Place Creation Batch to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Sleeping Place Creation Batch to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

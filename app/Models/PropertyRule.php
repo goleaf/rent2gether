@@ -26,6 +26,9 @@ class PropertyRule extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Rule attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -36,6 +39,9 @@ class PropertyRule extends Model
         ];
     }
 
+    /**
+     * Links this Property Rule to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

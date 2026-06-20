@@ -57,6 +57,9 @@ class HostCurrentStaySnapshot extends Model
         'last_activity_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Current Stay Snapshot attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -86,6 +89,9 @@ class HostCurrentStaySnapshot extends Model
         ];
     }
 
+    /**
+     * Adds the for host query filter for reusable Host Current Stay Snapshot lookups.
+     */
     public function scopeForHost(Builder $query, User|int $host): Builder
     {
         $hostId = $host instanceof User ? $host->id : $host;
@@ -93,36 +99,57 @@ class HostCurrentStaySnapshot extends Model
         return $query->where('user_id', $hostId);
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->host();
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Host Current Stay Snapshot to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

@@ -45,6 +45,9 @@ class SleepingPlacePhysicalDetail extends Model
         'squeak_level',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Physical Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -71,6 +74,9 @@ class SleepingPlacePhysicalDetail extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Physical Detail to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

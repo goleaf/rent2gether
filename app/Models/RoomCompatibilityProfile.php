@@ -48,6 +48,9 @@ class RoomCompatibilityProfile extends Model
         'late_entry_allowed',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Compatibility Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -81,6 +84,9 @@ class RoomCompatibilityProfile extends Model
         ];
     }
 
+    /**
+     * Links this Room Compatibility Profile to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

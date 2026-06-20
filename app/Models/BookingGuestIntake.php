@@ -87,6 +87,9 @@ class BookingGuestIntake extends Model
         'blocking_reasons_json',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Guest Intake attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -130,46 +133,73 @@ class BookingGuestIntake extends Model
         ];
     }
 
+    /**
+     * Links this Booking Guest Intake to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Booking Guest Intake to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Booking Guest Intake to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Booking Guest Intake to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Booking Guest Intake to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Booking Guest Intake to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Adds the draft query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeDraft(Builder $query): Builder
     {
         return $query->where($query->qualifyColumn('status'), 'draft');
     }
 
+    /**
+     * Adds the completed query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeCompleted(Builder $query): Builder
     {
         return $query->where($query->qualifyColumn('status'), 'completed');
     }
 
+    /**
+     * Adds the for user query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeForUser(Builder $query, User|int $user): Builder
     {
         $userId = $user instanceof User ? $user->id : $user;
@@ -181,23 +211,35 @@ class BookingGuestIntake extends Model
         });
     }
 
+    /**
+     * Adds the for booking query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeForBooking(Builder $query, Booking|int $booking): Builder
     {
         return $query->where($query->qualifyColumn('booking_id'), $booking instanceof Booking ? $booking->id : $booking);
     }
 
+    /**
+     * Adds the with warnings query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeWithWarnings(Builder $query): Builder
     {
         return $query->whereNotNull($query->qualifyColumn('warnings_json'))
             ->where($query->qualifyColumn('warnings_json'), '!=', '[]');
     }
 
+    /**
+     * Adds the with blocking reasons query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeWithBlockingReasons(Builder $query): Builder
     {
         return $query->whereNotNull($query->qualifyColumn('blocking_reasons_json'))
             ->where($query->qualifyColumn('blocking_reasons_json'), '!=', '[]');
     }
 
+    /**
+     * Adds the needs host approval query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeNeedsHostApproval(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -213,6 +255,9 @@ class BookingGuestIntake extends Model
         });
     }
 
+    /**
+     * Adds the has special requests query filter for reusable Booking Guest Intake lookups.
+     */
     public function scopeHasSpecialRequests(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {

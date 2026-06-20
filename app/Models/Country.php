@@ -36,6 +36,9 @@ class Country extends Model
         'is_active',
     ];
 
+    /**
+     * Defines how Laravel converts stored Country attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -44,6 +47,9 @@ class Country extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Country records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (Country $country): void {
@@ -58,32 +64,50 @@ class Country extends Model
         });
     }
 
+    /**
+     * Lists related Region records for this Country.
+     */
     public function regions(): HasMany
     {
         return $this->hasMany(Region::class);
     }
 
+    /**
+     * Lists related City records for this Country.
+     */
     public function cities(): HasMany
     {
         return $this->hasMany(City::class);
     }
 
+    /**
+     * Lists related Country Translation records for this Country.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(CountryTranslation::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Country lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_ACTIVE)
             ->where('is_active', true);
     }
 
+    /**
+     * Adds the visible query filter for reusable Country lookups.
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->active();
     }
 
+    /**
+     * Adds the translated query filter for reusable Country lookups.
+     */
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
         $locales = CountryTranslation::localeCandidates($locale);
@@ -95,11 +119,17 @@ class Country extends Model
         ]);
     }
 
+    /**
+     * Adds the name prefix query filter for reusable Country lookups.
+     */
     public function scopeNamePrefix(Builder $query, string $value): Builder
     {
         return $query->where('name_normalized', 'like', GeoNameNormalizer::normalize($value).'%');
     }
 
+    /**
+     * Returns the localized name text for this Country.
+     */
     public function localizedName(?string $locale = null): string
     {
         $locale = CountryTranslation::normalizeLocale($locale ?: app()->getLocale());
@@ -113,6 +143,9 @@ class Country extends Model
         return $this->name;
     }
 
+    /**
+     * Returns the Country translation for the requested locale when it exists.
+     */
     private function translationForLocale(string $locale): ?CountryTranslation
     {
         if ($locale === '') {

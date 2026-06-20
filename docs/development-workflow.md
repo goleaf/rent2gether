@@ -25,6 +25,8 @@ Keep the core marketplace loop in view: guest chooses city, dates, and sleeping 
 - Use Policies for authorization.
 - Use Eloquent scopes and relationships for data access.
 - Eager load relationships before views or tables use them.
+- Add a short English PHPDoc summary above every model method you add or change.
+- For model relationship methods, explain what the relationship is used for in the domain.
 - Use aggregate eager loaders for counts and sums.
 - Use Blade components for reusable UI.
 - Keep Blade free of queries and business logic.
@@ -105,6 +107,7 @@ For documentation-only changes, summarize changed files and verification.
 - [ ] No Filament, Livewire Volt, admin/staff panels, Inertia, React, Vue, or SPA routing.
 - [ ] No unbounded `Model::all()`.
 - [ ] Relationships used by views/tables are eager loaded.
+- [ ] Model methods have short English PHPDoc summaries, with relationship purpose explained.
 - [ ] Aggregates are calculated with database aggregate loaders, not in loops.
 - [ ] HTTP input uses Form Requests.
 - [ ] Authorization uses Policies.

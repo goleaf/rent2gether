@@ -45,6 +45,9 @@ class GuestProfile extends Model
         'ready_to_join_cleaning',
     ];
 
+    /**
+     * Defines how Laravel converts stored Guest Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -73,6 +76,9 @@ class GuestProfile extends Model
         ];
     }
 
+    /**
+     * Links this Guest Profile to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

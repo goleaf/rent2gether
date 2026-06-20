@@ -22,6 +22,9 @@ class ComplaintStatusHistory extends Model
         'metadata_json',
     ];
 
+    /**
+     * Defines how Laravel converts stored Complaint Status History attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -30,11 +33,17 @@ class ComplaintStatusHistory extends Model
         ];
     }
 
+    /**
+     * Links this Complaint Status History to the Complaint record used by its complaint relation.
+     */
     public function complaint(): BelongsTo
     {
         return $this->belongsTo(Complaint::class);
     }
 
+    /**
+     * Links this Complaint Status History to the User record used by its actor relation.
+     */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

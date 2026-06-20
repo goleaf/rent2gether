@@ -27,6 +27,9 @@ class HostRepresentative extends Model
         'active',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Representative attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -39,11 +42,17 @@ class HostRepresentative extends Model
         ];
     }
 
+    /**
+     * Links this Host Representative to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');
     }
 
+    /**
+     * Links this Host Representative to the User record used by its representative user relation.
+     */
     public function representativeUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'representative_user_id');

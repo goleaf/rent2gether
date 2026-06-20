@@ -96,6 +96,9 @@ class GuestCompatibilityProfile extends Model
         'profile_completed_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Guest Compatibility Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -178,6 +181,9 @@ class GuestCompatibilityProfile extends Model
         ];
     }
 
+    /**
+     * Links this Guest Compatibility Profile to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -29,6 +29,9 @@ class UserDocument extends Model
         'rejection_reason',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Document attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -39,6 +42,9 @@ class UserDocument extends Model
         ];
     }
 
+    /**
+     * Links this User Document to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

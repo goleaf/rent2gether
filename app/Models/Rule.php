@@ -23,6 +23,9 @@ class Rule extends Model
         'status',
     ];
 
+    /**
+     * Registers lifecycle hooks that keep Rule records consistent.
+     */
     protected static function booted(): void
     {
         static::saved(function (): void {
@@ -33,6 +36,9 @@ class Rule extends Model
         });
     }
 
+    /**
+     * Defines how Laravel converts stored Rule attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -40,36 +46,57 @@ class Rule extends Model
         ];
     }
 
+    /**
+     * Lists related Rule Translation records for this Rule.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(RuleTranslation::class);
     }
 
+    /**
+     * Connects this Rule to related Property records through a pivot relation.
+     */
     public function properties(): BelongsToMany
     {
         return $this->belongsToMany(Property::class, 'property_rule')->withTimestamps();
     }
 
+    /**
+     * Connects this Rule to related Room records through a pivot relation.
+     */
     public function rooms(): BelongsToMany
     {
         return $this->belongsToMany(Room::class, 'room_rule')->withTimestamps();
     }
 
+    /**
+     * Connects this Rule to related Sleeping Place records through a pivot relation.
+     */
     public function sleepingPlaces(): BelongsToMany
     {
         return $this->belongsToMany(SleepingPlace::class, 'sleeping_place_rule')->withTimestamps();
     }
 
+    /**
+     * Adds the active query filter for reusable Rule lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Adds the visible query filter for reusable Rule lookups.
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->active();
     }
 
+    /**
+     * Adds the translated query filter for reusable Rule lookups.
+     */
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
         return $query->whereHas('translations', fn (Builder $translation) => $translation->where('locale', $locale));

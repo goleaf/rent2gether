@@ -65,6 +65,9 @@ class HostCleaningTask extends Model
         'place_ready_after_cleaning' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Cleaning Task attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -86,61 +89,97 @@ class HostCleaningTask extends Model
         ];
     }
 
+    /**
+     * Links this Host Cleaning Task to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Cleaning Task to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Links this Host Cleaning Task to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Host Cleaning Task to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Host Cleaning Task to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Host Cleaning Task to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Host Cleaning Task to the Booking Check Out record used by its booking check out relation.
+     */
     public function bookingCheckOut(): BelongsTo
     {
         return $this->belongsTo(BookingCheckOut::class);
     }
 
+    /**
+     * Links this Host Cleaning Task to the User record used by its assigned to relation.
+     */
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_user_id');
     }
 
+    /**
+     * Lists related Host Cleaning Task Item records for this Host Cleaning Task.
+     */
     public function items(): HasMany
     {
         return $this->hasMany(HostCleaningTaskItem::class);
     }
 
+    /**
+     * Lists related Host Cleaning Task Photo records for this Host Cleaning Task.
+     */
     public function photos(): HasMany
     {
         return $this->hasMany(HostCleaningTaskPhoto::class);
     }
 
+    /**
+     * Lists related Host Cleaning Finding records for this Host Cleaning Task.
+     */
     public function findings(): HasMany
     {
         return $this->hasMany(HostCleaningFinding::class);
     }
 
+    /**
+     * Lists related Host Calendar Event records for this Host Cleaning Task.
+     */
     public function hostCalendarEvents(): HasMany
     {
         return $this->hasMany(HostCalendarEvent::class, 'cleaning_task_id');

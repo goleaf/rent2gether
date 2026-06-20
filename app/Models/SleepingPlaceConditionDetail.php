@@ -39,6 +39,9 @@ class SleepingPlaceConditionDetail extends Model
         'host_condition_note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Condition Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -56,6 +59,9 @@ class SleepingPlaceConditionDetail extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Condition Detail to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

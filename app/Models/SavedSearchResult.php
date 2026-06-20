@@ -39,6 +39,9 @@ class SavedSearchResult extends Model
         'notified_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Saved Search Result attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -63,51 +66,81 @@ class SavedSearchResult extends Model
         ];
     }
 
+    /**
+     * Links this Saved Search Result to the Saved Search record used by its saved search relation.
+     */
     public function savedSearch(): BelongsTo
     {
         return $this->belongsTo(SavedSearch::class);
     }
 
+    /**
+     * Links this Saved Search Result to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Saved Search Result to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Saved Search Result to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Adds the new matches query filter for reusable Saved Search Result lookups.
+     */
     public function scopeNewMatches(Builder $query): Builder
     {
         return $query->where('is_new_match', true);
     }
 
+    /**
+     * Adds the price changed query filter for reusable Saved Search Result lookups.
+     */
     public function scopePriceChanged(Builder $query): Builder
     {
         return $query->where('price_changed', true);
     }
 
+    /**
+     * Adds the price dropped query filter for reusable Saved Search Result lookups.
+     */
     public function scopePriceDropped(Builder $query): Builder
     {
         return $query->where('price_changed', true)->where('price_change_amount', '<', 0);
     }
 
+    /**
+     * Adds the available again query filter for reusable Saved Search Result lookups.
+     */
     public function scopeAvailableAgain(Builder $query): Builder
     {
         return $query->where('became_available_again', true);
     }
 
+    /**
+     * Adds the not notified query filter for reusable Saved Search Result lookups.
+     */
     public function scopeNotNotified(Builder $query): Builder
     {
         return $query->where('is_notified', false);
     }
 
+    /**
+     * Adds the recently matched query filter for reusable Saved Search Result lookups.
+     */
     public function scopeRecentlyMatched(Builder $query): Builder
     {
         return $query->orderByDesc('last_matched_at')->orderByDesc('id');

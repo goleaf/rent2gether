@@ -31,6 +31,9 @@ class SleepingPlaceCalendarRule extends Model
         'priority' => 0,
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Calendar Rule attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -44,6 +47,9 @@ class SleepingPlaceCalendarRule extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Calendar Rule to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

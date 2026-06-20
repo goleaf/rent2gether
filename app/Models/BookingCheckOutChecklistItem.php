@@ -23,6 +23,9 @@ class BookingCheckOutChecklistItem extends Model
         'note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Check Out Checklist Item attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -31,16 +34,25 @@ class BookingCheckOutChecklistItem extends Model
         ];
     }
 
+    /**
+     * Links this Booking Check Out Checklist Item to the Booking Check Out record used by its check out relation.
+     */
     public function checkOut(): BelongsTo
     {
         return $this->belongsTo(BookingCheckOut::class, 'booking_check_out_id');
     }
 
+    /**
+     * Links this Booking Check Out Checklist Item to the User record used by its booking check out relation.
+     */
     public function bookingCheckOut(): BelongsTo
     {
         return $this->checkOut();
     }
 
+    /**
+     * Links this Booking Check Out Checklist Item to the User record used by its completed by relation.
+     */
     public function completedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'completed_by_user_id');

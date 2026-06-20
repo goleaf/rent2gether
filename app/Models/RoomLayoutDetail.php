@@ -34,6 +34,9 @@ class RoomLayoutDetail extends Model
         'has_little_free_space',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Layout Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -55,6 +58,9 @@ class RoomLayoutDetail extends Model
         ];
     }
 
+    /**
+     * Links this Room Layout Detail to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

@@ -656,6 +656,7 @@ Every important action must have a confirmation step.
 Every new feature must include, when applicable:
 - Migration if data is needed
 - Model relationships
+- English PHPDoc summaries above model methods, with relationship methods explaining the domain purpose of the relation
 - Factory
 - Seeder if lookup data is introduced
 - Livewire class component

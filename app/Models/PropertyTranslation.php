@@ -61,6 +61,9 @@ class PropertyTranslation extends Model
         'safety_notes',
     ];
 
+    /**
+     * Links this Property Translation to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

@@ -20,6 +20,9 @@ class RoomTemplate extends Model
         'is_default',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Template attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -28,6 +31,9 @@ class RoomTemplate extends Model
         ];
     }
 
+    /**
+     * Links this Room Template to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -60,6 +60,9 @@ class BookingExtension extends Model
         'cancelled_at' => 'datetime',
     ];
 
+    /**
+     * Registers lifecycle hooks that keep Booking Extension records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (BookingExtension $extension): void {
@@ -76,11 +79,17 @@ class BookingExtension extends Model
         });
     }
 
+    /**
+     * Links this Booking Extension to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Returns the status label text for this Booking Extension.
+     */
     public function statusLabel(): string
     {
         return $this->status instanceof BookingExtensionStatus

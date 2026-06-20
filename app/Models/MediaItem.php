@@ -44,6 +44,9 @@ class MediaItem extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Media Item attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -57,26 +60,41 @@ class MediaItem extends Model
         ];
     }
 
+    /**
+     * Links this Media Item back to the model that owns this polymorphic record.
+     */
     public function mediable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * Links this Media Item to the User record used by its owner relation.
+     */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    /**
+     * Lists related Media Item Translation records for this Media Item.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(MediaItemTranslation::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Media Item lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Adds the primary query filter for reusable Media Item lookups.
+     */
     public function scopePrimary(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -85,6 +103,9 @@ class MediaItem extends Model
         });
     }
 
+    /**
+     * Returns the image path text for this Media Item.
+     */
     public function imagePath(string $variant = 'mobile'): string
     {
         return match ($variant) {
@@ -95,11 +116,17 @@ class MediaItem extends Model
         };
     }
 
+    /**
+     * Returns the image url text for this Media Item.
+     */
     public function imageUrl(string $variant = 'mobile'): string
     {
         return Storage::disk($this->disk ?: 'public')->url($this->imagePath($variant));
     }
 
+    /**
+     * Returns the localized caption text for this Media Item.
+     */
     public function localizedCaption(?string $locale = null): ?string
     {
         $this->loadMissing('translations');

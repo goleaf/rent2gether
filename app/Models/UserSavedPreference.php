@@ -26,6 +26,9 @@ class UserSavedPreference extends Model
         'show_total_price_without_deposit',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Saved Preference attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -35,6 +38,9 @@ class UserSavedPreference extends Model
         ];
     }
 
+    /**
+     * Links this User Saved Preference to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -29,6 +29,9 @@ class HostCalendarNote extends Model
         'is_private' => true,
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Calendar Note attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -37,26 +40,41 @@ class HostCalendarNote extends Model
         ];
     }
 
+    /**
+     * Links this Host Calendar Note to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Calendar Note to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Host Calendar Note to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Host Calendar Note to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Host Calendar Note to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

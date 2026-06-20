@@ -36,6 +36,9 @@ class FavoriteCollection extends Model
         'is_archived',
     ];
 
+    /**
+     * Defines how Laravel converts stored Favorite Collection attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -52,41 +55,65 @@ class FavoriteCollection extends Model
         ];
     }
 
+    /**
+     * Links this Favorite Collection to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Favorite Collection to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * Lists related Favorite records for this Favorite Collection.
+     */
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Favorite Collection lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_archived', false);
     }
 
+    /**
+     * Adds the pinned query filter for reusable Favorite Collection lookups.
+     */
     public function scopePinned(Builder $query): Builder
     {
         return $query->where('is_pinned', true);
     }
 
+    /**
+     * Adds the archived query filter for reusable Favorite Collection lookups.
+     */
     public function scopeArchived(Builder $query): Builder
     {
         return $query->where('is_archived', true);
     }
 
+    /**
+     * Adds the default query filter for reusable Favorite Collection lookups.
+     */
     public function scopeDefault(Builder $query): Builder
     {
         return $query->where('is_default', true);
     }
 
+    /**
+     * Adds the for user query filter for reusable Favorite Collection lookups.
+     */
     public function scopeForUser(Builder $query, User|int $user): Builder
     {
         $userId = $user instanceof User ? $user->id : $user;
@@ -94,6 +121,9 @@ class FavoriteCollection extends Model
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Adds the ordered query filter for reusable Favorite Collection lookups.
+     */
     public function scopeOrdered(Builder $query): Builder
     {
         return $query
@@ -103,6 +133,9 @@ class FavoriteCollection extends Model
             ->orderBy('id');
     }
 
+    /**
+     * Adds the with counts query filter for reusable Favorite Collection lookups.
+     */
     public function scopeWithCounts(Builder $query): Builder
     {
         return $query->withCount([

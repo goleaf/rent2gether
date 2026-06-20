@@ -23,6 +23,9 @@ class SleepingPlace extends Model
     /** @use HasFactory<SleepingPlaceFactory> */
     use HasFactory, SoftDeletes;
 
+    /**
+     * Registers lifecycle hooks that keep Sleeping Place records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (SleepingPlace $place): void {
@@ -157,6 +160,9 @@ class SleepingPlace extends Model
         'published_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -223,11 +229,17 @@ class SleepingPlace extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Maps a legacy sleeping-place type into the foundation place type.
+     */
     private static function foundationPlaceType(?string $type): string
     {
         return match ($type) {
@@ -241,6 +253,9 @@ class SleepingPlace extends Model
         };
     }
 
+    /**
+     * Maps a foundation place type into the legacy sleeping-place enum value.
+     */
     private static function legacyPlaceType(string $type): string
     {
         return match ($type) {
@@ -253,191 +268,305 @@ class SleepingPlace extends Model
         };
     }
 
+    /**
+     * Links this Sleeping Place to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Links this Sleeping Place to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Lists related Sleeping Place Translation records for this Sleeping Place.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(SleepingPlaceTranslation::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Physical Detail record used by this Sleeping Place.
+     */
     public function physicalDetails(): HasOne
     {
         return $this->hasOne(SleepingPlacePhysicalDetail::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Comfort Detail record used by this Sleeping Place.
+     */
     public function comfortDetails(): HasOne
     {
         return $this->hasOne(SleepingPlaceComfortDetail::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Storage Detail record used by this Sleeping Place.
+     */
     public function storageDetails(): HasOne
     {
         return $this->hasOne(SleepingPlaceStorageDetail::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Position Detail record used by this Sleeping Place.
+     */
     public function positionDetails(): HasOne
     {
         return $this->hasOne(SleepingPlacePositionDetail::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Condition Detail record used by this Sleeping Place.
+     */
     public function conditionDetails(): HasOne
     {
         return $this->hasOne(SleepingPlaceConditionDetail::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Compatibility Profile record used by this Sleeping Place.
+     */
     public function compatibilityProfile(): HasOne
     {
         return $this->hasOne(SleepingPlaceCompatibilityProfile::class);
     }
 
+    /**
+     * Lists related Availability Day records for this Sleeping Place.
+     */
     public function availabilityDays(): HasMany
     {
         return $this->hasMany(AvailabilityDay::class);
     }
 
+    /**
+     * Fetches the single Sleeping Place Calendar Setting record used by this Sleeping Place.
+     */
     public function calendarSettings(): HasOne
     {
         return $this->hasOne(SleepingPlaceCalendarSetting::class);
     }
 
+    /**
+     * Lists related Sleeping Place Calendar Day records for this Sleeping Place.
+     */
     public function calendarDays(): HasMany
     {
         return $this->hasMany(SleepingPlaceCalendarDay::class);
     }
 
+    /**
+     * Lists related Sleeping Place Calendar Rule records for this Sleeping Place.
+     */
     public function calendarRules(): HasMany
     {
         return $this->hasMany(SleepingPlaceCalendarRule::class);
     }
 
+    /**
+     * Lists related Price Rule records for this Sleeping Place.
+     */
     public function priceRules(): HasMany
     {
         return $this->hasMany(PriceRule::class);
     }
 
+    /**
+     * Lists related Discount Rule records for this Sleeping Place.
+     */
     public function discountRules(): HasMany
     {
         return $this->hasMany(DiscountRule::class);
     }
 
+    /**
+     * Lists related Booking records for this Sleeping Place.
+     */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * Lists related Booking Guest Intake records for this Sleeping Place.
+     */
     public function bookingGuestIntakes(): HasMany
     {
         return $this->hasMany(BookingGuestIntake::class);
     }
 
+    /**
+     * Lists related Review records for this Sleeping Place.
+     */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
+    /**
+     * Lists related Favorite records for this Sleeping Place.
+     */
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
     }
 
+    /**
+     * Lists related Waitlist Item records for this Sleeping Place.
+     */
     public function waitlistItems(): HasMany
     {
         return $this->hasMany(WaitlistItem::class);
     }
 
+    /**
+     * Lists related Room Occupant Snapshot records for this Sleeping Place.
+     */
     public function occupantSnapshots(): HasMany
     {
         return $this->hasMany(RoomOccupantSnapshot::class);
     }
 
+    /**
+     * Lists related Compatibility Result records for this Sleeping Place.
+     */
     public function compatibilityResults(): HasMany
     {
         return $this->hasMany(CompatibilityResult::class);
     }
 
+    /**
+     * Lists related Listing Publication Check records for this Sleeping Place.
+     */
     public function publicationChecks(): HasMany
     {
         return $this->hasMany(ListingPublicationCheck::class);
     }
 
+    /**
+     * Lists related Listing Readiness Check records for this Sleeping Place.
+     */
     public function readinessChecks(): HasMany
     {
         return $this->hasMany(ListingReadinessCheck::class);
     }
 
+    /**
+     * Lists related Listing Hint Snapshot records for this Sleeping Place.
+     */
     public function listingHintSnapshots(): HasMany
     {
         return $this->hasMany(ListingHintSnapshot::class);
     }
 
+    /**
+     * Lists related Guest Hint Dismissal records for this Sleeping Place.
+     */
     public function guestHintDismissals(): HasMany
     {
         return $this->hasMany(GuestHintDismissal::class);
     }
 
+    /**
+     * Lists related Guest Hint Impression records for this Sleeping Place.
+     */
     public function guestHintImpressions(): HasMany
     {
         return $this->hasMany(GuestHintImpression::class);
     }
 
+    /**
+     * Lists related Host Hint Snapshot records for this Sleeping Place.
+     */
     public function hostHintSnapshots(): HasMany
     {
         return $this->hasMany(HostHintSnapshot::class);
     }
 
+    /**
+     * Lists related Host Hint Dismissal records for this Sleeping Place.
+     */
     public function hostHintDismissals(): HasMany
     {
         return $this->hasMany(HostHintDismissal::class);
     }
 
+    /**
+     * Lists related Host Calendar Event records for this Sleeping Place.
+     */
     public function hostCalendarEvents(): HasMany
     {
         return $this->hasMany(HostCalendarEvent::class);
     }
 
+    /**
+     * Lists related Host Calendar Note records for this Sleeping Place.
+     */
     public function hostCalendarNotes(): HasMany
     {
         return $this->hasMany(HostCalendarNote::class);
     }
 
+    /**
+     * Lists related Host Current Stay Snapshot records for this Sleeping Place.
+     */
     public function hostCurrentStaySnapshots(): HasMany
     {
         return $this->hasMany(HostCurrentStaySnapshot::class);
     }
 
+    /**
+     * Lists related Host Guest Stay Note records for this Sleeping Place.
+     */
     public function hostGuestStayNotes(): HasMany
     {
         return $this->hasMany(HostGuestStayNote::class);
     }
 
+    /**
+     * Connects this Sleeping Place to related Amenity records through a pivot relation.
+     */
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class, 'sleeping_place_amenity')->withTimestamps();
     }
 
+    /**
+     * Connects this Sleeping Place to related Rule records through a pivot relation.
+     */
     public function rules(): BelongsToMany
     {
         return $this->belongsToMany(Rule::class, 'sleeping_place_rule')->withTimestamps();
     }
 
+    /**
+     * Lists related Sleeping Place Photo records for this Sleeping Place.
+     */
     public function photos(): HasMany
     {
         return $this->hasMany(SleepingPlacePhoto::class);
     }
 
+    /**
+     * Lists related Media Item records attached to this Sleeping Place through a polymorphic relation.
+     */
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    /**
+     * Fetches the single Media Item record attached to this Sleeping Place through a polymorphic relation.
+     */
     public function cardMedia(): MorphOne
     {
         return $this->morphOne(MediaItem::class, 'mediable')
@@ -448,26 +577,41 @@ class SleepingPlace extends Model
             ->orderBy('id');
     }
 
+    /**
+     * Adds the active query filter for reusable Sleeping Place lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where($query->qualifyColumn('status'), SleepingPlaceStatus::Active);
     }
 
+    /**
+     * Adds the visible query filter for reusable Sleeping Place lookups.
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where($query->qualifyColumn('status'), SleepingPlaceStatus::Active);
     }
 
+    /**
+     * Adds the translated query filter for reusable Sleeping Place lookups.
+     */
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
         return $query->whereHas('translations', fn (Builder $translation) => $translation->where('locale', $locale));
     }
 
+    /**
+     * Adds the in city query filter for reusable Sleeping Place lookups.
+     */
     public function scopeInCity(Builder $query, int $cityId): Builder
     {
         return $query->whereHas('property', fn (Builder $property) => $property->where('city_id', $cityId));
     }
 
+    /**
+     * Adds the for host query filter for reusable Sleeping Place lookups.
+     */
     public function scopeForHost(Builder $query, int $userId): Builder
     {
         return $query->where(function (Builder $builder) use ($userId): void {
@@ -477,21 +621,33 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the for room query filter for reusable Sleeping Place lookups.
+     */
     public function scopeForRoom(Builder $query, int $roomId): Builder
     {
         return $query->where($query->qualifyColumn('room_id'), $roomId);
     }
 
+    /**
+     * Adds the for property query filter for reusable Sleeping Place lookups.
+     */
     public function scopeForProperty(Builder $query, int $propertyId): Builder
     {
         return $query->where($query->qualifyColumn('property_id'), $propertyId);
     }
 
+    /**
+     * Adds the for guest query filter for reusable Sleeping Place lookups.
+     */
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->whereHas('bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
     }
 
+    /**
+     * Adds the by type query filter for reusable Sleeping Place lookups.
+     */
     public function scopeByType(Builder $query, SleepingPlaceType|string $type): Builder
     {
         $value = $type instanceof SleepingPlaceType ? $type->value : $type;
@@ -502,6 +658,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the top bunk query filter for reusable Sleeping Place lookups.
+     */
     public function scopeTopBunk(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -511,6 +670,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the bottom bunk query filter for reusable Sleeping Place lookups.
+     */
     public function scopeBottomBunk(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -520,6 +682,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the with locker query filter for reusable Sleeping Place lookups.
+     */
     public function scopeWithLocker(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -528,6 +693,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the with curtain query filter for reusable Sleeping Place lookups.
+     */
     public function scopeWithCurtain(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -536,6 +704,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the with power socket query filter for reusable Sleeping Place lookups.
+     */
     public function scopeWithPowerSocket(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -544,6 +715,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the with bedding query filter for reusable Sleeping Place lookups.
+     */
     public function scopeWithBedding(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -552,6 +726,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the with towel query filter for reusable Sleeping Place lookups.
+     */
     public function scopeWithTowel(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -560,6 +737,9 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the suitable for tall person query filter for reusable Sleeping Place lookups.
+     */
     public function scopeSuitableForTallPerson(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -568,11 +748,17 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the suitable for heavy person query filter for reusable Sleeping Place lookups.
+     */
     public function scopeSuitableForHeavyPerson(Builder $query): Builder
     {
         return $query->whereHas('physicalDetails', fn (Builder $details) => $details->where('suitable_for_heavy_person', true));
     }
 
+    /**
+     * Adds the suitable for couple query filter for reusable Sleeping Place lookups.
+     */
     public function scopeSuitableForCouple(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -581,11 +767,17 @@ class SleepingPlace extends Model
         });
     }
 
+    /**
+     * Adds the instant booking query filter for reusable Sleeping Place lookups.
+     */
     public function scopeInstantBooking(Builder $query): Builder
     {
         return $query->where($query->qualifyColumn('instant_booking_enabled'), true);
     }
 
+    /**
+     * Adds the available between query filter for reusable Sleeping Place lookups.
+     */
     public function scopeAvailableBetween(Builder $query, string $start, string $end): Builder
     {
         return $query

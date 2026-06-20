@@ -23,6 +23,9 @@ class HostHintDismissal extends Model
         'dismissed_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Hint Dismissal attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -31,21 +34,33 @@ class HostHintDismissal extends Model
         ];
     }
 
+    /**
+     * Links this Host Hint Dismissal to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Hint Dismissal to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Host Hint Dismissal to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Host Hint Dismissal to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

@@ -18,6 +18,9 @@ class MediaItemTranslation extends Model
         'caption',
     ];
 
+    /**
+     * Links this Media Item Translation to the Media Item record used by its media item relation.
+     */
     public function mediaItem(): BelongsTo
     {
         return $this->belongsTo(MediaItem::class);

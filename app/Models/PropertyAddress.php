@@ -32,6 +32,9 @@ class PropertyAddress extends Model
         'show_district_before_booking',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Address attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -46,6 +49,9 @@ class PropertyAddress extends Model
         ];
     }
 
+    /**
+     * Links this Property Address to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

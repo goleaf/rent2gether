@@ -27,6 +27,9 @@ class PropertyPhoto extends Model
         'visibility',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Photo attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -36,11 +39,17 @@ class PropertyPhoto extends Model
         ];
     }
 
+    /**
+     * Links this Property Photo to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Property Photo to the User record used by its uploaded by relation.
+     */
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');

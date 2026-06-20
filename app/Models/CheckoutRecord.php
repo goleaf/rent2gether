@@ -42,11 +42,17 @@ class CheckoutRecord extends Model
         'host_confirmed_checkout_at' => 'datetime',
     ];
 
+    /**
+     * Links this Checkout Record to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Lists related Media Item records attached to this Checkout Record through a polymorphic relation.
+     */
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');

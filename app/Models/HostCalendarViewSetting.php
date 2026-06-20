@@ -37,6 +37,9 @@ class HostCalendarViewSetting extends Model
         'compact_mode' => true,
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Calendar View Setting attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -50,16 +53,25 @@ class HostCalendarViewSetting extends Model
         ];
     }
 
+    /**
+     * Links this Host Calendar View Setting to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Calendar View Setting to the Property record used by its default property relation.
+     */
     public function defaultProperty(): BelongsTo
     {
         return $this->belongsTo(Property::class, 'default_property_id');
     }
 
+    /**
+     * Links this Host Calendar View Setting to the Room record used by its default room relation.
+     */
     public function defaultRoom(): BelongsTo
     {
         return $this->belongsTo(Room::class, 'default_room_id');

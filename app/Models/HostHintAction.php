@@ -20,6 +20,9 @@ class HostHintAction extends Model
         'acted_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Hint Action attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -27,11 +30,17 @@ class HostHintAction extends Model
         ];
     }
 
+    /**
+     * Links this Host Hint Action to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Hint Action to the Host Hint Snapshot record used by its snapshot relation.
+     */
     public function snapshot(): BelongsTo
     {
         return $this->belongsTo(HostHintSnapshot::class, 'host_hint_snapshot_id');

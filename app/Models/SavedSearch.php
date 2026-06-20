@@ -103,6 +103,9 @@ class SavedSearch extends Model
         'is_active',
     ];
 
+    /**
+     * Defines how Laravel converts stored Saved Search attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -176,31 +179,49 @@ class SavedSearch extends Model
         ];
     }
 
+    /**
+     * Links this Saved Search to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Saved Search to the City record used by its city model relation.
+     */
     public function cityModel(): BelongsTo
     {
         return $this->belongsTo(City::class, 'city_id');
     }
 
+    /**
+     * Links this Saved Search to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * Lists related Saved Search Result records for this Saved Search.
+     */
     public function results(): HasMany
     {
         return $this->hasMany(SavedSearchResult::class);
     }
 
+    /**
+     * Adds the for guest query filter for reusable Saved Search lookups.
+     */
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Adds the for user query filter for reusable Saved Search lookups.
+     */
     public function scopeForUser(Builder $query, User|int $user): Builder
     {
         $userId = $user instanceof User ? $user->id : $user;
@@ -208,21 +229,33 @@ class SavedSearch extends Model
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Adds the active query filter for reusable Saved Search lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active')->where('is_active', true);
     }
 
+    /**
+     * Adds the paused query filter for reusable Saved Search lookups.
+     */
     public function scopePaused(Builder $query): Builder
     {
         return $query->where('status', 'paused');
     }
 
+    /**
+     * Adds the archived query filter for reusable Saved Search lookups.
+     */
     public function scopeArchived(Builder $query): Builder
     {
         return $query->where('status', 'archived');
     }
 
+    /**
+     * Adds the due for check query filter for reusable Saved Search lookups.
+     */
     public function scopeDueForCheck(Builder $query): Builder
     {
         return $query->active()
@@ -232,6 +265,9 @@ class SavedSearch extends Model
             });
     }
 
+    /**
+     * Adds the with notifications enabled query filter for reusable Saved Search lookups.
+     */
     public function scopeWithNotificationsEnabled(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -242,6 +278,9 @@ class SavedSearch extends Model
         });
     }
 
+    /**
+     * Returns the display title text for this Saved Search.
+     */
     public function displayTitle(): string
     {
         return $this->title ?: $this->name;

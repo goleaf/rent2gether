@@ -27,6 +27,9 @@ class RoomPhoto extends Model
         'visibility',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Photo attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -36,11 +39,17 @@ class RoomPhoto extends Model
         ];
     }
 
+    /**
+     * Links this Room Photo to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Room Photo to the User record used by its uploaded by relation.
+     */
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');

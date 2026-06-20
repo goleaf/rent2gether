@@ -20,11 +20,17 @@ class HostCleaningTaskPhoto extends Model
         'note',
     ];
 
+    /**
+     * Links this Host Cleaning Task Photo to the Host Cleaning Task record used by its task relation.
+     */
     public function task(): BelongsTo
     {
         return $this->belongsTo(HostCleaningTask::class, 'host_cleaning_task_id');
     }
 
+    /**
+     * Links this Host Cleaning Task Photo to the User record used by its uploaded by relation.
+     */
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');

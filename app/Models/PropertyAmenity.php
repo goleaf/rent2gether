@@ -20,6 +20,9 @@ class PropertyAmenity extends Model
         'visible_to_guest',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Amenity attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -28,6 +31,9 @@ class PropertyAmenity extends Model
         ];
     }
 
+    /**
+     * Links this Property Amenity to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

@@ -43,6 +43,9 @@ class GuestCompatibilityVisibilitySetting extends Model
         'allow_show_to_future_roommates' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Guest Compatibility Visibility Setting attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -61,6 +64,9 @@ class GuestCompatibilityVisibilitySetting extends Model
         ];
     }
 
+    /**
+     * Links this Guest Compatibility Visibility Setting to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

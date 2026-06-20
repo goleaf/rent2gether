@@ -28,6 +28,9 @@ class BookingForgottenItem extends Model
         'keep_until',
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Forgotten Item attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -39,26 +42,41 @@ class BookingForgottenItem extends Model
         ];
     }
 
+    /**
+     * Links this Booking Forgotten Item to the Booking Check Out record used by its check out relation.
+     */
     public function checkOut(): BelongsTo
     {
         return $this->belongsTo(BookingCheckOut::class, 'booking_check_out_id');
     }
 
+    /**
+     * Links this Booking Forgotten Item to the Booking record used by its booking check out relation.
+     */
     public function bookingCheckOut(): BelongsTo
     {
         return $this->checkOut();
     }
 
+    /**
+     * Links this Booking Forgotten Item to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Booking Forgotten Item to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Booking Forgotten Item to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');

@@ -28,6 +28,9 @@ class CityTranslation extends Model
         'valid_to',
     ];
 
+    /**
+     * Defines how Laravel converts stored City Translation attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -38,6 +41,9 @@ class CityTranslation extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep City Translation records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (CityTranslation $translation): void {
@@ -46,6 +52,9 @@ class CityTranslation extends Model
         });
     }
 
+    /**
+     * Links this City Translation to the City record used by its city relation.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);

@@ -22,6 +22,9 @@ class GuestHintImpression extends Model
         'dismissed_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Guest Hint Impression attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -31,11 +34,17 @@ class GuestHintImpression extends Model
         ];
     }
 
+    /**
+     * Links this Guest Hint Impression to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Guest Hint Impression to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

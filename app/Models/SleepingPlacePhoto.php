@@ -27,6 +27,9 @@ class SleepingPlacePhoto extends Model
         'visibility',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Photo attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -36,11 +39,17 @@ class SleepingPlacePhoto extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Photo to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Sleeping Place Photo to the User record used by its uploaded by relation.
+     */
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');

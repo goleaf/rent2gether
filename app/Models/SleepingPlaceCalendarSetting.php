@@ -44,6 +44,9 @@ class SleepingPlaceCalendarSetting extends Model
         'same_day_turnover_allowed' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Calendar Setting attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -60,6 +63,9 @@ class SleepingPlaceCalendarSetting extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Calendar Setting to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

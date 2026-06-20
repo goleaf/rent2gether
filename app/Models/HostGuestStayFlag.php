@@ -30,6 +30,9 @@ class HostGuestStayFlag extends Model
         'severity' => 'medium',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Guest Stay Flag attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -38,11 +41,17 @@ class HostGuestStayFlag extends Model
         ];
     }
 
+    /**
+     * Adds the open query filter for reusable Host Guest Stay Flag lookups.
+     */
     public function scopeOpen(Builder $query): Builder
     {
         return $query->where('status', 'open');
     }
 
+    /**
+     * Adds the for host query filter for reusable Host Guest Stay Flag lookups.
+     */
     public function scopeForHost(Builder $query, User|int $host): Builder
     {
         $hostId = $host instanceof User ? $host->id : $host;
@@ -50,16 +59,25 @@ class HostGuestStayFlag extends Model
         return $query->where('user_id', $hostId);
     }
 
+    /**
+     * Links this Host Guest Stay Flag to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Links this Host Guest Stay Flag to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Host Guest Stay Flag to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

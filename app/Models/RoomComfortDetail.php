@@ -66,6 +66,9 @@ class RoomComfortDetail extends Model
         'quiet_hours_end',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Comfort Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -106,6 +109,9 @@ class RoomComfortDetail extends Model
         ];
     }
 
+    /**
+     * Links this Room Comfort Detail to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

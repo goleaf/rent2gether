@@ -43,11 +43,17 @@ class CheckinRecord extends Model
         'problem_media' => 'array',
     ];
 
+    /**
+     * Links this Checkin Record to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Lists related Media Item records attached to this Checkin Record through a polymorphic relation.
+     */
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');

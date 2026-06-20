@@ -109,6 +109,14 @@ Use actions for state changes that should stay testable and reusable across Live
 
 Queries belong in Eloquent scopes, services, actions, or model relationships. Blade views must not query.
 
+## Model Method Documentation
+
+Every class-level method in `app/Models/*.php` must have a short English PHPDoc summary directly above the method.
+
+Relationship methods need to explain the purpose of the relationship in human language, not only repeat the relation type. For example, describe whether the method links the model to its owner, lists child records, fetches a detail record, connects through a pivot table, or attaches polymorphic media/notifications.
+
+Keep model comments concise. They should help future humans and agents understand the domain reason for the method without duplicating the method body.
+
 ## Seeder Placement
 
 `DatabaseSeeder` is the default local dataset entry point. It seeds lightweight geo/catalog/demo foundations first, then runs `BulkMarketplaceSeeder` so every Eloquent model in `app/Models/*.php` has at least 1000 rows.

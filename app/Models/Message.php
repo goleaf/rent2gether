@@ -34,6 +34,9 @@ class Message extends Model
         'read_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Message attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -47,6 +50,9 @@ class Message extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Message records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (Message $message): void {
@@ -61,41 +67,65 @@ class Message extends Model
         });
     }
 
+    /**
+     * Links this Message to the Conversation record used by its conversation relation.
+     */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
     }
 
+    /**
+     * Links this Message to the Message Thread record used by its thread relation.
+     */
     public function thread(): BelongsTo
     {
         return $this->belongsTo(MessageThread::class, 'thread_id');
     }
 
+    /**
+     * Links this Message to the User record used by its sender relation.
+     */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    /**
+     * Links this Message to the User record used by its sender user relation.
+     */
     public function senderUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_user_id');
     }
 
+    /**
+     * Links this Message to the User record used by its recipient relation.
+     */
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recipient_user_id');
     }
 
+    /**
+     * Links this Message to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Message to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Message to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

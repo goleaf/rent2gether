@@ -19,6 +19,9 @@ class UserLanguage extends Model
         'is_primary',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Language attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -26,6 +29,9 @@ class UserLanguage extends Model
         ];
     }
 
+    /**
+     * Links this User Language to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

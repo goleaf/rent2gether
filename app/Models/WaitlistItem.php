@@ -70,6 +70,9 @@ class WaitlistItem extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Waitlist Item attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -117,6 +120,9 @@ class WaitlistItem extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Waitlist Item records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (WaitlistItem $item): void {
@@ -154,31 +160,49 @@ class WaitlistItem extends Model
         });
     }
 
+    /**
+     * Links this Waitlist Item to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Waitlist Item to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Waitlist Item to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Waitlist Item to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Lists related Waitlist Offer records for this Waitlist Item.
+     */
     public function offers(): HasMany
     {
         return $this->hasMany(WaitlistOffer::class);
     }
 
+    /**
+     * Fetches the single Waitlist Offer record used by this Waitlist Item.
+     */
     public function activeOffer(): HasOne
     {
         return $this->hasOne(WaitlistOffer::class)
@@ -186,11 +210,17 @@ class WaitlistItem extends Model
             ->orderByDesc('waitlist_offers.id');
     }
 
+    /**
+     * Adds the for guest query filter for reusable Waitlist Item lookups.
+     */
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Adds the for user query filter for reusable Waitlist Item lookups.
+     */
     public function scopeForUser(Builder $query, User|int $user): Builder
     {
         $userId = $user instanceof User ? $user->id : $user;
@@ -198,21 +228,33 @@ class WaitlistItem extends Model
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Adds the active query filter for reusable Waitlist Item lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', ['active', 'waiting']);
     }
 
+    /**
+     * Adds the offered query filter for reusable Waitlist Item lookups.
+     */
     public function scopeOffered(Builder $query): Builder
     {
         return $query->whereIn('status', ['offered', 'awaiting_guest']);
     }
 
+    /**
+     * Adds the expired query filter for reusable Waitlist Item lookups.
+     */
     public function scopeExpired(Builder $query): Builder
     {
         return $query->where('status', 'expired');
     }
 
+    /**
+     * Adds the for sleeping place query filter for reusable Waitlist Item lookups.
+     */
     public function scopeForSleepingPlace(Builder $query, SleepingPlace|int $place): Builder
     {
         $placeId = $place instanceof SleepingPlace ? $place->id : $place;
@@ -220,6 +262,9 @@ class WaitlistItem extends Model
         return $query->where('sleeping_place_id', $placeId);
     }
 
+    /**
+     * Adds the due for check query filter for reusable Waitlist Item lookups.
+     */
     public function scopeDueForCheck(Builder $query): Builder
     {
         return $query->active()
@@ -229,6 +274,9 @@ class WaitlistItem extends Model
             });
     }
 
+    /**
+     * Adds the ordered queue query filter for reusable Waitlist Item lookups.
+     */
     public function scopeOrderedQueue(Builder $query): Builder
     {
         return $query
@@ -237,16 +285,25 @@ class WaitlistItem extends Model
             ->orderBy('id');
     }
 
+    /**
+     * Adds the ready to book query filter for reusable Waitlist Item lookups.
+     */
     public function scopeReadyToBook(Builder $query): Builder
     {
         return $query->where('ready_to_book_immediately', true);
     }
 
+    /**
+     * Adds the auto send request enabled query filter for reusable Waitlist Item lookups.
+     */
     public function scopeAutoSendRequestEnabled(Builder $query): Builder
     {
         return $query->where('auto_send_request', true);
     }
 
+    /**
+     * Returns the human-readable queue status label for this Waitlist Item.
+     */
     protected function queueStatusLabel(): Attribute
     {
         return Attribute::get(fn (): string => __('waitlist.statuses.'.$this->status));

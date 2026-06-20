@@ -79,6 +79,9 @@ class PropertyConditionDetail extends Model
         'owner_check_note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Condition Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -112,6 +115,9 @@ class PropertyConditionDetail extends Model
         ];
     }
 
+    /**
+     * Links this Property Condition Detail to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

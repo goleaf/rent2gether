@@ -50,6 +50,9 @@ class RoomAccessDetail extends Model
         'food_storage_allowed_type',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Access Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -86,6 +89,9 @@ class RoomAccessDetail extends Model
         ];
     }
 
+    /**
+     * Links this Room Access Detail to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);

@@ -30,6 +30,9 @@ class UserPrivacySetting extends Model
         'allow_guest_to_see_host_contact_after_booking',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Privacy Setting attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -50,6 +53,9 @@ class UserPrivacySetting extends Model
         ];
     }
 
+    /**
+     * Links this User Privacy Setting to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

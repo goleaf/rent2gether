@@ -24,6 +24,9 @@ class DiscountRule extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Discount Rule attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -35,6 +38,9 @@ class DiscountRule extends Model
         ];
     }
 
+    /**
+     * Links this Discount Rule to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

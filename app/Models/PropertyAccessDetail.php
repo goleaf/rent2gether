@@ -78,6 +78,9 @@ class PropertyAccessDetail extends Model
         'show_access_details_after_booking',
     ];
 
+    /**
+     * Defines how Laravel converts stored Property Access Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -128,6 +131,9 @@ class PropertyAccessDetail extends Model
         ];
     }
 
+    /**
+     * Links this Property Access Detail to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);

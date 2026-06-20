@@ -38,6 +38,9 @@ class HostHintSnapshot extends Model
         'expires_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Hint Snapshot attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -52,36 +55,57 @@ class HostHintSnapshot extends Model
         ];
     }
 
+    /**
+     * Links this Host Hint Snapshot to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Hint Snapshot to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Host Hint Snapshot to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Host Hint Snapshot to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Lists related Host Hint Action records for this Host Hint Snapshot.
+     */
     public function actions(): HasMany
     {
         return $this->hasMany(HostHintAction::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Host Hint Snapshot lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Adds the fresh query filter for reusable Host Hint Snapshot lookups.
+     */
     public function scopeFresh(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {
@@ -89,6 +113,9 @@ class HostHintSnapshot extends Model
         });
     }
 
+    /**
+     * Checks whether this Host Hint Snapshot should block publishing until it is resolved.
+     */
     public function isCriticalBeforePublish(): bool
     {
         return $this->show_before_publish && $this->importance === 'critical';

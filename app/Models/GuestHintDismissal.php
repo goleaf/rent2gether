@@ -22,6 +22,9 @@ class GuestHintDismissal extends Model
         'expires_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Guest Hint Dismissal attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -30,16 +33,25 @@ class GuestHintDismissal extends Model
         ];
     }
 
+    /**
+     * Links this Guest Hint Dismissal to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Guest Hint Dismissal to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Guest Hint Dismissal lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where(function (Builder $builder): void {

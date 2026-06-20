@@ -23,6 +23,9 @@ class UserNotificationPreference extends Model
         'quiet_hours_to',
     ];
 
+    /**
+     * Defines how Laravel converts stored User Notification Preference attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -32,6 +35,9 @@ class UserNotificationPreference extends Model
         ];
     }
 
+    /**
+     * Links this User Notification Preference to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

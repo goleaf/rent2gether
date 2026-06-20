@@ -38,6 +38,9 @@ class HostBulkActionBatch extends Model
         'failed_count' => 0,
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Bulk Action Batch attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -50,16 +53,25 @@ class HostBulkActionBatch extends Model
         ];
     }
 
+    /**
+     * Links this Host Bulk Action Batch to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Lists related Host Bulk Action Item records for this Host Bulk Action Batch.
+     */
     public function items(): HasMany
     {
         return $this->hasMany(HostBulkActionItem::class, 'batch_id');
     }
 
+    /**
+     * Lists related Host Bulk Action Log records for this Host Bulk Action Batch.
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(HostBulkActionLog::class, 'batch_id');

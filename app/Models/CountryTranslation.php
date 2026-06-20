@@ -28,6 +28,9 @@ class CountryTranslation extends Model
         'valid_to',
     ];
 
+    /**
+     * Defines how Laravel converts stored Country Translation attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -38,6 +41,9 @@ class CountryTranslation extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Country Translation records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (CountryTranslation $translation): void {
@@ -46,11 +52,17 @@ class CountryTranslation extends Model
         });
     }
 
+    /**
+     * Links this Country Translation to the Country record used by its country relation.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Returns the normalize locale text for this Country Translation.
+     */
     public static function normalizeLocale(?string $locale): string
     {
         $locale = str_replace('_', '-', trim((string) $locale));
@@ -86,6 +98,9 @@ class CountryTranslation extends Model
         ])));
     }
 
+    /**
+     * Returns the fallback locale text for this Country Translation.
+     */
     public static function fallbackLocale(): string
     {
         return self::normalizeLocale((string) config(

@@ -38,6 +38,9 @@ class WaitlistOffer extends Model
         'system_note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Waitlist Offer attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -56,51 +59,81 @@ class WaitlistOffer extends Model
         ];
     }
 
+    /**
+     * Links this Waitlist Offer to the Waitlist Item record used by its waitlist item relation.
+     */
     public function waitlistItem(): BelongsTo
     {
         return $this->belongsTo(WaitlistItem::class);
     }
 
+    /**
+     * Links this Waitlist Offer to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Waitlist Offer to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Waitlist Offer to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Waitlist Offer to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Waitlist Offer to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Adds the active query filter for reusable Waitlist Offer lookups.
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Adds the expired query filter for reusable Waitlist Offer lookups.
+     */
     public function scopeExpired(Builder $query): Builder
     {
         return $query->where('status', 'expired');
     }
 
+    /**
+     * Adds the accepted query filter for reusable Waitlist Offer lookups.
+     */
     public function scopeAccepted(Builder $query): Builder
     {
         return $query->whereIn('status', ['accepted', 'converted_to_booking']);
     }
 
+    /**
+     * Adds the for user query filter for reusable Waitlist Offer lookups.
+     */
     public function scopeForUser(Builder $query, User|int $user): Builder
     {
         $userId = $user instanceof User ? $user->id : $user;
@@ -108,6 +141,9 @@ class WaitlistOffer extends Model
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Adds the for sleeping place query filter for reusable Waitlist Offer lookups.
+     */
     public function scopeForSleepingPlace(Builder $query, SleepingPlace|int $place): Builder
     {
         $placeId = $place instanceof SleepingPlace ? $place->id : $place;
@@ -115,6 +151,9 @@ class WaitlistOffer extends Model
         return $query->where('sleeping_place_id', $placeId);
     }
 
+    /**
+     * Adds the expiring soon query filter for reusable Waitlist Offer lookups.
+     */
     public function scopeExpiringSoon(Builder $query): Builder
     {
         return $query->active()

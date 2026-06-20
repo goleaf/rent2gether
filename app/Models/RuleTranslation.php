@@ -21,6 +21,9 @@ class RuleTranslation extends Model
         'description',
     ];
 
+    /**
+     * Registers lifecycle hooks that keep Rule Translation records consistent.
+     */
     protected static function booted(): void
     {
         static::saved(function (): void {
@@ -31,6 +34,9 @@ class RuleTranslation extends Model
         });
     }
 
+    /**
+     * Links this Rule Translation to the Rule record used by its rule relation.
+     */
     public function rule(): BelongsTo
     {
         return $this->belongsTo(Rule::class);

@@ -57,6 +57,9 @@ class HostCalendarEvent extends Model
         'needs_repair' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Calendar Event attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -78,36 +81,57 @@ class HostCalendarEvent extends Model
         ];
     }
 
+    /**
+     * Links this Host Calendar Event to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Calendar Event to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Host Calendar Event to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Host Calendar Event to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Host Calendar Event to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Host Calendar Event to the Host Cleaning Task record used by its cleaning task relation.
+     */
     public function cleaningTask(): BelongsTo
     {
         return $this->belongsTo(HostCleaningTask::class);
     }
 
+    /**
+     * Links this Host Calendar Event to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');

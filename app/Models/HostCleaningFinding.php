@@ -36,6 +36,9 @@ class HostCleaningFinding extends Model
         'status' => 'open',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Cleaning Finding attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -48,11 +51,17 @@ class HostCleaningFinding extends Model
         ];
     }
 
+    /**
+     * Links this Host Cleaning Finding to the Host Cleaning Task record used by its task relation.
+     */
     public function task(): BelongsTo
     {
         return $this->belongsTo(HostCleaningTask::class, 'host_cleaning_task_id');
     }
 
+    /**
+     * Links this Host Cleaning Finding to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

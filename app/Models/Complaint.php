@@ -48,6 +48,9 @@ class Complaint extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Complaint attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -64,6 +67,9 @@ class Complaint extends Model
         ];
     }
 
+    /**
+     * Registers lifecycle hooks that keep Complaint records consistent.
+     */
     protected static function booted(): void
     {
         static::creating(function (Complaint $complaint): void {
@@ -93,6 +99,9 @@ class Complaint extends Model
         });
     }
 
+    /**
+     * Adds the for participant query filter for reusable Complaint lookups.
+     */
     public function scopeForParticipant(Builder $query, int $userId): Builder
     {
         return $query->where(function (Builder $query) use ($userId): void {
@@ -102,6 +111,9 @@ class Complaint extends Model
         });
     }
 
+    /**
+     * Adds the for booking query filter for reusable Complaint lookups.
+     */
     public function scopeForBooking(Builder $query, Booking|int $booking): Builder
     {
         $bookingId = $booking instanceof Booking ? $booking->id : $booking;
@@ -109,51 +121,81 @@ class Complaint extends Model
         return $query->where('booking_id', $bookingId);
     }
 
+    /**
+     * Links this Complaint to the User record used by its reporter relation.
+     */
     public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_id');
     }
 
+    /**
+     * Links this Complaint to the User record used by its reporter user relation.
+     */
     public function reporterUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_user_id');
     }
 
+    /**
+     * Links this Complaint to the User record used by its reported user relation.
+     */
     public function reportedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reported_user_id');
     }
 
+    /**
+     * Links this Complaint to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Complaint to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Complaint to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Complaint to the Bed record used by its bed relation.
+     */
     public function bed(): BelongsTo
     {
         return $this->belongsTo(Bed::class);
     }
 
+    /**
+     * Links this Complaint to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Lists related Media Item records attached to this Complaint through a polymorphic relation.
+     */
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    /**
+     * Lists related Complaint Status History records for this Complaint.
+     */
     public function statusHistories(): HasMany
     {
         return $this->hasMany(ComplaintStatusHistory::class);

@@ -39,6 +39,9 @@ class SleepingPlaceTranslation extends Model
         'what_guest_should_bring_for_place',
     ];
 
+    /**
+     * Links this Sleeping Place Translation to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

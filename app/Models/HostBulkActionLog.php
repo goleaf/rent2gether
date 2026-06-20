@@ -22,6 +22,9 @@ class HostBulkActionLog extends Model
         'context_json',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Bulk Action Log attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -29,11 +32,17 @@ class HostBulkActionLog extends Model
         ];
     }
 
+    /**
+     * Links this Host Bulk Action Log to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Bulk Action Log to the Host Bulk Action Batch record used by its batch relation.
+     */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(HostBulkActionBatch::class, 'batch_id');

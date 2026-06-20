@@ -27,6 +27,9 @@ class HostBulkActionItem extends Model
         'status' => 'pending',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Bulk Action Item attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -36,6 +39,9 @@ class HostBulkActionItem extends Model
         ];
     }
 
+    /**
+     * Links this Host Bulk Action Item to the Host Bulk Action Batch record used by its batch relation.
+     */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(HostBulkActionBatch::class, 'batch_id');

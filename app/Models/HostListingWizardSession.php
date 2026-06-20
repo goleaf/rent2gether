@@ -23,6 +23,9 @@ class HostListingWizardSession extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Listing Wizard Session attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -32,16 +35,25 @@ class HostListingWizardSession extends Model
         ];
     }
 
+    /**
+     * Links this Host Listing Wizard Session to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Host Listing Wizard Session to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Adds the for host query filter for reusable Host Listing Wizard Session lookups.
+     */
     public function scopeForHost(Builder $query, User|int $host): Builder
     {
         $id = $host instanceof User ? $host->id : $host;
@@ -49,6 +61,9 @@ class HostListingWizardSession extends Model
         return $query->where('user_id', $id);
     }
 
+    /**
+     * Adds the draft query filter for reusable Host Listing Wizard Session lookups.
+     */
     public function scopeDraft(Builder $query): Builder
     {
         return $query->where('status', 'draft');

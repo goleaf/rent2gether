@@ -24,6 +24,9 @@ class Region extends Model
         'source_id',
     ];
 
+    /**
+     * Registers lifecycle hooks that keep Region records consistent.
+     */
     protected static function booted(): void
     {
         static::saving(function (Region $region): void {
@@ -31,16 +34,25 @@ class Region extends Model
         });
     }
 
+    /**
+     * Links this Region to the Country record used by its country relation.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Lists related City records for this Region.
+     */
     public function cities(): HasMany
     {
         return $this->hasMany(City::class);
     }
 
+    /**
+     * Adds the name prefix query filter for reusable Region lookups.
+     */
     public function scopeNamePrefix(Builder $query, string $value): Builder
     {
         return $query->where('name_normalized', 'like', GeoNameNormalizer::normalize($value).'%');

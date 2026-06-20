@@ -69,6 +69,9 @@ class BookingCheckOut extends Model
         'needs_deposit_deduction' => false,
     ];
 
+    /**
+     * Defines how Laravel converts stored Booking Check Out attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -98,56 +101,89 @@ class BookingCheckOut extends Model
         ];
     }
 
+    /**
+     * Links this Booking Check Out to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Booking Check Out to the User record used by its guest relation.
+     */
     public function guest(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guest_user_id');
     }
 
+    /**
+     * Links this Booking Check Out to the User record used by its host relation.
+     */
     public function host(): BelongsTo
     {
         return $this->belongsTo(User::class, 'host_user_id');
     }
 
+    /**
+     * Links this Booking Check Out to the Property record used by its property relation.
+     */
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * Links this Booking Check Out to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Booking Check Out to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Lists related Booking Check Out Checklist Item records for this Booking Check Out.
+     */
     public function checklistItems(): HasMany
     {
         return $this->hasMany(BookingCheckOutChecklistItem::class);
     }
 
+    /**
+     * Lists related Booking Check Out Issue Report records for this Booking Check Out.
+     */
     public function issueReports(): HasMany
     {
         return $this->hasMany(BookingCheckOutIssueReport::class);
     }
 
+    /**
+     * Lists related Booking Forgotten Item records for this Booking Check Out.
+     */
     public function forgottenItems(): HasMany
     {
         return $this->hasMany(BookingForgottenItem::class);
     }
 
+    /**
+     * Fetches the single Booking Deposit Decision record used by this Booking Check Out.
+     */
     public function depositDecision(): HasOne
     {
         return $this->hasOne(BookingDepositDecision::class);
     }
 
+    /**
+     * Lists related Host Inspection Task records for this Booking Check Out.
+     */
     public function inspectionTasks(): HasMany
     {
         return $this->hasMany(HostInspectionTask::class);

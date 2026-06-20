@@ -33,6 +33,9 @@ class Notification extends Model
         'read_at',
     ];
 
+    /**
+     * Defines how Laravel converts stored Notification attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -41,6 +44,9 @@ class Notification extends Model
         ];
     }
 
+    /**
+     * Adds the for user query filter for reusable Notification lookups.
+     */
     public function scopeForUser(Builder $query, User|int|null $user): Builder
     {
         $userId = $user instanceof User ? $user->id : $user;
@@ -48,21 +54,33 @@ class Notification extends Model
         return $query->where('user_id', $userId ?: 0);
     }
 
+    /**
+     * Adds the unread query filter for reusable Notification lookups.
+     */
     public function scopeUnread(Builder $query): Builder
     {
         return $query->whereNull('read_at');
     }
 
+    /**
+     * Adds the recent query filter for reusable Notification lookups.
+     */
     public function scopeRecent(Builder $query): Builder
     {
         return $query->orderByDesc('created_at')->orderByDesc('id');
     }
 
+    /**
+     * Checks whether this Notification has not been read yet.
+     */
     public function isUnread(): bool
     {
         return $this->read_at === null;
     }
 
+    /**
+     * Marks this Notification as read and stores the read timestamp.
+     */
     public function markRead(): void
     {
         if ($this->read_at !== null) {
@@ -75,11 +93,17 @@ class Notification extends Model
         ])->save();
     }
 
+    /**
+     * Returns the title text for this Notification.
+     */
     public function title(?string $locale = null): string
     {
         return __($this->title_key ?: 'notifications.'.$this->type.'.title', $this->translationParams(), $locale);
     }
 
+    /**
+     * Returns the body text for this Notification.
+     */
     public function body(?string $locale = null): string
     {
         return __($this->body_key ?: 'notifications.'.$this->type.'.body', $this->translationParams(), $locale);
@@ -102,11 +126,17 @@ class Notification extends Model
         return $params;
     }
 
+    /**
+     * Links this Notification to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Notification to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

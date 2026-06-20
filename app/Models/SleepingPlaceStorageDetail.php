@@ -41,6 +41,9 @@ class SleepingPlaceStorageDetail extends Model
         'storage_responsibility_note',
     ];
 
+    /**
+     * Defines how Laravel converts stored Sleeping Place Storage Detail attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -68,6 +71,9 @@ class SleepingPlaceStorageDetail extends Model
         ];
     }
 
+    /**
+     * Links this Sleeping Place Storage Detail to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);

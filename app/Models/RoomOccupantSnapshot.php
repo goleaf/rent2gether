@@ -65,6 +65,9 @@ class RoomOccupantSnapshot extends Model
         'can_show_after_booking',
     ];
 
+    /**
+     * Defines how Laravel converts stored Room Occupant Snapshot attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -85,31 +88,49 @@ class RoomOccupantSnapshot extends Model
         ];
     }
 
+    /**
+     * Links this Room Occupant Snapshot to the Room record used by its room relation.
+     */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * Links this Room Occupant Snapshot to the Sleeping Place record used by its sleeping place relation.
+     */
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
     }
 
+    /**
+     * Links this Room Occupant Snapshot to the Booking record used by its booking relation.
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * Links this Room Occupant Snapshot to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Adds the visible occupants query filter for reusable Room Occupant Snapshot lookups.
+     */
     public function scopeVisibleOccupants(Builder $query): Builder
     {
         return $query->whereIn('status', self::visibleStatuses());
     }
 
+    /**
+     * Adds the overlapping query filter for reusable Room Occupant Snapshot lookups.
+     */
     public function scopeOverlapping(Builder $query, string $checkIn, string $checkOut): Builder
     {
         $checkInDateTime = CarbonImmutable::parse($checkIn)->startOfDay()->toDateTimeString();

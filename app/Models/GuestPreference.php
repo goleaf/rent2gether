@@ -42,6 +42,9 @@ class GuestPreference extends Model
         'accessibility_needs_json',
     ];
 
+    /**
+     * Defines how Laravel converts stored Guest Preference attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -64,11 +67,17 @@ class GuestPreference extends Model
         ];
     }
 
+    /**
+     * Links this Guest Preference to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Guest Preference to the City record used by its preferred city relation.
+     */
     public function preferredCity(): BelongsTo
     {
         return $this->belongsTo(City::class, 'preferred_city_id');

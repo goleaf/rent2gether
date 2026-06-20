@@ -22,11 +22,17 @@ class WaitlistEntry extends Model
         'notified_at' => 'datetime',
     ];
 
+    /**
+     * Links this Waitlist Entry to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Links this Waitlist Entry to the Bed record used by its bed relation.
+     */
     public function bed(): BelongsTo
     {
         return $this->belongsTo(Bed::class);

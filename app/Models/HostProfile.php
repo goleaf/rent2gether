@@ -57,6 +57,9 @@ class HostProfile extends Model
         'status',
     ];
 
+    /**
+     * Defines how Laravel converts stored Host Profile attributes into PHP values.
+     */
     protected function casts(): array
     {
         return [
@@ -78,6 +81,9 @@ class HostProfile extends Model
         ];
     }
 
+    /**
+     * Links this Host Profile to the User record used by its user relation.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

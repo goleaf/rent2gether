@@ -21,6 +21,9 @@ class AmenityTranslation extends Model
         'description',
     ];
 
+    /**
+     * Registers lifecycle hooks that keep Amenity Translation records consistent.
+     */
     protected static function booted(): void
     {
         static::saved(function (): void {
@@ -31,6 +34,9 @@ class AmenityTranslation extends Model
         });
     }
 
+    /**
+     * Links this Amenity Translation to the Amenity record used by its amenity relation.
+     */
     public function amenity(): BelongsTo
     {
         return $this->belongsTo(Amenity::class);
