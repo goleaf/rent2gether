@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserStatus;
+use App\Enums\UserRoleMode;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +25,13 @@ class User extends Authenticatable
         'password',
         'phone',
         'phone_verified',
+        'phone_verified_at',
         'avatar',
+        'avatar_path',
+        'role_mode',
+        'preferred_locale',
+        'timezone',
+        'is_guest',
         'date_of_birth',
         'gender',
         'country',
@@ -69,6 +76,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'phone_verified' => 'boolean',
+            'phone_verified_at' => 'datetime',
+            'role_mode' => UserRoleMode::class,
+            'is_guest' => 'boolean',
             'date_of_birth' => 'date',
             'languages' => 'array',
             'is_smoker' => 'boolean',
@@ -117,6 +127,16 @@ class User extends Authenticatable
     public function properties(): HasMany
     {
         return $this->hasMany(Property::class, 'host_user_id');
+    }
+
+    public function rooms(): HasMany
+    {
+        return $this->hasMany(Room::class);
+    }
+
+    public function sleepingPlaces(): HasMany
+    {
+        return $this->hasMany(SleepingPlace::class);
     }
 
     public function legacyProperties(): HasMany
@@ -321,7 +341,11 @@ class User extends Authenticatable
 
     public function scopeHosts(Builder $query): Builder
     {
-        return $query->where('is_host', true);
+        return $query->where(function (Builder $builder): void {
+            $builder
+                ->where('is_host', true)
+                ->orWhereIn('role_mode', [UserRoleMode::Host->value, UserRoleMode::GuestHost->value]);
+        });
     }
 
     public function scopeVerified(Builder $query): Builder
@@ -336,7 +360,28 @@ class User extends Authenticatable
 
     public function isHost(): bool
     {
-        return (bool) $this->is_host || $this->hostProfile()->exists();
+        $roleMode = $this->role_mode instanceof UserRoleMode
+            ? $this->role_mode
+            : UserRoleMode::tryFrom((string) $this->role_mode);
+
+        return (bool) $this->is_host
+            || $roleMode?->canHost() === true
+            || $this->hostProfile()->exists();
+    }
+
+    public function isGuest(): bool
+    {
+        $roleMode = $this->role_mode instanceof UserRoleMode
+            ? $this->role_mode
+            : UserRoleMode::tryFrom((string) $this->role_mode);
+
+        return (bool) $this->is_guest || $roleMode?->canGuest() === true;
+    }
+
+    public function isGuestHost(): bool
+    {
+        return ($this->role_mode instanceof UserRoleMode ? $this->role_mode : UserRoleMode::tryFrom((string) $this->role_mode))
+            === UserRoleMode::GuestHost;
     }
 
     public function age(): ?int

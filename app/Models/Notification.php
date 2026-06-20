@@ -23,6 +23,7 @@ class Notification extends Model
         'notifiable_type',
         'notifiable_id',
         'user_id',
+        'sleeping_place_id',
         'data',
         'title_key',
         'body_key',
@@ -104,5 +105,10 @@ class Notification extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function sleepingPlace(): BelongsTo
+    {
+        return $this->belongsTo(SleepingPlace::class);
     }
 }

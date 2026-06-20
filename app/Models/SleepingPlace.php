@@ -25,6 +25,38 @@ class SleepingPlace extends Model
 
     protected static function booted(): void
     {
+        static::saving(function (SleepingPlace $place): void {
+            if (! $place->property_id && $place->room_id) {
+                $place->property_id = $place->relationLoaded('room')
+                    ? $place->room?->property_id
+                    : Room::query()->whereKey($place->room_id)->value('property_id');
+            }
+
+            if (! $place->user_id) {
+                $place->user_id = $place->relationLoaded('property')
+                    ? $place->property?->host_user_id
+                    : Property::query()->whereKey($place->property_id)->value('host_user_id');
+            }
+
+            $place->title ??= $place->display_name;
+            $place->display_name ??= $place->title;
+            $place->place_type ??= self::foundationPlaceType($place->sleeping_place_type?->value ?? $place->type?->value ?? $place->type);
+            $place->sleeping_place_type ??= self::legacyPlaceType((string) $place->place_type);
+            $place->type ??= self::legacyPlaceType((string) $place->place_type);
+            $place->base_price ??= $place->base_price_per_night;
+            $place->base_price_per_night ??= $place->base_price;
+            $place->max_guests_count = $place->max_guests_count ?: ($place->max_guests ?: 1);
+            $place->max_guests = $place->max_guests ?: $place->max_guests_count;
+            $place->is_double_place = (bool) ($place->is_double_place || $place->is_double);
+            $place->has_mattress = (bool) ($place->has_mattress || $place->mattress_type);
+            $place->has_privacy_curtain = (bool) ($place->has_privacy_curtain || $place->has_curtain);
+            $place->has_personal_lamp = (bool) ($place->has_personal_lamp || $place->has_lamp);
+            $place->has_socket = (bool) ($place->has_socket || $place->has_power_socket);
+            $place->has_lockable_locker = (bool) ($place->has_lockable_locker || $place->locker_has_lock);
+            $place->suitable_for_tall_guest = (bool) ($place->suitable_for_tall_guest || $place->suitable_for_tall_person);
+            $place->suitable_for_couple = (bool) ($place->suitable_for_couple || $place->is_for_couple);
+        });
+
         static::deleting(function (SleepingPlace $place): void {
             $place->listingHintSnapshots()->delete();
             $place->guestHintDismissals()->delete();
@@ -37,9 +69,13 @@ class SleepingPlace extends Model
     protected $fillable = [
         'room_id',
         'property_id',
+        'user_id',
+        'title',
+        'place_type',
         'type',
         'sleeping_place_type',
         'sleeping_place_subtype',
+        'bed_type',
         'status',
         'place_number',
         'display_name',
@@ -49,6 +85,7 @@ class SleepingPlace extends Model
         'is_bottom_bunk',
         'is_single',
         'is_double',
+        'is_double_place',
         'is_for_one_person',
         'is_for_couple',
         'length_cm',
@@ -56,34 +93,46 @@ class SleepingPlace extends Model
         'height_cm',
         'mattress_type',
         'mattress_firmness',
+        'mattress_condition',
+        'has_mattress',
         'has_pillow',
         'has_blanket',
         'has_bedding',
         'has_towel',
         'has_curtain',
+        'has_privacy_curtain',
         'has_lamp',
+        'has_personal_lamp',
         'has_power_socket',
+        'has_socket',
         'has_usb',
         'has_shelf',
         'has_hook',
         'has_locker',
         'locker_has_lock',
+        'has_lockable_locker',
         'has_luggage_space',
         'near_window',
         'near_door',
         'near_radiator',
         'near_air_conditioner',
+        'near_passage',
         'privacy_level',
         'noise_level',
         'is_accessible',
         'suitable_for_tall_person',
+        'suitable_for_tall_guest',
+        'suitable_for_heavy_guest',
+        'suitable_for_couple',
         'suitable_for_elderly',
         'suitable_for_limited_mobility',
         'max_guests',
+        'max_guests_count',
         'min_guest_age',
         'max_guest_age',
         'sort_order',
         'base_price_per_night',
+        'base_price',
         'weekly_price',
         'monthly_price',
         'weekend_price',
@@ -118,31 +167,42 @@ class SleepingPlace extends Model
             'is_bottom_bunk' => 'boolean',
             'is_single' => 'boolean',
             'is_double' => 'boolean',
+            'is_double_place' => 'boolean',
             'is_for_one_person' => 'boolean',
             'is_for_couple' => 'boolean',
+            'has_mattress' => 'boolean',
             'has_pillow' => 'boolean',
             'has_blanket' => 'boolean',
             'has_bedding' => 'boolean',
             'has_towel' => 'boolean',
             'has_curtain' => 'boolean',
+            'has_privacy_curtain' => 'boolean',
             'has_lamp' => 'boolean',
+            'has_personal_lamp' => 'boolean',
             'has_power_socket' => 'boolean',
+            'has_socket' => 'boolean',
             'has_usb' => 'boolean',
             'has_shelf' => 'boolean',
             'has_hook' => 'boolean',
             'has_locker' => 'boolean',
             'locker_has_lock' => 'boolean',
+            'has_lockable_locker' => 'boolean',
             'has_luggage_space' => 'boolean',
             'near_window' => 'boolean',
             'near_door' => 'boolean',
             'near_radiator' => 'boolean',
             'near_air_conditioner' => 'boolean',
+            'near_passage' => 'boolean',
             'is_accessible' => 'boolean',
             'suitable_for_tall_person' => 'boolean',
+            'suitable_for_tall_guest' => 'boolean',
+            'suitable_for_heavy_guest' => 'boolean',
+            'suitable_for_couple' => 'boolean',
             'suitable_for_elderly' => 'boolean',
             'suitable_for_limited_mobility' => 'boolean',
             'sort_order' => 'integer',
             'base_price_per_night' => 'decimal:2',
+            'base_price' => 'decimal:2',
             'weekly_price' => 'decimal:2',
             'monthly_price' => 'decimal:2',
             'weekend_price' => 'decimal:2',
@@ -166,6 +226,36 @@ class SleepingPlace extends Model
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
+    }
+
+    private static function foundationPlaceType(?string $type): string
+    {
+        return match ($type) {
+            'single' => 'single_bed',
+            'double' => 'double_bed',
+            'bunk_top' => 'top_bunk',
+            'bunk_bottom' => 'bottom_bunk',
+            'fold_out' => 'folding_bed',
+            'sofa_bed' => 'sofa',
+            default => $type ?: 'single_bed',
+        };
+    }
+
+    private static function legacyPlaceType(string $type): string
+    {
+        return match ($type) {
+            'single_bed' => SleepingPlaceType::Single->value,
+            'double_bed' => SleepingPlaceType::Double->value,
+            'top_bunk' => SleepingPlaceType::BunkTop->value,
+            'bottom_bunk' => SleepingPlaceType::BunkBottom->value,
+            'folding_bed' => SleepingPlaceType::FoldOut->value,
+            default => SleepingPlaceType::tryFrom($type)?->value ?? SleepingPlaceType::Other->value,
+        };
+    }
+
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function room(): BelongsTo
@@ -370,7 +460,11 @@ class SleepingPlace extends Model
 
     public function scopeForHost(Builder $query, int $userId): Builder
     {
-        return $query->whereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
+        return $query->where(function (Builder $builder) use ($userId): void {
+            $builder
+                ->where($builder->qualifyColumn('user_id'), $userId)
+                ->orWhereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
+        });
     }
 
     public function scopeForRoom(Builder $query, int $roomId): Builder

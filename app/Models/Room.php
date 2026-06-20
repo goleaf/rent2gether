@@ -23,17 +23,23 @@ class Room extends Model
 
     protected $fillable = [
         'property_id',
+        'user_id',
         'title',
         'gender_type',
         'description',
         'capacity',
         'area_sqm',
         'has_lock',
+        'has_lockable_door',
+        'has_room_key',
         'has_window',
         'has_wardrobe',
+        'has_lockers',
         'has_desk',
+        'has_chairs',
         'has_ac',
         'has_heating',
+        'has_fan',
         'has_balcony',
         'rules',
         'status',
@@ -85,6 +91,7 @@ class Room extends Model
         'can_turn_light_at_night',
         'can_talk_at_night',
         'room_rules_text',
+        'rules_text',
         'publication_status',
         'completed_at',
     ];
@@ -106,12 +113,17 @@ class Room extends Model
             'is_for_long_stay' => 'boolean',
             'is_for_short_stay' => 'boolean',
             'has_lock' => 'boolean',
+            'has_lockable_door' => 'boolean',
+            'has_room_key' => 'boolean',
             'has_window' => 'boolean',
             'windows_count' => 'integer',
             'has_wardrobe' => 'boolean',
+            'has_lockers' => 'boolean',
             'has_desk' => 'boolean',
+            'has_chairs' => 'boolean',
             'has_ac' => 'boolean',
             'has_heating' => 'boolean',
+            'has_fan' => 'boolean',
             'has_balcony' => 'boolean',
             'rules' => 'array',
             'area_sqm' => 'decimal:1',
@@ -131,9 +143,29 @@ class Room extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Room $room): void {
+            if (! $room->user_id && $room->property_id) {
+                $room->user_id = $room->relationLoaded('property')
+                    ? $room->property?->host_user_id
+                    : Property::query()->whereKey($room->property_id)->value('host_user_id');
+            }
+
+            $room->has_lockable_door = (bool) ($room->has_lockable_door || $room->has_lock);
+            $room->has_chairs = (bool) ($room->has_chairs || $room->has_chair);
+            $room->rules_text ??= $room->room_rules_text;
+        });
+    }
+
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
+    }
+
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function translations(): HasMany
@@ -273,7 +305,11 @@ class Room extends Model
 
     public function scopeForHost(Builder $query, int $userId): Builder
     {
-        return $query->whereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
+        return $query->where(function (Builder $builder) use ($userId): void {
+            $builder
+                ->where('user_id', $userId)
+                ->orWhereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
+        });
     }
 
     public function scopeForProperty(Builder $query, int $propertyId): Builder

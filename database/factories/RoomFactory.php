@@ -18,17 +18,23 @@ class RoomFactory extends Factory
     {
         return [
             'property_id' => Property::factory(),
+            'user_id' => null,
             'title' => 'Room '.$this->faker->numberBetween(1, 20),
             'gender_type' => GenderType::Mixed->value,
             'description' => $this->faker->sentence(),
             'capacity' => $this->faker->numberBetween(2, 8),
             'area_sqm' => $this->faker->randomFloat(1, 10, 40),
             'has_lock' => $this->faker->boolean(),
+            'has_lockable_door' => $this->faker->boolean(),
+            'has_room_key' => $this->faker->boolean(),
             'has_window' => true,
             'has_wardrobe' => $this->faker->boolean(),
+            'has_lockers' => $this->faker->boolean(),
             'has_desk' => $this->faker->boolean(),
+            'has_chairs' => true,
             'has_ac' => $this->faker->boolean(),
             'has_heating' => true,
+            'has_fan' => false,
             'has_balcony' => $this->faker->boolean(20),
             'status' => RoomStatus::Active->value,
             'type' => RoomType::Shared->value,
@@ -79,6 +85,7 @@ class RoomFactory extends Factory
             'can_turn_light_at_night' => false,
             'can_talk_at_night' => false,
             'room_rules_text' => null,
+            'rules_text' => null,
         ];
     }
 }

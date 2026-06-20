@@ -20,7 +20,7 @@ class PropertyFactory extends Factory
     public function definition(): array
     {
         return [
-            'host_user_id' => User::factory(),
+            'host_user_id' => User::factory()->host(),
             'rental_unit_type' => PropertyRentalUnitType::SleepingPlace->value,
             'country_id' => Country::factory(),
             'region_id' => Region::factory(),
@@ -34,10 +34,13 @@ class PropertyFactory extends Factory
             'country' => 'Lithuania',
             'city' => $this->faker->city(),
             'district' => $this->faker->word(),
+            'district_id' => null,
             'street' => $this->faker->streetName(),
+            'street_name' => $this->faker->streetName(),
             'building' => $this->faker->buildingNumber(),
             'entrance' => (string) $this->faker->numberBetween(1, 5),
             'floor' => $this->faker->numberBetween(1, 10),
+            'floors_count' => $this->faker->numberBetween(2, 12),
             'has_elevator' => $this->faker->boolean(),
             'lat' => $this->faker->latitude(54.5, 55.0),
             'lng' => $this->faker->longitude(25.0, 25.5),
@@ -72,7 +75,10 @@ class PropertyFactory extends Factory
             'max_guests' => $this->faker->numberBetween(1, 8),
             'current_guests_count' => 0,
             'max_residents' => $this->faker->numberBetween(1, 10),
+            'max_residents_count' => $this->faker->numberBetween(1, 10),
             'current_residents_count' => 0,
+            'free_places_count' => 0,
+            'occupied_places_count' => 0,
             'permanent_residents_count' => 0,
             'short_term_guests_count' => 0,
             'active_rooms_count' => 0,

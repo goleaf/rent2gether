@@ -39,7 +39,9 @@ class Property extends Model
         'country',
         'city',
         'district',
+        'district_id',
         'street',
+        'street_name',
         'building',
         'entrance',
         'apartment',
@@ -60,6 +62,7 @@ class Property extends Model
         'apartment_number',
         'postal_code',
         'total_floors',
+        'floors_count',
         'latitude',
         'longitude',
         'approximate_latitude',
@@ -82,7 +85,10 @@ class Property extends Model
         'max_guests',
         'current_guests_count',
         'max_residents',
+        'max_residents_count',
         'current_residents_count',
+        'free_places_count',
+        'occupied_places_count',
         'permanent_residents_count',
         'short_term_guests_count',
         'active_rooms_count',
@@ -140,6 +146,10 @@ class Property extends Model
             'show_only_approximate_location' => 'boolean',
             'total_area' => 'decimal:2',
             'living_area' => 'decimal:2',
+            'floors_count' => 'integer',
+            'max_residents_count' => 'integer',
+            'free_places_count' => 'integer',
+            'occupied_places_count' => 'integer',
             'can_book_whole_property' => 'boolean',
             'can_book_private_room' => 'boolean',
             'can_book_sleeping_place' => 'boolean',
@@ -162,6 +172,11 @@ class Property extends Model
         static::saving(function (Property $property): void {
             $property->host_user_id ??= $property->user_id;
             $property->user_id ??= $property->host_user_id;
+            $property->street_name ??= $property->street;
+            $property->floors_count ??= $property->total_floors;
+            $property->max_residents_count ??= $property->max_residents;
+            $property->free_places_count ??= $property->free_sleeping_places_count;
+            $property->occupied_places_count ??= $property->occupied_sleeping_places_count;
         });
 
         static::deleting(function (Property $property): void {

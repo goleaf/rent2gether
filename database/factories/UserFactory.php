@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRoleMode;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +31,11 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role_mode' => UserRoleMode::Guest->value,
+            'preferred_locale' => 'en',
+            'timezone' => 'UTC',
+            'is_guest' => true,
+            'is_host' => false,
         ];
     }
 
@@ -40,6 +46,24 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function host(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_mode' => UserRoleMode::Host->value,
+            'is_guest' => false,
+            'is_host' => true,
+        ]);
+    }
+
+    public function guestHost(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_mode' => UserRoleMode::GuestHost->value,
+            'is_guest' => true,
+            'is_host' => true,
         ]);
     }
 }
