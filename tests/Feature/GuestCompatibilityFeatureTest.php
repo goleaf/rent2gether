@@ -52,6 +52,7 @@ class GuestCompatibilityFeatureTest extends TestCase
         $this->assertTrue(Schema::hasIndex('room_compatibility_profiles', ['room_id'], 'unique'));
         $this->assertTrue(Schema::hasIndex('sleeping_place_compatibility_profiles', ['sleeping_place_id'], 'unique'));
         $this->assertTrue(Schema::hasIndex('compatibility_results', ['user_id', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('compatibility_results', ['property_id']));
 
         $guest = User::factory()->create();
         $place = $this->place();

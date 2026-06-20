@@ -219,6 +219,7 @@ return new class extends Migration
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
 
+            $table->index('property_id');
             $table->index(['user_id', 'sleeping_place_id']);
             $table->index(['user_id', 'room_id']);
             $table->index(['sleeping_place_id', 'calculated_at']);
