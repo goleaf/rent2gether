@@ -21,7 +21,7 @@
 
         {{-- City & property --}}
         <div class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 truncate">
-            <flux:icon name="map-pin" class="size-3.5 shrink-0" />
+            <flux:icon name="map-pin" variant="mini" class="size-3.5 shrink-0" />
             <span class="truncate">{{ $bed->room->property->city }}{{ $bed->room->property->district ? ', '.$bed->room->property->district : '' }}</span>
         </div>
 

@@ -2,12 +2,10 @@
 
 namespace App\Livewire\Search;
 
+use App\Data\Listings\ListingCardContext;
 use App\Enums\GenderType;
-use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
-use App\Enums\RoomStatus;
 use App\Enums\RoomType;
-use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Models\Amenity;
 use App\Models\City;
@@ -16,6 +14,8 @@ use App\Models\Property;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\CompatibilityService;
+use App\Services\Listings\ListingCardQueryService;
+use App\Services\Listings\ListingCardService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use App\Services\PricingService;
 use App\Support\Geo\GeoNameNormalizer;
@@ -358,19 +358,15 @@ class SleepingPlaceSearch extends Component
     #[Computed]
     public function searchResults(): array
     {
+        $context = $this->listingCardContext();
         $places = $this->searchQuery()
             ->limit($this->visibleCount + 1)
             ->get();
         $hasMore = $places->count() > $this->visibleCount;
-        $guest = auth()->user();
 
-        if ($guest instanceof User) {
-            $guest->loadMissing('guestPreference');
-        }
-
-        $cards = $places
-            ->take($this->visibleCount)
-            ->map(fn (SleepingPlace $place): array => $this->toCard($place, $guest))
+        $cards = app(ListingCardService::class)
+            ->buildMany($places->take($this->visibleCount), $context)
+            ->map(fn ($card): array => $card->toArray())
             ->values()
             ->all();
 
@@ -440,42 +436,7 @@ class SleepingPlaceSearch extends Component
 
     private function searchQuery(): Builder
     {
-        $query = SleepingPlace::query()
-            ->select([
-                'sleeping_places.id',
-                'sleeping_places.room_id',
-                'sleeping_places.property_id',
-                'sleeping_places.type',
-                'sleeping_places.status',
-                'sleeping_places.place_number',
-                'sleeping_places.display_name',
-                'sleeping_places.bunk_level',
-                'sleeping_places.has_bedding',
-                'sleeping_places.has_towel',
-                'sleeping_places.has_locker',
-                'sleeping_places.has_luggage_space',
-                'sleeping_places.is_accessible',
-                'sleeping_places.max_guests',
-                'sleeping_places.base_price_per_night',
-                'sleeping_places.weekly_price',
-                'sleeping_places.monthly_price',
-                'sleeping_places.weekend_price',
-                'sleeping_places.cleaning_fee',
-                'sleeping_places.deposit_amount',
-                'sleeping_places.currency',
-                'sleeping_places.min_nights',
-                'sleeping_places.max_nights',
-                'sleeping_places.instant_booking_enabled',
-                'sleeping_places.requires_host_approval',
-                'sleeping_places.created_at',
-            ])
-            ->join('rooms as search_rooms', 'search_rooms.id', '=', 'sleeping_places.room_id')
-            ->join('properties as search_properties', 'search_properties.id', '=', 'sleeping_places.property_id')
-            ->leftJoin('host_profiles as search_host_profiles', 'search_host_profiles.user_id', '=', 'search_properties.host_user_id')
-            ->where('sleeping_places.status', SleepingPlaceStatus::Active->value)
-            ->where('search_rooms.status', RoomStatus::Active->value)
-            ->where('search_properties.status', PropertyStatus::Active->value)
-            ->with($this->eagerLoads());
+        $query = app(ListingCardQueryService::class)->forSearch($this->listingCardContext());
 
         $this->applyLocationFilters($query);
         $this->applyDateFilters($query);
@@ -485,6 +446,26 @@ class SleepingPlaceSearch extends Component
         $this->applySorting($query);
 
         return $query;
+    }
+
+    private function listingCardContext(): ListingCardContext
+    {
+        return new ListingCardContext(
+            userId: auth()->id(),
+            locale: app()->getLocale(),
+            currency: strtoupper($this->currency ?: 'EUR'),
+            checkInDate: $this->checkIn ?: null,
+            checkOutDate: $this->checkOut ?: null,
+            nightsCount: $this->nights ?: null,
+            calendarDaysCount: $this->calendarDays ?: null,
+            guestsCount: max(1, $this->guestsCount),
+            source: 'search',
+            filters: [
+                'variant' => 'search',
+                'search_filtered_available' => $this->dateRange() !== null && ! $this->flexibleDates,
+                'comparison_ids' => session('comparison_places', []),
+            ],
+        );
     }
 
     /**

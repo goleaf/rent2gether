@@ -8,7 +8,6 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use Throwable;
@@ -20,16 +19,26 @@ class ReportMissingTranslations extends Command
     public function handle(): int
     {
         $locales = config('localization.supported_locales');
-        $catalogues = collect($locales)->mapWithKeys(
-            fn (string $locale): array => [$locale => $this->catalogue($locale)],
-        );
-        $expectedKeys = $catalogues->flatMap(fn (array $catalogue): array => array_keys($catalogue))->unique()->sort();
-        $problems = collect();
+        $catalogues = [];
+        $expectedKeys = [];
+        $problems = [];
+        $seenProblems = [];
+
+        foreach ($locales as $locale) {
+            $catalogue = $this->catalogue($locale);
+            $catalogues[$locale] = $catalogue;
+
+            foreach ($catalogue as $key => $value) {
+                $expectedKeys[$key] = true;
+            }
+        }
+
+        ksort($expectedKeys);
 
         foreach ($catalogues as $locale => $catalogue) {
-            foreach ($expectedKeys as $key) {
+            foreach ($expectedKeys as $key => $exists) {
                 if (! array_key_exists($key, $catalogue)) {
-                    $problems->push(['missing_key', $locale, $key]);
+                    $this->addProblem($problems, $seenProblems, 'missing_key', $locale, $key);
                 }
             }
         }
@@ -37,40 +46,38 @@ class ReportMissingTranslations extends Command
         foreach ($this->referencedKeys() as $key) {
             foreach ($catalogues as $locale => $catalogue) {
                 if (! array_key_exists($key, $catalogue)) {
-                    $problems->push(['referenced_key', $locale, $key]);
+                    $this->addProblem($problems, $seenProblems, 'referenced_key', $locale, $key);
                 }
             }
         }
 
         foreach ($this->enumLabelProblems($locales) as $problem) {
-            $problems->push($problem);
+            $this->addProblem($problems, $seenProblems, ...$problem);
         }
 
         foreach ($this->catalogueSeedProblems() as $problem) {
-            $problems->push($problem);
+            $this->addProblem($problems, $seenProblems, ...$problem);
         }
 
         foreach ($this->validationAttributeProblems($catalogues) as $problem) {
-            $problems->push($problem);
+            $this->addProblem($problems, $seenProblems, ...$problem);
         }
 
         foreach ($this->hardCodedBladeTextProblems() as $problem) {
-            $problems->push($problem);
+            $this->addProblem($problems, $seenProblems, ...$problem);
         }
 
-        $problems = $problems->unique(fn (array $item): string => implode(':', $item))->values();
-
-        if ($problems->isNotEmpty()) {
+        if ($problems !== []) {
             $this->components->error(__('app.translation_report.missing'));
             $this->table(
                 [__('app.translation_report.type'), __('app.translation_report.locale'), __('app.translation_report.key')],
-                $problems->all(),
+                $problems,
             );
 
             return self::FAILURE;
         }
 
-        $this->components->info(__('app.translation_report.complete', ['count' => $expectedKeys->count()]));
+        $this->components->info(__('app.translation_report.complete', ['count' => count($expectedKeys)]));
 
         return self::SUCCESS;
     }
@@ -78,31 +85,29 @@ class ReportMissingTranslations extends Command
     /** @return array<string, mixed> */
     private function catalogue(string $locale): array
     {
-        return collect(File::files(lang_path($locale)))
-            ->filter(fn ($file): bool => $file->getExtension() === 'php')
-            ->flatMap(function ($file): array {
-                $name = $file->getFilenameWithoutExtension();
-                $values = Arr::dot(require $file->getPathname());
-                $keys = collect($values)
-                    ->keys()
-                    ->flatMap(function (string $key): array {
-                        $parts = explode('.', $key);
-                        $prefixes = [];
+        $catalogue = [];
 
-                        while (count($parts) > 1) {
-                            array_pop($parts);
-                            $prefixes[] = implode('.', $parts);
-                        }
+        foreach (File::files(lang_path($locale)) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
 
-                        return [$key, ...$prefixes];
-                    })
-                    ->unique();
+            $name = $file->getFilenameWithoutExtension();
+            $values = Arr::dot(require $file->getPathname());
 
-                return $keys
-                    ->mapWithKeys(fn (string $key): array => [$name.'.'.$key => $values[$key] ?? true])
-                    ->all();
-            })
-            ->all();
+            foreach ($values as $key => $value) {
+                $catalogue[$name.'.'.$key] = $value ?? true;
+
+                $parts = explode('.', $key);
+
+                while (count($parts) > 1) {
+                    array_pop($parts);
+                    $catalogue[$name.'.'.implode('.', $parts)] ??= true;
+                }
+            }
+        }
+
+        return $catalogue;
     }
 
     /** @return list<string> */
@@ -114,7 +119,7 @@ class ReportMissingTranslations extends Command
             database_path('seeders'),
             base_path('tests'),
         ];
-        $keys = collect();
+        $keys = [];
 
         foreach ($directories as $directory) {
             if (! File::isDirectory($directory)) {
@@ -125,19 +130,48 @@ class ReportMissingTranslations extends Command
                 $contents = $file->getContents();
 
                 preg_match_all('/(?:__|trans|trans_choice)\(\s*([\'"])([a-z0-9_.-]+)\1/u', $contents, $matches);
-                $keys->push(...$matches[2]);
+                $this->addReferencedKeys($keys, $matches[2]);
 
                 preg_match_all('/Lang::(?:get|has|choice)\(\s*([\'"])([a-z0-9_.-]+)\1/u', $contents, $matches);
-                $keys->push(...$matches[2]);
+                $this->addReferencedKeys($keys, $matches[2]);
             }
         }
 
-        return $keys
-            ->filter(fn (string $key): bool => ! str_ends_with($key, '.') && ! str_ends_with($key, '_'))
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
+        $keys = array_keys($keys);
+        sort($keys);
+
+        return $keys;
+    }
+
+    /**
+     * @param  list<array{string,string,string}>  $problems
+     * @param  array<string,true>  $seenProblems
+     */
+    private function addProblem(array &$problems, array &$seenProblems, string $type, string $locale, string $key): void
+    {
+        $fingerprint = $type.':'.$locale.':'.$key;
+
+        if (isset($seenProblems[$fingerprint])) {
+            return;
+        }
+
+        $seenProblems[$fingerprint] = true;
+        $problems[] = [$type, $locale, $key];
+    }
+
+    /**
+     * @param  array<string,true>  $keys
+     * @param  list<string>  $matches
+     */
+    private function addReferencedKeys(array &$keys, array $matches): void
+    {
+        foreach ($matches as $key) {
+            if (str_ends_with($key, '.') || str_ends_with($key, '_')) {
+                continue;
+            }
+
+            $keys[$key] = true;
+        }
     }
 
     /**
@@ -209,7 +243,7 @@ class ReportMissingTranslations extends Command
     }
 
     /**
-     * @param  Collection<string,array<string,mixed>>  $catalogues
+     * @param  array<string,array<string,mixed>>  $catalogues
      * @return list<array{string,string,string}>
      */
     private function validationAttributeProblems($catalogues): array

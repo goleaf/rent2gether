@@ -1,0 +1,59 @@
+<form wire:submit="save" class="space-y-5">
+    <flux:card class="space-y-4">
+        <div>
+            <flux:heading size="lg">{{ __('room.steps.access_storage.title') }}</flux:heading>
+            <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('room.steps.access_storage.helper') }}</flux:text>
+        </div>
+
+        @if($wasSaved)
+            <flux:callout color="emerald" icon="check-circle">
+                <flux:callout.text>{{ __('room.messages.saved') }}</flux:callout.text>
+            </flux:callout>
+        @endif
+
+        <div class="grid gap-3 sm:grid-cols-2">
+            @foreach(['hasDoor', 'hasLock', 'hasKey', 'keyGivenToGuest', 'canLockFromInside', 'canLockFromOutside', 'hasWardrobe', 'hasSharedWardrobe', 'hasPersonalLockers', 'lockersHaveLocks', 'hasLuggageSpace', 'hasDesk', 'hasChairs', 'hasMirror', 'canStoreFood'] as $field)
+                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+            @endforeach
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            <flux:field>
+                <flux:label>{{ __('room.fields.personal_lockers_count') }}</flux:label>
+                <flux:input type="number" inputmode="numeric" wire:model.blur="personalLockersCount" />
+                <flux:error name="personalLockersCount" />
+            </flux:field>
+            <flux:field>
+                <flux:label>{{ __('room.fields.chairs_count') }}</flux:label>
+                <flux:input type="number" inputmode="numeric" wire:model.blur="chairsCount" />
+                <flux:error name="chairsCount" />
+            </flux:field>
+            <flux:field>
+                <flux:label>{{ __('room.fields.privacy_level') }}</flux:label>
+                <flux:select wire:model.change="privacyLevel">
+                    <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
+                    @foreach(['shared', 'moderate', 'private'] as $level)
+                        <flux:select.option value="{{ $level }}">{{ __('room.levels.'.$level) }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="privacyLevel" />
+            </flux:field>
+        </div>
+
+        <flux:field>
+            <flux:label>{{ __('room.fields.food_storage_allowed_type') }}</flux:label>
+            <flux:select wire:model.change="foodStorageAllowedType">
+                <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
+                @foreach(['none', 'dry_food_only', 'kitchen_only', 'small_snacks'] as $type)
+                    <flux:select.option value="{{ $type }}">{{ __('room.food_storage.'.$type) }}</flux:select.option>
+                @endforeach
+            </flux:select>
+            <flux:error name="foodStorageAllowedType" />
+        </flux:field>
+    </flux:card>
+
+    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled">
+        <span wire:loading.remove wire:target="save">{{ __('room.actions.save_step') }}</span>
+        <span wire:loading wire:target="save">{{ __('room.messages.saving') }}</span>
+    </flux:button>
+</form>

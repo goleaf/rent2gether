@@ -108,6 +108,10 @@ Search rules:
 - Prioritize city prefix matches, then larger population.
 - Use SQLite indexes on normalized names, status, country filters, and GeoNames IDs.
 - Never load the complete country or city list into a mobile select.
+- Advanced place filters for district, street, landmark, nearby transit, airports, universities, hospitals, sea, parks, shopping, gyms, coworking, nightlife, and area type must use stored local metadata or offline/imported point data.
+- Do not call a live external geocoding/search API while the user searches or filters.
+- `near_work` must use a user-saved coordinate/local area reference or a local landmark search; never send a private work address to public Nominatim during normal search.
+- If a future `location_points` import is added, store source, license, normalized name, category, country/city IDs, latitude, longitude, and attribution notes.
 
 ## Map Shapes
 

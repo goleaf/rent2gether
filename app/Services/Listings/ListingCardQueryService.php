@@ -1,0 +1,250 @@
+<?php
+
+namespace App\Services\Listings;
+
+use App\Data\Listings\ListingCardContext;
+use App\Enums\PropertyStatus;
+use App\Enums\RoomStatus;
+use App\Enums\SleepingPlaceStatus;
+use App\Models\Favorite;
+use App\Models\SavedSearch;
+use App\Models\SleepingPlace;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+
+class ListingCardQueryService
+{
+    public function baseQuery(ListingCardContext $context): Builder
+    {
+        return SleepingPlace::query()
+            ->select($this->sleepingPlaceColumns())
+            ->join('rooms as search_rooms', 'search_rooms.id', '=', 'sleeping_places.room_id')
+            ->join('properties as search_properties', 'search_properties.id', '=', 'sleeping_places.property_id')
+            ->leftJoin('host_profiles as search_host_profiles', 'search_host_profiles.user_id', '=', 'search_properties.host_user_id')
+            ->where('sleeping_places.status', SleepingPlaceStatus::Active->value)
+            ->where('search_rooms.status', RoomStatus::Active->value)
+            ->where('search_properties.status', PropertyStatus::Active->value)
+            ->withCount([
+                'reviews as published_reviews_count' => fn (Builder $query) => $query->visible()->guestToPlace(),
+            ])
+            ->withAvg([
+                'reviews as published_reviews_rating' => fn (Builder $query) => $query->visible()->guestToPlace(),
+            ], 'overall_rating')
+            ->withAvg([
+                'reviews as published_cleanliness_rating' => fn (Builder $query) => $query->visible()->guestToPlace(),
+            ], 'cleanliness_rating')
+            ->withAvg([
+                'reviews as published_safety_rating' => fn (Builder $query) => $query->visible()->guestToPlace(),
+            ], 'safety_rating')
+            ->with($this->cardEagerLoads($context));
+    }
+
+    public function forSearch(ListingCardContext $context): Builder
+    {
+        return $this->baseQuery($context);
+    }
+
+    public function forFavorites(User $user, ListingCardContext $context): Builder
+    {
+        $ids = Favorite::query()
+            ->where('user_id', $user->id)
+            ->whereNotNull('sleeping_place_id')
+            ->pluck('sleeping_place_id')
+            ->all();
+
+        return $this->baseQuery($context)->whereIn('sleeping_places.id', $ids);
+    }
+
+    public function forSavedSearch(SavedSearch $search, ListingCardContext $context): Builder
+    {
+        return $this->baseQuery($context)
+            ->whereIn('sleeping_places.id', $search->results()->select('sleeping_place_id'));
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    public function forComparison(array $ids, ListingCardContext $context): Builder
+    {
+        return $this->baseQuery($context)->whereIn('sleeping_places.id', $ids);
+    }
+
+    public function forRecommendations(User $user, ListingCardContext $context): Builder
+    {
+        return $this->baseQuery($context)
+            ->orderByDesc('sleeping_places.instant_booking_enabled')
+            ->orderBy('sleeping_places.base_price_per_night')
+            ->limit(12);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function cardEagerLoads(ListingCardContext $context): array
+    {
+        $locales = $this->translationLocales($context);
+        $mediaSelect = [
+            'id',
+            'mediable_type',
+            'mediable_id',
+            'disk',
+            'path',
+            'thumb_path',
+            'thumbnail_path',
+            'mobile_path',
+            'full_path',
+            'alt_text',
+            'caption_en',
+            'caption_ru',
+            'sort_order',
+            'is_primary',
+            'is_cover',
+            'status',
+        ];
+        $amenitySelect = ['amenities.id', 'amenities.slug', 'amenities.category', 'amenities.status'];
+        $ruleSelect = ['rules.id', 'rules.slug', 'rules.category', 'rules.status'];
+        $amenities = fn ($query) => $query
+            ->select($amenitySelect)
+            ->whereIn('amenities.slug', ListingCardAmenityRuleService::KEY_AMENITY_SLUGS)
+            ->where('amenities.status', 'active');
+        $rules = fn ($query) => $query
+            ->select($ruleSelect)
+            ->whereIn('rules.slug', ListingCardAmenityRuleService::KEY_RULE_SLUGS)
+            ->where('rules.status', 'active');
+        $amenityTranslations = fn ($query) => $query
+            ->select(['id', 'amenity_id', 'locale', 'name'])
+            ->whereIn('locale', $locales);
+        $ruleTranslations = fn ($query) => $query
+            ->select(['id', 'rule_id', 'locale', 'name'])
+            ->whereIn('locale', $locales);
+
+        $with = [
+            'translations' => fn ($query) => $query
+                ->select(['id', 'sleeping_place_id', 'locale', 'title', 'summary'])
+                ->whereIn('locale', $locales),
+            'cardMedia' => fn ($query) => $query->select($mediaSelect),
+            'amenities' => $amenities,
+            'amenities.translations' => $amenityTranslations,
+            'rules' => $rules,
+            'rules.translations' => $ruleTranslations,
+            'room' => fn ($query) => $query
+                ->select([
+                    'id',
+                    'property_id',
+                    'type',
+                    'status',
+                    'title',
+                    'gender_policy',
+                    'gender_type',
+                    'capacity',
+                    'beds_count',
+                    'max_guests',
+                    'occupied_places_count',
+                    'available_places_count',
+                    'has_desk',
+                    'has_chair',
+                    'noise_level',
+                ])
+                ->with([
+                    'translations' => fn ($translation) => $translation
+                        ->select(['id', 'room_id', 'locale', 'title', 'summary'])
+                        ->whereIn('locale', $locales),
+                    'cardMedia' => fn ($media) => $media->select($mediaSelect),
+                    'amenities' => $amenities,
+                    'amenities.translations' => $amenityTranslations,
+                    'rules' => $rules,
+                    'rules.translations' => $ruleTranslations,
+                ]),
+            'property' => fn ($query) => $query
+                ->select([
+                    'id',
+                    'host_user_id',
+                    'city_id',
+                    'type',
+                    'property_type',
+                    'status',
+                    'city',
+                    'district',
+                    'distance_to_center_meters',
+                    'kitchens_count',
+                    'has_elevator',
+                    'has_parking',
+                    'title',
+                    'current_guests_count',
+                    'current_residents_count',
+                ])
+                ->with([
+                    'translations' => fn ($translation) => $translation
+                        ->select(['id', 'property_id', 'locale', 'title', 'summary'])
+                        ->whereIn('locale', $locales),
+                    'cityModel:id,name',
+                    'cardMedia' => fn ($media) => $media->select($mediaSelect),
+                    'amenities' => $amenities,
+                    'amenities.translations' => $amenityTranslations,
+                    'rules' => $rules,
+                    'rules.translations' => $ruleTranslations,
+                    'host:id,name,rating_as_host,identity_verified,identity_verified_at',
+                    'host.hostProfile:id,user_id,rating_average,reviews_count,response_time_minutes,verified_at,default_cancellation_policy',
+                ]),
+        ];
+
+        if ($context->hasDates()) {
+            $with['availabilityDays'] = fn ($query) => $query
+                ->select(['id', 'sleeping_place_id', 'date', 'price_override'])
+                ->whereDate('date', '>=', $context->checkInDate)
+                ->whereDate('date', '<', $context->checkOutDate)
+                ->whereNotNull('price_override');
+        }
+
+        return $with;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function sleepingPlaceColumns(): array
+    {
+        return [
+            'sleeping_places.id',
+            'sleeping_places.room_id',
+            'sleeping_places.property_id',
+            'sleeping_places.type',
+            'sleeping_places.status',
+            'sleeping_places.place_number',
+            'sleeping_places.display_name',
+            'sleeping_places.bunk_level',
+            'sleeping_places.has_bedding',
+            'sleeping_places.has_towel',
+            'sleeping_places.has_locker',
+            'sleeping_places.has_luggage_space',
+            'sleeping_places.is_accessible',
+            'sleeping_places.max_guests',
+            'sleeping_places.base_price_per_night',
+            'sleeping_places.weekly_price',
+            'sleeping_places.monthly_price',
+            'sleeping_places.weekend_price',
+            'sleeping_places.cleaning_fee',
+            'sleeping_places.deposit_amount',
+            'sleeping_places.currency',
+            'sleeping_places.min_nights',
+            'sleeping_places.max_nights',
+            'sleeping_places.instant_booking_enabled',
+            'sleeping_places.requires_host_approval',
+            'sleeping_places.extensions_allowed',
+            'sleeping_places.created_at',
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function translationLocales(ListingCardContext $context): array
+    {
+        return array_values(array_unique(array_filter([
+            $context->locale,
+            config('app.fallback_locale', 'en'),
+            'en',
+            'ru',
+        ])));
+    }
+}

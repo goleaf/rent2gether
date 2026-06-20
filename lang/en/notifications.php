@@ -159,6 +159,84 @@ return [
         'title' => 'One step left',
         'body' => 'Open the booking to see what to do next.',
     ],
+    'saved_search_new_matches' => [
+        'title' => 'New places match your search',
+        'body' => ':count new places match “:search”.',
+    ],
+    'saved_search_price_drop' => [
+        'title' => 'A saved search found a lower price',
+        'body' => ':count places in “:search” are cheaper now.',
+    ],
+    'saved_search_available_again' => [
+        'title' => 'A place is available again',
+        'body' => ':count places in “:search” are available again.',
+    ],
+    'saved_search_better_match' => [
+        'title' => 'A better match appeared',
+        'body' => ':count strong matches appeared for “:search”.',
+    ],
+    'saved_search_expiring_dates' => [
+        'title' => 'Update saved search dates',
+        'body' => 'The dates for “:search” have passed. Update them to keep checking.',
+    ],
+    'waitlist_joined' => [
+        'title' => 'You joined the waitlist',
+        'body' => 'We will tell you if the place becomes available.',
+    ],
+    'waitlist_offer_created' => [
+        'title' => 'A waitlisted place is available',
+        'body' => 'You have limited time to book this place first.',
+    ],
+    'waitlist_offer_expiring' => [
+        'title' => 'Your waitlist offer expires soon',
+        'body' => 'Open the offer before the booking window closes.',
+    ],
+    'waitlist_offer_expired' => [
+        'title' => 'Your waitlist offer expired',
+        'body' => 'The place was offered to the next guest in the queue.',
+    ],
+    'waitlist_skipped_to_next' => [
+        'title' => 'The queue moved on',
+        'body' => 'The booking window expired, so the place was offered to the next guest.',
+    ],
+    'waitlist_place_unavailable_again' => [
+        'title' => 'The place became unavailable again',
+        'body' => 'Keep your waitlist item active and we will check again.',
+    ],
+    'waitlist_price_too_high' => [
+        'title' => 'The price is above your limit',
+        'body' => 'You can change your limit or keep waiting.',
+    ],
+    'waitlist_completed' => [
+        'title' => 'Waitlist item completed',
+        'body' => 'Your waitlist item was completed.',
+    ],
+    'host_waiting_guests_available' => [
+        'title' => 'Guests are waiting',
+        'body' => 'Guests are waiting for this sleeping place.',
+    ],
+    'favorites' => [
+        'reminder_due' => [
+            'title' => 'Favorite reminder',
+            'body' => 'You asked to check :place again.',
+        ],
+        'price_dropped' => [
+            'title' => 'A favorite is cheaper',
+            'body' => ':place dropped by :amount.',
+        ],
+        'price_increased' => [
+            'title' => 'A favorite price changed',
+            'body' => ':place increased by :amount.',
+        ],
+        'available_again' => [
+            'title' => 'A favorite is available again',
+            'body' => ':place is available again for your saved dates.',
+        ],
+        'unavailable' => [
+            'title' => 'A favorite became unavailable',
+            'body' => ':place is no longer available for your saved dates.',
+        ],
+    ],
     'decision' => [
         'favorite_price_drop' => [
             'title' => 'A favorite is cheaper now',

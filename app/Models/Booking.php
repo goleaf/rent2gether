@@ -324,6 +324,11 @@ class Booking extends Model
         return $this->hasOne(Payout::class);
     }
 
+    public function occupantSnapshot(): HasOne
+    {
+        return $this->hasOne(RoomOccupantSnapshot::class);
+    }
+
     public function guestReview(): ?Review
     {
         return $this->reviews()->where('type', 'guest_to_place')->first();

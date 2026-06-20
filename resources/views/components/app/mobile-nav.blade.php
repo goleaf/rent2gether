@@ -11,11 +11,13 @@
         ]
         : [
             ['route' => 'search.index', 'active' => 'search.*', 'icon' => 'magnifying-glass', 'label' => __('navigation.search')],
+            ['route' => 'saved-searches.index', 'active' => 'saved-searches.*', 'icon' => 'bookmark', 'label' => __('navigation.saved_searches')],
             ['route' => 'trips.index', 'active' => 'trips.*|guest.bookings.*|bookings.*', 'icon' => 'calendar-days', 'label' => __('navigation.trips')],
             ['route' => 'favorites.index', 'active' => 'favorites.*', 'icon' => 'heart', 'label' => __('navigation.favorites')],
             ['route' => 'messages.index', 'active' => 'messages.*', 'icon' => 'chat-bubble-left-right', 'label' => __('navigation.messages')],
             ['route' => 'profile.index', 'active' => 'profile.*', 'icon' => 'user-circle', 'label' => __('navigation.profile')],
         ];
+    $gridColumns = count($items) === 6 ? 'grid-cols-6' : 'grid-cols-5';
 @endphp
 
 <nav
@@ -24,7 +26,7 @@
     ]) }}
     aria-label="{{ $isHostMode ? __('navigation.host_mobile') : __('navigation.primary_mobile') }}"
 >
-    <div class="grid grid-cols-5 gap-1">
+    <div @class(['grid gap-1', $gridColumns])>
         @foreach($items as $item)
             @php($active = request()->routeIs(...explode('|', $item['active'])))
 

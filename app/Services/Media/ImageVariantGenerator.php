@@ -62,6 +62,12 @@ class ImageVariantGenerator
 
     private function writeJpegVariant(UploadedFile $file, string $path, int $maxSize, int $quality, string $disk): void
     {
+        if ($this->canCopyOriginalJpeg($file, $maxSize)) {
+            Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
+
+            return;
+        }
+
         $source = imagecreatefromstring(file_get_contents($file->getRealPath()));
 
         if (! $source) {
@@ -89,6 +95,25 @@ class ImageVariantGenerator
         imagedestroy($target);
 
         Storage::disk($disk)->put($path, $contents);
+    }
+
+    private function canCopyOriginalJpeg(UploadedFile $file, int $maxSize): bool
+    {
+        $size = @getimagesize($file->getRealPath());
+
+        if (! is_array($size)) {
+            return false;
+        }
+
+        $width = (int) ($size[0] ?? 0);
+        $height = (int) ($size[1] ?? 0);
+        $mime = (string) ($size['mime'] ?? $file->getMimeType());
+
+        return $mime === 'image/jpeg'
+            && $width > 0
+            && $height > 0
+            && $width <= $maxSize
+            && $height <= $maxSize;
     }
 
     /**

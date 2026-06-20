@@ -1,0 +1,75 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\GuestCompatibilityProfile;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<GuestCompatibilityProfile>
+ */
+class GuestCompatibilityProfileFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'user_id' => User::factory(),
+            'smokes' => false,
+            'smoking_preference' => 'non_smoker',
+            'tobacco_smell_sensitivity' => 'normal',
+            'wakes_up_early' => true,
+            'wakes_up_late' => false,
+            'sleeps_early' => false,
+            'sleeps_late' => false,
+            'works_at_night' => false,
+            'studies_at_night' => false,
+            'returns_late' => false,
+            'needs_late_entry' => false,
+            'needs_quiet_at_night' => true,
+            'sensitive_to_light_at_night' => false,
+            'sensitive_to_noise_at_night' => true,
+            'student' => false,
+            'working' => true,
+            'remote_worker' => false,
+            'needs_workspace' => false,
+            'needs_fast_wifi' => false,
+            'needs_power_socket' => false,
+            'needs_online_calls' => false,
+            'often_home' => false,
+            'rarely_home' => false,
+            'mostly_only_sleeps' => false,
+            'cooks_often' => false,
+            'needs_kitchen' => false,
+            'needs_fridge_shelf' => false,
+            'needs_washing_machine' => false,
+            'social_level' => 'balanced',
+            'prefers_private_space' => true,
+            'comfortable_with_strangers' => true,
+            'cleanliness_expectation' => 'normal',
+            'ready_to_join_cleaning' => true,
+            'wants_private_room' => false,
+            'comfortable_with_shared_room' => true,
+            'max_people_in_room' => 4,
+            'wants_female_room' => false,
+            'wants_male_room' => false,
+            'comfortable_with_mixed_room' => true,
+            'wants_lower_bunk' => false,
+            'avoids_upper_bunk' => false,
+            'avoids_sofa' => false,
+            'avoids_floor_mattress' => false,
+            'needs_locker' => false,
+            'needs_locker_lock' => false,
+            'needs_luggage_space' => false,
+            'needs_bedding' => true,
+            'needs_towel' => false,
+            'needs_curtain' => false,
+            'travelling_with_pet' => false,
+            'avoids_pets' => false,
+            'has_pet_allergy' => false,
+            'needs_self_check_in' => false,
+            'needs_24_7_access' => false,
+            'profile_completed_at' => null,
+        ];
+    }
+}

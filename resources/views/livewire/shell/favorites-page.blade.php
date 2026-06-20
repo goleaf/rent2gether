@@ -17,5 +17,5 @@
         @endif
     </section>
 
-    <livewire:favorites.favorites-list />
+    <livewire:favorites.favorites-page />
 </div>

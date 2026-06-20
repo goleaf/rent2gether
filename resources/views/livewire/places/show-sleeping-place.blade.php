@@ -1,233 +1,115 @@
 @php
-    $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
     $primaryImage = $gallery[0] ?? null;
 @endphp
 
 <div class="mx-auto max-w-6xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
-    <div class="space-y-2">
-        <flux:button
-            variant="ghost"
-            size="sm"
-            icon="arrow-left"
-            href="{{ route('search.index', ['locale' => app()->getLocale()]) }}"
-            wire:navigate
-        >
-            {{ __('listing.detail.actions.back_to_search') }}
-        </flux:button>
+    <flux:button
+        variant="ghost"
+        size="sm"
+        icon="arrow-left"
+        href="{{ route('search.index', ['locale' => app()->getLocale()]) }}"
+        wire:navigate
+    >
+        {{ __('listing.detail.actions.back_to_search') }}
+    </flux:button>
 
-        <flux:heading size="xl" level="1">{{ $title }}</flux:heading>
-        <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.helper') }}</flux:text>
-    </div>
+    <section aria-labelledby="place-gallery-title" class="space-y-3">
+        <flux:heading id="place-gallery-title" size="lg">{{ __('listing.detail.gallery.title') }}</flux:heading>
 
-    <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <div class="space-y-5">
-            <section aria-labelledby="place-gallery-title" class="space-y-3">
-                <flux:heading id="place-gallery-title" size="lg">{{ __('listing.detail.gallery.title') }}</flux:heading>
+        @if($primaryImage)
+            <div class="overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                <img
+                    src="{{ $primaryImage['url'] }}"
+                    alt="{{ $primaryImage['alt'] }}"
+                    width="960"
+                    height="640"
+                    decoding="async"
+                    class="aspect-[4/3] w-full object-cover sm:aspect-[16/10]"
+                />
+            </div>
 
-                @if($primaryImage)
-                    <div class="overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+            @if(count($gallery) > 1)
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                    @forelse(array_slice($gallery, 1) as $image)
                         <img
-                            src="{{ $primaryImage['url'] }}"
-                            alt="{{ $primaryImage['alt'] }}"
-                            width="960"
-                            height="640"
+                            src="{{ $image['thumb_url'] }}"
+                            alt="{{ $image['alt'] }}"
+                            width="112"
+                            height="84"
+                            loading="lazy"
                             decoding="async"
-                            class="aspect-[4/3] w-full object-cover sm:aspect-[16/10]"
+                            class="h-20 w-28 shrink-0 rounded-lg bg-zinc-100 object-cover dark:bg-zinc-900"
                         />
-                    </div>
-
-                    @if(count($gallery) > 1)
-                        <div class="flex gap-2 overflow-x-auto pb-1">
-                            @foreach(array_slice($gallery, 1) as $image)
-                                <img
-                                    src="{{ $image['thumb_url'] }}"
-                                    alt="{{ $image['alt'] }}"
-                                    width="112"
-                                    height="84"
-                                    loading="lazy"
-                                    decoding="async"
-                                    class="h-20 w-28 shrink-0 rounded-lg bg-zinc-100 object-cover dark:bg-zinc-900"
-                                />
-                            @endforeach
-                        </div>
-                    @endif
-                @else
-                    <div class="flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-900">
-                        <div class="space-y-2 text-center text-zinc-500">
-                            <flux:icon name="photo" class="mx-auto size-10 text-zinc-300 dark:text-zinc-700" />
-                            <flux:text>{{ __('listing.detail.gallery.empty') }}</flux:text>
-                        </div>
-                    </div>
-                @endif
-            </section>
-
-            <flux:card class="space-y-4">
-                <div class="space-y-2">
-                    <flux:heading size="lg">{{ __('listing.detail.summary.title') }}</flux:heading>
-                    <div class="flex flex-wrap gap-2">
-                        <flux:badge>{{ $summary['property_type'] }}</flux:badge>
-                        <flux:badge>{{ $summary['room_type'] }}</flux:badge>
-                        <flux:badge>{{ $summary['sleeping_place_type'] }}</flux:badge>
-                    </div>
+                    @empty
+                    @endforelse
                 </div>
-
-                <div class="grid gap-3 text-sm sm:grid-cols-2">
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                        <div class="text-zinc-500">{{ __('listing.detail.summary.location') }}</div>
-                        <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $summary['location'] }}</div>
-                    </div>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                        <div class="text-zinc-500">{{ __('listing.detail.summary.rating') }}</div>
-                        <div class="font-medium text-zinc-900 dark:text-zinc-100">
-                            @if($summary['rating'])
-                                {{ __('listing.detail.summary.rating_value', ['rating' => $summary['rating']]) }}
-                                <span aria-hidden="true">·</span>
-                                {{ trans_choice('listing.detail.summary.reviews_count', $summary['reviews_count'], ['count' => $summary['reviews_count']]) }}
-                            @else
-                                {{ __('listing.detail.summary.no_reviews') }}
-                            @endif
-                        </div>
-                    </div>
+            @endif
+        @else
+            <div class="flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                <div class="space-y-2 text-center text-zinc-500">
+                    <flux:icon name="photo" class="mx-auto size-10 text-zinc-300 dark:text-zinc-700" />
+                    <flux:text>{{ __('listing.detail.gallery.empty') }}</flux:text>
                 </div>
-            </flux:card>
+            </div>
+        @endif
+    </section>
 
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('listing.detail.exact.title') }}</flux:heading>
-                <dl class="grid gap-3 sm:grid-cols-2">
-                    @foreach($exactFeatures as $feature)
-                        <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
-                            <dt class="text-zinc-500">{{ $feature['label'] }}</dt>
-                            <dd class="font-medium text-zinc-900 dark:text-zinc-100">{{ $feature['value'] }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
-            </flux:card>
-
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('listing.detail.room.title') }}</flux:heading>
-                <div class="grid gap-3 text-sm sm:grid-cols-2">
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                        <div class="text-zinc-500">{{ __('listing.detail.room.people_on_dates') }}</div>
-                        <div class="font-medium">{{ trans_choice('listing.detail.room.people_count', $roomDetails['people_on_dates'], ['count' => $roomDetails['people_on_dates']]) }}</div>
-                    </div>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                        <div class="text-zinc-500">{{ __('listing.detail.room.total_places') }}</div>
-                        <div class="font-medium">{{ $roomDetails['total_places'] }}</div>
-                    </div>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                        <div class="text-zinc-500">{{ __('listing.detail.room.occupied_places') }}</div>
-                        <div class="font-medium">{{ $roomDetails['occupied_places'] }}</div>
-                    </div>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                        <div class="text-zinc-500">{{ __('listing.detail.room.gender_policy') }}</div>
-                        <div class="font-medium">{{ $roomDetails['gender_policy'] }}</div>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <flux:heading size="sm">{{ __('listing.detail.room.quiet_rules') }}</flux:heading>
-                    @if($roomDetails['quiet_rules'])
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($roomDetails['quiet_rules'] as $rule)
-                                <flux:badge size="sm">{{ $rule }}</flux:badge>
-                            @endforeach
-                        </div>
-                    @else
-                        <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.room.no_quiet_rules') }}</flux:text>
-                    @endif
-                </div>
-
-                <div class="space-y-2">
-                    <flux:heading size="sm">{{ __('listing.detail.room.amenities') }}</flux:heading>
-                    @if($roomDetails['amenities'])
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($roomDetails['amenities'] as $amenity)
-                                <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $amenity }}</span>
-                            @endforeach
-                        </div>
-                    @else
-                        <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.room.no_amenities') }}</flux:text>
-                    @endif
-                </div>
-            </flux:card>
-
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('listing.detail.property.title') }}</flux:heading>
-                <div class="space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
-                    <p>{{ $propertyDetails['description'] }}</p>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['address'] }}</div>
-                    <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $propertyDetails['address_note'] }}</flux:text>
-                    @if($propertyDetails['check_in_instructions'])
-                        <div class="rounded-lg bg-emerald-50 px-3 py-2 dark:bg-emerald-400/10">
-                            <div class="text-xs font-medium text-emerald-800 dark:text-emerald-200">{{ __('listing.detail.property.check_in_instructions') }}</div>
-                            <div class="mt-1 whitespace-pre-line text-zinc-700 dark:text-zinc-200">{{ $propertyDetails['check_in_instructions'] }}</div>
-                        </div>
-                    @endif
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['transport'] }}</div>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['kitchen_bathroom'] }}</div>
-                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['safety'] }}</div>
-                </div>
-            </flux:card>
-
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('listing.detail.nearby.title') }}</flux:heading>
-                <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
-                    <div class="font-medium">{{ trans_choice('listing.detail.nearby.count', $nearbySummary['count'], ['count' => $nearbySummary['count']]) }}</div>
-                    <div class="mt-1 text-zinc-600 dark:text-zinc-400">{{ $nearbySummary['summary'] }}</div>
-                </div>
-                <flux:callout icon="shield-check">
-                    <flux:callout.text>{{ $nearbySummary['privacy'] }}</flux:callout.text>
-                </flux:callout>
-            </flux:card>
-
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('listing.detail.rules.title') }}</flux:heading>
-                @forelse($rulesByGroup as $category => $rules)
-                    <div class="space-y-2">
-                        <flux:heading size="sm">{{ __('listing.detail.rules.categories.'.$category) }}</flux:heading>
-                        <div class="grid gap-2">
-                            @foreach($rules as $rule)
-                                <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">{{ $rule }}</div>
-                            @endforeach
-                        </div>
-                    </div>
-                @empty
-                    <flux:text class="text-zinc-500">{{ __('listing.detail.rules.empty') }}</flux:text>
-                @endforelse
-            </flux:card>
-
-            <section aria-labelledby="host-card-title" class="space-y-3">
-                <flux:heading id="host-card-title" size="lg">{{ __('listing.detail.host.title') }}</flux:heading>
-                <x-host.public-card :host="$place->property?->host" />
-            </section>
-
-            <section aria-labelledby="reviews-title" class="space-y-3">
-                <flux:heading id="reviews-title" size="lg">{{ __('listing.detail.reviews.title') }}</flux:heading>
-                <livewire:places.sleeping-place-reviews :sleeping-place-id="$place->id" lazy />
-            </section>
-
-            <section aria-labelledby="similar-title" class="space-y-3">
-                <flux:heading id="similar-title" size="lg">{{ __('listing.detail.similar.title') }}</flux:heading>
-                <livewire:places.similar-sleeping-places :sleeping-place-id="$place->id" lazy />
-            </section>
-
-            <flux:card class="space-y-3">
-                <flux:heading size="lg">{{ __('listing.detail.faq.title') }}</flux:heading>
-                <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                    @foreach($faqItems as $item)
-                        <details class="group py-3">
-                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                                <span>{{ $item['question'] }}</span>
-                                <flux:icon name="chevron-down" class="size-4 text-zinc-400 transition group-open:rotate-180" />
-                            </summary>
-                            <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{{ $item['answer'] }}</p>
-                        </details>
-                    @endforeach
-                </div>
-            </flux:card>
+    <section class="space-y-3" aria-labelledby="listing-title">
+        <div class="space-y-2">
+            <flux:heading id="listing-title" size="xl" level="1">{{ $title }}</flux:heading>
+            <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.helper') }}</flux:text>
         </div>
 
-        <aside class="space-y-4 lg:sticky lg:top-4">
+        <flux:card class="space-y-4">
+            <div class="space-y-2">
+                <flux:heading size="lg">{{ __('listing.detail.summary.title') }}</flux:heading>
+                <div class="flex flex-wrap gap-2">
+                    <flux:badge>{{ $summary['property_type'] }}</flux:badge>
+                    <flux:badge>{{ $summary['room_type'] }}</flux:badge>
+                    <flux:badge>{{ $summary['sleeping_place_type'] }}</flux:badge>
+                </div>
+            </div>
+
+            <div class="grid gap-3 text-sm sm:grid-cols-2">
+                <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                    <div class="text-zinc-500">{{ __('listing.detail.summary.location') }}</div>
+                    <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $summary['location'] }}</div>
+                </div>
+                <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                    <div class="text-zinc-500">{{ __('listing.detail.summary.rating') }}</div>
+                    <div class="font-medium text-zinc-900 dark:text-zinc-100">
+                        @if($summary['rating'])
+                            {{ __('listing.detail.summary.rating_value', ['rating' => $summary['rating']]) }}
+                            <span aria-hidden="true">.</span>
+                            {{ trans_choice('listing.detail.summary.reviews_count', $summary['reviews_count'], ['count' => $summary['reviews_count']]) }}
+                        @else
+                            {{ __('listing.detail.summary.no_reviews') }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </flux:card>
+
+        <flux:card class="space-y-3">
+            <div>
+                <flux:heading size="lg">{{ __('listing.detail.flow.title') }}</flux:heading>
+                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.flow.helper') }}</flux:text>
+            </div>
+            <div class="grid gap-2 sm:grid-cols-3">
+                @forelse($decisionFlow as $step)
+                    <div class="min-h-16 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+                        <div class="text-xs text-zinc-500">{{ $step['label'] }}</div>
+                        <div class="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{{ $step['value'] }}</div>
+                    </div>
+                @empty
+                    <flux:text class="text-zinc-500">{{ __('listing.detail.summary.no_reviews') }}</flux:text>
+                @endforelse
+            </div>
+        </flux:card>
+    </section>
+
+    <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <aside class="space-y-4 lg:sticky lg:top-4 lg:order-2">
             <flux:card class="space-y-4">
                 <div class="flex items-start justify-between gap-3">
                     <div>
@@ -237,7 +119,7 @@
                     <flux:button
                         type="button"
                         variant="ghost"
-                        icon="{{ $isFavorited ? 'heart' : 'heart' }}"
+                        icon="heart"
                         wire:click="toggleFavorite"
                         wire:loading.attr="disabled"
                         wire:target="toggleFavorite"
@@ -271,39 +153,83 @@
                         <flux:callout.text>{{ $availabilityWarning }}</flux:callout.text>
                     </flux:callout>
 
+                    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+                        <div class="space-y-2">
+                            <flux:text size="sm" class="text-amber-900 dark:text-amber-100">{{ __('waitlist.messages.detail_unavailable') }}</flux:text>
+                            <livewire:waitlist.join-waitlist-button
+                                :sleeping-place-id="$place->id"
+                                :check-in="$checkIn"
+                                :check-out="$checkOut"
+                                :guests-count="$guestsCount"
+                                source="listing_detail"
+                                :key="'detail-waitlist-'.$place->id.'-'.$checkIn.'-'.$checkOut.'-'.$guestsCount"
+                            />
+                        </div>
+                    </div>
+
                     @if($unavailableDates)
                         <div class="flex flex-wrap gap-2">
-                            @foreach($unavailableDates as $date)
+                            @forelse($unavailableDates as $date)
                                 <flux:badge size="sm">{{ \Carbon\CarbonImmutable::parse($date)->translatedFormat('d M') }}</flux:badge>
-                            @endforeach
+                            @empty
+                            @endforelse
                         </div>
                     @endif
                 @endif
 
-                @if($quote)
-                    <div class="space-y-2 rounded-lg bg-zinc-50 px-3 py-3 text-sm dark:bg-zinc-900">
-                        <div class="flex justify-between gap-3">
-                            <span>{{ __('listing.detail.booking.nights') }}</span>
-                            <span class="font-medium">{{ trans_choice('listing.detail.booking.nights_count', $quote['nights_count'], ['count' => $quote['nights_count']]) }}</span>
-                        </div>
-                        <div class="flex justify-between gap-3">
-                            <span>{{ __('listing.detail.booking.total') }}</span>
-                            <span class="font-semibold">{{ $money($quote['total_amount'], $quote['currency']) }}</span>
-                        </div>
-                        <div class="flex justify-between gap-3">
-                            <span>{{ __('listing.detail.booking.deposit') }}</span>
-                            <span class="font-medium">{{ $money($quote['deposit_amount'], $quote['currency']) }}</span>
-                        </div>
+                <div data-detail-section="price-breakdown" class="space-y-3 rounded-lg bg-zinc-50 px-3 py-3 text-sm dark:bg-zinc-900">
+                    <div>
+                        <flux:heading size="sm">{{ __('listing.detail.booking.price_breakdown_title') }}</flux:heading>
+                        <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
+                            {{ $priceBreakdown['has_quote'] ? __('listing.detail.booking.price_breakdown_helper') : $priceBreakdown['summary'] }}
+                        </flux:text>
                     </div>
 
-                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                        {{ __('listing.detail.booking.deposit_note') }}
-                    </flux:text>
-                @else
-                    <div class="rounded-lg bg-zinc-50 px-3 py-3 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                        {{ __('listing.detail.booking.choose_dates') }}
+                    @if($priceBreakdown['date_prices'])
+                        <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            @forelse($priceBreakdown['date_prices'] as $datePrice)
+                                <div class="flex items-center justify-between gap-3 py-2">
+                                    <div>
+                                        <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $datePrice['label'] }}</div>
+                                        <div class="text-xs text-zinc-500">{{ $datePrice['weekday'] }}. {{ $datePrice['source'] }}</div>
+                                    </div>
+                                    <div class="font-medium">{{ $datePrice['amount'] }}</div>
+                                </div>
+                            @empty
+                            @endforelse
+                        </div>
+
+                        @if($priceBreakdown['remaining_dates_count'] > 0)
+                            <flux:text size="sm" class="text-zinc-500">
+                                {{ trans_choice('listing.detail.booking.more_date_prices', $priceBreakdown['remaining_dates_count'], ['count' => $priceBreakdown['remaining_dates_count']]) }}
+                            </flux:text>
+                        @endif
+                    @endif
+
+                    <div class="space-y-2">
+                        @forelse($priceBreakdown['lines'] as $line)
+                            <div class="flex justify-between gap-3">
+                                <span>{{ $line['label'] }}</span>
+                                <span class="font-medium">{{ $line['amount'] }}</span>
+                            </div>
+                        @empty
+                            <div class="text-zinc-500">{{ __('listing.detail.booking.choose_dates') }}</div>
+                        @endforelse
                     </div>
-                @endif
+
+                    @if($priceBreakdown['total'])
+                        <div class="border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                            <div class="flex justify-between gap-3 text-base">
+                                <span class="font-medium">{{ __('listing.detail.booking.total') }}</span>
+                                <span class="font-semibold">{{ $priceBreakdown['total'] }}</span>
+                            </div>
+                            <div class="mt-2 space-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+                                <p>{{ __('listing.detail.booking.refundable_note', ['amount' => $priceBreakdown['refundable']]) }}</p>
+                                <p>{{ __('listing.detail.booking.non_refundable_note', ['amount' => $priceBreakdown['non_refundable']]) }}</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
 
                 <flux:button
                     variant="primary"
@@ -353,5 +279,413 @@
                 </flux:card>
             @endif
         </aside>
+
+        <div class="space-y-5 lg:order-1">
+            <flux:card class="space-y-4">
+                <flux:heading size="lg">{{ __('listing.detail.exact.title') }}</flux:heading>
+                <dl class="grid gap-3 sm:grid-cols-2">
+                    @forelse($exactFeatures as $feature)
+                        <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                            <dt class="text-zinc-500">{{ $feature['label'] }}</dt>
+                            <dd class="font-medium text-zinc-900 dark:text-zinc-100">{{ $feature['value'] }}</dd>
+                        </div>
+                    @empty
+                        <div class="text-sm text-zinc-500">{{ __('listing.detail.values.not_set') }}</div>
+                    @endforelse
+                </dl>
+            </flux:card>
+
+            <flux:card data-detail-section="sleeping-place-details" class="space-y-4">
+                <div class="space-y-2">
+                    <flux:heading size="lg">{{ $sleepingPlaceProfile['title'] }}</flux:heading>
+                    @if($sleepingPlaceProfile['badges'])
+                        <div class="flex flex-wrap gap-2">
+                            @forelse($sleepingPlaceProfile['badges'] as $badge)
+                                <flux:badge size="sm">{{ $badge }}</flux:badge>
+                            @empty
+                            @endforelse
+                        </div>
+                    @endif
+                </div>
+
+                @forelse($sleepingPlaceProfile['sections'] as $section)
+                    <details @if($section['open']) open @endif class="group rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                        <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
+                            <span>{{ $section['title'] }}</span>
+                            <span class="text-zinc-400 group-open:hidden">+</span>
+                            <span class="hidden text-zinc-400 group-open:inline">-</span>
+                        </summary>
+
+                        <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                            @forelse($section['items'] as $item)
+                                <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                    <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
+                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
+                                </div>
+                            @empty
+                            @endforelse
+                        </div>
+
+                        @if($section['warnings'])
+                            <div class="mt-3 space-y-2">
+                                @forelse($section['warnings'] as $warning)
+                                    <flux:callout color="amber" icon="exclamation-triangle">
+                                        <flux:callout.text>{{ $warning }}</flux:callout.text>
+                                    </flux:callout>
+                                @empty
+                                @endforelse
+                            </div>
+                        @endif
+                    </details>
+                @empty
+                    <flux:text class="text-zinc-500">{{ __('listing.detail.values.not_set') }}</flux:text>
+                @endforelse
+            </flux:card>
+
+            <flux:card data-detail-section="room-details" class="space-y-4">
+                <flux:heading size="lg">{{ __('listing.detail.room.title') }}</flux:heading>
+                <div class="grid gap-3 text-sm sm:grid-cols-2">
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <div class="text-zinc-500">{{ __('listing.detail.room.people_on_dates') }}</div>
+                        <div class="font-medium">{{ trans_choice('listing.detail.room.people_count', $roomDetails['people_on_dates'], ['count' => $roomDetails['people_on_dates']]) }}</div>
+                    </div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <div class="text-zinc-500">{{ __('listing.detail.room.total_places') }}</div>
+                        <div class="font-medium">{{ $roomDetails['total_places'] }}</div>
+                    </div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <div class="text-zinc-500">{{ __('listing.detail.room.occupied_places') }}</div>
+                        <div class="font-medium">{{ $roomDetails['occupied_places'] }}</div>
+                    </div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <div class="text-zinc-500">{{ __('listing.detail.room.gender_policy') }}</div>
+                        <div class="font-medium">{{ $roomDetails['gender_policy'] }}</div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <flux:heading size="sm">{{ __('listing.detail.room.quiet_rules') }}</flux:heading>
+                    @if($roomDetails['quiet_rules'])
+                        <div class="flex flex-wrap gap-2">
+                            @forelse($roomDetails['quiet_rules'] as $rule)
+                                <flux:badge size="sm">{{ $rule }}</flux:badge>
+                            @empty
+                            @endforelse
+                        </div>
+                    @else
+                        <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.room.no_quiet_rules') }}</flux:text>
+                    @endif
+                </div>
+
+                <div class="space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                    <div class="space-y-2">
+                        <flux:heading size="sm">{{ $roomDetails['profile']['title'] }}</flux:heading>
+                        @if($roomDetails['profile']['badges'])
+                            <div class="flex flex-wrap gap-2">
+                                @forelse($roomDetails['profile']['badges'] as $badge)
+                                    <flux:badge size="sm">{{ $badge }}</flux:badge>
+                                @empty
+                                @endforelse
+                            </div>
+                        @endif
+                    </div>
+
+                    @forelse($roomDetails['profile']['sections'] as $section)
+                        <details @if($section['open']) open @endif class="group rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                            <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
+                                <span>{{ $section['title'] }}</span>
+                                <span class="text-zinc-400 group-open:hidden">+</span>
+                                <span class="hidden text-zinc-400 group-open:inline">-</span>
+                            </summary>
+
+                            <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                                @forelse($section['items'] as $item)
+                                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                        <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
+                                        <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
+                                    </div>
+                                @empty
+                                @endforelse
+                            </div>
+
+                            @if($section['warnings'])
+                                <div class="mt-3 space-y-2">
+                                    @forelse($section['warnings'] as $warning)
+                                        <flux:callout color="amber" icon="exclamation-triangle">
+                                            <flux:callout.text>{{ $warning }}</flux:callout.text>
+                                        </flux:callout>
+                                    @empty
+                                    @endforelse
+                                </div>
+                            @endif
+                        </details>
+                    @empty
+                    @endforelse
+                </div>
+            </flux:card>
+
+            <flux:card class="space-y-4">
+                <flux:heading size="lg">{{ __('occupants.title') }}</flux:heading>
+                <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                    <div class="font-medium">{{ trans_choice('listing.detail.nearby.count', $nearbySummary['count'], ['count' => $nearbySummary['count']]) }}</div>
+                    <div class="mt-1 text-zinc-600 dark:text-zinc-400">{{ $nearbySummary['summary'] }}</div>
+                </div>
+                @if($nearbySummary['messages'])
+                    <div class="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                        @forelse($nearbySummary['messages'] as $message)
+                            <p>{{ $message }}</p>
+                        @empty
+                        @endforelse
+                    </div>
+                @endif
+                @if($nearbySummary['badges'])
+                    <div class="flex flex-wrap gap-2">
+                        @forelse($nearbySummary['badges'] as $badge)
+                            <flux:badge size="sm">{{ $badge }}</flux:badge>
+                        @empty
+                        @endforelse
+                    </div>
+                @endif
+                @if($nearbySummary['warnings'])
+                    <div class="space-y-2">
+                        @forelse($nearbySummary['warnings'] as $warning)
+                            <flux:badge color="amber">{{ $warning['message'] }}</flux:badge>
+                        @empty
+                        @endforelse
+                    </div>
+                @endif
+                <flux:callout icon="shield-check">
+                    <flux:callout.text>{{ $nearbySummary['privacy'] }}</flux:callout.text>
+                </flux:callout>
+                <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $nearbySummary['privacy_note'] }}</flux:text>
+            </flux:card>
+
+            <x-listings.detail.description-sections :sections="$extendedContent['sections']" />
+
+            <flux:card class="space-y-4">
+                <flux:heading size="lg">{{ __('listing.detail.property.title') }}</flux:heading>
+                <div class="space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+                    <p>{{ $propertyDetails['description'] }}</p>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['address'] }}</div>
+                    <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $propertyDetails['address_note'] }}</flux:text>
+                    @if($propertyDetails['check_in_instructions'])
+                        <div class="rounded-lg bg-emerald-50 px-3 py-2 dark:bg-emerald-400/10">
+                            <div class="text-xs font-medium text-emerald-800 dark:text-emerald-200">{{ __('listing.detail.property.check_in_instructions') }}</div>
+                            <div class="mt-1 whitespace-pre-line text-zinc-700 dark:text-zinc-200">{{ $propertyDetails['check_in_instructions'] }}</div>
+                        </div>
+                    @endif
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['transport'] }}</div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['kitchen_bathroom'] }}</div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">{{ $propertyDetails['safety'] }}</div>
+                </div>
+
+                <div class="space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                    <flux:heading size="sm">{{ __('property.public.title') }}</flux:heading>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                        {{ $propertyDetails['profile']['address']['public'] }}
+                    </div>
+
+                    @forelse($propertyDetails['profile']['sections'] as $section)
+                        <div class="space-y-2">
+                            <flux:heading size="sm">{{ $section['title'] }}</flux:heading>
+                            <div class="grid gap-2 text-sm sm:grid-cols-2">
+                                @forelse($section['items'] as $item)
+                                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                        <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
+                                        <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
+                                    </div>
+                                @empty
+                                    <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.property.no_description') }}</flux:text>
+                                @endforelse
+                            </div>
+                        </div>
+                    @empty
+                    @endforelse
+                </div>
+            </flux:card>
+
+            <flux:card class="space-y-4">
+                <flux:heading size="lg">{{ __('listing.detail.amenities.title') }}</flux:heading>
+                <div class="space-y-4">
+                    @forelse($amenityGroups as $group)
+                        <div class="space-y-2">
+                            <flux:heading size="sm">{{ $group['title'] }}</flux:heading>
+                            @if($group['items'])
+                                <div class="flex flex-wrap gap-2">
+                                    @forelse($group['items'] as $amenity)
+                                        <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $amenity }}</span>
+                                    @empty
+                                    @endforelse
+                                </div>
+                            @else
+                                <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.amenities.empty') }}</flux:text>
+                            @endif
+                        </div>
+                    @empty
+                        <flux:text class="text-zinc-500">{{ __('listing.detail.amenities.empty') }}</flux:text>
+                    @endforelse
+                </div>
+            </flux:card>
+
+            <flux:card class="space-y-4">
+                <flux:heading size="lg">{{ __('listing.detail.rules.title') }}</flux:heading>
+                @forelse($rulesByGroup as $category => $rules)
+                    <div class="space-y-2">
+                        <flux:heading size="sm">{{ __('listing.detail.rules.categories.'.$category) }}</flux:heading>
+                        <div class="grid gap-2">
+                            @forelse($rules as $rule)
+                                <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">{{ $rule }}</div>
+                            @empty
+                            @endforelse
+                        </div>
+                    </div>
+                @empty
+                    <flux:text class="text-zinc-500">{{ __('listing.detail.rules.empty') }}</flux:text>
+                @endforelse
+            </flux:card>
+
+            <flux:card class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('listing.detail.calendar.title') }}</flux:heading>
+                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.calendar.helper') }}</flux:text>
+                </div>
+                <div class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ $calendarPreview['range_label'] }}</div>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    @forelse($calendarPreview['days'] as $day)
+                        <div @class([
+                            'min-h-24 rounded-lg border px-3 py-2 text-sm',
+                            'border-emerald-300 bg-emerald-50 dark:border-emerald-400/40 dark:bg-emerald-400/10' => $day['is_selected'],
+                            'border-rose-200 bg-rose-50 dark:border-rose-400/30 dark:bg-rose-400/10' => $day['is_blocked'] && ! $day['is_selected'],
+                            'border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900' => ! $day['is_selected'] && ! $day['is_blocked'],
+                        ])>
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <div class="text-xs text-zinc-500">{{ $day['weekday'] }}</div>
+                                    <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $day['label'] }}</div>
+                                </div>
+                                @if($day['is_selected'])
+                                    <span class="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[0.65rem] font-medium text-emerald-800 dark:bg-emerald-300/20 dark:text-emerald-100">{{ __('listing.detail.calendar.selected') }}</span>
+                                @endif
+                            </div>
+                            <div class="mt-2 text-xs text-zinc-600 dark:text-zinc-400">{{ $day['status_label'] }}</div>
+                            @if($day['price'])
+                                <div class="mt-1 text-xs font-medium">{{ $day['price'] }}</div>
+                            @endif
+                            @if(! $day['check_in_allowed'])
+                                <div class="mt-1 text-xs text-amber-700 dark:text-amber-200">{{ __('listing.detail.calendar.check_in_closed') }}</div>
+                            @endif
+                            @if(! $day['check_out_allowed'])
+                                <div class="mt-1 text-xs text-amber-700 dark:text-amber-200">{{ __('listing.detail.calendar.check_out_closed') }}</div>
+                            @endif
+                        </div>
+                    @empty
+                        <flux:text class="text-zinc-500">{{ __('listing.detail.calendar.fallback') }}</flux:text>
+                    @endforelse
+                </div>
+                <flux:callout icon="calendar-days">
+                    <flux:callout.text>{{ $calendarPreview['fallback'] }}</flux:callout.text>
+                </flux:callout>
+            </flux:card>
+
+            <flux:card class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('listing.detail.map.title') }}</flux:heading>
+                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.map.helper') }}</flux:text>
+                </div>
+                <div class="flex aspect-[16/9] items-center justify-center rounded-lg bg-zinc-100 text-center text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                    <div class="space-y-2 px-4">
+                        <flux:icon name="map-pin" variant="outline" class="mx-auto size-8 text-zinc-400" />
+                        <div>{{ __('listing.detail.map.placeholder') }}</div>
+                    </div>
+                </div>
+                <dl class="grid gap-3 text-sm sm:grid-cols-3">
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <dt class="text-zinc-500">{{ __('listing.detail.map.area') }}</dt>
+                        <dd class="font-medium">{{ $mapDetails['area'] }}</dd>
+                    </div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <dt class="text-zinc-500">{{ __('listing.detail.map.transport') }}</dt>
+                        <dd class="font-medium">{{ $mapDetails['transport'] }}</dd>
+                    </div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <dt class="text-zinc-500">{{ __('listing.detail.map.distance') }}</dt>
+                        <dd class="font-medium">{{ $mapDetails['distance'] }}</dd>
+                    </div>
+                </dl>
+                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ $mapDetails['description'] }}</flux:text>
+                <flux:callout icon="shield-check">
+                    <flux:callout.text>{{ $mapDetails['privacy'] }}</flux:callout.text>
+                </flux:callout>
+            </flux:card>
+
+            <section aria-labelledby="host-card-title" class="space-y-3">
+                <flux:heading id="host-card-title" size="lg">{{ __('listing.detail.host.title') }}</flux:heading>
+                <x-host.public-card :host="$place->property?->host" />
+            </section>
+
+            <section aria-labelledby="reviews-title" class="space-y-3">
+                <flux:heading id="reviews-title" size="lg">{{ __('listing.detail.reviews.title') }}</flux:heading>
+                <livewire:places.sleeping-place-reviews :sleeping-place-id="$place->id" lazy />
+            </section>
+
+            <flux:card class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('listing.detail.safety.title') }}</flux:heading>
+                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.safety.helper') }}</flux:text>
+                </div>
+                <dl class="grid gap-3 sm:grid-cols-2">
+                    @forelse($safetyDetails['rows'] as $row)
+                        <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                            <dt class="text-zinc-500">{{ $row['label'] }}</dt>
+                            <dd class="font-medium text-zinc-900 dark:text-zinc-100">{{ $row['value'] }}</dd>
+                        </div>
+                    @empty
+                        <flux:text class="text-zinc-500">{{ __('listing.detail.property.safety_missing') }}</flux:text>
+                    @endforelse
+                </dl>
+                <flux:callout icon="shield-check">
+                    <flux:callout.text>{{ $safetyDetails['callout'] }}</flux:callout.text>
+                </flux:callout>
+            </flux:card>
+
+            <flux:card class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('listing.detail.cancellation.title') }}</flux:heading>
+                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.cancellation.helper') }}</flux:text>
+                </div>
+                <dl class="grid gap-3 sm:grid-cols-2">
+                    @forelse($cancellationDetails['rows'] as $row)
+                        <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                            <dt class="text-zinc-500">{{ $row['label'] }}</dt>
+                            <dd class="font-medium text-zinc-900 dark:text-zinc-100">{{ $row['value'] }}</dd>
+                        </div>
+                    @empty
+                        <flux:text class="text-zinc-500">{{ __('listing.detail.cancellation.choose_dates') }}</flux:text>
+                    @endforelse
+                </dl>
+            </flux:card>
+
+            <section aria-labelledby="similar-title" class="space-y-3">
+                <flux:heading id="similar-title" size="lg">{{ __('listing.detail.similar.title') }}</flux:heading>
+                <livewire:places.similar-sleeping-places :sleeping-place-id="$place->id" lazy />
+            </section>
+
+            <flux:card class="space-y-3">
+                <flux:heading size="lg">{{ __('listing.detail.faq.title') }}</flux:heading>
+                <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                    @forelse($faqItems as $item)
+                        <details class="group py-3">
+                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                                <span>{{ $item['question'] }}</span>
+                                <flux:icon name="chevron-down" class="size-4 text-zinc-400 transition group-open:rotate-180" />
+                            </summary>
+                            <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{{ $item['answer'] }}</p>
+                        </details>
+                    @empty
+                        <flux:text class="text-zinc-500">{{ __('listing.detail.values.not_set') }}</flux:text>
+                    @endforelse
+                </div>
+            </flux:card>
+        </div>
     </section>
 </div>

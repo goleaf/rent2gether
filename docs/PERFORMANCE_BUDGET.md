@@ -37,6 +37,7 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 | Guest search initial cards | 12 maximum, plus one lookahead row |
 | Guest search maximum cards after load-more | 60 maximum |
 | Public sleeping-place detail first render | 12 compact queries maximum |
+| Public occupant summary | 1 indexed snapshot query after listing graph |
 | Host calendar initial queries | 6 maximum for one selected sleeping place |
 | Booking date selector quote | 4 maximum for one selected sleeping place |
 | Guest payment page first render | 6 compact queries maximum |
@@ -64,6 +65,9 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 | Livewire interaction payload | 20 kB target maximum |
 | Autocomplete results | 10 maximum |
 | Search debounce | 500 ms minimum |
+| Listing-card badges | 6 maximum |
+| Listing-card amenities | 4 maximum |
+| Listing-card rules | 3 maximum |
 
 ## Loading rules
 
@@ -75,10 +79,13 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 - Keep auth, profile setup, settings, and security pages as compact Livewire forms with no preloaded country or city lists.
 - Keep host onboarding/profile editing as compact Livewire forms with only scalar public properties and one avatar upload field.
 - Keep the host property wizard step-based and render only the active step; do not keep nine hidden form sections in the DOM.
+- Keep the host sleeping-place wizard step-based and render only the active step; rich bed details belong in one-to-one detail rows, not one large hidden form.
 - Keep the host calendar month to 42 visible day cells and offer a compact list view instead of rendering multiple hidden months.
 - Keep guest preference wizard/edit pages as compact Livewire forms with no preloaded city lists; resolve preferred city server-side from imported open data.
 - Avatar and listing uploads must remain image-only and generate thumb, mobile, and compressed full variants server-side.
 - Listing cards must render only one primary mobile image, use async image decoding, and must not preload full galleries.
+- Listing cards are sleeping-place cards. They must not render full property pages, maps, galleries, full review collections, exact addresses, or private guest data.
+- Listing-card variants should reuse `ListingCardData` and `x-listings.card` instead of rebuilding separate card payloads per feature screen.
 - Lazy-load below-the-fold components, maps, reviews, similar places, and image galleries.
 - Use responsive images with explicit dimensions, native lazy loading outside the first viewport, and `decoding="async"` for non-critical images.
 - Do not preload entire country, city, amenity, or rule datasets into HTML or Livewire state.
@@ -105,7 +112,8 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 - Guest search date availability must use `[check_in, check_out)` and must skip exact date blocking only when the flexible-dates filter is explicitly enabled.
 - Guest search load-more should increase a capped row limit and fetch one extra row to detect `has_more`; do not use large offset pagination for public result pages.
 - Public sleeping-place detail must eager-load localized translations, compact amenities/rules, host profile, and selected room/property fields. Reviews and similar places must query from their lazy components.
-- Public sleeping-place detail occupant summaries must use count-only booking overlap queries and must not eager-load guest profiles.
+- Public sleeping-place detail may eager-load one compact row from each sleeping-place detail table for the public summary, but must not load videos, full galleries, private host notes, or private guest data.
+- Public sleeping-place detail occupant summaries must use indexed `room_occupant_snapshots` with selected columns. They must not eager-load private guest profiles, full bookings, complaint details, messages, or exact personal data.
 - Public listing pages that render the host card must eager-load `room.property.host.hostProfile` to avoid a lazy profile query in Blade.
 - Host calendar queries must select compact sleeping-place, room, property, availability, and booking columns only; do not load full listings or galleries.
 - Host request management must select compact booking, guest profile, preference, sleeping-place, room, and property columns; compatibility warnings are calculated for the selected request detail, not every card on first render.
@@ -129,6 +137,7 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 - Amenity and rule picker searches must debounce at 500 ms, keep selected IDs only in Livewire public state, and use cached locale-specific lookup lists instead of re-querying the catalog on every render.
 - Amenity and rule lookup rendering should select only ID, slug, category, status, and current/fallback translation names.
 - Public search card amenities should eager-load only the small slug set displayed on cards, not every amenity attached to the listing.
+- Listing-card lists must batch-load favorite IDs, comparison IDs, waitlist IDs, translations, primary media, key amenities, and key rules. Avoid one card query per sleeping place for these flags.
 - Use `withCount`, `withExists`, and other Eloquent aggregates before entering loops.
 - Add indexes that match each filter and ordering combination.
 - Record `EXPLAIN QUERY PLAN` findings for guest search, availability overlap, and booking lookup changes once representative search data exists.

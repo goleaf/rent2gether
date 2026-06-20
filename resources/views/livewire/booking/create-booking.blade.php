@@ -7,7 +7,7 @@
                 <flux:heading size="sm">{{ $bed->room->property->title }}</flux:heading>
                 <flux:text size="sm" class="text-zinc-500">{{ $bed->room->title }} &middot; {{ $bed->type->label() }}</flux:text>
                 <flux:text size="sm" class="text-zinc-500">
-                    <flux:icon name="map-pin" class="size-3.5 inline" />
+                    <flux:icon name="map-pin" variant="mini" class="size-3.5 inline" />
                     {{ $bed->room->property->city }}
                 </flux:text>
             </flux:card>

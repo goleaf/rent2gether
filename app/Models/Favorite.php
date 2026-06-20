@@ -15,17 +15,55 @@ class Favorite extends Model
 
     protected $fillable = [
         'user_id',
+        'favorite_collection_id',
+        'property_id',
+        'room_id',
         'bed_id',
         'sleeping_place_id',
+        'source',
         'collection',
         'note',
+        'personal_note',
+        'short_label',
+        'label_color',
         'priority',
+        'decision_status',
         'price_at_save',
         'check_in',
         'check_out',
+        'check_in_date',
+        'check_out_date',
+        'nights_count',
         'guests_count',
+        'currency',
+        'price_per_night_snapshot',
+        'total_price_snapshot',
+        'deposit_snapshot',
+        'discount_snapshot',
+        'current_price_per_night',
+        'current_total_price',
+        'current_deposit',
+        'price_changed',
+        'price_change_amount',
+        'price_change_percent',
+        'price_last_checked_at',
+        'was_available_when_added',
+        'is_currently_available',
+        'became_unavailable',
+        'became_available_again',
+        'partial_availability',
+        'nearest_available_dates_json',
+        'availability_last_checked_at',
+        'remind_at',
+        'reminder_text',
+        'reminder_sent_at',
         'notify_available',
         'notify_price_drop',
+        'notify_price_increase',
+        'notify_available_again',
+        'notify_unavailable',
+        'last_viewed_at',
+        'added_at',
     ];
 
     protected function casts(): array
@@ -34,16 +72,59 @@ class Favorite extends Model
             'price_at_save' => 'decimal:2',
             'check_in' => 'date',
             'check_out' => 'date',
+            'check_in_date' => 'date',
+            'check_out_date' => 'date',
+            'nights_count' => 'integer',
             'guests_count' => 'integer',
             'priority' => 'integer',
+            'price_per_night_snapshot' => 'decimal:2',
+            'total_price_snapshot' => 'decimal:2',
+            'deposit_snapshot' => 'decimal:2',
+            'discount_snapshot' => 'decimal:2',
+            'current_price_per_night' => 'decimal:2',
+            'current_total_price' => 'decimal:2',
+            'current_deposit' => 'decimal:2',
+            'price_changed' => 'boolean',
+            'price_change_amount' => 'decimal:2',
+            'price_change_percent' => 'decimal:2',
+            'price_last_checked_at' => 'datetime',
+            'was_available_when_added' => 'boolean',
+            'is_currently_available' => 'boolean',
+            'became_unavailable' => 'boolean',
+            'became_available_again' => 'boolean',
+            'partial_availability' => 'boolean',
+            'nearest_available_dates_json' => 'array',
+            'availability_last_checked_at' => 'datetime',
+            'remind_at' => 'datetime',
+            'reminder_sent_at' => 'datetime',
             'notify_available' => 'boolean',
             'notify_price_drop' => 'boolean',
+            'notify_price_increase' => 'boolean',
+            'notify_available_again' => 'boolean',
+            'notify_unavailable' => 'boolean',
+            'last_viewed_at' => 'datetime',
+            'added_at' => 'datetime',
         ];
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function favoriteCollection(): BelongsTo
+    {
+        return $this->belongsTo(FavoriteCollection::class);
+    }
+
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
     }
 
     public function bed(): BelongsTo
@@ -59,5 +140,69 @@ class Favorite extends Model
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
+    }
+
+    public function scopeForUser(Builder $query, User|int $user): Builder
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopeInCollection(Builder $query, FavoriteCollection|int $collection): Builder
+    {
+        $collectionId = $collection instanceof FavoriteCollection ? $collection->id : $collection;
+
+        return $query->where('favorite_collection_id', $collectionId);
+    }
+
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->where('is_currently_available', true);
+    }
+
+    public function scopeUnavailable(Builder $query): Builder
+    {
+        return $query->where('is_currently_available', false);
+    }
+
+    public function scopePriceChanged(Builder $query): Builder
+    {
+        return $query->where('price_changed', true);
+    }
+
+    public function scopePriceDropped(Builder $query): Builder
+    {
+        return $query->where('price_change_amount', '<', 0);
+    }
+
+    public function scopePriceIncreased(Builder $query): Builder
+    {
+        return $query->where('price_change_amount', '>', 0);
+    }
+
+    public function scopeHighPriority(Builder $query): Builder
+    {
+        return $query->where('priority', '>=', 8);
+    }
+
+    public function scopeDecisionStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('decision_status', $status);
+    }
+
+    public function scopeWithReminder(Builder $query): Builder
+    {
+        return $query->whereNotNull('remind_at');
+    }
+
+    public function scopeRecentlyAdded(Builder $query): Builder
+    {
+        return $query->orderByDesc('added_at')->orderByDesc('created_at');
+    }
+
+    public function noteText(): ?string
+    {
+        return $this->personal_note ?: $this->note;
     }
 }

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -37,18 +38,38 @@ class Room extends Model
         'rules',
         'status',
         'type',
+        'room_type',
+        'living_format',
+        'internal_name',
         'is_private',
+        'is_shared',
         'is_pass_through',
+        'is_for_one_person',
+        'is_for_couples',
+        'is_for_groups',
+        'is_for_long_stay',
+        'is_for_short_stay',
         'room_number',
         'floor',
         'area',
         'beds_count',
+        'sleeping_places_count',
+        'active_sleeping_places_count',
         'max_guests',
+        'current_guests_count',
+        'permanent_residents_count',
+        'short_term_guests_count',
         'occupied_places_count',
         'available_places_count',
+        'occupied_sleeping_places_count',
+        'free_sleeping_places_count',
+        'unavailable_sleeping_places_count',
         'gender_policy',
         'min_guest_age',
         'max_guest_age',
+        'can_book_entire_room',
+        'can_book_individual_places',
+        'sort_order',
         'windows_count',
         'window_view',
         'has_chair',
@@ -72,9 +93,16 @@ class Room extends Model
             'gender_type' => GenderType::class,
             'gender_policy' => GenderType::class,
             'type' => RoomType::class,
+            'room_type' => RoomType::class,
             'status' => RoomStatus::class,
             'is_private' => 'boolean',
+            'is_shared' => 'boolean',
             'is_pass_through' => 'boolean',
+            'is_for_one_person' => 'boolean',
+            'is_for_couples' => 'boolean',
+            'is_for_groups' => 'boolean',
+            'is_for_long_stay' => 'boolean',
+            'is_for_short_stay' => 'boolean',
             'has_lock' => 'boolean',
             'has_window' => 'boolean',
             'windows_count' => 'integer',
@@ -95,6 +123,8 @@ class Room extends Model
             'can_work_at_night' => 'boolean',
             'can_turn_light_at_night' => 'boolean',
             'can_talk_at_night' => 'boolean',
+            'can_book_entire_room' => 'boolean',
+            'can_book_individual_places' => 'boolean',
         ];
     }
 
@@ -108,6 +138,31 @@ class Room extends Model
         return $this->hasMany(RoomTranslation::class);
     }
 
+    public function layoutDetails(): HasOne
+    {
+        return $this->hasOne(RoomLayoutDetail::class);
+    }
+
+    public function comfortDetails(): HasOne
+    {
+        return $this->hasOne(RoomComfortDetail::class);
+    }
+
+    public function accessDetails(): HasOne
+    {
+        return $this->hasOne(RoomAccessDetail::class);
+    }
+
+    public function conditionDetails(): HasOne
+    {
+        return $this->hasOne(RoomConditionDetail::class);
+    }
+
+    public function compatibilityProfile(): HasOne
+    {
+        return $this->hasOne(RoomCompatibilityProfile::class);
+    }
+
     public function beds(): HasMany
     {
         return $this->hasMany(Bed::class);
@@ -116,6 +171,11 @@ class Room extends Model
     public function sleepingPlaces(): HasMany
     {
         return $this->hasMany(SleepingPlace::class);
+    }
+
+    public function occupantSnapshots(): HasMany
+    {
+        return $this->hasMany(RoomOccupantSnapshot::class);
     }
 
     public function amenities(): BelongsToMany
@@ -173,6 +233,11 @@ class Room extends Model
         return $query->whereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
     }
 
+    public function scopeForProperty(Builder $query, int $propertyId): Builder
+    {
+        return $query->where('property_id', $propertyId);
+    }
+
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->whereHas('sleepingPlaces.bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
@@ -185,5 +250,52 @@ class Room extends Model
                 ->orWhere('gender_policy', GenderType::Mixed->value)
                 ->orWhere('gender_policy', GenderType::NoRestriction->value);
         });
+    }
+
+    public function scopeWithFreePlaces(Builder $query): Builder
+    {
+        return $query->where('free_sleeping_places_count', '>', 0);
+    }
+
+    public function scopeByGenderPolicy(Builder $query, GenderType|string $gender): Builder
+    {
+        $value = $gender instanceof GenderType ? $gender->value : $gender;
+
+        return $query->where('gender_policy', $value);
+    }
+
+    public function scopeShared(Builder $query): Builder
+    {
+        return $query->where('is_shared', true);
+    }
+
+    public function scopePrivate(Builder $query): Builder
+    {
+        return $query->where('is_private', true);
+    }
+
+    public function scopeQuiet(Builder $query): Builder
+    {
+        return $query->whereHas('comfortDetails', fn (Builder $comfort) => $comfort->where('noise_level', 'quiet'));
+    }
+
+    public function scopeWithLock(Builder $query): Builder
+    {
+        return $query->whereHas('accessDetails', fn (Builder $access) => $access->where('has_lock', true));
+    }
+
+    public function scopeWithDesk(Builder $query): Builder
+    {
+        return $query->whereHas('accessDetails', fn (Builder $access) => $access->where('has_desk', true));
+    }
+
+    public function scopeWithPersonalLockers(Builder $query): Builder
+    {
+        return $query->whereHas('accessDetails', fn (Builder $access) => $access->where('has_personal_lockers', true));
+    }
+
+    public function scopeSuitableForLongStay(Builder $query): Builder
+    {
+        return $query->where('is_for_long_stay', true);
     }
 }

@@ -26,18 +26,42 @@ use App\Livewire\Complaints\ComplaintDetail;
 use App\Livewire\Complaints\CreateComplaint;
 use App\Livewire\Extensions\ExtendStay;
 use App\Livewire\Extensions\ManageExtension;
+use App\Livewire\Favorites\FavoriteCollectionPage;
 use App\Livewire\Host\BedForm;
 use App\Livewire\Host\HostBookings;
 use App\Livewire\Host\HostIncome;
 use App\Livewire\Host\HostOnboardingPage;
 use App\Livewire\Host\HostProfileEditPage;
 use App\Livewire\Host\ManageBooking;
+use App\Livewire\Host\Properties\PropertyAccessStep;
+use App\Livewire\Host\Properties\PropertyCompletionPanel;
+use App\Livewire\Host\Properties\PropertyConditionStep;
+use App\Livewire\Host\Properties\PropertyLocationStep;
+use App\Livewire\Host\Properties\PropertyMainInfoStep;
+use App\Livewire\Host\Properties\PropertyStructureStep;
 use App\Livewire\Host\PropertyForm;
 use App\Livewire\Host\PropertyList;
 use App\Livewire\Host\PropertyShow;
 use App\Livewire\Host\RoomForm;
+use App\Livewire\Host\Rooms\RoomAccessStorageStep;
+use App\Livewire\Host\Rooms\RoomComfortStep;
+use App\Livewire\Host\Rooms\RoomCompletionPanel;
+use App\Livewire\Host\Rooms\RoomConditionStep;
+use App\Livewire\Host\Rooms\RoomLayoutStep;
+use App\Livewire\Host\Rooms\RoomMainInfoStep;
+use App\Livewire\Host\Rooms\RoomMediaStep;
+use App\Livewire\Host\Rooms\RoomRulesStep;
 use App\Livewire\Host\SleepingPlaceForm;
 use App\Livewire\Host\SleepingPlaceList;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceComfortStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceCompletionPanel;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceConditionStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceMainInfoStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceMediaStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlacePhysicalStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlacePositionStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlacePricingStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceStorageStep;
 use App\Livewire\Messages\ChatWindow;
 use App\Livewire\Notifications\NotificationsPage;
 use App\Livewire\Pages\HealthPage;
@@ -46,7 +70,8 @@ use App\Livewire\Places\ShowSleepingPlace;
 use App\Livewire\Profile\EditProfile;
 use App\Livewire\Profile\ShowProfile;
 use App\Livewire\Reviews\CreateReview;
-use App\Livewire\SavedSearches\SavedSearchesList;
+use App\Livewire\SavedSearches\SavedSearchesPage;
+use App\Livewire\SavedSearches\SavedSearchPage;
 use App\Livewire\Shell\FavoritesPage;
 use App\Livewire\Shell\HostCalendarPage;
 use App\Livewire\Shell\HostHomePage;
@@ -58,7 +83,8 @@ use App\Livewire\Shell\ProfilePage;
 use App\Livewire\Trips\BookingDetail;
 use App\Livewire\Trips\CurrentStay;
 use App\Livewire\Trips\TripList;
-use App\Livewire\Waitlist\MyWaitlist;
+use App\Livewire\Waitlist\MyWaitlistPage;
+use App\Livewire\Waitlist\WaitlistOfferPage;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/en');
@@ -145,6 +171,7 @@ Route::prefix('{locale}')
 
         Route::prefix('favorites')->name('favorites.')->group(function (): void {
             Route::get('/', FavoritesPage::class)->name('index');
+            Route::get('/collections/{favoriteCollection}', FavoriteCollectionPage::class)->name('collections.show');
         });
 
         Route::get('/bookings/{booking}/review', CreateReview::class)->name('reviews.create');
@@ -155,8 +182,14 @@ Route::prefix('{locale}')
         Route::get('/bookings/{booking}/checkin/problem', ProblemReport::class)->name('bookings.checkin.problem');
         Route::get('/bookings/{booking}/checkout', CheckOut::class)->name('bookings.checkout');
 
-        Route::get('/saved-searches', SavedSearchesList::class)->name('saved-searches.index');
-        Route::get('/waitlist', MyWaitlist::class)->name('waitlist.index');
+        Route::prefix('saved-searches')->name('saved-searches.')->group(function (): void {
+            Route::get('/', SavedSearchesPage::class)->name('index');
+            Route::get('/{savedSearch}', SavedSearchPage::class)->name('show');
+        });
+        Route::prefix('waitlist')->name('waitlist.')->group(function (): void {
+            Route::get('/', MyWaitlistPage::class)->name('index');
+            Route::get('/offers/{waitlistOffer}', WaitlistOfferPage::class)->name('offers.show');
+        });
         Route::get('/compare', ComparePlaces::class)->name('compare.index');
 
         Route::prefix('host')->name('host.')->group(function (): void {
@@ -181,11 +214,40 @@ Route::prefix('{locale}')
             Route::get('/properties/create', PropertyForm::class)->name('properties.create');
             Route::get('/properties/{property}', PropertyShow::class)->name('properties.show');
             Route::get('/properties/{property}/edit', PropertyForm::class)->name('properties.edit');
+            Route::prefix('properties/{property}/extended')->name('properties.extended.')->group(function (): void {
+                Route::get('/main', PropertyMainInfoStep::class)->name('main');
+                Route::get('/structure', PropertyStructureStep::class)->name('structure');
+                Route::get('/location', PropertyLocationStep::class)->name('location');
+                Route::get('/condition', PropertyConditionStep::class)->name('condition');
+                Route::get('/access', PropertyAccessStep::class)->name('access');
+                Route::get('/completion', PropertyCompletionPanel::class)->name('completion');
+            });
             Route::get('/properties/{property}/rooms/create', RoomForm::class)->name('rooms.create');
             Route::get('/properties/{property}/rooms/{room}/edit', RoomForm::class)->name('rooms.edit');
+            Route::prefix('rooms/{room}/extended')->name('rooms.extended.')->group(function (): void {
+                Route::get('/main', RoomMainInfoStep::class)->name('main');
+                Route::get('/layout', RoomLayoutStep::class)->name('layout');
+                Route::get('/comfort', RoomComfortStep::class)->name('comfort');
+                Route::get('/access-storage', RoomAccessStorageStep::class)->name('access-storage');
+                Route::get('/condition', RoomConditionStep::class)->name('condition');
+                Route::get('/rules', RoomRulesStep::class)->name('rules');
+                Route::get('/media', RoomMediaStep::class)->name('media');
+                Route::get('/completion', RoomCompletionPanel::class)->name('completion');
+            });
             Route::get('/rooms/{room}/sleeping-places', SleepingPlaceList::class)->name('sleeping-places.index');
             Route::get('/rooms/{room}/sleeping-places/create', SleepingPlaceForm::class)->name('sleeping-places.create');
             Route::get('/rooms/{room}/sleeping-places/{sleepingPlace}/edit', SleepingPlaceForm::class)->name('sleeping-places.edit');
+            Route::prefix('sleeping-places/{sleepingPlace}/extended')->name('sleeping-places.extended.')->group(function (): void {
+                Route::get('/main', SleepingPlaceMainInfoStep::class)->name('main');
+                Route::get('/physical', SleepingPlacePhysicalStep::class)->name('physical');
+                Route::get('/comfort', SleepingPlaceComfortStep::class)->name('comfort');
+                Route::get('/storage', SleepingPlaceStorageStep::class)->name('storage');
+                Route::get('/position', SleepingPlacePositionStep::class)->name('position');
+                Route::get('/pricing', SleepingPlacePricingStep::class)->name('pricing');
+                Route::get('/condition', SleepingPlaceConditionStep::class)->name('condition');
+                Route::get('/media', SleepingPlaceMediaStep::class)->name('media');
+                Route::get('/completion', SleepingPlaceCompletionPanel::class)->name('completion');
+            });
             Route::get('/rooms/{room}/beds/create', BedForm::class)->name('beds.create');
             Route::get('/rooms/{room}/beds/{bed}/edit', BedForm::class)->name('beds.edit');
         });

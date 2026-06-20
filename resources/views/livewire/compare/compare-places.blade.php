@@ -24,6 +24,12 @@
         </div>
 
         <flux:text size="sm" class="text-zinc-500">{{ __('decision.compare.date_helper') }}</flux:text>
+
+        @if($cards->isNotEmpty())
+            <flux:button type="button" variant="ghost" icon="heart" wire:click="saveComparedToFavorites" wire:loading.attr="disabled">
+                {{ __('favorites.save_compared') }}
+            </flux:button>
+        @endif
     </flux:card>
 
     <div wire:loading.delay wire:target="checkIn,checkOut,guestsCount,removePlace" class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
@@ -35,32 +41,18 @@
             <div class="grid min-w-[42rem] gap-3" style="grid-template-columns: repeat({{ max(1, $cards->count()) }}, minmax(10rem, 1fr));">
                 @foreach($cards as $card)
                     <flux:card class="space-y-3">
-                        <div class="relative overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
-                            @if($card['photo'])
-                                <img
-                                    src="{{ $card['photo'] }}"
-                                    alt="{{ $card['photo_alt'] }}"
-                                    width="320"
-                                    height="220"
-                                    loading="lazy"
-                                    decoding="async"
-                                    class="aspect-[4/3] w-full object-cover"
-                                />
-                            @else
-                                <div class="flex aspect-[4/3] items-center justify-center text-zinc-300 dark:text-zinc-700">
-                                    <flux:icon name="photo" class="size-8" />
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="space-y-1">
-                            <a href="{{ $card['url'] }}" wire:navigate>
-                                <flux:heading size="sm" class="line-clamp-2 hover:text-emerald-700 dark:hover:text-emerald-300">
-                                    {{ $card['title'] }}
-                                </flux:heading>
-                            </a>
-                            <flux:text size="sm" class="text-zinc-500">{{ $card['bed_type'] }}</flux:text>
-                        </div>
+                        @if(! empty($card['listing_card']))
+                            <x-listings.card :card="$card['listing_card']" card-variant="comparison" embedded :show-actions="false" />
+                        @else
+                            <div class="space-y-1">
+                                <a href="{{ $card['url'] }}" wire:navigate>
+                                    <flux:heading size="sm" class="line-clamp-2 hover:text-emerald-700 dark:hover:text-emerald-300">
+                                        {{ $card['title'] }}
+                                    </flux:heading>
+                                </a>
+                                <flux:text size="sm" class="text-zinc-500">{{ $card['bed_type'] }}</flux:text>
+                            </div>
+                        @endif
 
                         <dl class="space-y-2 text-sm">
                             @foreach([
@@ -95,12 +87,30 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                            <livewire:favorites.favorite-toggle
+                                :sleeping-place-id="$card['id']"
+                                source="comparison"
+                                :check-in="$checkIn"
+                                :check-out="$checkOut"
+                                :guests-count="$guestsCount"
+                                :key="'compare-favorite-'.$card['id'].'-'.$checkIn.'-'.$checkOut.'-'.$guestsCount"
+                            />
                             <flux:button href="{{ $card['url'] }}" size="sm" variant="primary" wire:navigate>
                                 {{ __('app.actions.view') }}
                             </flux:button>
                             <flux:button type="button" size="sm" variant="ghost" wire:click="removePlace({{ $card['id'] }})">
                                 {{ __('app.actions.remove') }}
                             </flux:button>
+                            @if($card['available_for_dates'] === false)
+                                <livewire:waitlist.join-waitlist-button
+                                    :sleeping-place-id="$card['id']"
+                                    :check-in="$checkIn"
+                                    :check-out="$checkOut"
+                                    :guests-count="$guestsCount"
+                                    source="comparison"
+                                    :key="'compare-waitlist-'.$card['id'].'-'.$checkIn.'-'.$checkOut.'-'.$guestsCount"
+                                />
+                            @endif
                         </div>
                     </flux:card>
                 @endforeach

@@ -35,7 +35,7 @@
                     <flux:heading size="xl">{{ $bed->title }}</flux:heading>
 
                     <div class="flex items-center gap-2 mt-1 text-zinc-500 dark:text-zinc-400">
-                        <flux:icon name="map-pin" class="size-4 shrink-0" />
+                        <flux:icon name="map-pin" variant="mini" class="size-4 shrink-0" />
                         <flux:text>
                             {{ $bed->room->property->city }}
                             @if($bed->room->property->district), {{ $bed->room->property->district }}@endif

@@ -21,6 +21,9 @@ Rules:
 - Do not bulk-geocode or mass-import addresses through public Nominatim.
 - Import geo data into SQLite.
 - Normalize names for fast search.
+- Advanced search filters for district, street, landmark, nearby transit/airport/university/hospital/sea/park/shopping/gym/coworking/nightlife, and area type must come from stored local metadata or offline/imported point data.
+- `near_work` must use a saved user point, local area reference, or local landmark search; never send private work addresses to public geocoding APIs during normal search.
+- Proximity filters need stored coordinates or precomputed distances; do not calculate them from live external API calls.
 - Store:
   country code alpha-2
   country code alpha-3 if available
@@ -33,6 +36,7 @@ Rules:
   population
   timezone
   GeoNames ID
+- If importing points of interest later, store source, license, category, localized names if available, name_normalized, country_id, city_id, latitude, longitude, and attribution metadata.
 - City autocomplete must:
   require at least 2 characters
   debounce requests

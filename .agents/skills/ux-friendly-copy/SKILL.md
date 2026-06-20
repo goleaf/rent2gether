@@ -43,3 +43,9 @@ For booking:
 - Always explain refundable vs non-refundable.
 - Always explain cancellation.
 - Always show rules before payment.
+
+For price summaries:
+- Show daily price lines first.
+- Then show stay days, accommodation amount, discount, cleaning fee, deposit, service fee, and total due now.
+- Always explain the refundable deposit separately, for example: "Из них залог возвращается после выезда".
+- Keep every label and explanation translatable.

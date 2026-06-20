@@ -9,6 +9,7 @@ enum AvailabilityStatus: string
     case Booked = 'booked';
     case PendingPayment = 'pending_payment';
     case PendingApproval = 'pending_approval';
+    case Occupied = 'occupied';
     case Cleaning = 'cleaning';
     case Repair = 'repair';
     case Unavailable = 'unavailable';
@@ -33,6 +34,7 @@ enum AvailabilityStatus: string
             self::Booked->value,
             self::PendingPayment->value,
             self::PendingApproval->value,
+            self::Occupied->value,
             self::Cleaning->value,
             self::Repair->value,
             self::Unavailable->value,

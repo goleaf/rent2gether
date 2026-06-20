@@ -2,23 +2,33 @@
 
 namespace App\Livewire\Places;
 
+use App\Data\Favorites\FavoriteContext;
+use App\Data\Occupants\DateRange as OccupantDateRange;
+use App\Enums\AvailabilityStatus;
 use App\Enums\BookingStatus;
 use App\Enums\MessageThreadType;
 use App\Enums\PropertyStatus;
 use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
+use App\Models\AvailabilityDay;
 use App\Models\Booking;
-use App\Models\Favorite;
+use App\Models\HostProfile;
 use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\AvailabilityService;
+use App\Services\Favorites\FavoriteService;
+use App\Services\Listings\ListingDetailContentService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use App\Services\MessageService;
+use App\Services\Occupants\RoomOccupantSummaryService;
 use App\Services\PricingService;
 use App\Services\Privacy\ListingAddressVisibilityService;
+use App\Services\Properties\PropertyGuestSummaryService;
+use App\Services\Rooms\RoomGuestSummaryService;
+use App\Services\SleepingPlaces\SleepingPlaceGuestSummaryService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -178,37 +188,21 @@ class ShowSleepingPlace extends Component
             return;
         }
 
-        if ($this->isFavorited) {
-            Favorite::query()
-                ->where('user_id', $user->id)
-                ->where('sleeping_place_id', $this->sleepingPlaceId)
-                ->delete();
-
-            $this->isFavorited = false;
-
-            return;
-        }
-
-        $place = $this->place();
-
-        Favorite::query()->firstOrCreate(
-            [
-                'user_id' => $user->id,
-                'sleeping_place_id' => $place->id,
-            ],
-            [
-                'bed_id' => null,
-                'collection' => 'default',
-                'price_at_save' => $this->quote['total_amount'] ?? $place->base_price_per_night,
-                'check_in' => $this->checkIn ?: null,
-                'check_out' => $this->checkOut ?: null,
-                'guests_count' => max(1, $this->guestsCount),
-                'notify_available' => true,
-                'notify_price_drop' => true,
-            ],
+        $result = app(FavoriteService::class)->toggle(
+            user: $user,
+            sleepingPlaceId: $this->sleepingPlaceId,
+            context: new FavoriteContext(
+                source: 'listing_detail',
+                checkIn: $this->checkIn ?: null,
+                checkOut: $this->checkOut ?: null,
+                guestsCount: max(1, $this->guestsCount),
+                notifyPriceDrop: true,
+                notifyAvailableAgain: true,
+                notifyUnavailable: true,
+            ),
         );
 
-        $this->isFavorited = true;
+        $this->isFavorited = $result->selected;
     }
 
     public function startRequest(): void
@@ -289,11 +283,20 @@ class ShowSleepingPlace extends Component
             'title' => $title,
             'summary' => $this->summary($place),
             'gallery' => $this->gallery(),
+            'decisionFlow' => $this->decisionFlow($place),
+            'priceBreakdown' => $this->priceBreakdown($place),
+            'extendedContent' => app(ListingDetailContentService::class)->forSleepingPlace($place, auth()->user()),
             'exactFeatures' => $this->exactFeatures($place),
+            'sleepingPlaceProfile' => app(SleepingPlaceGuestSummaryService::class)->build($place, auth()->user()),
             'roomDetails' => $this->roomDetails($place),
             'propertyDetails' => $this->propertyDetails($place),
+            'amenityGroups' => $this->amenityGroups($place),
             'nearbySummary' => $this->nearbySummary($place),
             'rulesByGroup' => $this->rulesByGroup($place),
+            'calendarPreview' => $this->calendarPreview($place),
+            'mapDetails' => $this->mapDetails($place),
+            'safetyDetails' => $this->safetyDetails($place),
+            'cancellationDetails' => $this->cancellationDetails($place),
             'faqItems' => $this->faqItems($place),
         ])->layout('layouts.app', ['title' => $title]);
     }
@@ -316,12 +319,22 @@ class ShowSleepingPlace extends Component
                 'room_id',
                 'property_id',
                 'type',
+                'sleeping_place_type',
+                'sleeping_place_subtype',
                 'status',
                 'place_number',
                 'display_name',
+                'internal_name',
                 'bunk_level',
+                'is_top_bunk',
+                'is_bottom_bunk',
+                'is_single',
+                'is_double',
+                'is_for_one_person',
+                'is_for_couple',
                 'length_cm',
                 'width_cm',
+                'height_cm',
                 'mattress_type',
                 'mattress_firmness',
                 'has_pillow',
@@ -351,6 +364,13 @@ class ShowSleepingPlace extends Component
                 'max_nights',
                 'instant_booking_enabled',
                 'requires_host_approval',
+                'extensions_allowed',
+                'can_extend',
+                'early_check_in_allowed',
+                'late_check_out_allowed',
+                'second_guest_allowed',
+                'second_guest_fee',
+                'cancellation_policy',
             ])
             ->withCount([
                 'reviews as published_reviews_count' => fn (Builder $query) => $query->visible()->guestToPlace(),
@@ -360,8 +380,37 @@ class ShowSleepingPlace extends Component
             ], 'overall_rating')
             ->with([
                 'translations' => fn ($query) => $query
-                    ->select(['id', 'sleeping_place_id', 'locale', 'title', 'summary', 'description', 'special_conditions'])
+                    ->select([
+                        'id',
+                        'sleeping_place_id',
+                        'locale',
+                        'title',
+                        'short_description',
+                        'full_description',
+                        'summary',
+                        'description',
+                        'special_conditions',
+                        'main_pros',
+                        'important_cons',
+                        'special_notes',
+                        'what_is_included',
+                        'what_guest_should_bring',
+                        'storage_instructions',
+                        'safety_notes',
+                        'sleeping_place_title',
+                        'sleeping_place_description',
+                        'sleeping_place_pros',
+                        'sleeping_place_cons',
+                        'sleeping_place_special_notes',
+                        'what_is_included_for_place',
+                        'what_guest_should_bring_for_place',
+                    ])
                     ->whereIn('locale', $locales),
+                'physicalDetails:id,sleeping_place_id,length_cm,width_cm,height_cm,height_from_floor_cm,clearance_above_cm,ladder_available,ladder_comfort_level,safety_rail_available,safety_rail_height_cm,max_weight_kg,suitable_for_tall_person,suitable_for_heavy_person,suitable_for_elderly,suitable_for_limited_mobility,not_suitable_for_limited_mobility,frame_material,frame_stability_level,squeak_level',
+                'comfortDetails:id,sleeping_place_id,mattress_type,mattress_firmness,mattress_thickness_cm,mattress_condition,mattress_newness,has_mattress_protector,mattress_has_stains,mattress_has_smell,mattress_sags,has_pillow,has_blanket,has_bedding,bedding_included,bedding_changed_before_guest,has_towel,towel_included',
+                'storageDetails:id,sleeping_place_id,has_shoe_space,has_luggage_space,has_backpack_space,has_personal_locker,locker_has_lock,lock_provided,guest_should_bring_lock,can_store_valuables,can_store_documents,can_store_laptop,locker_size,can_leave_luggage_before_checkin,can_leave_luggage_after_checkout,storage_responsibility_note',
+                'positionDetails:id,sleeping_place_id,privacy_level,has_curtain,has_personal_lamp,lamp_adjustable,has_power_socket,power_sockets_count,has_usb_charger,has_usb_c_charger,has_shelf,has_hook,near_door,near_window,near_radiator,near_air_conditioner,near_power_socket,near_passage,in_room_corner,near_wall,noise_level_near_place,light_level_near_place,morning_light,draft_nearby',
+                'conditionDetails:id,sleeping_place_id,condition_state,frame_condition,mattress_condition,bedding_condition,curtain_condition,lamp_condition,socket_condition,locker_condition,has_damage,has_stains,has_smell,squeaks,needs_repair,needs_mattress_replacement,needs_bedding_replacement,last_cleaned_at,last_bedding_changed_at,last_checked_at,host_condition_note',
                 'amenities' => fn ($query) => $query->select(['amenities.id', 'amenities.slug', 'amenities.category', 'amenities.status']),
                 'amenities.translations' => $amenityTranslationScope,
                 'rules' => fn ($query) => $query->select(['rules.id', 'rules.slug', 'rules.category', 'rules.status']),
@@ -371,15 +420,29 @@ class ShowSleepingPlace extends Component
                         'id',
                         'property_id',
                         'type',
+                        'room_type',
+                        'living_format',
                         'status',
                         'title',
                         'gender_policy',
                         'gender_type',
+                        'room_number',
+                        'is_private',
+                        'is_shared',
+                        'is_pass_through',
                         'area',
                         'beds_count',
+                        'sleeping_places_count',
+                        'active_sleeping_places_count',
                         'max_guests',
+                        'current_guests_count',
+                        'permanent_residents_count',
+                        'short_term_guests_count',
                         'occupied_places_count',
                         'available_places_count',
+                        'occupied_sleeping_places_count',
+                        'free_sleeping_places_count',
+                        'unavailable_sleeping_places_count',
                         'noise_level',
                         'light_level',
                         'has_window',
@@ -395,8 +458,34 @@ class ShowSleepingPlace extends Component
                     ->withCount(['sleepingPlaces as active_sleeping_places_count' => fn (Builder $places) => $places->active()])
                     ->with([
                         'translations' => fn ($translation) => $translation
-                            ->select(['id', 'room_id', 'locale', 'title', 'summary', 'description', 'notes'])
+                            ->select([
+                                'id',
+                                'room_id',
+                                'locale',
+                                'title',
+                                'short_description',
+                                'full_description',
+                                'summary',
+                                'description',
+                                'notes',
+                                'room_description',
+                                'room_rules_text',
+                                'room_pros',
+                                'room_cons',
+                                'who_lives_nearby_text',
+                                'quiet_hours_text',
+                                'storage_instructions',
+                                'work_study_instructions',
+                                'food_rules_text',
+                                'conflict_instructions',
+                                'special_notes',
+                                'shared_space_instructions',
+                            ])
                             ->whereIn('locale', $locales),
+                        'layoutDetails:id,room_id,area,windows_count,window_view,cardinal_direction,has_balcony,has_free_passage_space,narrow_passages',
+                        'comfortDetails:id,room_id,has_heating,has_air_conditioning,has_fan,ventilation_level,can_open_window,can_close_window,light_level,has_blackout_curtains,can_turn_light_at_night,can_use_personal_lamp_at_night,noise_level,soundproofing_level,quiet_hours_enabled,quiet_hours_start,quiet_hours_end,has_draft,has_damp_smell,has_tobacco_smell',
+                        'accessDetails:id,room_id,has_door,has_lock,has_key,privacy_level,has_wardrobe,has_personal_lockers,personal_lockers_count,lockers_have_locks,has_luggage_space,has_desk,has_chairs,has_mirror,can_store_food,food_storage_allowed_type',
+                        'conditionDetails:id,room_id,condition_state,repair_state,cleanliness_level,floor_condition,walls_condition,window_condition,door_condition,furniture_condition,has_mold,has_insects,has_bad_smell,has_damp_marks,needs_repair,last_cleaned_at,last_checked_at',
                         'amenities' => fn ($amenity) => $amenity->select(['amenities.id', 'amenities.slug', 'amenities.category', 'amenities.status']),
                         'amenities.translations' => $amenityTranslationScope,
                         'rules' => fn ($rule) => $rule->select(['rules.id', 'rules.slug', 'rules.category', 'rules.status']),
@@ -408,6 +497,8 @@ class ShowSleepingPlace extends Component
                         'host_user_id',
                         'city_id',
                         'type',
+                        'property_type',
+                        'property_subtype',
                         'status',
                         'title',
                         'city',
@@ -423,8 +514,17 @@ class ShowSleepingPlace extends Component
                         'apartment_number',
                         'access_instructions',
                         'show_exact_address_before_booking',
+                        'show_exact_address_after_confirmation',
                         'show_exact_address_after_payment',
+                        'show_only_approximate_location',
                         'distance_to_center_meters',
+                        'rooms_count',
+                        'living_area',
+                        'max_residents',
+                        'current_residents_count',
+                        'active_sleeping_places_count',
+                        'free_sleeping_places_count',
+                        'occupied_sleeping_places_count',
                         'bathrooms_count',
                         'showers_count',
                         'kitchens_count',
@@ -443,10 +543,43 @@ class ShowSleepingPlace extends Component
                                 'property_id',
                                 'locale',
                                 'title',
+                                'short_description',
                                 'summary',
+                                'full_description',
                                 'description',
+                                'location_description',
+                                'transport_description',
                                 'neighborhood_description',
+                                'parking_description',
+                                'condition_description',
+                                'access_description',
+                                'self_check_in_instructions',
+                                'delivery_instructions',
+                                'guest_visitor_rules_text',
+                                'courier_rules_text',
+                                'important_notes',
                                 'getting_there',
+                                'why_convenient',
+                                'suitable_for',
+                                'not_suitable_for',
+                                'main_pros',
+                                'important_cons',
+                                'what_to_know_beforehand',
+                                'what_is_included',
+                                'what_is_not_included',
+                                'what_to_bring',
+                                'where_to_store_belongings',
+                                'where_to_store_food',
+                                'kitchen_instructions',
+                                'bathroom_instructions',
+                                'laundry_instructions',
+                                'key_pickup_instructions',
+                                'night_entry_instructions',
+                                'host_contact_instructions',
+                                'problem_instructions',
+                                'lost_key_instructions',
+                                'neighbor_conflict_instructions',
+                                'repair_problem_instructions',
                                 'what_to_know',
                                 'check_in_instructions',
                                 'house_rules_text',
@@ -456,7 +589,10 @@ class ShowSleepingPlace extends Component
                         'cityModel:id,name',
                         'host:id,name,avatar,languages,rating_as_host,identity_verified',
                         'host.setting:id,user_id,privacy_preferences_json',
-                        'host.hostProfile:id,user_id,display_name,avatar_path,about,languages_json,response_time_minutes,response_rate,rating_average,reviews_count,verified_at,default_cancellation_policy,can_help_with_check_in,lives_nearby,lives_in_property',
+                        'host.hostProfile:id,user_id,display_name,avatar_path,about,languages_json,response_time_minutes,response_rate,rating_average,reviews_count,verified_at,default_cancellation_policy,can_help_with_check_in,lives_nearby,lives_in_property,emergency_contact_available',
+                        'locationDetails:id,property_id,nearest_metro,nearest_bus_stop,nearest_shop,nearest_supermarket,nearest_pharmacy,nearest_railway_station,nearest_airport,distance_to_center_meters,walk_minutes_to_center,transport_minutes_to_center,transport_convenience_level,has_night_transport,easy_to_reach_with_luggage,district_noise_level,district_safety_level,street_lighting_level,has_parking_nearby,has_free_parking,has_paid_parking,has_private_parking,has_bicycle_parking,parking_permit_required,parking_usually_full',
+                        'conditionDetails:id,property_id,repair_state,cleanliness_level,smell_level,humidity_level,winter_temperature_level,summer_temperature_level,indoor_noise_level,light_level,furniture_condition,plumbing_condition,kitchen_condition,bathroom_condition,has_insects,has_mold,has_heating_problems,has_hot_water_problems,has_damp_marks,last_checked_at',
+                        'accessDetails:id,property_id,entrance_type,has_intercom,has_key,has_keycard,has_electronic_lock,has_key_safe,self_check_in_available,meet_host_required,meet_host_representative_required,access_24_7,can_return_at_night,has_night_entry_restrictions,delivery_allowed,delivery_dropoff_location',
                         'amenities' => fn ($amenity) => $amenity->select(['amenities.id', 'amenities.slug', 'amenities.category', 'amenities.status']),
                         'amenities.translations' => $amenityTranslationScope,
                         'rules' => fn ($rule) => $rule->select(['rules.id', 'rules.slug', 'rules.category', 'rules.status']),
@@ -527,6 +663,128 @@ class ShowSleepingPlace extends Component
     /**
      * @return list<array{label:string,value:string}>
      */
+    private function decisionFlow(SleepingPlace $place): array
+    {
+        return [
+            $this->row('listing.detail.flow.property', $this->label($place->property?->type)),
+            $this->row('listing.detail.flow.room', $this->label($place->room?->type)),
+            $this->row('listing.detail.flow.place', $this->label($place->type)),
+            $this->row('listing.detail.flow.dates', $this->dateRangeSummary()),
+            $this->row('listing.detail.flow.price', $this->priceSummary($place)),
+            $this->row('listing.detail.flow.booking', $this->bookingModeLabel($place)),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     has_quote:bool,
+     *     summary:string,
+     *     date_prices:list<array{label:string,weekday:string,amount:string,source:string}>,
+     *     remaining_dates_count:int,
+     *     lines:list<array{label:string,amount:string,refundable:bool,type:string}>,
+     *     total:?string,
+     *     refundable:?string,
+     *     non_refundable:?string
+     * }
+     */
+    private function priceBreakdown(SleepingPlace $place): array
+    {
+        $currency = strtoupper((string) (($this->quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
+
+        if (! $this->quote) {
+            $lines = [
+                [
+                    'label' => __('listing.detail.booking.base_nightly_amount'),
+                    'amount' => $this->money((float) $place->base_price_per_night, $currency),
+                    'refundable' => false,
+                    'type' => 'base_nightly_amount',
+                ],
+            ];
+
+            if ((float) $place->cleaning_fee > 0) {
+                $lines[] = [
+                    'label' => __('booking.price_lines.cleaning_fee'),
+                    'amount' => $this->money((float) $place->cleaning_fee, $currency),
+                    'refundable' => false,
+                    'type' => 'cleaning_fee',
+                ];
+            }
+
+            if ((float) $place->deposit_amount > 0) {
+                $lines[] = [
+                    'label' => __('booking.price_lines.deposit'),
+                    'amount' => $this->money((float) $place->deposit_amount, $currency),
+                    'refundable' => true,
+                    'type' => 'deposit',
+                ];
+            }
+
+            return [
+                'has_quote' => false,
+                'summary' => __('listing.detail.booking.price_from', [
+                    'amount' => $this->money((float) $place->base_price_per_night, $currency),
+                ]),
+                'date_prices' => [],
+                'remaining_dates_count' => 0,
+                'lines' => $lines,
+                'total' => null,
+                'refundable' => null,
+                'non_refundable' => null,
+            ];
+        }
+
+        $allDatePrices = collect($this->quote['date_prices'] ?? []);
+        $datePrices = $allDatePrices
+            ->take(7)
+            ->map(function (array $datePrice) use ($currency): array {
+                $date = CarbonImmutable::parse((string) $datePrice['date']);
+                $source = (string) ($datePrice['source'] ?? 'base');
+
+                return [
+                    'label' => $date->translatedFormat('d M'),
+                    'weekday' => $date->translatedFormat('D'),
+                    'amount' => $this->money((float) $datePrice['price'], $currency),
+                    'source' => __('listing.detail.booking.price_sources.'.$source),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $hasDailyPrices = $datePrices !== [];
+        $lines = collect($this->quote['line_items'] ?? [])
+            ->reject(fn (array $item): bool => ($item['type'] ?? '') === 'total'
+                || ($hasDailyPrices && ($item['type'] ?? '') === 'nightly_base'))
+            ->map(function (array $item) use ($currency): array {
+                $type = (string) ($item['type'] ?? 'line');
+
+                return [
+                    'label' => __((string) ($item['label_key'] ?? 'booking.price_lines.'.$type)),
+                    'amount' => $this->money((float) ($item['amount'] ?? 0), (string) ($item['currency'] ?? $currency)),
+                    'refundable' => (bool) ($item['is_refundable'] ?? false),
+                    'type' => $type,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'has_quote' => true,
+            'summary' => trans_choice('listing.detail.booking.price_summary', (int) $this->quote['nights_count'], [
+                'count' => (int) $this->quote['nights_count'],
+                'total' => $this->money((float) $this->quote['total_amount'], $currency),
+            ]),
+            'date_prices' => $datePrices,
+            'remaining_dates_count' => max(0, $allDatePrices->count() - count($datePrices)),
+            'lines' => $lines,
+            'total' => $this->money((float) $this->quote['total_amount'], $currency),
+            'refundable' => $this->money((float) $this->quote['refundable_amount'], $currency),
+            'non_refundable' => $this->money((float) $this->quote['non_refundable_amount'], $currency),
+        ];
+    }
+
+    /**
+     * @return list<array{label:string,value:string}>
+     */
     private function exactFeatures(SleepingPlace $place): array
     {
         return array_values(array_filter([
@@ -564,6 +822,9 @@ class ShowSleepingPlace extends Component
             'gender_policy' => $this->label($room?->gender_policy ?: $room?->gender_type),
             'quiet_rules' => $this->ruleLabelsByCategories($place, ['quiet_hours', 'shared_room_behavior']),
             'amenities' => $this->amenityLabels($room?->amenities ?? collect()),
+            'profile' => $room
+                ? app(RoomGuestSummaryService::class)->build($room, auth()->user() instanceof User ? auth()->user() : null)
+                : ['title' => __('room.public.title'), 'badges' => [], 'occupancy' => ['count' => 0, 'summary' => ''], 'sections' => []],
         ];
     }
 
@@ -575,12 +836,14 @@ class ShowSleepingPlace extends Component
         $property = $place->property;
         $translation = $this->translation($property?->translations ?? collect());
         $addressVisibility = $this->addressVisibility($property);
+        $viewer = auth()->user();
 
         return [
             'description' => $translation?->description ?: $translation?->summary ?: __('listing.detail.property.no_description'),
             'address' => $addressVisibility['address'],
             'address_note' => $addressVisibility['note'],
             'check_in_instructions' => $addressVisibility['instructions'],
+            'profile' => app(PropertyGuestSummaryService::class)->build($property, $viewer instanceof User ? $viewer : null),
             'transport' => $property?->nearest_transport ?: $translation?->getting_there ?: __('listing.detail.property.transport_missing'),
             'kitchen_bathroom' => __('listing.detail.property.kitchen_bathroom_summary', [
                 'kitchens' => (int) ($property?->kitchens_count ?? 0),
@@ -592,13 +855,47 @@ class ShowSleepingPlace extends Component
     }
 
     /**
-     * @return array{count:int,summary:string,privacy:string}
+     * @return list<array{title:string,items:list<string>}>
+     */
+    private function amenityGroups(SleepingPlace $place): array
+    {
+        return [
+            [
+                'title' => __('listing.detail.amenities.place'),
+                'items' => $this->amenityLabels($place->amenities),
+            ],
+            [
+                'title' => __('listing.detail.amenities.room'),
+                'items' => $this->amenityLabels($place->room?->amenities ?? collect()),
+            ],
+            [
+                'title' => __('listing.detail.amenities.property'),
+                'items' => $this->amenityLabels($place->property?->amenities ?? collect()),
+            ],
+        ];
+    }
+
+    /**
+     * @return array{count:int,summary:string,privacy:string,privacy_note:string,badges:list<string>,messages:list<string>,warnings:list<array<string,mixed>>}
      */
     private function nearbySummary(SleepingPlace $place): array
     {
-        $count = $this->nearbyGuestCount($place);
+        $fallbackCount = $this->nearbyGuestCount($place);
         $room = $place->room;
         $quiet = $room?->noise_level ? $this->valueLabel($room->noise_level) : __('listing.detail.values.not_set');
+        $summary = null;
+
+        if ($room && $this->checkIn !== '' && $this->checkOut !== '') {
+            try {
+                $summary = app(RoomOccupantSummaryService::class)
+                    ->getSummaryForSleepingPlace($place, new OccupantDateRange($this->checkIn, $this->checkOut))
+                    ->toArray();
+            } catch (\Throwable) {
+                $summary = null;
+            }
+        }
+
+        $count = max($fallbackCount, (int) ($summary['occupants_count'] ?? 0));
 
         return [
             'count' => $count,
@@ -607,6 +904,10 @@ class ShowSleepingPlace extends Component
                 'quiet' => $quiet,
             ]),
             'privacy' => __('listing.detail.nearby.privacy'),
+            'privacy_note' => $summary['privacy_note'] ?? __('occupants.privacy_note'),
+            'badges' => $summary['badges'] ?? [],
+            'messages' => $summary['messages'] ?? [],
+            'warnings' => $summary['warnings'] ?? [],
         ];
     }
 
@@ -629,6 +930,134 @@ class ShowSleepingPlace extends Component
         }
 
         return $groups;
+    }
+
+    /**
+     * @return array{days:list<array{label:string,weekday:string,status_label:string,is_selected:bool,is_blocked:bool,price:?string,check_in_allowed:bool,check_out_allowed:bool}>, range_label:string, fallback:string}
+     */
+    private function calendarPreview(SleepingPlace $place): array
+    {
+        $start = $this->calendarStartDate();
+        $end = $start->addDays(14);
+        $selectedStart = $this->parseDateOrNull($this->checkIn);
+        $selectedEnd = $this->parseDateOrNull($this->checkOut);
+        $currency = strtoupper((string) (($this->quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
+
+        $availabilityByDate = AvailabilityDay::query()
+            ->select(['id', 'sleeping_place_id', 'date', 'status', 'price_override', 'check_in_allowed', 'check_out_allowed'])
+            ->where('sleeping_place_id', $place->id)
+            ->where('date', '>=', $start->toDateString())
+            ->where('date', '<', $end->toDateString())
+            ->orderBy('date')
+            ->get()
+            ->keyBy(fn (AvailabilityDay $day): string => $day->date->toDateString());
+
+        $days = [];
+
+        for ($date = $start; $date->lessThan($end); $date = $date->addDay()) {
+            $dateKey = $date->toDateString();
+            $availability = $availabilityByDate->get($dateKey);
+            $statusValue = $availability?->status instanceof AvailabilityStatus
+                ? $availability->status->value
+                : (string) ($availability?->status ?: AvailabilityStatus::Available->value);
+
+            $days[] = [
+                'label' => $date->translatedFormat('d M'),
+                'weekday' => $date->translatedFormat('D'),
+                'status_label' => $this->availabilityStatusLabel($statusValue),
+                'is_selected' => $selectedStart instanceof CarbonImmutable
+                    && $selectedEnd instanceof CarbonImmutable
+                    && $date->greaterThanOrEqualTo($selectedStart)
+                    && $date->lessThan($selectedEnd),
+                'is_blocked' => in_array($statusValue, AvailabilityStatus::blocksStayValues(), true),
+                'price' => $availability?->price_override === null
+                    ? null
+                    : $this->money((float) $availability->price_override, $currency),
+                'check_in_allowed' => (bool) ($availability?->check_in_allowed ?? true),
+                'check_out_allowed' => (bool) ($availability?->check_out_allowed ?? true),
+            ];
+        }
+
+        return [
+            'days' => $days,
+            'range_label' => __('listing.detail.calendar.range', [
+                'start' => $start->translatedFormat('d M'),
+                'end' => $end->subDay()->translatedFormat('d M'),
+            ]),
+            'fallback' => __('listing.detail.calendar.fallback'),
+        ];
+    }
+
+    /**
+     * @return array{area:string,description:string,transport:string,distance:string,privacy:string}
+     */
+    private function mapDetails(SleepingPlace $place): array
+    {
+        $property = $place->property;
+        $translation = $this->translation($property?->translations ?? collect());
+
+        return [
+            'area' => $this->location($property),
+            'description' => $translation?->neighborhood_description ?: __('listing.detail.map.neighborhood_missing'),
+            'transport' => $property?->nearest_transport ?: $translation?->getting_there ?: __('listing.detail.property.transport_missing'),
+            'distance' => $this->distanceLabel($property?->distance_to_center_meters),
+            'privacy' => __('listing.detail.map.address_privacy'),
+        ];
+    }
+
+    /**
+     * @return array{rows:list<array{label:string,value:string}>, callout:string}
+     */
+    private function safetyDetails(SleepingPlace $place): array
+    {
+        $property = $place->property;
+        $host = $property?->host;
+        $hostProfile = $host?->hostProfile;
+        $translation = $this->translation($property?->translations ?? collect());
+        $addressVisibility = $this->addressVisibility($property);
+        $hostVerified = (bool) ($hostProfile?->verified_at || $host?->identity_verified);
+
+        return [
+            'rows' => [
+                $this->row(
+                    'listing.detail.safety.host_verification',
+                    $hostVerified ? __('listing.detail.safety.verified') : __('listing.detail.safety.not_verified_yet'),
+                ),
+                $this->row('listing.detail.safety.address_privacy', $addressVisibility['note']),
+                $this->row('listing.detail.safety.property_safety', $this->safetySummary($property, $translation?->safety_notes)),
+                $this->row('listing.detail.safety.emergency_help', $this->emergencyHelpLabel($hostProfile)),
+            ],
+            'callout' => __('listing.detail.safety.complaint_help'),
+        ];
+    }
+
+    /**
+     * @return array{rows:list<array{label:string,value:string}>}
+     */
+    private function cancellationDetails(SleepingPlace $place): array
+    {
+        $hostProfile = $place->property?->host?->hostProfile;
+        $policy = (string) ($hostProfile?->default_cancellation_policy ?: 'flexible');
+        $deadline = $this->quote['cancellation_deadline'] ?? null;
+
+        return [
+            'rows' => [
+                $this->row('listing.detail.cancellation.policy', $this->cancellationPolicyLabel($policy)),
+                $this->row(
+                    'listing.detail.cancellation.free_until',
+                    is_string($deadline) && $deadline !== ''
+                        ? __('listing.detail.cancellation.free_until_value', ['date' => $this->localizedDateTime($deadline)])
+                        : __('listing.detail.cancellation.choose_dates'),
+                ),
+                $this->row(
+                    'listing.detail.cancellation.extension',
+                    $place->extensions_allowed
+                        ? __('listing.detail.cancellation.extension_available')
+                        : __('listing.detail.cancellation.extension_unavailable'),
+                ),
+                $this->row('listing.detail.cancellation.payout', __('listing.detail.cancellation.payout_after_checkin')),
+            ],
+        ];
     }
 
     /**
@@ -842,6 +1271,112 @@ class ShowSleepingPlace extends Component
                 ->merge($place->rules ?? collect())
                 ->whereIn('category', $categories)
         );
+    }
+
+    private function dateRangeSummary(): string
+    {
+        $checkIn = $this->parseDateOrNull($this->checkIn);
+        $checkOut = $this->parseDateOrNull($this->checkOut);
+
+        if (! $checkIn instanceof CarbonImmutable || ! $checkOut instanceof CarbonImmutable) {
+            return __('listing.detail.flow.dates_empty');
+        }
+
+        return __('listing.detail.flow.dates_value', [
+            'check_in' => $checkIn->translatedFormat('d M'),
+            'check_out' => $checkOut->translatedFormat('d M'),
+        ]);
+    }
+
+    private function priceSummary(SleepingPlace $place): string
+    {
+        $currency = strtoupper((string) (($this->quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
+
+        if ($this->quote) {
+            return $this->money((float) $this->quote['total_amount'], $currency);
+        }
+
+        return __('listing.detail.flow.price_from', [
+            'amount' => $this->money((float) $place->base_price_per_night, $currency),
+        ]);
+    }
+
+    private function bookingModeLabel(SleepingPlace $place): string
+    {
+        return $place->instant_booking_enabled
+            ? __('listing.detail.flow.booking_instant')
+            : __('listing.detail.flow.booking_request');
+    }
+
+    private function calendarStartDate(): CarbonImmutable
+    {
+        $checkIn = $this->parseDateOrNull($this->checkIn);
+
+        return $checkIn instanceof CarbonImmutable
+            ? $checkIn
+            : CarbonImmutable::today();
+    }
+
+    private function parseDateOrNull(?string $value): ?CarbonImmutable
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        try {
+            return CarbonImmutable::parse($value)->startOfDay();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function availabilityStatusLabel(string $value): string
+    {
+        $status = AvailabilityStatus::tryFrom($value);
+
+        return $status instanceof AvailabilityStatus ? $status->label() : $this->valueLabel($value);
+    }
+
+    private function distanceLabel(mixed $meters): string
+    {
+        if ($meters === null || $meters === '') {
+            return __('listing.detail.map.distance_missing');
+        }
+
+        $meters = (int) $meters;
+
+        if ($meters < 1000) {
+            return __('listing.detail.map.distance_meters', ['count' => $meters]);
+        }
+
+        return __('listing.detail.map.distance_km', [
+            'count' => number_format($meters / 1000, 1),
+        ]);
+    }
+
+    private function emergencyHelpLabel(?HostProfile $hostProfile): string
+    {
+        if ($hostProfile?->emergency_contact_available) {
+            return __('listing.detail.safety.emergency_available');
+        }
+
+        if ($hostProfile?->can_help_with_check_in) {
+            return __('listing.detail.safety.host_can_help');
+        }
+
+        return __('listing.detail.safety.ask_host');
+    }
+
+    private function cancellationPolicyLabel(string $policy): string
+    {
+        $key = 'listing.cancellation_policy.'.$policy;
+
+        return Lang::has($key) ? __($key) : $this->valueLabel($policy);
+    }
+
+    private function localizedDateTime(string $value): string
+    {
+        return CarbonImmutable::parse($value)->translatedFormat('d M, H:i');
     }
 
     private function nearbyGuestCount(SleepingPlace $place): int

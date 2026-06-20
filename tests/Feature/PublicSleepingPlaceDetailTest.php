@@ -26,6 +26,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -62,6 +63,106 @@ class PublicSleepingPlaceDetailTest extends TestCase
             ->assertOk()
             ->assertSee('Нижнее место в центре')
             ->assertSee('Кратко о месте');
+    }
+
+    public function test_detail_page_leads_with_price_and_complete_decision_context(): void
+    {
+        $place = $this->createPlace('Decision place');
+
+        $response = $this->get(route('places.show', [
+            'locale' => 'en',
+            'sleepingPlace' => $place,
+            'in' => '2026-07-10',
+            'out' => '2026-07-13',
+            'guests' => 1,
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertSee(__('listing.detail.flow.title'))
+            ->assertSee(__('listing.detail.booking.price_breakdown_title'))
+            ->assertSee(__('listing.detail.calendar.title'))
+            ->assertSee(__('listing.detail.map.title'))
+            ->assertSee(__('listing.detail.safety.title'))
+            ->assertSee(__('listing.detail.cancellation.title'));
+
+        $html = $response->getContent();
+        $pricePosition = strpos($html, 'data-detail-section="price-breakdown"');
+        $roomPosition = strpos($html, 'data-detail-section="room-details"');
+
+        $this->assertNotFalse($pricePosition);
+        $this->assertNotFalse($roomPosition);
+        $this->assertLessThan($roomPosition, $pricePosition);
+    }
+
+    public function test_extended_instruction_sections_render_translated_content_with_field_fallbacks(): void
+    {
+        $this->assertTrue(Schema::hasColumn('property_translations', 'short_description'));
+        $this->assertTrue(Schema::hasColumn('room_translations', 'room_description'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_translations', 'sleeping_place_description'));
+
+        $place = $this->createPlace('Instruction place', 'Место с инструкциями');
+
+        $place->property->translations()->where('locale', 'en')->update([
+            'short_description' => 'A calm place with clear house instructions.',
+            'full_description' => 'You will sleep in a lower bunk inside a shared but quiet apartment.',
+            'why_convenient' => 'The bus stop and grocery store are close.',
+            'what_is_included' => 'Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.',
+            'what_is_not_included' => 'Laundry powder and personal hygiene items are not included.',
+            'what_to_bring' => 'Bring your passport, charger, slippers, and a small locker padlock.',
+            'where_to_store_belongings' => 'Keep your suitcase under the lower bunk and valuables in the locker.',
+            'kitchen_instructions' => 'Use the kitchen before 22:00 and wash dishes right away.',
+            'bathroom_instructions' => 'Keep showers short at night and wipe the floor after use.',
+            'laundry_instructions' => 'Wash clothes after 09:00 and dry them on the shared rack.',
+            'key_pickup_instructions' => 'Private exact key safe code 1234 near the apartment door.',
+            'host_contact_instructions' => 'Private host phone +370 600 00000.',
+            'problem_instructions' => 'Message the host in the app if something feels wrong.',
+            'lost_key_instructions' => 'Tell the host in the app if a key is lost.',
+            'neighbor_conflict_instructions' => 'Step away first, then message the host about the conflict.',
+            'repair_problem_instructions' => 'Tell the host if something breaks or stops working.',
+        ]);
+
+        $place->property->translations()->where('locale', 'ru')->update([
+            'short_description' => 'Спокойное место с понятными правилами проживания.',
+            'what_is_included' => null,
+        ]);
+
+        $place->room->translations()->where('locale', 'en')->update([
+            'room_description' => 'The room is shared by up to four guests.',
+            'who_lives_nearby_text' => 'Only the guest count is shown before booking.',
+            'storage_instructions' => 'Use the shelf beside the bed for daily items.',
+            'shared_space_instructions' => 'Keep shared paths clear for other guests.',
+        ]);
+
+        $place->translations()->where('locale', 'en')->update([
+            'sleeping_place_description' => 'The lower bunk has a lamp, socket, shelf, and locker.',
+            'sleeping_place_pros' => 'Lower bunk, easy access, and calmer corner.',
+            'what_is_included_for_place' => 'Lamp, socket, bedding, towel, and locker are included for this place.',
+            'what_guest_should_bring_for_place' => 'Bring earplugs if you are sensitive to shared-room noise.',
+        ]);
+
+        $this->get(route('places.show', ['locale' => 'en', 'sleepingPlace' => $place]))
+            ->assertOk()
+            ->assertSee(__('listing_detail.sections.description'))
+            ->assertSee(__('listing_detail.sections.included'))
+            ->assertSee(__('listing_detail.sections.storage'))
+            ->assertSee(__('listing_detail.sections.kitchen'))
+            ->assertSee(__('listing_detail.sections.bathroom'))
+            ->assertSee(__('listing_detail.sections.laundry'))
+            ->assertSee(__('listing_detail.sections.keys'))
+            ->assertSee(__('listing_detail.sections.problem'))
+            ->assertSee('Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.')
+            ->assertSee('Bring your passport, charger, slippers, and a small locker padlock.')
+            ->assertSee('Use the kitchen before 22:00 and wash dishes right away.')
+            ->assertSee('Message the host in the app if something feels wrong.')
+            ->assertDontSee('Private host phone +370 600 00000')
+            ->assertDontSee('Private exact key safe code 1234 near the apartment door.')
+            ->assertDontSee(__('listing_detail.sections.food_storage'));
+
+        $this->get(route('places.show', ['locale' => 'ru', 'sleepingPlace' => $place]))
+            ->assertOk()
+            ->assertSee('Спокойное место с понятными правилами проживания.')
+            ->assertSee('Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.');
     }
 
     public function test_selected_dates_update_price(): void

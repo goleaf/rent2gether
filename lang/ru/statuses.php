@@ -61,6 +61,7 @@ return [
         'booked' => 'Забронировано',
         'pending_payment' => 'Ожидает оплаты',
         'pending_approval' => 'Ожидает подтверждения',
+        'occupied' => 'Занято',
         'cleaning' => 'Уборка',
         'repair' => 'Ремонт',
         'unavailable' => 'Недоступно',

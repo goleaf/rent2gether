@@ -1,6 +1,7 @@
 @php
     $results = $this->searchResults;
     $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
+    $saveSearchCityId = ctype_digit((string) $city) ? (int) $city : null;
 @endphp
 
 <div class="min-h-screen bg-zinc-50 pb-24 dark:bg-zinc-950">
@@ -120,6 +121,29 @@
                     </flux:button>
                 @endif
             </div>
+
+            <livewire:saved-searches.save-search-button
+                :city-id="$saveSearchCityId"
+                :city-name="$cityQuery"
+                :district="$district"
+                :check-in="$checkIn"
+                :check-out="$checkOut"
+                :guests-count="$guestsCount"
+                :price-min="$priceMin"
+                :price-max="$priceMax"
+                :currency="$currency ?: 'EUR'"
+                :room-type="$roomType"
+                :sleeping-place-type="$sleepingPlaceType"
+                :instant-booking="$instantBooking"
+                :verified-host="$verifiedHost"
+                :has-reviews="$hasReviews"
+                :require-wifi="$wifi"
+                :require-kitchen="$kitchen"
+                :require-washing-machine="$washingMachine"
+                :require-locker="$locker"
+                :require-workspace="$workspace"
+                :key="'save-search-'.$city.'-'.$district.'-'.$checkIn.'-'.$checkOut.'-'.$priceMin.'-'.$priceMax.'-'.$instantBooking"
+            />
         </flux:card>
     </section>
 
@@ -152,90 +176,11 @@
             @else
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     @foreach($results['cards'] as $card)
-                        <article wire:key="sleeping-place-card-{{ $card['id'] }}" class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                            @if($card['image_url'])
-                                <img
-                                    src="{{ $card['image_url'] }}"
-                                    alt="{{ $card['image_alt'] }}"
-                                    width="720"
-                                    height="480"
-                                    loading="lazy"
-                                    decoding="async"
-                                    class="h-44 w-full bg-zinc-100 object-cover dark:bg-zinc-800"
-                                />
-                            @else
-                                <div class="flex h-44 w-full items-center justify-center bg-zinc-100 dark:bg-zinc-800">
-                                    <flux:icon name="home" class="size-10 text-zinc-300 dark:text-zinc-700" />
-                                </div>
-                            @endif
-
-                            <div class="space-y-3 p-4">
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-                                        <flux:icon name="map-pin" class="size-3.5 shrink-0" />
-                                        <span class="truncate">{{ $card['location'] }}</span>
-                                    </div>
-                                    <flux:heading size="sm" class="line-clamp-2">
-                                        <a href="{{ $card['href'] }}" wire:navigate class="hover:text-emerald-700 dark:hover:text-emerald-300">
-                                            {{ $card['title'] }}
-                                        </a>
-                                    </flux:heading>
-                                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                                        {{ $card['room_type'] }} · {{ $card['sleeping_place_type'] }} · {{ $card['gender_policy'] }}
-                                    </flux:text>
-                                    @if($card['people_in_room'])
-                                        <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
-                                            {{ trans_choice('search.card.people_in_room', $card['people_in_room'], ['count' => $card['people_in_room']]) }}
-                                        </flux:text>
-                                    @endif
-                                </div>
-
-                                <div class="flex flex-wrap gap-1.5">
-                                    @if($card['instant_booking'])
-                                        <flux:badge color="green" size="sm">{{ __('search.card.badges.instant') }}</flux:badge>
-                                    @endif
-                                    @if($card['requires_approval'])
-                                        <flux:badge color="amber" size="sm">{{ __('search.card.badges.approval') }}</flux:badge>
-                                    @endif
-                                    @if($card['verified_host'])
-                                        <flux:badge color="blue" size="sm">{{ __('search.card.badges.verified') }}</flux:badge>
-                                    @endif
-                                    @if($card['rating'])
-                                        <flux:badge size="sm">{{ __('search.card.rating', ['rating' => number_format($card['rating'], 1), 'count' => $card['reviews_count']]) }}</flux:badge>
-                                    @endif
-                                </div>
-
-                                @if($card['amenities'])
-                                    <div class="flex flex-wrap gap-1.5">
-                                        @foreach($card['amenities'] as $amenity)
-                                            <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $amenity }}</span>
-                                        @endforeach
-                                    </div>
-                                @endif
-
-                                @if($card['hints'])
-                                    <div class="space-y-1">
-                                        @foreach($card['hints'] as $hint)
-                                            <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ $hint }}</p>
-                                        @endforeach
-                                    </div>
-                                @endif
-
-                                <div class="flex items-end justify-between gap-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-                                    <div>
-                                        <div class="text-lg font-semibold text-zinc-950 dark:text-zinc-50">{{ $money($card['price_per_night'], $card['currency']) }}</div>
-                                        <div class="text-xs text-zinc-500">{{ __('search.card.per_night') }}</div>
-                                    </div>
-
-                                    @if($card['total_price'] !== null && $card['nights'] > 0)
-                                        <div class="text-right">
-                                            <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $money($card['total_price'], $card['currency']) }}</div>
-                                            <div class="text-xs text-zinc-500">{{ trans_choice('search.card.total_for_nights', $card['nights'], ['count' => $card['nights']]) }}</div>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </article>
+                        <x-listings.card
+                            :card="$card"
+                            card-variant="search"
+                            wire:key="sleeping-place-card-{{ $card['sleeping_place_id'] }}"
+                        />
                     @endforeach
                 </div>
 

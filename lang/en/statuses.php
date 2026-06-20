@@ -61,6 +61,7 @@ return [
         'booked' => 'Booked',
         'pending_payment' => 'Payment hold',
         'pending_approval' => 'Waiting for approval',
+        'occupied' => 'Occupied',
         'cleaning' => 'Cleaning',
         'repair' => 'Repair',
         'unavailable' => 'Unavailable',

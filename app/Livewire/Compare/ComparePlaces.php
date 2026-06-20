@@ -2,15 +2,20 @@
 
 namespace App\Livewire\Compare;
 
+use App\Data\Favorites\FavoriteContext;
+use App\Data\Listings\ListingCardContext;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\AvailabilityService;
 use App\Services\CompatibilityService;
+use App\Services\Favorites\FavoriteService;
+use App\Services\Listings\ListingCardQueryService;
+use App\Services\Listings\ListingCardService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use App\Services\PricingService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Number;
@@ -42,6 +47,33 @@ class ComparePlaces extends Component
         unset($this->cards);
     }
 
+    public function saveComparedToFavorites(FavoriteService $favorites): void
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]), navigate: true);
+
+            return;
+        }
+
+        foreach ($this->ids() as $sleepingPlaceId) {
+            $favorites->add(
+                user: $user,
+                sleepingPlaceId: $sleepingPlaceId,
+                collectionId: null,
+                context: new FavoriteContext(
+                    source: 'comparison',
+                    checkIn: $this->checkIn ?: null,
+                    checkOut: $this->checkOut ?: null,
+                    guestsCount: max(1, $this->guestsCount),
+                ),
+            );
+        }
+
+        $this->dispatch('favorite-collections-changed');
+    }
+
     #[Computed]
     public function cards(): Collection
     {
@@ -51,54 +83,20 @@ class ComparePlaces extends Component
             return collect();
         }
 
-        $locales = $this->translationLocales();
-        $places = SleepingPlace::query()
-            ->select([
-                'id',
-                'room_id',
-                'property_id',
-                'type',
-                'status',
-                'place_number',
-                'display_name',
-                'base_price_per_night',
-                'weekly_price',
-                'monthly_price',
-                'weekend_price',
-                'cleaning_fee',
-                'deposit_amount',
-                'currency',
-                'max_guests',
-                'min_nights',
-                'max_nights',
-                'has_locker',
-            ])
-            ->whereIn('id', $ids)
-            ->withCount([
-                'reviews as published_reviews_count' => fn (Builder $query) => $query->visible()->guestToPlace(),
-            ])
-            ->withAvg([
-                'reviews as published_reviews_rating' => fn (Builder $query) => $query->visible()->guestToPlace(),
-            ], 'overall_rating')
-            ->with([
-                'translations' => fn ($translation) => $translation
-                    ->select(['id', 'sleeping_place_id', 'locale', 'title', 'summary'])
-                    ->whereIn('locale', $locales),
-                'room:id,property_id,type,status,gender_policy,beds_count,max_guests,occupied_places_count,has_desk,has_chair',
-                'room.amenities:id,slug,category,status',
-                'property:id,city_id,host_user_id,type,status,city,district,kitchens_count,amenities',
-                'property.cityModel:id,name',
-                'property.amenities:id,slug,category,status',
-                'property.host:id,name,rating_as_host,identity_verified',
-                'property.host.hostProfile:id,user_id,rating_average,reviews_count,default_cancellation_policy',
-                'amenities:id,slug,category,status',
-                'cardMedia:id,mediable_type,mediable_id,disk,path,thumb_path,thumbnail_path,mobile_path,full_path,alt_text,caption_en,caption_ru,is_primary,is_cover,sort_order,status',
-            ])
+        $context = $this->listingCardContext($ids);
+        $places = app(ListingCardQueryService::class)
+            ->forComparison($ids, $context)
             ->get()
             ->sortBy(fn (SleepingPlace $place): int => array_search($place->id, $ids, true))
             ->values();
+        $listingCards = app(ListingCardService::class)
+            ->buildMany($places, $context)
+            ->keyBy(fn ($card) => $card->sleepingPlaceId);
 
-        return $places->map(fn (SleepingPlace $place): array => $this->card($place));
+        return $places->map(fn (SleepingPlace $place): array => $this->card(
+            $place,
+            $listingCards->get($place->id)?->toArray(),
+        ));
     }
 
     public function render(): View
@@ -127,7 +125,7 @@ class ComparePlaces extends Component
     /**
      * @return array<string, mixed>
      */
-    private function card(SleepingPlace $place): array
+    private function card(SleepingPlace $place, ?array $listingCard = null): array
     {
         $currency = strtoupper($place->currency ?: 'EUR');
         $quote = $this->quote($place);
@@ -137,6 +135,7 @@ class ComparePlaces extends Component
 
         return [
             'id' => $place->id,
+            'listing_card' => $listingCard,
             'title' => $this->title($place),
             'photo' => $place->cardMedia?->imageUrl('mobile'),
             'photo_alt' => $place->cardMedia?->localizedCaption() ?: __('listing.media.primary_alt', ['title' => $this->title($place)]),
@@ -164,7 +163,28 @@ class ComparePlaces extends Component
             'warnings' => $compatibility && $compatibility['warning_reasons'] !== []
                 ? array_slice($compatibility['warning_reasons'], 0, 2)
                 : [__('decision.compare.no_warnings')],
+            'available_for_dates' => $this->availableForDates($place),
         ];
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    private function listingCardContext(array $ids): ListingCardContext
+    {
+        return new ListingCardContext(
+            userId: auth()->id() ? (int) auth()->id() : null,
+            locale: app()->getLocale(),
+            currency: 'EUR',
+            checkInDate: $this->checkIn ?: null,
+            checkOutDate: $this->checkOut ?: null,
+            guestsCount: max(1, $this->guestsCount),
+            source: 'comparison',
+            filters: [
+                'variant' => 'comparison',
+                'comparison_ids' => $ids,
+            ],
+        );
     }
 
     /**
@@ -190,6 +210,20 @@ class ComparePlaces extends Component
             return app(PricingService::class)
                 ->calculate($guest, $place, $checkIn, $checkOut, max(1, $this->guestsCount))
                 ->toArray();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function availableForDates(SleepingPlace $place): ?bool
+    {
+        if ($this->checkIn === '' || $this->checkOut === '') {
+            return null;
+        }
+
+        try {
+            return app(AvailabilityService::class)
+                ->isAvailable($place, $this->checkIn, $this->checkOut);
         } catch (\Throwable) {
             return null;
         }

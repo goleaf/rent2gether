@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -26,12 +27,22 @@ class SleepingPlace extends Model
         'room_id',
         'property_id',
         'type',
+        'sleeping_place_type',
+        'sleeping_place_subtype',
         'status',
         'place_number',
         'display_name',
+        'internal_name',
         'bunk_level',
+        'is_top_bunk',
+        'is_bottom_bunk',
+        'is_single',
+        'is_double',
+        'is_for_one_person',
+        'is_for_couple',
         'length_cm',
         'width_cm',
+        'height_cm',
         'mattress_type',
         'mattress_firmness',
         'has_pillow',
@@ -60,6 +71,7 @@ class SleepingPlace extends Model
         'max_guests',
         'min_guest_age',
         'max_guest_age',
+        'sort_order',
         'base_price_per_night',
         'weekly_price',
         'monthly_price',
@@ -73,13 +85,26 @@ class SleepingPlace extends Model
         'instant_booking_enabled',
         'requires_host_approval',
         'extensions_allowed',
+        'can_extend',
+        'early_check_in_allowed',
+        'late_check_out_allowed',
+        'second_guest_allowed',
+        'second_guest_fee',
+        'cancellation_policy',
     ];
 
     protected function casts(): array
     {
         return [
             'type' => SleepingPlaceType::class,
+            'sleeping_place_type' => SleepingPlaceType::class,
             'status' => SleepingPlaceStatus::class,
+            'is_top_bunk' => 'boolean',
+            'is_bottom_bunk' => 'boolean',
+            'is_single' => 'boolean',
+            'is_double' => 'boolean',
+            'is_for_one_person' => 'boolean',
+            'is_for_couple' => 'boolean',
             'has_pillow' => 'boolean',
             'has_blanket' => 'boolean',
             'has_bedding' => 'boolean',
@@ -101,6 +126,7 @@ class SleepingPlace extends Model
             'suitable_for_tall_person' => 'boolean',
             'suitable_for_elderly' => 'boolean',
             'suitable_for_limited_mobility' => 'boolean',
+            'sort_order' => 'integer',
             'base_price_per_night' => 'decimal:2',
             'weekly_price' => 'decimal:2',
             'monthly_price' => 'decimal:2',
@@ -111,6 +137,11 @@ class SleepingPlace extends Model
             'instant_booking_enabled' => 'boolean',
             'requires_host_approval' => 'boolean',
             'extensions_allowed' => 'boolean',
+            'can_extend' => 'boolean',
+            'early_check_in_allowed' => 'boolean',
+            'late_check_out_allowed' => 'boolean',
+            'second_guest_allowed' => 'boolean',
+            'second_guest_fee' => 'decimal:2',
         ];
     }
 
@@ -127,6 +158,36 @@ class SleepingPlace extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(SleepingPlaceTranslation::class);
+    }
+
+    public function physicalDetails(): HasOne
+    {
+        return $this->hasOne(SleepingPlacePhysicalDetail::class);
+    }
+
+    public function comfortDetails(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceComfortDetail::class);
+    }
+
+    public function storageDetails(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceStorageDetail::class);
+    }
+
+    public function positionDetails(): HasOne
+    {
+        return $this->hasOne(SleepingPlacePositionDetail::class);
+    }
+
+    public function conditionDetails(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceConditionDetail::class);
+    }
+
+    public function compatibilityProfile(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceCompatibilityProfile::class);
     }
 
     public function availabilityDays(): HasMany
@@ -152,6 +213,26 @@ class SleepingPlace extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function waitlistItems(): HasMany
+    {
+        return $this->hasMany(WaitlistItem::class);
+    }
+
+    public function occupantSnapshots(): HasMany
+    {
+        return $this->hasMany(RoomOccupantSnapshot::class);
+    }
+
+    public function compatibilityResults(): HasMany
+    {
+        return $this->hasMany(CompatibilityResult::class);
     }
 
     public function amenities(): BelongsToMany
@@ -204,9 +285,113 @@ class SleepingPlace extends Model
         return $query->whereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
     }
 
+    public function scopeForRoom(Builder $query, int $roomId): Builder
+    {
+        return $query->where($query->qualifyColumn('room_id'), $roomId);
+    }
+
+    public function scopeForProperty(Builder $query, int $propertyId): Builder
+    {
+        return $query->where($query->qualifyColumn('property_id'), $propertyId);
+    }
+
     public function scopeForGuest(Builder $query, int $userId): Builder
     {
         return $query->whereHas('bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
+    }
+
+    public function scopeByType(Builder $query, SleepingPlaceType|string $type): Builder
+    {
+        $value = $type instanceof SleepingPlaceType ? $type->value : $type;
+
+        return $query->where(function (Builder $builder) use ($value): void {
+            $builder->where($builder->qualifyColumn('sleeping_place_type'), $value)
+                ->orWhere($builder->qualifyColumn('type'), $value);
+        });
+    }
+
+    public function scopeTopBunk(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('is_top_bunk'), true)
+                ->orWhere($builder->qualifyColumn('bunk_level'), 'top')
+                ->orWhere($builder->qualifyColumn('type'), SleepingPlaceType::BunkTop->value);
+        });
+    }
+
+    public function scopeBottomBunk(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('is_bottom_bunk'), true)
+                ->orWhere($builder->qualifyColumn('bunk_level'), 'bottom')
+                ->orWhere($builder->qualifyColumn('type'), SleepingPlaceType::BunkBottom->value);
+        });
+    }
+
+    public function scopeWithLocker(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('has_locker'), true)
+                ->orWhereHas('storageDetails', fn (Builder $details) => $details->where('has_personal_locker', true));
+        });
+    }
+
+    public function scopeWithCurtain(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('has_curtain'), true)
+                ->orWhereHas('positionDetails', fn (Builder $details) => $details->where('has_curtain', true));
+        });
+    }
+
+    public function scopeWithPowerSocket(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('has_power_socket'), true)
+                ->orWhereHas('positionDetails', fn (Builder $details) => $details->where('has_power_socket', true));
+        });
+    }
+
+    public function scopeWithBedding(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('has_bedding'), true)
+                ->orWhereHas('comfortDetails', fn (Builder $details) => $details->where('has_bedding', true));
+        });
+    }
+
+    public function scopeWithTowel(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('has_towel'), true)
+                ->orWhereHas('comfortDetails', fn (Builder $details) => $details->where('has_towel', true));
+        });
+    }
+
+    public function scopeSuitableForTallPerson(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('suitable_for_tall_person'), true)
+                ->orWhereHas('physicalDetails', fn (Builder $details) => $details->where('suitable_for_tall_person', true));
+        });
+    }
+
+    public function scopeSuitableForHeavyPerson(Builder $query): Builder
+    {
+        return $query->whereHas('physicalDetails', fn (Builder $details) => $details->where('suitable_for_heavy_person', true));
+    }
+
+    public function scopeSuitableForCouple(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder): void {
+            $builder->where($builder->qualifyColumn('is_for_couple'), true)
+                ->orWhere($builder->qualifyColumn('max_guests'), '>=', 2);
+        });
+    }
+
+    public function scopeInstantBooking(Builder $query): Builder
+    {
+        return $query->where($query->qualifyColumn('instant_booking_enabled'), true);
     }
 
     public function scopeAvailableBetween(Builder $query, string $start, string $end): Builder

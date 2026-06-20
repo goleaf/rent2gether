@@ -34,7 +34,7 @@ Build a friendly mobile website where:
 - Hosts can create properties, rooms, sleeping places, prices, rules, calendars, media, and availability.
 - Guests can search, filter, compare, favorite, request, book, pay, check in, extend, check out, review, complain, and manage trips.
 - The main rental unit is a sleeping place, not a whole apartment.
-- The system automatically calculates nights, calendar days, price, discounts, deposit, fees, refund estimates, and availability.
+- The system automatically calculates stay days, nights, calendar days, price, discounts, deposit, cleaning fee, service fee, total due, refund/cancellation deadlines, host payout timing, reminders, and availability.
 - The system supports Russian and English from day one and can add more languages later.
 
 ## Core marketplace loop
@@ -46,11 +46,20 @@ Guest chooses:
 
 System calculates:
 - availability
+- stay days
 - nights
 - calendar days
 - price
 - discount
 - deposit
+- cleaning fee
+- service fee
+- total due
+- free cancellation date
+- cancellation penalty start date
+- host payout date
+- check-in reminder date
+- check-out reminder date
 - rules
 - compatibility
 
@@ -64,6 +73,441 @@ Host controls:
 - requests
 
 Everything must be mobile-first, multilingual, fast, friendly, and Livewire-native. This frame prevents drift into Filament, Volt, admin panels, desktop-first interfaces, or heavy SPA architecture.
+
+## Advanced guest search criteria
+
+Guest search must be flexible, but still mobile-first and fast. Search filters should be grouped into progressive bottom sheets/drawers and synchronized to URL query state when shareable.
+
+### Location criteria
+
+Guest search by place must support:
+- country / `country_id`
+- city / `city_id`
+- district / `district`
+- street / `street`
+- landmark / `landmark`
+- close to city center / `near_center`
+- close to metro / `near_metro`
+- close to bus stop / `near_bus_stop`
+- close to train station / `near_train_station`
+- close to airport / `near_airport`
+- close to university / `near_university`
+- close to work / `near_work`
+- close to hospital / `near_hospital`
+- close to sea / `near_sea`
+- close to park / `near_park`
+- close to shopping center / `near_shopping_center`
+- close to gym / `near_gym`
+- close to coworking / `near_coworking`
+- close to nightlife / `near_nightlife`
+- quiet area / `area_quiet`
+- safe area / `area_safe`
+- residential area / `area_residential`
+- city center / `area_city_center`
+- suburb / `area_suburb`
+- industrial area / `area_industrial`
+- tourist area / `area_tourist`
+- student area / `area_students`
+- worker area / `area_workers`
+- long-stay area / `area_long_stay`
+
+Countries and cities must use autocomplete from imported SQLite geo data. Do not load full country/city lists into selects. District, street, and landmark search must use normalized local fields or imported/local point data, not external API calls during normal search. Proximity filters must use stored property coordinates, distance fields, or offline/imported points of interest. Do not load a map on the first search screen.
+
+## Sleeping place availability logic
+
+Every sleeping place must have its own separate calendar. Room-level and property-level closures may cascade down, but availability is ultimately checked per `sleeping_place_id + date`.
+
+Sleeping place date statuses must support:
+- available: Свободно
+- occupied: Занято
+- pending_payment: Ожидает оплаты
+- pending_host_confirmation: Ожидает подтверждения хозяина
+- booked: Забронировано
+- guest_checked_in: Гость заселился
+- guest_checked_out: Гость выехал
+- closed_by_host: Закрыто хозяином
+- closed_by_service: Закрыто сервисом
+- cleaning: На уборке
+- repair: На ремонте
+- broken: Недоступно по причине поломки
+- complaint_blocked: Недоступно из-за жалобы
+- hidden: Временно скрыто
+- request_only: Доступно только по запросу
+
+Status labels must be translated through locale files. Availability queries must use indexed `sleeping_place_id + date` lookups and must not load full calendars into Livewire public properties.
+
+### Double booking protection
+
+The system must prevent overlapping bookings and holds for the same sleeping place. Existing booking/hold ranges and requested ranges use `[check_in_date, check_out_date)`.
+
+If one guest has the sleeping place from July 10 to July 15, another guest cannot book overlapping ranges such as:
+- July 9 to July 11
+- July 10 to July 12
+- July 14 to July 16
+- July 11 to July 15
+
+Another guest may book:
+- dates ending on or before July 10
+- dates starting after July 15
+- dates starting on July 15 only when the first guest checks out on July 15 and the host allows same-day check-in, cleaning gap rules pass, and check-in/check-out flags allow that boundary
+
+Overlap protection must run in services/actions inside the booking/request transaction, recheck availability immediately before creating holds, and return translated friendly messages when dates are no longer available.
+
+### Turnover time between guests
+
+Hosts can configure the time needed between one guest checking out and the next guest checking in.
+
+Turnover fields must support:
+- minimum turnover time between checkout and check-in / `minimum_turnover_minutes`
+- cleaning required between guests / `cleaning_required_between_guests`
+- cleaning duration / `cleaning_duration_minutes`
+- inspection required after checkout / `inspection_required_after_checkout`
+- same-day check-in after previous checkout allowed / `same_day_check_in_allowed`
+- morning checkout and evening check-in allowed / `morning_checkout_evening_checkin_allowed`
+- earliest time for the next check-in / `earliest_next_check_in_time`
+- latest time for the previous checkout / `latest_previous_check_out_time`
+
+Same-day turnover is allowed only when host rules allow it, checkout/check-in flags allow the boundary date, the previous checkout time plus required turnover/cleaning/inspection time is before or equal to the next check-in time, and cleaning gap rules pass. Otherwise the date must be blocked or shown as unavailable/request-only with a translated explanation.
+
+## Date selection fields
+
+Guest date selection must support:
+- check-in date
+- check-in time
+- check-out date
+- check-out time
+- nights count
+- stay days count
+- calendar days count
+- early check-in requested
+- late check-out requested
+- flexible check-in time
+- flexible check-out time
+- host time approval required
+- check-in time comment
+- check-out time comment
+
+Counts are derived by services and displayed as read-only summaries. Overnight sleeping-place rentals use `[check_in_date, check_out_date)` for billing: `nights_count` is the day difference between checkout and check-in, `stay_days_count` equals `nights_count` in the current non-hourly mode, and `calendar_days_count` is the inclusive presence display. For example, July 10 to July 13 is 3 nights / 3 payable stay days and 4 calendar presence days: July 10, 11, 12, and part of July 13. The main payable quantity is nights / stay days, not inclusive calendar days. Time comments use `wire:model.blur`; toggles and time choices use `wire:model.change`.
+
+## Automatic date checks
+
+Before showing a payable quote, creating a booking request, or confirming a booking, the system must reject:
+- checkout before check-in
+- same-day checkout unless a future daily/hourly rental mode explicitly allows it
+- dates when the sleeping place is occupied or held
+- dates when the property, room, or sleeping place is closed by the host
+- dates when the room is unavailable or under repair
+- dates that violate a required cleaning gap after checkout
+- stays shorter than the minimum stay
+- stays longer than the maximum stay
+- check-in dates where the host has disabled check-in for that weekday
+- check-out dates where the host has disabled check-out for that weekday
+- bookings by guests who have not completed required verification
+- bookings where the guest age does not match room rules
+- bookings by male guests for female-only rooms when the host configured that format
+- bookings by female guests for male-only rooms when the host configured that format
+- bookings where guest count exceeds the sleeping place limit
+
+These checks belong in services/actions with tests and translated user-facing messages, not in Blade templates.
+
+## Automatic calendar behavior
+
+When a guest selects a check-in date, the system must:
+- highlight available check-out dates
+- hide or disable unavailable check-out dates without rendering a huge hidden DOM
+- show the earliest possible check-out date
+- show the latest possible check-out date
+- warn if the selected range contains an occupied, held, blocked, repair, cleaning, or otherwise unavailable date
+- suggest the nearest available date ranges
+- suggest similar sleeping places
+- suggest a neighboring room where appropriate
+- suggest another sleeping place from the same host where appropriate
+- automatically recalculate price, discounts, deposit, cleaning fee, service fee, total due, cancellation deadlines, payout timing, and reminders when dates change
+
+Calendar behavior must use compact service DTOs and translated reason keys. Do not load maps, full galleries, or large result lists just because dates changed.
+
+## Automatic price calculation
+
+When the guest changes dates, guest count, timing options, promo code, or other booking conditions, the system must automatically recalculate the price quote.
+
+Price calculation must include:
+- check-in date
+- check-out date
+- stay days count
+- base price per stay day
+- weekday price
+- weekend price
+- holiday price
+- weekly price
+- monthly price
+- long-stay discount
+- weekly discount
+- monthly discount
+- early-booking discount
+- last-minute discount
+- new-guest discount
+- personal discount
+- early check-in fee
+- late check-out fee
+- extra guest fee
+- cleaning fee
+- deposit
+- service fee
+- taxes or city fees when configured
+- promo code
+- total discount amount
+- amount before discounts
+- amount after discounts
+- total due
+- host payout amount
+- refundable amount
+- non-refundable amount
+
+Pricing must be calculated by services/actions, returned as compact DTOs with line items and translation keys, and persisted to `booking_price_lines` only when a booking or booking request is created. Blade and Livewire views must never calculate money inline.
+
+### Price logic
+
+The pricing system must understand:
+- stays shorter than 7 days use the per-stay-day price
+- stays from 7 days may apply a weekly discount
+- stays from 30 days may apply a monthly discount
+- dates that fall on weekends use the weekend price when no stronger date price applies
+- dates that fall on holidays use the holiday price when no date-specific override applies
+- host date-specific prices override normal weekday, weekend, and holiday prices
+- promo codes recalculate the final quote
+- changing checkout date recalculates the full quote from scratch
+- a second guest on a two-person sleeping place can add an extra guest fee
+- early check-in adds a fee or creates a host-approval request, depending on host rules
+- late check-out adds a fee or creates a host-approval request, depending on host rules
+
+### Price display example
+
+Guest-facing price summaries must show daily price lines before totals, then explain fees, discounts, current payment, and refundable deposit. Example structure:
+- July 10: EUR 20
+- July 11: EUR 20
+- July 12: EUR 25
+- stay days: 3
+- accommodation amount: EUR 65
+- discount: EUR 5
+- cleaning fee: EUR 10
+- deposit: EUR 50
+- service fee: EUR 6
+- total due now: EUR 126
+- refundable after checkout: EUR 50 deposit
+
+All labels, explanations, and refund notes must use translation keys. The example is a display contract, not hard-coded UI copy.
+
+## Advanced booking logic
+
+Booking classification must support a primary booking flow plus payment/deposit modes and optional booking modifiers. Do not force all booking variants into one fragile status string.
+
+Primary booking flows:
+- instant_booking: Мгновенное бронирование
+- host_confirmation_booking: Бронирование с подтверждением хозяина
+- stay_request: Запрос на проживание
+- preliminary_inquiry: Предварительный запрос
+- long_term_request: Долгосрочная заявка
+- urgent_today_booking: Срочное бронирование на сегодня
+
+Payment and deposit modes:
+- awaiting_payment: Бронирование с ожиданием оплаты
+- with_deposit: Бронирование с залогом
+- without_deposit: Бронирование без залога
+- partial_payment: Бронирование с частичной оплатой
+- full_payment: Бронирование с полной оплатой
+
+Booking modifiers and special scenarios:
+- extension: Бронирование с продлением
+- relocation: Бронирование с переселением на другое место
+- group_booking: Бронирование для группы
+- two_guest_sleeping_place: Бронирование одного места для двух гостей, если место двухместное
+
+Use enum-like constants or PHP enums where appropriate. Every booking flow, payment/deposit mode, modifier, status label, and user-facing explanation must use translation keys.
+
+### Booking fields
+
+Booking records, booking DTOs, and booking detail screens must support:
+- booking number / `booking_number`
+- booking status / `status`
+- guest / `guest_user_id`
+- host / `host_user_id`
+- property / `property_id`
+- room / `room_id`
+- sleeping place / `sleeping_place_id`
+- check-in date / `check_in_date`
+- check-in time / `check_in_time`
+- check-out date / `check_out_date`
+- check-out time / `check_out_time`
+- stay days count / `stay_days_count`
+- calendar days count / `calendar_days_count`
+- guests count / `guests_count`
+- price per stay day / `price_per_stay_day`
+- price for the full period / `period_price_amount`
+- discount / `discount_amount`
+- deposit / `deposit_amount`
+- cleaning fee / `cleaning_fee_amount`
+- service fee / `service_fee_amount`
+- total amount / `total_amount`
+- currency / `currency`
+- payment status / `payment_status`
+- payment method / `payment_method`
+- payment date / `paid_at`
+- payment deadline / `payment_deadline_at`
+- guest message / `guest_message`
+- host response / `host_response`
+- document verification required / `requires_document_verification`
+- phone verification required / `requires_phone_verification`
+- identity verification required / `requires_identity_verification`
+- decline reason / `decline_reason`
+- cancellation reason / `cancellation_reason`
+- cancelled by / `cancelled_by`
+- cancellation policy / `cancellation_policy`
+- refund amount / `refund_amount`
+- refund status / `refund_status`
+- check-in instructions / `check_in_instructions`
+- guest confirmed check-in / `guest_checked_in_at`
+- host confirmed check-in / `host_confirmed_check_in_at`
+- guest confirmed check-out / `guest_checked_out_at`
+- host confirmed check-out / `host_confirmed_check_out_at`
+- has dispute / `has_dispute`
+- has complaint / `has_complaint`
+- guest review submitted / `guest_review_submitted_at`
+- host review submitted / `host_review_submitted_at`
+
+Prefer timestamps over booleans for confirmations and review submission where possible. Derived mobile DTOs may expose boolean flags for UI convenience.
+
+### Booking statuses
+
+Booking lifecycle statuses must support:
+- draft: Черновик
+- created: Создано
+- awaiting_host_approval: Ожидает подтверждения хозяина
+- awaiting_guest_response: Ожидает ответа гостя
+- awaiting_payment: Ожидает оплаты
+- awaiting_identity_verification: Ожидает проверки личности
+- awaiting_document_verification: Ожидает проверки документов
+- confirmed: Подтверждено
+- paid: Оплачено
+- ready_for_check_in: Готово к заселению
+- guest_checked_in: Гость заселился
+- in_progress: Проживание идет
+- check_out_soon: Скоро выезд
+- guest_checked_out: Гость выехал
+- awaiting_room_inspection: Ожидает проверки помещения
+- awaiting_deposit_return: Ожидает возврата залога
+- completed: Завершено
+- awaiting_review: Ожидает отзыва
+- closed: Закрыто
+- declined_by_host: Отклонено хозяином
+- cancelled_by_guest: Отменено гостем
+- cancelled_by_host: Отменено хозяином
+- cancelled_by_service: Отменено сервисом
+- unpaid: Не оплачено
+- guest_no_show: Гость не приехал
+- host_unresponsive: Хозяин не вышел на связь
+- dispute_opened: Возник спор
+- frozen_pending_dispute_resolution: Заморожено до решения спора
+- requires_support_intervention: Требует вмешательства поддержки
+
+Every booking status label must be translated. `requires_support_intervention` is a lifecycle state only and must not create a support/staff panel. Keep `payment_status` as a separate money state even when the booking lifecycle status is `paid` or `unpaid`.
+
+## Booking request logic
+
+If a sleeping place is not instant-bookable, the guest sends a booking request.
+
+Booking requests must support:
+- guest
+- host
+- sleeping place
+- check-in date
+- check-out date
+- stay days count
+- guests count
+- travel purpose
+- planned arrival time
+- message to host
+- has luggage
+- needs luggage space
+- needs early check-in
+- needs late check-out
+- needs residence registration
+- needs reporting documents
+- request status
+- host response
+- decline reason
+- request expiration time
+
+Host request screens must show a privacy-safe guest summary, dates, stay days, total amount, travel purpose, guest message, rule compatibility, and translated warning reasons.
+
+## Stay extension logic
+
+Guests may extend a stay only when the current booking is active enough for extension and the sleeping place is free after the current check-out date.
+
+Stay extension records, DTOs, and mobile screens must support:
+- current booking / `booking_id`
+- current check-out date / `current_check_out_date`
+- new check-out date / `new_check_out_date`
+- additional stay days count / `additional_stay_days_count`
+- price for additional stay days / `additional_price_per_stay_day`
+- extension discount / `extension_discount_amount`
+- amount due for extension / `extension_amount_due`
+- extension status / `status`
+- host approval required / `host_approval_required`
+- host response / `host_response`
+- decline reason / `decline_reason`
+- extension payment date / `extension_paid_at`
+
+Extension logic must:
+- check that the added range `[current_check_out_date, new_check_out_date)` is available
+- check that another guest has not booked or held the same sleeping place
+- recalculate the price through a service/action
+- show the guest the additional amount due before confirmation
+- send a host approval request when the sleeping place or host rules require it
+- after approval and payment, update the original booking check-out date, stay days, totals, status history, and price lines
+- update the sleeping-place calendar and availability holds for the added dates
+- notify both guest and host
+
+All extension statuses, host responses, decline reasons, price explanations, and notifications must use translation keys. Do not add finance, support, staff, or admin workflows for extension handling.
+
+## Stay relocation logic
+
+Guests may request relocation when the current sleeping place no longer fits, or a host may offer another sleeping place.
+
+Relocation reasons must be enum-like translated values:
+- noisy neighbors / `noisy_neighbors`
+- uncomfortable bed / `uncomfortable_bed`
+- conflict with another resident / `resident_conflict`
+- breakage or malfunction / `broken_item`
+- host offered another place / `host_offered_other_place`
+- guest wants a more private room / `wants_more_private_room`
+- guest wants a cheaper place / `wants_cheaper_place`
+- guest wants a more expensive but more comfortable place / `wants_more_comfort`
+
+Stay relocation records, DTOs, and mobile screens must support:
+- current sleeping place / `current_sleeping_place_id`
+- new sleeping place / `new_sleeping_place_id`
+- relocation reason / `reason`
+- relocation date / `relocation_date`
+- price difference / `price_difference_amount`
+- who pays the difference / `price_difference_payer`
+- guest consent required / `guest_consent_required`
+- host consent required / `host_consent_required`
+- relocation status / `status`
+- guest comment / `guest_comment`
+- host comment / `host_comment`
+- support comment / `support_comment`
+
+Relocation logic must:
+- link to the original booking and preserve the booking audit trail
+- check that the new sleeping place is available from `relocation_date` to the booking check-out date
+- keep the old sleeping place blocked before `relocation_date`
+- release or convert old-place holds only after the relocation is approved/applied
+- block the new sleeping place from `relocation_date` to check-out
+- recalculate price difference, additional payment, refund/credit, and deposit implications through a service/action
+- require guest and/or host consent when the relocation is requested or offered by the other side
+- update booking status history, availability rows, price lines, and notifications after the relocation is applied
+
+All relocation reasons, statuses, consent labels, comments, price-difference explanations, and notifications must use translation keys. `support_comment` is a reserved data field only and must not create a support/staff/admin panel or workflow yet.
 
 ## Mandatory mobile-first rules
 

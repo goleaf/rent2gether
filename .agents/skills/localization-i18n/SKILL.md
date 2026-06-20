@@ -18,6 +18,7 @@ Rules:
 - All validation attributes must be translated.
 - Every notification title/body must be translated.
 - Every enum/status label must be translated.
+- Booking lifecycle status labels must live in translation keys such as `statuses.booking.*`; do not hard-code status labels in Blade, Livewire, PHP responses, notifications, emails, seeders, factories, or tests.
 - Every amenity/rule label must be translatable.
 - Every new feature must include English and Russian translations for headings, labels, buttons, empty states, loading states, validation attributes, statuses, notifications, seed labels, and any user-visible copy.
 - User-generated listing content must support translations:

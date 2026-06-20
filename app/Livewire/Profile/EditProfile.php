@@ -39,6 +39,14 @@ class EditProfile extends Component
 
     public string $preferredRoomGender = '';
 
+    public bool $isHost = false;
+
+    public string $hostDescription = '';
+
+    public ?int $hostExperienceYears = null;
+
+    public bool $hostLivesOnSite = false;
+
     public function mount(): void
     {
         $user = auth()->user();
@@ -51,13 +59,17 @@ class EditProfile extends Component
         $this->bio = $user->bio ?? '';
         $this->occupation = $user->occupation ?? '';
         $this->travelPurpose = $user->travel_purpose ?? '';
-        $this->isSmoker = $user->is_smoker;
-        $this->hasPets = $user->has_pets;
-        $this->hasAllergies = $user->has_allergies;
-        $this->prefersQuiet = $user->prefers_quiet;
+        $this->isSmoker = (bool) $user->is_smoker;
+        $this->hasPets = (bool) $user->has_pets;
+        $this->hasAllergies = (bool) $user->has_allergies;
+        $this->prefersQuiet = (bool) $user->prefers_quiet;
         $this->sleepSchedule = $user->sleep_schedule ?? '';
-        $this->willingToShareRoom = $user->willing_to_share_room;
+        $this->willingToShareRoom = (bool) $user->willing_to_share_room;
         $this->preferredRoomGender = $user->preferred_room_gender ?? '';
+        $this->isHost = (bool) $user->is_host;
+        $this->hostDescription = $user->host_description ?? '';
+        $this->hostExperienceYears = $user->host_experience_years;
+        $this->hostLivesOnSite = (bool) $user->host_lives_on_site;
     }
 
     public function save(): void
@@ -71,6 +83,10 @@ class EditProfile extends Component
             'city' => ['nullable', 'string', 'max:100'],
             'bio' => ['nullable', 'string', 'max:2000'],
             'occupation' => ['nullable', 'string', 'max:100'],
+            'isHost' => ['boolean'],
+            'hostDescription' => ['nullable', 'string', 'max:2000'],
+            'hostExperienceYears' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'hostLivesOnSite' => ['boolean'],
         ]);
 
         auth()->user()->update([
@@ -90,6 +106,10 @@ class EditProfile extends Component
             'sleep_schedule' => $this->sleepSchedule ?: null,
             'willing_to_share_room' => $this->willingToShareRoom,
             'preferred_room_gender' => $this->preferredRoomGender ?: null,
+            'is_host' => $this->isHost,
+            'host_description' => $this->isHost ? ($this->hostDescription ?: null) : null,
+            'host_experience_years' => $this->isHost ? $this->hostExperienceYears : null,
+            'host_lives_on_site' => $this->isHost && $this->hostLivesOnSite,
         ]);
 
         session()->flash('success', __('notifications.flash.profile_updated'));

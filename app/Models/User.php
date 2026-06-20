@@ -96,6 +96,16 @@ class User extends Authenticatable
         return $this->hasOne(GuestPreference::class);
     }
 
+    public function guestCompatibilityProfile(): HasOne
+    {
+        return $this->hasOne(GuestCompatibilityProfile::class);
+    }
+
+    public function guestCompatibilityVisibilitySetting(): HasOne
+    {
+        return $this->hasOne(GuestCompatibilityVisibilitySetting::class);
+    }
+
     public function hostProfile(): HasOne
     {
         return $this->hasOne(HostProfile::class);
@@ -131,6 +141,11 @@ class User extends Authenticatable
         return $this->hasMany(Favorite::class);
     }
 
+    public function favoriteCollections(): HasMany
+    {
+        return $this->hasMany(FavoriteCollection::class);
+    }
+
     public function savedSearches(): HasMany
     {
         return $this->hasMany(SavedSearch::class);
@@ -149,6 +164,26 @@ class User extends Authenticatable
     public function waitlistItems(): HasMany
     {
         return $this->hasMany(WaitlistItem::class);
+    }
+
+    public function coLivingProfile(): HasOne
+    {
+        return $this->hasOne(CoLivingProfile::class);
+    }
+
+    public function coLivingVisibilitySetting(): HasOne
+    {
+        return $this->hasOne(CoLivingVisibilitySetting::class);
+    }
+
+    public function roomOccupantSnapshots(): HasMany
+    {
+        return $this->hasMany(RoomOccupantSnapshot::class);
+    }
+
+    public function compatibilityResults(): HasMany
+    {
+        return $this->hasMany(CompatibilityResult::class);
     }
 
     public function reviewsWritten(): HasMany

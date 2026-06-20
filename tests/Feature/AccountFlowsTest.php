@@ -9,6 +9,7 @@ use App\Livewire\Account\SecuritySettingsPage;
 use App\Livewire\Auth\ForgotPasswordPage;
 use App\Livewire\Auth\LoginPage;
 use App\Livewire\Auth\RegisterPage;
+use App\Livewire\Profile\EditProfile;
 use App\Models\User;
 use App\Models\UserSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -167,6 +168,31 @@ class AccountFlowsTest extends TestCase
         $this->assertFalse($settings->notification_preferences_json['email_messages']);
         $this->assertTrue($settings->notification_preferences_json['product_updates']);
         $this->assertFalse($settings->privacy_preferences_json['show_languages']);
+    }
+
+    public function test_profile_edit_renders_and_saves_host_fields(): void
+    {
+        $user = User::factory()->create([
+            'is_host' => false,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(EditProfile::class)
+            ->assertSee(__('app.profile.is_host'))
+            ->set('name', 'Ada Host')
+            ->set('isHost', true)
+            ->set('hostDescription', 'I host quiet shared stays.')
+            ->set('hostExperienceYears', 3)
+            ->set('hostLivesOnSite', true)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $user = $user->fresh();
+
+        $this->assertTrue($user->is_host);
+        $this->assertSame('I host quiet shared stays.', $user->host_description);
+        $this->assertSame(3, $user->host_experience_years);
+        $this->assertTrue($user->host_lives_on_site);
     }
 
     public function test_security_settings_update_password(): void
