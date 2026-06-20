@@ -63,6 +63,9 @@ class User extends Authenticatable
         'complaints_count',
         'status',
         'last_active_at',
+        'last_seen_at',
+        'last_login_at',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -96,6 +99,9 @@ class User extends Authenticatable
             'rating_as_host' => 'decimal:2',
             'status' => UserStatus::class,
             'last_active_at' => 'datetime',
+            'last_seen_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -107,6 +113,11 @@ class User extends Authenticatable
     public function guestPreference(): HasOne
     {
         return $this->hasOne(GuestPreference::class);
+    }
+
+    public function guestProfile(): HasOne
+    {
+        return $this->hasOne(GuestProfile::class);
     }
 
     public function guestCompatibilityProfile(): HasOne
@@ -122,6 +133,56 @@ class User extends Authenticatable
     public function hostProfile(): HasOne
     {
         return $this->hasOne(HostProfile::class);
+    }
+
+    public function hostRepresentatives(): HasMany
+    {
+        return $this->hasMany(HostRepresentative::class, 'host_user_id');
+    }
+
+    public function representativeContacts(): HasMany
+    {
+        return $this->hasMany(HostRepresentative::class, 'representative_user_id');
+    }
+
+    public function verifications(): HasMany
+    {
+        return $this->hasMany(UserVerification::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(UserDocument::class);
+    }
+
+    public function userLanguages(): HasMany
+    {
+        return $this->hasMany(UserLanguage::class);
+    }
+
+    public function languages(): HasMany
+    {
+        return $this->hasMany(UserLanguage::class);
+    }
+
+    public function privacySetting(): HasOne
+    {
+        return $this->hasOne(UserPrivacySetting::class);
+    }
+
+    public function savedPreference(): HasOne
+    {
+        return $this->hasOne(UserSavedPreference::class);
+    }
+
+    public function activitySummary(): HasOne
+    {
+        return $this->hasOne(UserActivitySummary::class);
+    }
+
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(UserNotificationPreference::class);
     }
 
     public function properties(): HasMany

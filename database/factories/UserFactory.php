@@ -36,6 +36,9 @@ class UserFactory extends Factory
             'timezone' => 'UTC',
             'is_guest' => true,
             'is_host' => false,
+            'last_seen_at' => now(),
+            'last_login_at' => null,
+            'is_active' => true,
         ];
     }
 

@@ -19,6 +19,9 @@ class BookingGuestIntakeFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'guest_user_id' => null,
+            'booking_quote_id' => null,
+            'booking_request_id' => null,
             'booking_id' => null,
             'property_id' => Property::factory(),
             'room_id' => Room::factory(),
@@ -31,6 +34,9 @@ class BookingGuestIntakeFactory extends Factory
             'planned_arrival_time' => '19:00',
             'planned_arrival_window' => null,
             'planned_departure_time' => '10:00',
+            'needs_early_check_in' => false,
+            'needs_late_check_out' => false,
+            'luggage_amount' => null,
             'arrival_time_unknown' => false,
             'departure_time_unknown' => false,
             'early_check_in_requested' => false,
@@ -57,6 +63,7 @@ class BookingGuestIntakeFactory extends Factory
             'smoking_type' => null,
             'accepts_smoking_rules' => true,
             'needs_quiet' => false,
+            'needs_desk' => false,
             'noise_sensitivity_level' => null,
             'needs_workspace' => false,
             'needs_fast_wifi' => false,
@@ -72,6 +79,7 @@ class BookingGuestIntakeFactory extends Factory
             'company_name' => null,
             'document_notes' => null,
             'special_requests' => null,
+            'message_to_host' => null,
             'host_message' => null,
             'auto_generated_host_message' => null,
             'rules_accepted' => false,
@@ -101,6 +109,7 @@ class BookingGuestIntakeFactory extends Factory
         return $this->state(fn (): array => [
             'booking_id' => $booking->id,
             'user_id' => $booking->guest_user_id,
+            'guest_user_id' => $booking->guest_user_id,
             'property_id' => $booking->property_id,
             'room_id' => $booking->room_id,
             'sleeping_place_id' => $booking->sleeping_place_id,

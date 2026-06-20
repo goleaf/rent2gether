@@ -28,6 +28,31 @@ class UserRoleModeService
         return $user->refresh();
     }
 
+    public function switchToGuest(User $user): User
+    {
+        return $this->setMode($user, UserRoleMode::Guest);
+    }
+
+    public function switchToHost(User $user): User
+    {
+        return $this->setMode($user, UserRoleMode::Host);
+    }
+
+    public function enableGuestHostMode(User $user): User
+    {
+        return $this->setMode($user, UserRoleMode::GuestHost);
+    }
+
+    public function canCreateListing(User $user): bool
+    {
+        return $this->canCreateHostObjects($user);
+    }
+
+    public function canBook(User $user): bool
+    {
+        return $user->isGuest();
+    }
+
     public function canCreateHostObjects(User $user): bool
     {
         return $user->isHost();

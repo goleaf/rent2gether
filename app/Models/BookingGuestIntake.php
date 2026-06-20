@@ -15,6 +15,9 @@ class BookingGuestIntake extends Model
 
     protected $fillable = [
         'user_id',
+        'guest_user_id',
+        'booking_quote_id',
+        'booking_request_id',
         'booking_id',
         'property_id',
         'room_id',
@@ -27,6 +30,9 @@ class BookingGuestIntake extends Model
         'planned_arrival_time',
         'planned_arrival_window',
         'planned_departure_time',
+        'needs_early_check_in',
+        'needs_late_check_out',
+        'luggage_amount',
         'arrival_time_unknown',
         'departure_time_unknown',
         'early_check_in_requested',
@@ -53,6 +59,7 @@ class BookingGuestIntake extends Model
         'smoking_type',
         'accepts_smoking_rules',
         'needs_quiet',
+        'needs_desk',
         'noise_sensitivity_level',
         'needs_workspace',
         'needs_fast_wifi',
@@ -68,6 +75,7 @@ class BookingGuestIntake extends Model
         'company_name',
         'document_notes',
         'special_requests',
+        'message_to_host',
         'host_message',
         'auto_generated_host_message',
         'rules_accepted',
@@ -83,6 +91,8 @@ class BookingGuestIntake extends Model
     {
         return [
             'planned_arrival_date' => 'date',
+            'needs_early_check_in' => 'boolean',
+            'needs_late_check_out' => 'boolean',
             'arrival_time_unknown' => 'boolean',
             'departure_time_unknown' => 'boolean',
             'early_check_in_requested' => 'boolean',
@@ -99,6 +109,7 @@ class BookingGuestIntake extends Model
             'smokes' => 'boolean',
             'accepts_smoking_rules' => 'boolean',
             'needs_quiet' => 'boolean',
+            'needs_desk' => 'boolean',
             'needs_workspace' => 'boolean',
             'needs_fast_wifi' => 'boolean',
             'needs_power_socket' => 'boolean',
@@ -122,6 +133,11 @@ class BookingGuestIntake extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'guest_user_id');
     }
 
     public function booking(): BelongsTo
@@ -156,7 +172,13 @@ class BookingGuestIntake extends Model
 
     public function scopeForUser(Builder $query, User|int $user): Builder
     {
-        return $query->where($query->qualifyColumn('user_id'), $user instanceof User ? $user->id : $user);
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $query->where(function (Builder $builder) use ($userId): void {
+            $builder
+                ->where($builder->qualifyColumn('user_id'), $userId)
+                ->orWhere($builder->qualifyColumn('guest_user_id'), $userId);
+        });
     }
 
     public function scopeForBooking(Builder $query, Booking|int $booking): Builder

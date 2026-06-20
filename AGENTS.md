@@ -28,6 +28,20 @@ Use Livewire class components and Blade views.
 - Laravel localization
 - Laravel migrations, seeders, factories, policies, form validation, tests
 
+## Flux UI usage rules
+
+- Prefer Flux UI components over custom Blade/Tailwind markup when a documented Flux component exists.
+- Before creating or modifying UI, check `docs/flux-ui-components.md` for the relevant Flux component.
+- Use only documented Flux UI props, variants, events, slots, child components, and patterns.
+- Do not guess Flux UI APIs. If a required behavior is not documented, ask for clarification or implement the smallest safe Laravel-compatible solution.
+- Keep Flux component usage consistent across Blade views and Livewire components.
+- When using forms, validation, modals, buttons, inputs, selects, tables, navigation, cards, dropdowns, tabs, or notifications, first check whether Flux UI has a documented component for that need.
+- Preserve Laravel, Blade, Livewire, Tailwind CSS, localization, and mobile-first project rules.
+- When documentation conflicts with existing code, prefer the official Flux UI documentation unless this project has an explicit override.
+- When a new Flux UI documentation link is provided, update both `AGENTS.md` and `docs/flux-ui-components.md` before implementing related UI changes.
+- For UI, Blade, Livewire, forms, layout, navigation, modal, table, or Flux work, read this file first, then read `docs/flux-ui-components.md`, then inspect existing sibling components before editing.
+- Current reviewed Flux reference pages are documented in `docs/flux-ui-components.md` and include Flux principles, patterns, theming, dark mode, customization, header/sidebar layouts, accordion, autocomplete, avatar, badge, brand, button, breadcrumbs, calendar, callout, card, carousel, and chart.
+
 ## Product goal
 
 Build a friendly mobile website where:
