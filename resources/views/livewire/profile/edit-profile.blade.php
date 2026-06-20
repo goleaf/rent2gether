@@ -56,7 +56,23 @@
             <flux:checkbox wire:model.change="isHost" label="{{ __('app.profile.is_host') }}" />
             @if($this->isHost)
                 <flux:textarea wire:model.blur="hostDescription" label="{{ __('app.profile.host_description') }}" rows="3" />
-                <flux:input type="number" wire:model.blur="hostExperienceYears" label="{{ __('app.profile.experience_years') }}" min="0" />
+                <flux:field>
+                    <flux:label>{{ __('app.profile.experience_started_year') }}</flux:label>
+                    <flux:select wire:model.change="hostExperienceStartedYear">
+                        <option value="">{{ __('app.profile.experience_started_year_placeholder') }}</option>
+                        @foreach($this->hostExperienceYearOptions as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </flux:select>
+                    <flux:description>
+                        @if($this->calculatedHostExperienceYears === null)
+                            {{ __('app.profile.experience_years_empty') }}
+                        @else
+                            {{ trans_choice('app.profile.experience_years_calculated', $this->calculatedHostExperienceYears, ['count' => $this->calculatedHostExperienceYears]) }}
+                        @endif
+                    </flux:description>
+                    <flux:error name="hostExperienceStartedYear" />
+                </flux:field>
                 <flux:checkbox wire:model.change="hostLivesOnSite" label="{{ __('app.profile.lives_on_site') }}" />
             @endif
         </flux:card>

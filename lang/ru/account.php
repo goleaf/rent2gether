@@ -54,6 +54,8 @@ return [
         'canHelpWithCheckIn' => 'помощь с заселением',
         'emergencyContactAvailable' => 'экстренный контакт',
         'hostingExperience' => 'опыт приёма гостей',
+        'hostExperienceStartedYear' => 'год начала приёма гостей',
+        'hostExperienceYears' => 'опыт приёма гостей',
         'defaultCheckInTime' => 'время заезда по умолчанию',
         'defaultCheckOutTime' => 'время выезда по умолчанию',
         'defaultCancellationPolicy' => 'правило отмены по умолчанию',

@@ -74,7 +74,7 @@ Draft lookup uses `user_id + status`; booking and host screens use `booking_id`,
 
 - public display name, avatar, about text, languages, response time/rate, rating, reviews, and verification status
 - host style flags such as response style, lives in property, lives nearby, check-in help, and emergency contact availability
-- hosting experience plus default check-in time, check-out time, cancellation policy, deposit setting, and house rules
+- hosting start year with derived experience years, plus default check-in time, check-out time, cancellation policy, deposit setting, and house rules
 
 Payout settings are intentionally only a readiness-check placeholder for now. Do not add finance staff workflows or admin payout screens until explicitly requested.
 

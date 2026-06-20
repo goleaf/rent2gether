@@ -54,6 +54,8 @@ return [
         'canHelpWithCheckIn' => 'check-in help',
         'emergencyContactAvailable' => 'emergency contact',
         'hostingExperience' => 'hosting experience',
+        'hostExperienceStartedYear' => 'hosting start year',
+        'hostExperienceYears' => 'hosting experience',
         'defaultCheckInTime' => 'default check-in time',
         'defaultCheckOutTime' => 'default check-out time',
         'defaultCancellationPolicy' => 'default cancellation policy',

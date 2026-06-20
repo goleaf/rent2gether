@@ -35,6 +35,8 @@ class ManageMedia extends Component
 
     public int $maxItems = 12;
 
+    public ?string $statusMessage = null;
+
     public function boot(MediaOwnerResolver $owners): void
     {
         $this->owners = $owners;
@@ -46,8 +48,15 @@ class ManageMedia extends Component
         $this->ownerId = $ownerId;
         $this->collection = $collection;
         $this->maxItems = max(1, min(24, $maxItems));
+        $this->statusMessage = session('media-status');
 
         $this->authorizedOwner();
+    }
+
+    public function updatedPhoto(): void
+    {
+        $this->statusMessage = null;
+        $this->resetErrorBag('photo');
     }
 
     public function savePhoto(StoreMediaItemAction $store): void
@@ -73,7 +82,8 @@ class ManageMedia extends Component
 
         $this->reset(['photo', 'captionEn', 'captionRu']);
         unset($this->mediaItems);
-        session()->flash('media-status', __('media.flash.uploaded'));
+        $this->statusMessage = __('media.flash.uploaded');
+        session()->flash('media-status', $this->statusMessage);
     }
 
     public function deleteMedia(int $mediaId, DeleteMediaItemAction $delete): void
@@ -81,7 +91,8 @@ class ManageMedia extends Component
         $mediaItem = $this->ownedMediaItem($mediaId);
         $delete->handle($mediaItem);
         unset($this->mediaItems);
-        session()->flash('media-status', __('media.flash.deleted'));
+        $this->statusMessage = __('media.flash.deleted');
+        session()->flash('media-status', $this->statusMessage);
     }
 
     public function setPrimary(int $mediaId, SetPrimaryMediaItemAction $setPrimary): void
@@ -89,7 +100,8 @@ class ManageMedia extends Component
         $mediaItem = $this->ownedMediaItem($mediaId);
         $setPrimary->handle($mediaItem);
         unset($this->mediaItems);
-        session()->flash('media-status', __('media.flash.primary_set'));
+        $this->statusMessage = __('media.flash.primary_set');
+        session()->flash('media-status', $this->statusMessage);
     }
 
     public function moveMedia(int $mediaId, string $direction, ReorderMediaItemsAction $reorder): void
@@ -101,6 +113,8 @@ class ManageMedia extends Component
         $mediaItem = $this->ownedMediaItem($mediaId);
         $reorder->move($mediaItem, $direction);
         unset($this->mediaItems);
+        $this->statusMessage = __('media.flash.reordered');
+        session()->flash('media-status', $this->statusMessage);
     }
 
     /**

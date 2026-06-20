@@ -12,9 +12,9 @@
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('media.manager.helper') }}</flux:text>
             </div>
 
-            @if (session('media-status'))
+            @if ($statusMessage || session('media-status'))
                 <div class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:bg-emerald-400/10 dark:text-emerald-100">
-                    {{ session('media-status') }}
+                    {{ $statusMessage ?: session('media-status') }}
                 </div>
             @endif
 

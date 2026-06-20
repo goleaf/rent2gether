@@ -16,7 +16,7 @@ class ImageVariantGenerator
         $contents = $this->readUpload($file);
         [$width, $height, $mime] = $this->imageMetadata($contents, $file);
         $size = $file->getSize();
-        $source = $this->hasMemoryForImageDecode($width, $height) ? $this->sourceImage($contents) : false;
+        $source = $this->hasMemoryForImageDecode($width, $height, strlen($contents)) ? $this->sourceImage($contents) : false;
 
         if (! $source) {
             $extension = $this->extension($file, $mime);
@@ -170,18 +170,18 @@ class ImageVariantGenerator
         }
     }
 
-    private function hasMemoryForImageDecode(?int $width, ?int $height): bool
+    private function hasMemoryForImageDecode(?int $width, ?int $height, int $contentsBytes): bool
     {
         if (! $width || ! $height) {
             return true;
         }
 
-        return $this->hasAvailableMemory(($width * $height * 5) + (8 * 1024 * 1024));
+        return $this->hasAvailableMemory(($width * $height * 8) + $contentsBytes + (32 * 1024 * 1024));
     }
 
     private function hasMemoryForResize(int $width, int $height): bool
     {
-        return $this->hasAvailableMemory(($width * $height * 5) + (8 * 1024 * 1024));
+        return $this->hasAvailableMemory(($width * $height * 8) + (32 * 1024 * 1024));
     }
 
     private function hasAvailableMemory(int $estimatedBytes): bool

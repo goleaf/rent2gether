@@ -4,12 +4,16 @@ namespace Tests\Feature;
 
 use App\Actions\Media\StoreMediaItemAction;
 use App\Enums\RoomStatus;
+use App\Livewire\Host\PropertyForm;
+use App\Livewire\Host\RoomForm;
+use App\Livewire\Host\SleepingPlaceForm;
 use App\Livewire\Media\ManageMedia;
 use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -32,7 +36,7 @@ class MediaUploadSystemTest extends TestCase
         [$host, $property] = $this->hostProperty();
         $photo = UploadedFile::fake()->image('entrance.jpg', 1200, 800)->size(500);
 
-        Livewire::actingAs($host)
+        $component = Livewire::actingAs($host)
             ->test(ManageMedia::class, [
                 'ownerType' => 'property',
                 'ownerId' => $property->id,
@@ -42,7 +46,9 @@ class MediaUploadSystemTest extends TestCase
             ->set('captionEn', 'Sunny entrance')
             ->set('captionRu', 'Светлый вход')
             ->call('savePhoto')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertSet('statusMessage', __('media.flash.uploaded'))
+            ->assertSee(__('media.flash.uploaded'));
 
         $media = MediaItem::query()->firstOrFail();
 
@@ -59,6 +65,25 @@ class MediaUploadSystemTest extends TestCase
         Storage::disk('public')->assertExists($media->thumb_path);
         Storage::disk('public')->assertExists($media->mobile_path);
         Storage::disk('public')->assertExists($media->full_path);
+
+        $component
+            ->assertSee(Storage::disk('public')->url($media->thumb_path), false)
+            ->assertSee('Sunny entrance');
+    }
+
+    public function test_media_manager_renders_existing_thumbnail_after_refresh(): void
+    {
+        [$host, $property] = $this->hostProperty();
+        $media = $this->storeMedia($property, $host, 'refresh.jpg');
+
+        Livewire::actingAs($host)
+            ->test(ManageMedia::class, [
+                'ownerType' => 'property',
+                'ownerId' => $property->id,
+                'collection' => 'gallery',
+            ])
+            ->assertSee(Storage::disk('public')->url($media->thumb_path), false)
+            ->assertSee('refresh.jpg');
     }
 
     public function test_media_upload_rejects_invalid_file(): void
@@ -164,6 +189,39 @@ class MediaUploadSystemTest extends TestCase
             ->assertSee('Primary property photo');
     }
 
+    public function test_host_upload_pages_render_saved_field_thumbnails_after_refresh(): void
+    {
+        [$host, $property] = $this->hostProperty();
+        $propertyMedia = $this->storeMedia($property, $host, 'entrance-field.jpg', 'entrance');
+
+        $room = Room::factory()->for($property)->create(['status' => RoomStatus::Draft->value]);
+        $roomMedia = $this->storeMedia($room, $host, 'room-field.jpg', 'room');
+
+        $sleepingPlace = SleepingPlace::factory()
+            ->for($property)
+            ->for($room)
+            ->create(['status' => 'draft']);
+        $sleepingPlaceMedia = $this->storeMedia($sleepingPlace, $host, 'exact-field.jpg', 'exact_place');
+
+        Livewire::actingAs($host)
+            ->test(PropertyForm::class, ['property' => $property])
+            ->set('step', 8)
+            ->assertSee(Storage::disk('public')->url($propertyMedia->thumb_path), false)
+            ->assertSee(__('media.manager.optimized'));
+
+        Livewire::actingAs($host)
+            ->test(RoomForm::class, ['property' => $property, 'room' => $room])
+            ->set('step', 6)
+            ->assertSee(Storage::disk('public')->url($roomMedia->thumb_path), false)
+            ->assertSee(__('media.manager.optimized'));
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceForm::class, ['room' => $room, 'sleepingPlace' => $sleepingPlace])
+            ->set('step', 7)
+            ->assertSee(Storage::disk('public')->url($sleepingPlaceMedia->thumb_path), false)
+            ->assertSee(__('media.manager.optimized'));
+    }
+
     /**
      * @param  array<string, mixed>  $propertyAttributes
      * @return array{0: User, 1: Property}
@@ -183,13 +241,13 @@ class MediaUploadSystemTest extends TestCase
         return [$host, $property];
     }
 
-    private function storeMedia(Property $property, User $host, string $filename): MediaItem
+    private function storeMedia(Model $owner, User $host, string $filename, string $collection = 'gallery'): MediaItem
     {
         return app(StoreMediaItemAction::class)->handle(
-            owner: $property,
+            owner: $owner,
             file: UploadedFile::fake()->image($filename, 1000, 700)->size(300),
             user: $host,
-            collection: 'gallery',
+            collection: $collection,
             captionEn: $filename,
         );
     }

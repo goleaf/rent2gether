@@ -38,11 +38,15 @@ class StoreAvatarVariants
             ];
         }
 
-        return [
-            ...$paths,
-            'thumb' => $this->variant($source, $directory.'/'.$baseName.'-thumb.jpg', 160),
-            'medium' => $this->variant($source, $directory.'/'.$baseName.'-medium.jpg', 480),
-        ];
+        try {
+            return [
+                ...$paths,
+                'thumb' => $this->variant($source, $directory.'/'.$baseName.'-thumb.jpg', 160),
+                'medium' => $this->variant($source, $directory.'/'.$baseName.'-medium.jpg', 480),
+            ];
+        } finally {
+            $this->destroyImage($source);
+        }
     }
 
     private function extension(UploadedFile $avatar): string
@@ -104,11 +108,15 @@ class StoreAvatarVariants
         $targetHeight = max(1, (int) round($height * $scale));
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
 
-        imagecopyresampled($target, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+        try {
+            imagecopyresampled($target, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
-        ob_start();
-        $written = imagejpeg($target, null, 82);
-        $contents = (string) ob_get_clean();
+            ob_start();
+            $written = imagejpeg($target, null, 82);
+            $contents = (string) ob_get_clean();
+        } finally {
+            $this->destroyImage($target);
+        }
 
         if (! $written || $contents === '') {
             throw new RuntimeException('The uploaded avatar variant could not be generated.');
@@ -119,5 +127,12 @@ class StoreAvatarVariants
         }
 
         return $path;
+    }
+
+    private function destroyImage(mixed $image): void
+    {
+        if (is_resource($image) || $image instanceof \GdImage) {
+            imagedestroy($image);
+        }
     }
 }

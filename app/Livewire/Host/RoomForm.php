@@ -8,6 +8,7 @@ use App\Actions\Rooms\GenerateSleepingPlaceDraftsAction;
 use App\Enums\GenderType;
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
+use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
 use App\Services\Catalog\AmenityRuleLookupService;
@@ -247,6 +248,55 @@ class RoomForm extends Component
             'locale' => app()->getLocale(),
             'property' => $room->property_id,
         ]), navigate: true);
+    }
+
+    /**
+     * @return array<string, array{url:string,caption:string}>
+     */
+    #[Computed]
+    public function savedPhotoPreviews(): array
+    {
+        $room = $this->roomModel();
+
+        if (! $room) {
+            return [];
+        }
+
+        return $room->mediaItems()
+            ->select([
+                'id',
+                'mediable_type',
+                'mediable_id',
+                'collection',
+                'disk',
+                'path',
+                'thumbnail_path',
+                'thumb_path',
+                'mobile_path',
+                'full_path',
+                'alt_text',
+                'caption_en',
+                'caption_ru',
+                'sort_order',
+                'is_primary',
+                'is_cover',
+                'status',
+            ])
+            ->whereIn('collection', array_values(self::PHOTO_FIELDS))
+            ->active()
+            ->orderByDesc('is_primary')
+            ->orderByDesc('is_cover')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->unique('collection')
+            ->mapWithKeys(fn (MediaItem $item): array => [
+                (string) $item->collection => [
+                    'url' => $item->imageUrl('thumb'),
+                    'caption' => $item->localizedCaption() ?: __('media.default_caption'),
+                ],
+            ])
+            ->all();
     }
 
     /**
@@ -636,9 +686,14 @@ class RoomForm extends Component
             return null;
         }
 
-        return Room::query()
+        $room = Room::query()
+            ->with(['property:id,host_user_id,user_id'])
             ->where('property_id', $this->propertyId)
             ->findOrFail($this->roomId);
+
+        abort_unless($room->property?->isOwnedBy(auth()->user()) === true, 403);
+
+        return $room;
     }
 
     private function translatedLookupLabel($translations, string $fallback): string

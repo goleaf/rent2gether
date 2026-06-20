@@ -3,6 +3,7 @@
 namespace App\Livewire\Profile;
 
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class EditProfile extends Component
@@ -43,6 +44,8 @@ class EditProfile extends Component
 
     public string $hostDescription = '';
 
+    public ?int $hostExperienceStartedYear = null;
+
     public ?int $hostExperienceYears = null;
 
     public bool $hostLivesOnSite = false;
@@ -68,12 +71,22 @@ class EditProfile extends Component
         $this->preferredRoomGender = $user->preferred_room_gender ?? '';
         $this->isHost = (bool) $user->is_host;
         $this->hostDescription = $user->host_description ?? '';
-        $this->hostExperienceYears = $user->host_experience_years;
+        $this->hostExperienceStartedYear = $user->host_experience_started_year
+            ?: $this->startedYearFromExperienceYears($user->host_experience_years);
+        $this->hostExperienceYears = $this->calculateExperienceYears($this->hostExperienceStartedYear);
         $this->hostLivesOnSite = (bool) $user->host_lives_on_site;
+    }
+
+    public function updatedHostExperienceStartedYear(): void
+    {
+        $this->hostExperienceStartedYear = $this->blankToNullInt($this->hostExperienceStartedYear);
+        $this->hostExperienceYears = $this->calculateExperienceYears($this->hostExperienceStartedYear);
     }
 
     public function save(): void
     {
+        $attributes = app('translator')->get('account.validation_attributes');
+
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -85,9 +98,19 @@ class EditProfile extends Component
             'occupation' => ['nullable', 'string', 'max:100'],
             'isHost' => ['boolean'],
             'hostDescription' => ['nullable', 'string', 'max:2000'],
-            'hostExperienceYears' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'hostExperienceStartedYear' => ['nullable', 'integer', 'min:'.$this->minimumExperienceStartYear(), 'max:'.$this->currentYear()],
+            'hostExperienceYears' => ['nullable', 'integer', 'min:0', 'max:'.($this->currentYear() - $this->minimumExperienceStartYear())],
             'hostLivesOnSite' => ['boolean'],
-        ]);
+        ], attributes: is_array($attributes) ? $attributes : []);
+
+        $this->hostExperienceStartedYear = $this->blankToNullInt($this->hostExperienceStartedYear);
+        $this->hostExperienceYears = $this->blankToNullInt($this->hostExperienceYears);
+
+        if ($this->hostExperienceStartedYear === null && $this->hostExperienceYears !== null) {
+            $this->hostExperienceStartedYear = $this->startedYearFromExperienceYears($this->hostExperienceYears);
+        }
+
+        $this->hostExperienceYears = $this->calculateExperienceYears($this->hostExperienceStartedYear);
 
         auth()->user()->update([
             'name' => $this->name,
@@ -108,6 +131,7 @@ class EditProfile extends Component
             'preferred_room_gender' => $this->preferredRoomGender ?: null,
             'is_host' => $this->isHost,
             'host_description' => $this->isHost ? ($this->hostDescription ?: null) : null,
+            'host_experience_started_year' => $this->isHost ? $this->hostExperienceStartedYear : null,
             'host_experience_years' => $this->isHost ? $this->hostExperienceYears : null,
             'host_lives_on_site' => $this->isHost && $this->hostLivesOnSite,
         ]);
@@ -118,5 +142,55 @@ class EditProfile extends Component
     public function render(): View
     {
         return view('livewire.profile.edit-profile');
+    }
+
+    /** @return list<int> */
+    #[Computed]
+    public function hostExperienceYearOptions(): array
+    {
+        return range($this->currentYear(), $this->minimumExperienceStartYear());
+    }
+
+    #[Computed]
+    public function calculatedHostExperienceYears(): ?int
+    {
+        return $this->calculateExperienceYears($this->blankToNullInt($this->hostExperienceStartedYear));
+    }
+
+    private function calculateExperienceYears(?int $startedYear): ?int
+    {
+        if ($startedYear === null) {
+            return null;
+        }
+
+        return max(0, $this->currentYear() - $startedYear);
+    }
+
+    private function startedYearFromExperienceYears(?int $experienceYears): ?int
+    {
+        if ($experienceYears === null || $experienceYears < 0) {
+            return null;
+        }
+
+        return max($this->minimumExperienceStartYear(), $this->currentYear() - $experienceYears);
+    }
+
+    private function blankToNullInt(mixed $value): ?int
+    {
+        if ($value === '' || $value === null) {
+            return null;
+        }
+
+        return (int) $value;
+    }
+
+    private function currentYear(): int
+    {
+        return (int) now()->year;
+    }
+
+    private function minimumExperienceStartYear(): int
+    {
+        return 1970;
     }
 }

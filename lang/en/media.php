@@ -6,6 +6,7 @@ return [
         'uploaded' => 'Saved',
         'deleted' => 'Photo deleted',
         'primary_set' => 'Primary photo updated',
+        'reordered' => 'Photo order updated',
     ],
     'validation' => [
         'max_items' => 'You can add up to :count photos here. Delete one photo before adding another.',

@@ -26,6 +26,8 @@ class ProfileSetupPage extends Component
 
     public $avatar = null;
 
+    public ?string $savedAvatarPath = null;
+
     public string $phone = '';
 
     public string $country = '';
@@ -64,6 +66,7 @@ class ProfileSetupPage extends Component
         $profile = $user->profile;
 
         $this->displayName = $profile?->display_name ?: $user->name;
+        $this->savedAvatarPath = $profile?->avatar_path ?: $user->avatar;
         $this->phone = $profile?->phone ?: ($user->phone ?? '');
         $this->country = $profile?->country?->localizedName() ?: ($user->country ?? '');
         $this->city = $profile?->city?->name ?: ($user->city ?? '');
@@ -183,6 +186,7 @@ class ProfileSetupPage extends Component
         ]);
         session()->put('account_mode', $isHost ? UserSetting::MODE_HOST : UserSetting::MODE_GUEST);
 
+        $this->savedAvatarPath = $avatarPath;
         $this->avatar = null;
         session()->flash('success', __('notifications.flash.profile_updated'));
     }

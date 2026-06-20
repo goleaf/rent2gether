@@ -9,6 +9,7 @@ use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Region;
 use App\Services\Catalog\AmenityRuleLookupService;
@@ -306,6 +307,55 @@ class PropertyForm extends Component
             'locale' => app()->getLocale(),
             'property' => $property,
         ]), navigate: true);
+    }
+
+    /**
+     * @return array<string, array{url:string,caption:string}>
+     */
+    #[Computed]
+    public function savedPhotoPreviews(): array
+    {
+        $property = $this->propertyModel();
+
+        if (! $property) {
+            return [];
+        }
+
+        return $property->mediaItems()
+            ->select([
+                'id',
+                'mediable_type',
+                'mediable_id',
+                'collection',
+                'disk',
+                'path',
+                'thumbnail_path',
+                'thumb_path',
+                'mobile_path',
+                'full_path',
+                'alt_text',
+                'caption_en',
+                'caption_ru',
+                'sort_order',
+                'is_primary',
+                'is_cover',
+                'status',
+            ])
+            ->whereIn('collection', array_values(self::PHOTO_FIELDS))
+            ->active()
+            ->orderByDesc('is_primary')
+            ->orderByDesc('is_cover')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->unique('collection')
+            ->mapWithKeys(fn (MediaItem $item): array => [
+                (string) $item->collection => [
+                    'url' => $item->imageUrl('thumb'),
+                    'caption' => $item->localizedCaption() ?: __('media.default_caption'),
+                ],
+            ])
+            ->all();
     }
 
     /**
@@ -699,7 +749,11 @@ class PropertyForm extends Component
             return null;
         }
 
-        return Property::query()->find($this->propertyId);
+        $property = Property::query()->find($this->propertyId);
+
+        abort_unless(! $property || $property->isOwnedBy(auth()->user()), 403);
+
+        return $property;
     }
 
     private function draftStatus(): string

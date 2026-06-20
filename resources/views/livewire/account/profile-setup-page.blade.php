@@ -42,6 +42,8 @@
                 <div class="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                     @if($avatar && str_starts_with((string) $avatar->getMimeType(), 'image/'))
                         <img src="{{ $avatar->temporaryUrl() }}" alt="{{ __('account.profile_setup.photo') }}" class="size-full object-cover">
+                    @elseif($savedAvatarPath)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($savedAvatarPath) }}" alt="{{ __('account.profile_setup.photo') }}" class="size-full object-cover">
                     @else
                         <flux:icon name="user" class="size-8 text-zinc-400" />
                     @endif
@@ -49,6 +51,9 @@
                 <flux:field class="flex-1">
                     <flux:input type="file" wire:model="avatar" accept="image/*" />
                     <flux:description>{{ __('account.profile_setup.photo_helper') }}</flux:description>
+                    <flux:text wire:loading wire:target="avatar" size="sm" class="text-zinc-500 dark:text-zinc-400">
+                        {{ __('media.manager.uploading') }}
+                    </flux:text>
                     <flux:error name="avatar" />
                 </flux:field>
             </div>

@@ -141,6 +141,10 @@ class AccountFlowsTest extends TestCase
         $this->assertNotNull($profile->avatar_path);
         Storage::disk('public')->assertExists($profile->avatar_path);
         Storage::disk('public')->assertExists(str_replace('-medium.jpg', '-thumb.jpg', $profile->avatar_path));
+
+        Livewire::actingAs($user->fresh())
+            ->test(ProfileSetupPage::class)
+            ->assertSee(Storage::disk('public')->url($profile->avatar_path), false);
     }
 
     public function test_account_settings_store_locale_currency_notifications_and_privacy(): void
@@ -182,7 +186,8 @@ class AccountFlowsTest extends TestCase
             ->set('name', 'Ada Host')
             ->set('isHost', true)
             ->set('hostDescription', 'I host quiet shared stays.')
-            ->set('hostExperienceYears', 3)
+            ->set('hostExperienceStartedYear', now()->subYears(3)->year)
+            ->assertSet('hostExperienceYears', 3)
             ->set('hostLivesOnSite', true)
             ->call('save')
             ->assertHasNoErrors();
@@ -191,6 +196,7 @@ class AccountFlowsTest extends TestCase
 
         $this->assertTrue($user->is_host);
         $this->assertSame('I host quiet shared stays.', $user->host_description);
+        $this->assertSame(now()->subYears(3)->year, $user->host_experience_started_year);
         $this->assertSame(3, $user->host_experience_years);
         $this->assertTrue($user->host_lives_on_site);
     }

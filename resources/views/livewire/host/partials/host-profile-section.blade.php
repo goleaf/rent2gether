@@ -17,6 +17,9 @@
                     <flux:label>{{ __('host.profile.fields.avatar') }}</flux:label>
                     <flux:input type="file" wire:model="avatar" accept="image/*" />
                     <flux:description>{{ __('host.profile.helpers.avatar') }}</flux:description>
+                    <flux:text wire:loading wire:target="avatar" size="sm" class="text-zinc-500 dark:text-zinc-400">
+                        {{ __('media.manager.uploading') }}
+                    </flux:text>
                     <flux:error name="avatar" />
                 </flux:field>
             </div>
