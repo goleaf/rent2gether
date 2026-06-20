@@ -9,7 +9,6 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

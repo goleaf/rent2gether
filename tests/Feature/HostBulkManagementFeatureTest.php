@@ -40,8 +40,10 @@ use App\Services\HostBulk\HostBulkPricingService;
 use App\Services\HostBulk\HostBulkPublicationService;
 use App\Services\HostBulk\HostBulkRulesService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -307,7 +309,7 @@ class HostBulkManagementFeatureTest extends TestCase
     }
 
     /**
-     * @return array{host: User, property: Property, room: Room, places: \Illuminate\Database\Eloquent\Collection<int, SleepingPlace>}
+     * @return array{host: User, property: Property, room: Room, places: Collection<int, SleepingPlace>}
      */
     private function listing(int $places = 1): array
     {
@@ -347,7 +349,7 @@ class HostBulkManagementFeatureTest extends TestCase
     }
 
     /**
-     * @return list<class-string<\Livewire\Component>>
+     * @return list<class-string<Component>>
      */
     private function componentClasses(): array
     {
