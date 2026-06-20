@@ -75,6 +75,7 @@ return new class extends Migration
 
             $table->index(['booking_check_out_id', 'status']);
             $table->index(['booking_check_out_id', 'item_key']);
+            $table->index('completed_by_user_id');
             $table->index('required');
         });
 

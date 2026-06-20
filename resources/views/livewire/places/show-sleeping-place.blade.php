@@ -328,38 +328,40 @@
                     @endif
                 </div>
 
-                @forelse($sleepingPlaceProfile['sections'] as $section)
-                    <details @if($section['open']) open @endif class="group rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                        <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
-                            <span>{{ $section['title'] }}</span>
-                            <span class="text-zinc-400 group-open:hidden">+</span>
-                            <span class="hidden text-zinc-400 group-open:inline">-</span>
-                        </summary>
+                @if($sleepingPlaceProfile['sections'])
+                    <flux:accordion transition>
+                        @foreach($sleepingPlaceProfile['sections'] as $section)
+                            <flux:accordion.item :expanded="$section['open']">
+                                <flux:accordion.heading>{{ $section['title'] }}</flux:accordion.heading>
 
-                        <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                            @forelse($section['items'] as $item)
-                                <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                                    <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
-                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
-                                </div>
-                            @empty
-                            @endforelse
-                        </div>
+                                <flux:accordion.content>
+                                    <div class="grid gap-2 text-sm sm:grid-cols-2">
+                                        @forelse($section['items'] as $item)
+                                            <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                                <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
+                                                <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
+                                            </div>
+                                        @empty
+                                        @endforelse
+                                    </div>
 
-                        @if($section['warnings'])
-                            <div class="mt-3 space-y-2">
-                                @forelse($section['warnings'] as $warning)
-                                    <flux:callout color="amber" icon="exclamation-triangle">
-                                        <flux:callout.text>{{ $warning }}</flux:callout.text>
-                                    </flux:callout>
-                                @empty
-                                @endforelse
-                            </div>
-                        @endif
-                    </details>
-                @empty
+                                    @if($section['warnings'])
+                                        <div class="mt-3 space-y-2">
+                                            @forelse($section['warnings'] as $warning)
+                                                <flux:callout color="amber" icon="exclamation-triangle">
+                                                    <flux:callout.text>{{ $warning }}</flux:callout.text>
+                                                </flux:callout>
+                                            @empty
+                                            @endforelse
+                                        </div>
+                                    @endif
+                                </flux:accordion.content>
+                            </flux:accordion.item>
+                        @endforeach
+                    </flux:accordion>
+                @else
                     <flux:text class="text-zinc-500">{{ __('listing.detail.values.not_set') }}</flux:text>
-                @endforelse
+                @endif
             </flux:card>
 
             <flux:card data-detail-section="room-details" class="space-y-4">
@@ -410,37 +412,38 @@
                         @endif
                     </div>
 
-                    @forelse($roomDetails['profile']['sections'] as $section)
-                        <details @if($section['open']) open @endif class="group rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                            <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
-                                <span>{{ $section['title'] }}</span>
-                                <span class="text-zinc-400 group-open:hidden">+</span>
-                                <span class="hidden text-zinc-400 group-open:inline">-</span>
-                            </summary>
+                    @if($roomDetails['profile']['sections'])
+                        <flux:accordion transition>
+                            @foreach($roomDetails['profile']['sections'] as $section)
+                                <flux:accordion.item :expanded="$section['open']">
+                                    <flux:accordion.heading>{{ $section['title'] }}</flux:accordion.heading>
 
-                            <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                                @forelse($section['items'] as $item)
-                                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                                        <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
-                                    </div>
-                                @empty
-                                @endforelse
-                            </div>
+                                    <flux:accordion.content>
+                                        <div class="grid gap-2 text-sm sm:grid-cols-2">
+                                            @forelse($section['items'] as $item)
+                                                <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                                    <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
+                                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
+                                                </div>
+                                            @empty
+                                            @endforelse
+                                        </div>
 
-                            @if($section['warnings'])
-                                <div class="mt-3 space-y-2">
-                                    @forelse($section['warnings'] as $warning)
-                                        <flux:callout color="amber" icon="exclamation-triangle">
-                                            <flux:callout.text>{{ $warning }}</flux:callout.text>
-                                        </flux:callout>
-                                    @empty
-                                    @endforelse
-                                </div>
-                            @endif
-                        </details>
-                    @empty
-                    @endforelse
+                                        @if($section['warnings'])
+                                            <div class="mt-3 space-y-2">
+                                                @forelse($section['warnings'] as $warning)
+                                                    <flux:callout color="amber" icon="exclamation-triangle">
+                                                        <flux:callout.text>{{ $warning }}</flux:callout.text>
+                                                    </flux:callout>
+                                                @empty
+                                                @endforelse
+                                            </div>
+                                        @endif
+                                    </flux:accordion.content>
+                                </flux:accordion.item>
+                            @endforeach
+                        </flux:accordion>
+                    @endif
                 </div>
             </flux:card>
 
@@ -505,63 +508,81 @@
                         {{ $propertyDetails['profile']['address']['public'] }}
                     </div>
 
-                    @forelse($propertyDetails['profile']['sections'] as $section)
-                        <div class="space-y-2">
-                            <flux:heading size="sm">{{ $section['title'] }}</flux:heading>
-                            <div class="grid gap-2 text-sm sm:grid-cols-2">
-                                @forelse($section['items'] as $item)
-                                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                                        <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
-                                        <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
-                                    </div>
-                                @empty
-                                    <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.property.no_description') }}</flux:text>
-                                @endforelse
-                            </div>
-                        </div>
-                    @empty
-                    @endforelse
+                    @if($propertyDetails['profile']['sections'])
+                        <flux:accordion transition>
+                            @foreach($propertyDetails['profile']['sections'] as $section)
+                                <flux:accordion.item :expanded="$loop->first">
+                                    <flux:accordion.heading>{{ $section['title'] }}</flux:accordion.heading>
+
+                                    <flux:accordion.content>
+                                        <div class="grid gap-2 text-sm sm:grid-cols-2">
+                                            @forelse($section['items'] as $item)
+                                                <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                                    <div class="text-xs text-zinc-500">{{ $item['label'] }}</div>
+                                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">{{ $item['value'] }}</div>
+                                                </div>
+                                            @empty
+                                                <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.property.no_description') }}</flux:text>
+                                            @endforelse
+                                        </div>
+                                    </flux:accordion.content>
+                                </flux:accordion.item>
+                            @endforeach
+                        </flux:accordion>
+                    @endif
                 </div>
             </flux:card>
 
             <flux:card class="space-y-4">
                 <flux:heading size="lg">{{ __('listing.detail.amenities.title') }}</flux:heading>
-                <div class="space-y-4">
-                    @forelse($amenityGroups as $group)
-                        <div class="space-y-2">
-                            <flux:heading size="sm">{{ $group['title'] }}</flux:heading>
-                            @if($group['items'])
-                                <div class="flex flex-wrap gap-2">
-                                    @forelse($group['items'] as $amenity)
-                                        <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $amenity }}</span>
-                                    @empty
-                                    @endforelse
-                                </div>
-                            @else
-                                <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.amenities.empty') }}</flux:text>
-                            @endif
-                        </div>
-                    @empty
-                        <flux:text class="text-zinc-500">{{ __('listing.detail.amenities.empty') }}</flux:text>
-                    @endforelse
-                </div>
+                @if($amenityGroups)
+                    <flux:accordion transition>
+                        @foreach($amenityGroups as $group)
+                            <flux:accordion.item :expanded="$loop->first">
+                                <flux:accordion.heading>{{ $group['title'] }}</flux:accordion.heading>
+
+                                <flux:accordion.content>
+                                    @if($group['items'])
+                                        <div class="flex flex-wrap gap-2">
+                                            @forelse($group['items'] as $amenity)
+                                                <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $amenity }}</span>
+                                            @empty
+                                            @endforelse
+                                        </div>
+                                    @else
+                                        <flux:text size="sm" class="text-zinc-500">{{ __('listing.detail.amenities.empty') }}</flux:text>
+                                    @endif
+                                </flux:accordion.content>
+                            </flux:accordion.item>
+                        @endforeach
+                    </flux:accordion>
+                @else
+                    <flux:text class="text-zinc-500">{{ __('listing.detail.amenities.empty') }}</flux:text>
+                @endif
             </flux:card>
 
             <flux:card class="space-y-4">
                 <flux:heading size="lg">{{ __('listing.detail.rules.title') }}</flux:heading>
-                @forelse($rulesByGroup as $category => $rules)
-                    <div class="space-y-2">
-                        <flux:heading size="sm">{{ __('listing.detail.rules.categories.'.$category) }}</flux:heading>
-                        <div class="grid gap-2">
-                            @forelse($rules as $rule)
-                                <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">{{ $rule }}</div>
-                            @empty
-                            @endforelse
-                        </div>
-                    </div>
-                @empty
+                @if($rulesByGroup)
+                    <flux:accordion transition>
+                        @foreach($rulesByGroup as $category => $rules)
+                            <flux:accordion.item :expanded="$loop->first">
+                                <flux:accordion.heading>{{ __('listing.detail.rules.categories.'.$category) }}</flux:accordion.heading>
+
+                                <flux:accordion.content>
+                                    <div class="grid gap-2">
+                                        @forelse($rules as $rule)
+                                            <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">{{ $rule }}</div>
+                                        @empty
+                                        @endforelse
+                                    </div>
+                                </flux:accordion.content>
+                            </flux:accordion.item>
+                        @endforeach
+                    </flux:accordion>
+                @else
                     <flux:text class="text-zinc-500">{{ __('listing.detail.rules.empty') }}</flux:text>
-                @endforelse
+                @endif
             </flux:card>
 
             <flux:card class="space-y-4">
@@ -692,19 +713,20 @@
 
             <flux:card class="space-y-3">
                 <flux:heading size="lg">{{ __('listing.detail.faq.title') }}</flux:heading>
-                <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                    @forelse($faqItems as $item)
-                        <details class="group py-3">
-                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                                <span>{{ $item['question'] }}</span>
-                                <flux:icon name="chevron-down" class="size-4 text-zinc-400 transition group-open:rotate-180" />
-                            </summary>
-                            <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{{ $item['answer'] }}</p>
-                        </details>
-                    @empty
-                        <flux:text class="text-zinc-500">{{ __('listing.detail.values.not_set') }}</flux:text>
-                    @endforelse
-                </div>
+                @if($faqItems)
+                    <flux:accordion transition exclusive>
+                        @foreach($faqItems as $item)
+                            <flux:accordion.item :expanded="$loop->first">
+                                <flux:accordion.heading>{{ $item['question'] }}</flux:accordion.heading>
+                                <flux:accordion.content>
+                                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $item['answer'] }}</p>
+                                </flux:accordion.content>
+                            </flux:accordion.item>
+                        @endforeach
+                    </flux:accordion>
+                @else
+                    <flux:text class="text-zinc-500">{{ __('listing.detail.values.not_set') }}</flux:text>
+                @endif
             </flux:card>
         </div>
     </section>

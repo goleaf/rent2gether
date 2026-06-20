@@ -7,62 +7,34 @@
 
         <flux:card class="space-y-4">
             <div class="space-y-3">
-                <flux:field>
-                    <flux:label>{{ __('search.fields.city') }}</flux:label>
-                    <div class="relative">
-                        <flux:input
-                            type="search"
-                            icon="map-pin"
-                            autocomplete="off"
-                            wire:model.live.debounce.500ms="cityQuery"
-                            placeholder="{{ __('search.placeholders.city') }}"
-                        />
-
-                        @if($cityQuery !== '')
-                            <button
-                                type="button"
-                                wire:click="clearCity"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            >
-                                {{ __('search.actions.clear_city') }}
-                            </button>
-                        @endif
-                    </div>
-                    <flux:description>{{ __('search.city_autocomplete.helper') }}</flux:description>
-                </flux:field>
+                <flux:autocomplete
+                    type="search"
+                    icon="map-pin"
+                    clearable
+                    wire:model.live.debounce.500ms="cityQuery"
+                    label="{{ __('search.fields.city') }}"
+                    description="{{ __('search.city_autocomplete.helper') }}"
+                    placeholder="{{ __('search.placeholders.city') }}"
+                    container:class="max-h-80"
+                >
+                    @foreach($this->cityOptions as $cityOption)
+                        <flux:autocomplete.item
+                            wire:key="search-city-{{ $cityOption['id'] }}"
+                            wire:click="selectCity({{ $cityOption['id'] }})"
+                        >
+                            {{ $cityOption['country'] ? $cityOption['name'].', '.$cityOption['country'] : $cityOption['name'] }}
+                        </flux:autocomplete.item>
+                    @endforeach
+                </flux:autocomplete>
 
                 <div wire:loading.delay wire:target="cityQuery" class="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
                     {{ __('search.city_autocomplete.loading') }}
                 </div>
 
-                @if($cityOpen && $cityHasEnoughCharacters)
-                    <div wire:loading.remove wire:target="cityQuery" class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                        @if($this->cityOptions === [])
-                            <div class="px-3 py-4 text-sm text-zinc-600 dark:text-zinc-300">
-                                <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ __('search.city_autocomplete.no_results') }}</p>
-                                <p class="mt-1">{{ __('search.city_autocomplete.no_results_text') }}</p>
-                            </div>
-                        @else
-                            <ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
-                                @foreach($this->cityOptions as $cityOption)
-                                    <li wire:key="search-city-{{ $cityOption['id'] }}">
-                                        <button
-                                            type="button"
-                                            class="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-3 text-left text-sm hover:bg-zinc-50 focus:bg-zinc-50 focus:outline-none dark:hover:bg-zinc-800 dark:focus:bg-zinc-800"
-                                            wire:click="selectCity({{ $cityOption['id'] }})"
-                                        >
-                                            <span class="min-w-0">
-                                                <span class="block truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $cityOption['name'] }}</span>
-                                                @if($cityOption['country'])
-                                                    <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $cityOption['country'] }}</span>
-                                                @endif
-                                            </span>
-                                            <span class="shrink-0 text-xs text-zinc-400">{{ __('search.city_autocomplete.choose') }}</span>
-                                        </button>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
+                @if($cityOpen && $cityHasEnoughCharacters && $this->cityOptions === [])
+                    <div wire:loading.remove wire:target="cityQuery" class="rounded-lg border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                        <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ __('search.city_autocomplete.no_results') }}</p>
+                        <p class="mt-1">{{ __('search.city_autocomplete.no_results_text') }}</p>
                     </div>
                 @endif
             </div>

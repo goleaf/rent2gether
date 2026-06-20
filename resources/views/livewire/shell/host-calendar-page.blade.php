@@ -185,10 +185,10 @@
                         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('availability.calendar.overview.helper') }}</flux:text>
                     </div>
 
-                    <div class="space-y-2">
+                    <flux:accordion transition>
                         @foreach($this->hierarchyOverview as $property)
-                            <details class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" @if((int) $property['id'] === (int) $selectedPropertyId) open @endif>
-                                <summary class="cursor-pointer list-none">
+                            <flux:accordion.item :expanded="(int) $property['id'] === (int) $selectedPropertyId">
+                                <flux:accordion.heading>
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
                                             <p class="truncate font-medium">{{ $property['label'] }}</p>
@@ -200,38 +200,40 @@
                                             {{ __('availability.calendar.occupancy_value', ['percent' => $property['occupancy_percentage']]) }}
                                         </flux:badge>
                                     </div>
-                                </summary>
+                                </flux:accordion.heading>
 
-                                <div class="mt-3 space-y-2">
-                                    @foreach($property['rooms'] as $room)
-                                        <div class="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-900">
-                                            <div class="flex items-center justify-between gap-3">
-                                                <div class="min-w-0">
-                                                    <p class="truncate text-sm font-medium">{{ $room['label'] }}</p>
-                                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                        {{ __('availability.calendar.overview.room_line', ['places' => $room['places_count']]) }}
-                                                    </p>
-                                                </div>
-                                                <span class="text-xs font-medium text-zinc-600 dark:text-zinc-300">
-                                                    {{ __('availability.calendar.occupancy_value', ['percent' => $room['occupancy_percentage']]) }}
-                                                </span>
-                                            </div>
-                                            <div class="mt-2 space-y-1">
-                                                @foreach($room['places'] as $place)
-                                                    <div class="flex items-center justify-between gap-3 text-xs">
-                                                        <span class="min-w-0 truncate text-zinc-600 dark:text-zinc-300">{{ $place['label'] }}</span>
-                                                        <span class="shrink-0 text-zinc-500 dark:text-zinc-400">
-                                                            {{ __('availability.calendar.occupancy_value', ['percent' => $place['occupancy_percentage']]) }}
-                                                        </span>
+                                <flux:accordion.content>
+                                    <div class="space-y-2">
+                                        @foreach($property['rooms'] as $room)
+                                            <div class="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-900">
+                                                <div class="flex items-center justify-between gap-3">
+                                                    <div class="min-w-0">
+                                                        <p class="truncate text-sm font-medium">{{ $room['label'] }}</p>
+                                                        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                                            {{ __('availability.calendar.overview.room_line', ['places' => $room['places_count']]) }}
+                                                        </p>
                                                     </div>
-                                                @endforeach
+                                                    <span class="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                                                        {{ __('availability.calendar.occupancy_value', ['percent' => $room['occupancy_percentage']]) }}
+                                                    </span>
+                                                </div>
+                                                <div class="mt-2 space-y-1">
+                                                    @foreach($room['places'] as $place)
+                                                        <div class="flex items-center justify-between gap-3 text-xs">
+                                                            <span class="min-w-0 truncate text-zinc-600 dark:text-zinc-300">{{ $place['label'] }}</span>
+                                                            <span class="shrink-0 text-zinc-500 dark:text-zinc-400">
+                                                                {{ __('availability.calendar.occupancy_value', ['percent' => $place['occupancy_percentage']]) }}
+                                                            </span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </details>
+                                        @endforeach
+                                    </div>
+                                </flux:accordion.content>
+                            </flux:accordion.item>
                         @endforeach
-                    </div>
+                    </flux:accordion>
                 </flux:card>
             </section>
 

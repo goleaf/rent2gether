@@ -68,6 +68,21 @@ The CSS includes:
 
 Use the generated project skill `fluxui-development` for Flux UI work. It lives at `.agents/skills/fluxui-development/SKILL.md`.
 
+## Component Migration Rules
+
+- Read the official Flux documentation page before migrating a component family.
+- Prefer Flux Pro components over custom Blade/Tailwind markup whenever a matching Flux component exists.
+- Accordion-like disclosure UI must use `flux:accordion`, `flux:accordion.item`, `flux:accordion.heading`, and `flux:accordion.content`.
+- Use `transition` for content-heavy mobile sections so expansion feels smooth.
+- Use `exclusive` for FAQ-style groups where only one answer should be open at a time.
+- Use `:expanded="..."` for default-open sections instead of native `open` attributes.
+- Do not add raw `<details>` or `<summary>` tags in app Blade views; `tests/Feature/FluxProComponentUsageTest.php` enforces this.
+- Autocomplete-like text suggestion inputs should use `flux:autocomplete` and `flux:autocomplete.item`.
+- Use Flux Autocomplete only when the stored value is the input text. If the UI must show one label while storing a different ID/value, follow the Flux documentation and use a combobox/select-style component instead.
+
+Accordion reference: `https://fluxui.dev/components/accordion`.
+Autocomplete reference: `https://fluxui.dev/components/autocomplete`.
+
 ## Verification
 
 Use these commands after Flux or component changes:

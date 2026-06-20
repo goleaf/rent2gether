@@ -546,6 +546,10 @@ return [
             'city' => 'Type at least 2 characters. Results are compact and prioritize larger cities.',
             'photo' => 'Use a clear image under 2 MB. We keep the upload mobile-friendly.',
         ],
+        'loading' => [
+            'country' => 'Updating countries...',
+            'city' => 'Updating cities...',
+        ],
         'locales' => [
             'en' => 'English',
             'ru' => 'Russian',

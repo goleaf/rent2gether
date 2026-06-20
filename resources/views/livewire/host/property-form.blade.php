@@ -86,56 +86,78 @@
 
                 @case(3)
                     <div class="grid gap-4">
-                        <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.country') }}</flux:label>
-                            <flux:input
+                        <div class="space-y-2">
+                            <flux:autocomplete
                                 type="search"
-                                autocomplete="off"
+                                clearable
                                 wire:model.live.debounce.500ms="countryQuery"
+                                label="{{ __('host.property_wizard.fields.country') }}"
+                                description="{{ __('host.property_wizard.helpers.country') }}"
                                 placeholder="{{ __('host.property_wizard.placeholders.country') }}"
-                            />
-                            <flux:description>{{ __('host.property_wizard.helpers.country') }}</flux:description>
+                                container:class="max-h-80"
+                            >
+                                @foreach($this->countryResults as $result)
+                                    <flux:autocomplete.item
+                                        wire:key="property-country-{{ $result['id'] }}"
+                                        wire:click="selectCountry({{ $result['id'] }})"
+                                    >
+                                        {{ $result['code'] ? $result['name'].' · '.$result['code'] : $result['name'] }}
+                                    </flux:autocomplete.item>
+                                @endforeach
+                            </flux:autocomplete>
                             <flux:error name="countryId" />
-                        </flux:field>
 
-                        @if($countrySearchOpen && strlen($countryQuery) >= 2)
-                            <div wire:loading.remove wire:target="countryQuery" class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-                                @forelse($this->countryResults as $result)
-                                    <button type="button" wire:click="selectCountry({{ $result['id'] }})" class="flex min-h-12 w-full items-center justify-between gap-3 border-b border-zinc-100 px-3 py-3 text-left text-sm last:border-b-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
-                                        <span>{{ $result['name'] }}</span>
-                                        <span class="text-xs text-zinc-500">{{ $result['code'] }}</span>
-                                    </button>
-                                @empty
-                                    <div class="px-3 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ __('host.property_wizard.empty.country') }}</div>
-                                @endforelse
-                            </div>
-                        @endif
+                            @if($countrySearchOpen && strlen($countryQuery) >= 2 && $this->countryResults === [])
+                                <div wire:loading.remove wire:target="countryQuery" class="rounded-lg border border-zinc-200 px-3 py-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                                    {{ __('host.property_wizard.empty.country') }}
+                                </div>
+                            @endif
+                        </div>
 
-                        <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.city') }}</flux:label>
-                            <flux:input
+                        <div wire:loading.delay wire:target="countryQuery" class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                            {{ __('host.property_wizard.loading.country') }}
+                        </div>
+
+                        <div class="space-y-2">
+                            <flux:autocomplete
                                 type="search"
-                                autocomplete="off"
+                                clearable
                                 wire:model.live.debounce.500ms="cityQuery"
+                                label="{{ __('host.property_wizard.fields.city') }}"
+                                description="{{ __('host.property_wizard.helpers.city') }}"
                                 placeholder="{{ __('host.property_wizard.placeholders.city') }}"
-                            />
-                            <flux:description>{{ __('host.property_wizard.helpers.city') }}</flux:description>
+                                container:class="max-h-80"
+                            >
+                                @foreach($this->cityResults as $result)
+                                    <flux:autocomplete.item
+                                        wire:key="property-city-{{ $result['id'] }}"
+                                        wire:click="selectCity({{ $result['id'] }})"
+                                    >
+                                        {{ ($result['region'] ?: $result['country']) ? $result['name'].', '.($result['region'] ?: $result['country']) : $result['name'] }}
+                                    </flux:autocomplete.item>
+                                @endforeach
+                            </flux:autocomplete>
                             <flux:error name="cityId" />
-                        </flux:field>
 
-                        @if($citySearchOpen && strlen($cityQuery) >= 2)
-                            <div wire:loading.remove wire:target="cityQuery" class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-                                @forelse($this->cityResults as $result)
-                                    <button type="button" wire:click="selectCity({{ $result['id'] }})" class="flex min-h-12 w-full items-center justify-between gap-3 border-b border-zinc-100 px-3 py-3 text-left text-sm last:border-b-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
-                                        <span class="min-w-0">
-                                            <span class="block truncate font-medium">{{ $result['name'] }}</span>
-                                            <span class="block truncate text-xs text-zinc-500">{{ $result['region'] ?: $result['country'] }}</span>
-                                        </span>
-                                        <span class="text-xs text-zinc-500">{{ __('host.property_wizard.actions.choose') }}</span>
-                                    </button>
-                                @empty
-                                    <div class="px-3 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ __('host.property_wizard.empty.city') }}</div>
-                                @endforelse
+                            @if($citySearchOpen && strlen($cityQuery) >= 2 && $this->cityResults === [])
+                                <div wire:loading.remove wire:target="cityQuery" class="rounded-lg border border-zinc-200 px-3 py-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                                    {{ __('host.property_wizard.empty.city') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <div wire:loading.delay wire:target="cityQuery" class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                            {{ __('host.property_wizard.loading.city') }}
+                        </div>
+
+                        @if($countryQuery !== '' || $cityQuery !== '')
+                            <div class="flex flex-wrap gap-2">
+                                @if($countryQuery !== '')
+                                    <flux:badge size="sm">{{ $countryQuery }}</flux:badge>
+                                @endif
+                                @if($cityQuery !== '')
+                                    <flux:badge size="sm">{{ $cityQuery }}</flux:badge>
+                                @endif
                             </div>
                         @endif
 

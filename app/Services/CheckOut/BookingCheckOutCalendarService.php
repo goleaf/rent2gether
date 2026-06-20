@@ -5,12 +5,16 @@ namespace App\Services\CheckOut;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingCheckOut;
-use App\Models\HostCleaningTask;
 use App\Models\SleepingPlaceCalendarDay;
+use App\Services\HostCleaning\HostCleaningTaskService;
 use Carbon\CarbonImmutable;
 
 class BookingCheckOutCalendarService
 {
+    public function __construct(
+        private readonly HostCleaningTaskService $cleaningTasks,
+    ) {}
+
     public function releaseAfterCheckoutIfAllowed(BookingCheckOut $checkOut): void
     {
         if ($checkOut->status !== 'completed') {
@@ -48,21 +52,7 @@ class BookingCheckOutCalendarService
 
     public function blockForCleaning(BookingCheckOut $checkOut): void
     {
-        HostCleaningTask::query()->firstOrCreate(
-            [
-                'booking_id' => $checkOut->booking_id,
-                'reason' => 'after_checkout',
-            ],
-            [
-                'user_id' => $checkOut->host_user_id,
-                'property_id' => $checkOut->property_id,
-                'room_id' => $checkOut->room_id,
-                'sleeping_place_id' => $checkOut->sleeping_place_id,
-                'status' => 'planned',
-                'scheduled_date' => $checkOut->check_out_date,
-                'scheduled_time' => $checkOut->planned_check_out_time,
-            ],
-        );
+        $this->cleaningTasks->createAfterCheckout($checkOut);
     }
 
     public function blockForRepair(BookingCheckOut $checkOut): void

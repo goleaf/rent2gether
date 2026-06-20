@@ -1,14 +1,23 @@
 <div class="space-y-3">
-    <flux:field>
-        <flux:label>{{ __('host.rules.picker.search_label') }}</flux:label>
-        <flux:input
-            type="search"
-            wire:model.live.debounce.500ms="search"
-            placeholder="{{ __('host.rules.picker.search_placeholder') }}"
-            autocomplete="off"
-        />
-        <flux:description>{{ __('host.rules.picker.helper') }}</flux:description>
-    </flux:field>
+    <flux:autocomplete
+        type="search"
+        clearable
+        wire:model.live.debounce.500ms="search"
+        label="{{ __('host.rules.picker.search_label') }}"
+        description="{{ __('host.rules.picker.helper') }}"
+        placeholder="{{ __('host.rules.picker.search_placeholder') }}"
+        container:class="max-h-80"
+    >
+        @if(mb_strlen(trim($search)) >= 2)
+            @foreach($this->groups as $group)
+                @foreach($group['options'] as $option)
+                    <flux:autocomplete.item wire:key="rule-search-suggestion-{{ $option['id'] }}">
+                        {{ $option['label'] }}
+                    </flux:autocomplete.item>
+                @endforeach
+            @endforeach
+        @endif
+    </flux:autocomplete>
 
     <div wire:loading.delay class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
         {{ __('host.rules.picker.loading') }}
