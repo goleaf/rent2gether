@@ -216,6 +216,11 @@ class Property extends Model
         return $this->hasMany(SleepingPlace::class);
     }
 
+    public function bookingGuestIntakes(): HasMany
+    {
+        return $this->hasMany(BookingGuestIntake::class);
+    }
+
     public function beds(): HasManyThrough
     {
         return $this->hasManyThrough(Bed::class, Room::class);

@@ -234,6 +234,11 @@ class Booking extends Model
         return $this->hasMany(BookingStatusHistory::class);
     }
 
+    public function guestIntake(): HasOne
+    {
+        return $this->hasOne(BookingGuestIntake::class);
+    }
+
     public function paymentRecords(): HasMany
     {
         return $this->hasMany(PaymentRecord::class);

@@ -173,6 +173,11 @@ class Room extends Model
         return $this->hasMany(SleepingPlace::class);
     }
 
+    public function bookingGuestIntakes(): HasMany
+    {
+        return $this->hasMany(BookingGuestIntake::class);
+    }
+
     public function occupantSnapshots(): HasMany
     {
         return $this->hasMany(RoomOccupantSnapshot::class);
