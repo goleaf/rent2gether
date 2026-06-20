@@ -242,38 +242,38 @@
 
                 @case(5)
                     <div class="grid gap-5">
-                        @foreach(['en' => 'En', 'ru' => 'Ru'] as $locale => $suffix)
+                        @foreach($this->contentLocales() as $locale)
                             <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                                <flux:heading size="sm">{{ __('host.property_wizard.locales.'.$locale) }}</flux:heading>
+                                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.fields.title_'.$locale) }}</flux:label>
-                                    <flux:input wire:model.blur="title{{ $suffix }}" />
-                                    <flux:error name="title{{ $suffix }}" />
+                                    <flux:label>{{ __('host.property_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.fields.summary_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="2" wire:model.blur="summary{{ $suffix }}" />
-                                    <flux:error name="summary{{ $suffix }}" />
+                                    <flux:label>{{ __('host.property_wizard.translation_fields.summary', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="2" wire:model.blur="translations.{{ $locale['code'] }}.summary" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.summary" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.fields.description_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="4" wire:model.blur="description{{ $suffix }}" />
-                                    <flux:error name="description{{ $suffix }}" />
+                                    <flux:label>{{ __('host.property_wizard.translation_fields.description', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.description" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.description" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.fields.what_to_know_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="3" wire:model.blur="whatToKnow{{ $suffix }}" />
-                                    <flux:error name="whatToKnow{{ $suffix }}" />
+                                    <flux:label>{{ __('host.property_wizard.translation_fields.what_to_know', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.what_to_know" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.what_to_know" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.fields.suitable_for_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="2" wire:model.blur="suitableFor{{ $suffix }}" />
-                                    <flux:error name="suitableFor{{ $suffix }}" />
+                                    <flux:label>{{ __('host.property_wizard.translation_fields.suitable_for', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="2" wire:model.blur="translations.{{ $locale['code'] }}.suitable_for" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.suitable_for" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.fields.not_suitable_for_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="2" wire:model.blur="notSuitableFor{{ $suffix }}" />
-                                    <flux:error name="notSuitableFor{{ $suffix }}" />
+                                    <flux:label>{{ __('host.property_wizard.translation_fields.not_suitable_for', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="2" wire:model.blur="translations.{{ $locale['code'] }}.not_suitable_for" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.not_suitable_for" />
                                 </flux:field>
                             </div>
                         @endforeach
@@ -347,14 +347,12 @@
                                     <dt class="text-zinc-500">{{ __('host.property_wizard.fields.city') }}</dt>
                                     <dd class="text-right font-medium">{{ $cityQuery ?: __('host.property_wizard.review.missing') }}</dd>
                                 </div>
-                                <div class="flex justify-between gap-3">
-                                    <dt class="text-zinc-500">{{ __('host.property_wizard.fields.title_en') }}</dt>
-                                    <dd class="text-right font-medium">{{ $titleEn ?: __('host.property_wizard.review.missing') }}</dd>
-                                </div>
-                                <div class="flex justify-between gap-3">
-                                    <dt class="text-zinc-500">{{ __('host.property_wizard.fields.title_ru') }}</dt>
-                                    <dd class="text-right font-medium">{{ $titleRu ?: __('host.property_wizard.review.missing') }}</dd>
-                                </div>
+                                @foreach($this->contentLocales() as $locale)
+                                    <div class="flex justify-between gap-3">
+                                        <dt class="text-zinc-500">{{ __('host.property_wizard.translation_fields.title', ['language' => $locale['name']]) }}</dt>
+                                        <dd class="text-right font-medium">{{ data_get($translations, $locale['code'].'.title') ?: __('host.property_wizard.review.missing') }}</dd>
+                                    </div>
+                                @endforeach
                             </dl>
                         </div>
 

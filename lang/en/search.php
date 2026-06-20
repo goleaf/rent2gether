@@ -69,6 +69,7 @@ return [
         'nights' => ':count night|:count nights',
         'calendar_days' => ':count calendar day|:count calendar days',
         'showing_results' => ':count place shown|:count places shown',
+        'matched_results' => ':count place found|:count places found',
         'updating' => 'Updating results...',
     ],
     'date_warnings' => [

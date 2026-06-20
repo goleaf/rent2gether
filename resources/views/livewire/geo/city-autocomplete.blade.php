@@ -21,8 +21,6 @@
     </div>
 
     @if($this->hasEnoughCharacters && $isOpen)
-        @php($results = $this->results)
-
         <div
             wire:loading.remove
             wire:target="query"

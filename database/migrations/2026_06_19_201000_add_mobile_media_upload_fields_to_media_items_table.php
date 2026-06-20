@@ -17,8 +17,6 @@ return new class extends Migration
             $table->string('original_filename')->nullable()->after('full_path');
             $table->string('mime')->nullable()->after('mime_type');
             $table->unsignedInteger('size')->nullable()->after('size_bytes');
-            $table->string('caption_en')->nullable()->after('alt_text');
-            $table->string('caption_ru')->nullable()->after('caption_en');
             $table->boolean('is_primary')->default(false)->after('is_cover');
 
             $table->index(['owner_type', 'owner_id', 'collection', 'sort_order']);
@@ -40,8 +38,6 @@ return new class extends Migration
                 'original_filename',
                 'mime',
                 'size',
-                'caption_en',
-                'caption_ru',
                 'is_primary',
             ]);
         });

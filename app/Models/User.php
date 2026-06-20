@@ -189,6 +189,51 @@ class User extends Authenticatable
         return $this->hasMany(RoomOccupantSnapshot::class);
     }
 
+    public function hostCalendarEvents(): HasMany
+    {
+        return $this->hasMany(HostCalendarEvent::class);
+    }
+
+    public function hostCalendarNotes(): HasMany
+    {
+        return $this->hasMany(HostCalendarNote::class);
+    }
+
+    public function hostCalendarViewSetting(): HasOne
+    {
+        return $this->hasOne(HostCalendarViewSetting::class);
+    }
+
+    public function hostedCurrentStaySnapshots(): HasMany
+    {
+        return $this->hasMany(HostCurrentStaySnapshot::class, 'user_id');
+    }
+
+    public function guestCurrentStaySnapshots(): HasMany
+    {
+        return $this->hasMany(HostCurrentStaySnapshot::class, 'guest_user_id');
+    }
+
+    public function hostGuestStayNotes(): HasMany
+    {
+        return $this->hasMany(HostGuestStayNote::class, 'user_id');
+    }
+
+    public function guestStayNotes(): HasMany
+    {
+        return $this->hasMany(HostGuestStayNote::class, 'guest_user_id');
+    }
+
+    public function hostGuestStayFlags(): HasMany
+    {
+        return $this->hasMany(HostGuestStayFlag::class, 'user_id');
+    }
+
+    public function guestStayFlags(): HasMany
+    {
+        return $this->hasMany(HostGuestStayFlag::class, 'guest_user_id');
+    }
+
     public function compatibilityResults(): HasMany
     {
         return $this->hasMany(CompatibilityResult::class);

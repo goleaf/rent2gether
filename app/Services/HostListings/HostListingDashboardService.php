@@ -17,6 +17,7 @@ use App\Models\Rule;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\Localization\LocalizedModelContentResolver;
+use App\Services\Localization\SupportedContentLocales;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -25,6 +26,7 @@ class HostListingDashboardService
 {
     public function __construct(
         private readonly LocalizedModelContentResolver $translations,
+        private readonly SupportedContentLocales $contentLocales,
     ) {}
 
     /**
@@ -232,9 +234,7 @@ class HostListingDashboardService
      */
     private function readinessChecks(Property $property, array $maps): array
     {
-        $translation = $this->translations->resolve($property->translations, app()->getLocale(), config('app.fallback_locale', 'en'));
-        $hasTitleDescription = filled($translation?->title ?: $property->title)
-            && filled($translation?->description ?: $property->description);
+        $hasTitleDescription = $this->contentLocales->hasAllTranslations($property->translations, ['title', 'description']);
         $hasCheckInInstructions = $property->translations->contains(fn ($translation): bool => filled($translation->check_in_instructions))
             || filled($property->access_instructions);
 
@@ -268,11 +268,12 @@ class HostListingDashboardService
     /**
      * @param  list<array{key:string,label_key:string,done:bool}>  $checks
      * @param  array<string, Collection<int, int>>  $maps
-     * @return list<array{key:string,label_key:string}>
+     * @return list<array{key:string,label_key:string,params:array<string,mixed>}>
      */
     private function tips(Property $property, array $checks, array $maps): array
     {
         $tips = [];
+        $missingLocales = $this->contentLocales->missingLocales($property->translations, ['title', 'description']);
 
         if (($maps['place_photos'][$property->id] ?? 0) === 0) {
             $tips[] = $this->tip('exact_sleeping_place_photo');
@@ -286,12 +287,11 @@ class HostListingDashboardService
             $tips[] = $this->tip('quiet_hours');
         }
 
-        if (! $this->hasTranslation($property, 'ru')) {
-            $tips[] = $this->tip('complete_ru');
-        }
-
-        if (! $this->hasTranslation($property, 'en')) {
-            $tips[] = $this->tip('complete_en');
+        if ($missingLocales !== []) {
+            $tips[] = $this->tip('missing_translations', [
+                'count' => count($missingLocales),
+                'locales' => $this->contentLocales->names($missingLocales, app()->getLocale()),
+            ]);
         }
 
         if (($maps['weekly_discount'][$property->id] ?? 0) === 0) {
@@ -310,21 +310,16 @@ class HostListingDashboardService
     }
 
     /**
-     * @return array{key:string,label_key:string}
+     * @param  array<string,mixed>  $params
+     * @return array{key:string,label_key:string,params:array<string,mixed>}
      */
-    private function tip(string $key): array
+    private function tip(string $key, array $params = []): array
     {
         return [
             'key' => $key,
             'label_key' => 'host.listings.tips.'.$key,
+            'params' => $params,
         ];
-    }
-
-    private function hasTranslation(Property $property, string $locale): bool
-    {
-        $translation = $property->translations->firstWhere('locale', $locale);
-
-        return filled($translation?->title) && filled($translation?->description);
     }
 
     private function hasQuietHours(Property $property): bool

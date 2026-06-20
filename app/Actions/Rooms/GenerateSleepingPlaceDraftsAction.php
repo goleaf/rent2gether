@@ -5,6 +5,7 @@ namespace App\Actions\Rooms;
 use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Models\Room;
+use App\Services\Localization\SupportedContentLocales;
 
 class GenerateSleepingPlaceDraftsAction
 {
@@ -35,7 +36,7 @@ class GenerateSleepingPlaceDraftsAction
                 'requires_host_approval' => true,
             ]);
 
-            foreach (['en', 'ru'] as $locale) {
+            foreach (app(SupportedContentLocales::class)->locales() as $locale) {
                 $sleepingPlace->translations()->create([
                     'locale' => $locale,
                     'title' => __('host.sleeping_places.default_name', [], $locale).' '.$number,

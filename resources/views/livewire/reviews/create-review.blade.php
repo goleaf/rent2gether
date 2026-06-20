@@ -1,27 +1,3 @@
-@php
-    $ratingOptions = [5, 4, 3, 2, 1];
-    $guestRatings = [
-        'overallRating' => 'overall_rating',
-        'cleanlinessRating' => 'cleanliness_rating',
-        'safetyRating' => 'safety_rating',
-        'locationRating' => 'location_rating',
-        'accuracyRating' => 'accuracy_rating',
-        'sleepingPlaceComfortRating' => 'sleeping_place_comfort_rating',
-        'amenitiesRating' => 'amenities_rating',
-        'hostCommunicationRating' => 'host_communication_rating',
-        'neighborsRating' => 'neighbors_rating',
-        'valueRating' => 'value_rating',
-    ];
-    $hostRatings = [
-        'overallRating' => 'overall_rating',
-        'ruleFollowingRating' => 'rule_following_rating',
-        'cleanlinessRating' => 'guest_cleanliness_rating',
-        'communicationRating' => 'communication_rating',
-        'punctualityRating' => 'punctuality_rating',
-        'respectRating' => 'respect_rating',
-    ];
-@endphp
-
 <div class="mx-auto max-w-2xl space-y-5 px-4 py-4 pb-28 sm:px-6">
     <section class="space-y-3">
         <flux:badge color="emerald">{{ __('booking.review.eyebrow') }}</flux:badge>

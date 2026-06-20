@@ -1,7 +1,3 @@
-@php
-    $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
-@endphp
-
 <div class="max-w-3xl mx-auto space-y-6">
     <flux:heading size="xl">{{ __('booking.title') }} #{{ $booking->id }}</flux:heading>
 
@@ -28,16 +24,16 @@
         <flux:card class="space-y-3">
             <flux:heading size="sm">{{ __('booking.payment') }}</flux:heading>
             <div class="space-y-2 text-sm">
-                <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.subtotal') }}</span><span>{{ $money($booking->subtotal_amount ?: $booking->subtotal, $booking->currency) }}</span></div>
+                <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.subtotal') }}</span><span>{{ $this->money($booking->subtotal_amount ?: $booking->subtotal, $booking->currency) }}</span></div>
                 @if($booking->discount_amount > 0)
-                    <div class="flex justify-between text-green-600"><span>{{ __('booking.discount') }}</span><span>-{{ $money($booking->discount_amount, $booking->currency) }}</span></div>
+                    <div class="flex justify-between text-green-600"><span>{{ __('booking.discount') }}</span><span>-{{ $this->money($booking->discount_amount, $booking->currency) }}</span></div>
                 @endif
                 @if(($booking->cleaning_fee_amount ?: $booking->cleaning_fee) > 0)
-                    <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.cleaning') }}</span><span>{{ $money($booking->cleaning_fee_amount ?: $booking->cleaning_fee, $booking->currency) }}</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.cleaning') }}</span><span>{{ $this->money($booking->cleaning_fee_amount ?: $booking->cleaning_fee, $booking->currency) }}</span></div>
                 @endif
-                <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.service_fee') }}</span><span>{{ $money($booking->service_fee_amount ?: $booking->service_fee, $booking->currency) }}</span></div>
+                <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.service_fee') }}</span><span>{{ $this->money($booking->service_fee_amount ?: $booking->service_fee, $booking->currency) }}</span></div>
                 <flux:separator />
-                <div class="flex justify-between font-semibold"><span>{{ __('booking.total') }}</span><span>{{ $money($booking->total_amount ?: $booking->total, $booking->currency) }}</span></div>
+                <div class="flex justify-between font-semibold"><span>{{ __('booking.total') }}</span><span>{{ $this->money($booking->total_amount ?: $booking->total, $booking->currency) }}</span></div>
             </div>
         </flux:card>
     </div>
@@ -54,7 +50,7 @@
             <div>
                 @if($cancellationPreview)
                     <flux:card class="mb-3 space-y-1">
-                        <flux:text size="sm">{{ __('booking.refund') }}: {{ $money($cancellationPreview['refund_amount'], $booking->currency) }}</flux:text>
+                        <flux:text size="sm">{{ __('booking.refund') }}: {{ $this->money($cancellationPreview['refund_amount'], $booking->currency) }}</flux:text>
                         <flux:text size="sm" class="text-zinc-500">{{ $cancellationPreview['reason'] }}</flux:text>
                     </flux:card>
                 @endif

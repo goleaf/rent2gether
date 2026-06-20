@@ -4,6 +4,7 @@ namespace App\Actions\Media;
 
 use App\Models\MediaItem;
 use App\Models\User;
+use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\ImageVariantGenerator;
 use App\Services\Media\MediaOwnerResolver;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class StoreMediaItemAction
     public function __construct(
         private readonly ImageVariantGenerator $variants,
         private readonly MediaOwnerResolver $owners,
+        private readonly SupportedContentLocales $locales,
     ) {}
 
     public function handle(
@@ -22,8 +24,7 @@ class StoreMediaItemAction
         UploadedFile $file,
         User $user,
         string $collection = 'gallery',
-        ?string $captionEn = null,
-        ?string $captionRu = null,
+        array $captions = [],
         bool $makePrimary = false,
     ): MediaItem {
         $directory = $this->owners->directoryFor($owner, $collection);
@@ -42,7 +43,10 @@ class StoreMediaItemAction
                 ->update(['is_primary' => false, 'is_cover' => false]);
         }
 
-        return $owner->mediaItems()->create([
+        $cleanCaptions = $this->cleanCaptions($captions);
+
+        /** @var MediaItem $mediaItem */
+        $mediaItem = $owner->mediaItems()->create([
             'owner_type' => $owner::class,
             'owner_id' => $owner->getKey(),
             'owner_user_id' => $user->id,
@@ -60,13 +64,35 @@ class StoreMediaItemAction
             'size_bytes' => $variantPaths['size'],
             'width' => $variantPaths['width'],
             'height' => $variantPaths['height'],
-            'caption_en' => $captionEn,
-            'caption_ru' => $captionRu,
-            'alt_text' => $captionEn ?: $captionRu,
+            'alt_text' => collect($cleanCaptions)->first(),
             'sort_order' => $sortOrder,
             'is_primary' => $shouldBePrimary,
             'is_cover' => $shouldBePrimary,
             'status' => 'active',
         ]);
+
+        foreach ($cleanCaptions as $locale => $caption) {
+            $mediaItem->translations()->create([
+                'locale' => $locale,
+                'caption' => $caption,
+            ]);
+        }
+
+        return $mediaItem->load('translations');
+    }
+
+    /**
+     * @param  array<string, mixed>  $captions
+     * @return array<string, string>
+     */
+    private function cleanCaptions(array $captions): array
+    {
+        return collect($this->locales->locales())
+            ->mapWithKeys(function (string $locale) use ($captions): array {
+                $caption = trim((string) ($captions[$locale] ?? ''));
+
+                return $caption === '' ? [] : [$locale => $caption];
+            })
+            ->all();
     }
 }

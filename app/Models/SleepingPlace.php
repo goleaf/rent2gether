@@ -303,6 +303,26 @@ class SleepingPlace extends Model
         return $this->hasMany(HostHintDismissal::class);
     }
 
+    public function hostCalendarEvents(): HasMany
+    {
+        return $this->hasMany(HostCalendarEvent::class);
+    }
+
+    public function hostCalendarNotes(): HasMany
+    {
+        return $this->hasMany(HostCalendarNote::class);
+    }
+
+    public function hostCurrentStaySnapshots(): HasMany
+    {
+        return $this->hasMany(HostCurrentStaySnapshot::class);
+    }
+
+    public function hostGuestStayNotes(): HasMany
+    {
+        return $this->hasMany(HostGuestStayNote::class);
+    }
+
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class, 'sleeping_place_amenity')->withTimestamps();

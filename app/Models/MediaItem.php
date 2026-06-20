@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Services\Localization\SupportedContentLocales;
 use Database\Factories\MediaItemFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,8 +38,6 @@ class MediaItem extends Model
         'width',
         'height',
         'alt_text',
-        'caption_en',
-        'caption_ru',
         'sort_order',
         'is_primary',
         'is_cover',
@@ -65,6 +65,11 @@ class MediaItem extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function translations(): HasMany
+    {
+        return $this->hasMany(MediaItemTranslation::class);
     }
 
     public function scopeActive(Builder $query): Builder
@@ -97,11 +102,17 @@ class MediaItem extends Model
 
     public function localizedCaption(?string $locale = null): ?string
     {
-        $locale ??= app()->getLocale();
+        $this->loadMissing('translations');
 
-        return match ($locale) {
-            'ru' => $this->caption_ru ?: $this->caption_en ?: $this->alt_text,
-            default => $this->caption_en ?: $this->caption_ru ?: $this->alt_text,
-        };
+        foreach (app(SupportedContentLocales::class)->preferred($locale) as $candidate) {
+            $caption = $this->translations->firstWhere('locale', $candidate)?->caption;
+
+            if (filled($caption)) {
+                return $caption;
+            }
+        }
+
+        return $this->translations->first(fn (MediaItemTranslation $translation): bool => filled($translation->caption))?->caption
+            ?: $this->alt_text;
     }
 }

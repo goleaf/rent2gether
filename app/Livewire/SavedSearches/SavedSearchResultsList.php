@@ -8,6 +8,7 @@ use App\Models\SleepingPlace;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
 use App\Services\Localization\LocalizedModelContentResolver;
+use App\Services\Localization\SupportedContentLocales;
 use BackedEnum;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,6 +47,8 @@ class SavedSearchResultsList extends Component
     #[Computed]
     public function cards(): array
     {
+        $locales = app(SupportedContentLocales::class)->preferred();
+
         $query = SavedSearchResult::query()
             ->select([
                 'id',
@@ -92,11 +95,17 @@ class SavedSearchResultsList extends Component
                         'reviews as published_reviews_rating' => fn (Builder $review) => $review->visible()->guestToPlace(),
                     ], 'overall_rating')
                     ->with([
-                        'translations:id,sleeping_place_id,locale,title,summary',
+                        'translations' => fn ($translation) => $translation
+                            ->select(['id', 'sleeping_place_id', 'locale', 'title', 'summary'])
+                            ->whereIn('locale', $locales),
                         'room:id,property_id,type,status,gender_policy,beds_count,max_guests',
                         'property:id,city_id,host_user_id,type,status,city,district',
                         'property.cityModel:id,name',
-                        'cardMedia:id,mediable_type,mediable_id,disk,path,thumb_path,thumbnail_path,mobile_path,full_path,alt_text,caption_en,caption_ru,is_primary,is_cover,sort_order,status',
+                        'cardMedia' => fn ($media) => $media
+                            ->select(['id', 'mediable_type', 'mediable_id', 'disk', 'path', 'thumb_path', 'thumbnail_path', 'mobile_path', 'full_path', 'alt_text', 'is_primary', 'is_cover', 'sort_order', 'status'])
+                            ->with(['translations' => fn ($translation) => $translation
+                                ->select(['id', 'media_item_id', 'locale', 'caption'])
+                                ->whereIn('locale', $locales)]),
                     ]),
             ]);
 

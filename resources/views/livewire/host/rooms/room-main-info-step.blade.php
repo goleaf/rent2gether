@@ -11,25 +11,26 @@
             </flux:callout>
         @endif
 
-        <div class="grid gap-4 sm:grid-cols-2">
-            @foreach(['titleEn', 'titleRu', 'shortDescriptionEn', 'shortDescriptionRu'] as $field)
+        @foreach($this->contentLocales() as $locale)
+            <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
-                    <flux:input wire:model.blur="{{ $field }}" />
-                    <flux:error name="{{ $field }}" />
+                    <flux:label>{{ __('room.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                    <flux:error name="translations.{{ $locale['code'] }}.title" />
                 </flux:field>
-            @endforeach
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            @foreach(['fullDescriptionEn', 'fullDescriptionRu'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
-                    <flux:textarea rows="4" wire:model.blur="{{ $field }}" />
-                    <flux:error name="{{ $field }}" />
+                    <flux:label>{{ __('room.translation_fields.short_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.short_description" />
+                    <flux:error name="translations.{{ $locale['code'] }}.short_description" />
                 </flux:field>
-            @endforeach
-        </div>
+                <flux:field>
+                    <flux:label>{{ __('room.translation_fields.full_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.full_description" />
+                    <flux:error name="translations.{{ $locale['code'] }}.full_description" />
+                </flux:field>
+            </div>
+        @endforeach
 
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach(['roomNumber', 'internalName'] as $field)

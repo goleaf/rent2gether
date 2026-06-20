@@ -201,6 +201,22 @@ class AccountFlowsTest extends TestCase
         $this->assertTrue($user->host_lives_on_site);
     }
 
+    public function test_profile_index_redirects_to_profile_edit_page(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['en', 'ru'] as $locale) {
+            $this->actingAs($user)
+                ->get(route('profile.index', ['locale' => $locale]))
+                ->assertRedirect(route('profile.edit', ['locale' => $locale]));
+
+            $this->actingAs($user)
+                ->get(route('profile.edit', ['locale' => $locale]))
+                ->assertOk()
+                ->assertSeeLivewire(EditProfile::class);
+        }
+    }
+
     public function test_security_settings_update_password(): void
     {
         $user = User::factory()->create([

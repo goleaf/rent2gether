@@ -6,6 +6,7 @@ use App\Enums\SleepingPlaceStatus;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Localization\SupportedContentLocales;
 use Illuminate\Support\Facades\DB;
 
 class BulkCreateSleepingPlacesAction
@@ -53,7 +54,7 @@ class BulkCreateSleepingPlacesAction
                     'requires_host_approval' => true,
                 ]);
 
-                foreach (['en', 'ru'] as $locale) {
+                foreach (app(SupportedContentLocales::class)->locales() as $locale) {
                     $sleepingPlace->translations()->create([
                         'locale' => $locale,
                         'title' => $title,

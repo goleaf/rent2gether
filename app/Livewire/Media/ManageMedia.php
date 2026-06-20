@@ -7,6 +7,7 @@ use App\Actions\Media\ReorderMediaItemsAction;
 use App\Actions\Media\SetPrimaryMediaItemAction;
 use App\Actions\Media\StoreMediaItemAction;
 use App\Models\MediaItem;
+use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\MediaOwnerResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
@@ -29,9 +30,10 @@ class ManageMedia extends Component
 
     public $photo = null;
 
-    public string $captionEn = '';
-
-    public string $captionRu = '';
+    /**
+     * @var array<string, string>
+     */
+    public array $captions = [];
 
     public int $maxItems = 12;
 
@@ -49,6 +51,7 @@ class ManageMedia extends Component
         $this->collection = $collection;
         $this->maxItems = max(1, min(24, $maxItems));
         $this->statusMessage = session('media-status');
+        $this->captions = $this->emptyCaptions();
 
         $this->authorizedOwner();
     }
@@ -76,11 +79,11 @@ class ManageMedia extends Component
             file: $this->photo,
             user: auth()->user(),
             collection: $this->collection,
-            captionEn: $this->blankToNull($this->captionEn),
-            captionRu: $this->blankToNull($this->captionRu),
+            captions: $this->filledCaptions(),
         );
 
-        $this->reset(['photo', 'captionEn', 'captionRu']);
+        $this->photo = null;
+        $this->captions = $this->emptyCaptions();
         unset($this->mediaItems);
         $this->statusMessage = __('media.flash.uploaded');
         session()->flash('media-status', $this->statusMessage);
@@ -137,8 +140,6 @@ class ManageMedia extends Component
                 'mobile_path',
                 'full_path',
                 'alt_text',
-                'caption_en',
-                'caption_ru',
                 'sort_order',
                 'is_primary',
                 'is_cover',
@@ -146,6 +147,7 @@ class ManageMedia extends Component
                 'width',
                 'height',
             ])
+            ->with(['translations:id,media_item_id,locale,caption'])
             ->where('collection', $this->collection)
             ->active()
             ->orderBy('sort_order')
@@ -179,8 +181,10 @@ class ManageMedia extends Component
             'ownerId' => ['required', 'integer', 'min:1'],
             'collection' => ['required', 'string', 'max:80'],
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096', 'dimensions:max_width=5000,max_height=5000'],
-            'captionEn' => ['nullable', 'string', 'max:160'],
-            'captionRu' => ['nullable', 'string', 'max:160'],
+            'captions' => ['array'],
+            ...collect($this->contentLocales())->mapWithKeys(fn (array $locale): array => [
+                'captions.'.$locale['code'] => ['nullable', 'string', 'max:160'],
+            ])->all(),
         ];
     }
 
@@ -191,7 +195,15 @@ class ManageMedia extends Component
     {
         $attributes = app('translator')->get('media.validation_attributes');
 
-        return is_array($attributes) ? $attributes : [];
+        $attributes = is_array($attributes) ? $attributes : [];
+
+        foreach ($this->contentLocales() as $locale) {
+            $attributes['captions.'.$locale['code']] = __('media.validation_attributes.caption', [
+                'language' => $locale['name'],
+            ]);
+        }
+
+        return $attributes;
     }
 
     private function authorizedOwner(): Model
@@ -211,6 +223,42 @@ class ManageMedia extends Component
         return $owner->mediaItems()
             ->where('collection', $this->collection)
             ->findOrFail($mediaId);
+    }
+
+    /**
+     * @return list<array{code:string,name:string}>
+     */
+    public function contentLocales(): array
+    {
+        $locales = app(SupportedContentLocales::class);
+
+        return collect($locales->locales())
+            ->map(fn (string $locale): array => [
+                'code' => $locale,
+                'name' => $locales->name($locale, app()->getLocale()),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function emptyCaptions(): array
+    {
+        return collect(app(SupportedContentLocales::class)->locales())
+            ->mapWithKeys(fn (string $locale): array => [$locale => ''])
+            ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function filledCaptions(): array
+    {
+        return collect($this->captions)
+            ->map(fn (mixed $caption): string => trim((string) $caption))
+            ->filter()
+            ->all();
     }
 
     private function blankToNull(string $value): ?string

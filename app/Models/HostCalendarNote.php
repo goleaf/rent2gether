@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Models;
+
+use Database\Factories\HostCalendarNoteFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class HostCalendarNote extends Model
+{
+    /** @use HasFactory<HostCalendarNoteFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'property_id',
+        'room_id',
+        'sleeping_place_id',
+        'booking_id',
+        'note_date',
+        'note_type',
+        'note',
+        'is_private',
+    ];
+
+    protected $attributes = [
+        'note_type' => 'general',
+        'is_private' => true,
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'note_date' => 'date:Y-m-d',
+            'is_private' => 'boolean',
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
+    }
+
+    public function sleepingPlace(): BelongsTo
+    {
+        return $this->belongsTo(SleepingPlace::class);
+    }
+
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
+    }
+}

@@ -8,6 +8,8 @@ use App\Actions\Rooms\GenerateSleepingPlaceDraftsAction;
 use App\Enums\GenderType;
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
+use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
@@ -21,6 +23,8 @@ use Livewire\WithFileUploads;
 
 class RoomForm extends Component
 {
+    use BuildsLocalizedMediaCaptions;
+    use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 
     private const STEP_COUNT = 6;
@@ -29,6 +33,12 @@ class RoomForm extends Component
         'roomPhoto' => 'room',
         'windowPhoto' => 'window',
         'detailPhoto' => 'detail',
+    ];
+
+    private const TRANSLATION_FIELDS = [
+        'title',
+        'description',
+        'notes',
     ];
 
     public ?int $propertyId = null;
@@ -107,18 +117,6 @@ class RoomForm extends Component
 
     public string $roomRulesText = '';
 
-    public string $titleEn = '';
-
-    public string $titleRu = '';
-
-    public string $descriptionEn = '';
-
-    public string $descriptionRu = '';
-
-    public string $notesEn = '';
-
-    public string $notesRu = '';
-
     /** @var list<int> */
     public array $ruleIds = [];
 
@@ -132,6 +130,8 @@ class RoomForm extends Component
 
     public function mount(Property $property, ?Room $room = null): void
     {
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+
         abort_unless($property->isOwnedBy(auth()->user()), 403);
 
         if ($room?->exists) {
@@ -183,19 +183,7 @@ class RoomForm extends Component
         $this->roomRulesText = $room->room_rules_text ?: '';
         $this->ruleIds = $room->getRelation('rules')->pluck('id')->map(fn (int $id): int => $id)->all();
 
-        foreach ($room->translations as $translation) {
-            if ($translation->locale === 'en') {
-                $this->titleEn = $translation->title;
-                $this->descriptionEn = $translation->description ?: '';
-                $this->notesEn = $translation->notes ?: $translation->privacy_notes ?: '';
-            }
-
-            if ($translation->locale === 'ru') {
-                $this->titleRu = $translation->title;
-                $this->descriptionRu = $translation->description ?: '';
-                $this->notesRu = $translation->notes ?: $translation->privacy_notes ?: '';
-            }
-        }
+        $this->loadLocalizedTranslations($room->translations, self::TRANSLATION_FIELDS);
     }
 
     public function nextStep(): void
@@ -275,13 +263,12 @@ class RoomForm extends Component
                 'mobile_path',
                 'full_path',
                 'alt_text',
-                'caption_en',
-                'caption_ru',
                 'sort_order',
                 'is_primary',
                 'is_cover',
                 'status',
             ])
+            ->with(['translations:id,media_item_id,locale,caption'])
             ->whereIn('collection', array_values(self::PHOTO_FIELDS))
             ->active()
             ->orderByDesc('is_primary')
@@ -370,7 +357,7 @@ class RoomForm extends Component
             [
                 'key' => 'description',
                 'label' => __('host.room_wizard.readiness.description'),
-                'done' => trim($this->descriptionEn) !== '' && trim($this->descriptionRu) !== '',
+                'done' => $this->hasEveryLocaleValue('description'),
             ],
             [
                 'key' => 'photos',
@@ -463,14 +450,11 @@ class RoomForm extends Component
                 'canUseLightAtNight' => ['boolean'],
                 'canTalkAtNight' => ['boolean'],
             ],
-            4 => [
-                'titleEn' => ['nullable', 'string', 'max:255'],
-                'titleRu' => ['nullable', 'string', 'max:255'],
-                'descriptionEn' => ['required', 'string', 'max:4000'],
-                'descriptionRu' => ['required', 'string', 'max:4000'],
-                'notesEn' => ['nullable', 'string', 'max:2000'],
-                'notesRu' => ['nullable', 'string', 'max:2000'],
-            ],
+            4 => $this->localizedTranslationRules([
+                'title' => ['nullable', 'string', 'max:255'],
+                'description' => ['required', 'string', 'max:4000'],
+                'notes' => ['nullable', 'string', 'max:2000'],
+            ]),
             5 => [
                 'ruleIds' => ['array'],
                 'ruleIds.*' => ['integer', 'exists:rules,id'],
@@ -510,13 +494,16 @@ class RoomForm extends Component
     {
         $attributes = app('translator')->get('host.room_wizard.validation_attributes');
 
-        return is_array($attributes) ? $attributes : [];
+        return array_merge(
+            is_array($attributes) ? $attributes : [],
+            $this->localizedValidationAttributes('host.room_wizard.translation_fields', self::TRANSLATION_FIELDS),
+        );
     }
 
     private function persistRoom(string $status): Room
     {
         $property = $this->propertyModel();
-        $fallbackTitle = $this->title ?: $this->titleEn ?: $this->titleRu ?: __('host.room_wizard.draft_title');
+        $fallbackTitle = $this->title ?: $this->firstTranslationValue('title') ?: __('host.room_wizard.draft_title');
         $bedsCount = (int) ($this->bedsCount ?? 0);
         $maxGuests = (int) ($this->maxGuests ?? 1);
 
@@ -525,7 +512,7 @@ class RoomForm extends Component
             'title' => $fallbackTitle,
             'gender_type' => $this->genderPolicy,
             'gender_policy' => $this->genderPolicy,
-            'description' => $this->blankToNull($this->descriptionEn) ?: $this->blankToNull($this->descriptionRu),
+            'description' => $this->blankToNull($this->firstTranslationValue('description')),
             'capacity' => $maxGuests,
             'area_sqm' => $this->area,
             'area' => $this->area,
@@ -596,21 +583,10 @@ class RoomForm extends Component
 
     private function syncTranslations(Room $room): void
     {
-        $translations = [
-            'en' => [
-                'title' => $this->titleEn ?: $this->title,
-                'description' => $this->descriptionEn,
-                'notes' => $this->notesEn,
-            ],
-            'ru' => [
-                'title' => $this->titleRu ?: $this->title,
-                'description' => $this->descriptionRu,
-                'notes' => $this->notesRu,
-            ],
-        ];
-
-        foreach ($translations as $locale => $translation) {
-            $title = $this->blankToNull($translation['title']);
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $this->translations[$locale] ?? [];
+            $title = $this->blankToNull($translation['title'] ?? '') ?: $this->blankToNull($this->title);
 
             if (! $title) {
                 continue;
@@ -653,8 +629,7 @@ class RoomForm extends Component
                 file: $photo,
                 user: auth()->user(),
                 collection: $collection,
-                captionEn: __('host.room_wizard.photos.'.$collection, [], 'en'),
-                captionRu: __('host.room_wizard.photos.'.$collection, [], 'ru'),
+                captions: $this->localizedCaptions('host.room_wizard.photos.'.$collection),
                 makePrimary: $collection === 'room',
             );
 

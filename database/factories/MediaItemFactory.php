@@ -35,8 +35,6 @@ class MediaItemFactory extends Factory
             'width' => 1200,
             'height' => 800,
             'alt_text' => null,
-            'caption_en' => null,
-            'caption_ru' => null,
             'sort_order' => 0,
             'is_primary' => true,
             'is_cover' => true,

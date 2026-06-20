@@ -1,9 +1,3 @@
-@php
-    $results = $this->searchResults;
-    $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
-    $saveSearchCityId = ctype_digit((string) $city) ? (int) $city : null;
-@endphp
-
 <div class="min-h-screen bg-zinc-50 pb-24 dark:bg-zinc-950">
     <section class="mx-auto max-w-6xl space-y-4 px-4 py-4">
         <div class="space-y-1">
@@ -41,7 +35,7 @@
                     {{ __('search.city_autocomplete.loading') }}
                 </div>
 
-                @if($cityOpen && \Illuminate\Support\Str::length(\App\Support\Geo\GeoNameNormalizer::normalize($cityQuery)) >= 2)
+                @if($cityOpen && $cityHasEnoughCharacters)
                     <div wire:loading.remove wire:target="cityQuery" class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
                         @if($this->cityOptions === [])
                             <div class="px-3 py-4 text-sm text-zinc-600 dark:text-zinc-300">
@@ -151,7 +145,7 @@
         <main class="min-w-0 space-y-4">
             <div class="flex items-center justify-between gap-3">
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                    {{ trans_choice('search.summary.showing_results', $results['showing'], ['count' => $results['showing']]) }}
+                    {{ trans_choice('search.summary.matched_results', $results['total'], ['count' => $results['total']]) }}
                 </flux:text>
 
                 <div wire:loading.delay wire:target="cityQuery,district,checkIn,checkOut,guestsCount,priceMin,priceMax,currency,propertyType,roomType,sleepingPlaceType,roomGenderPolicy,sort" class="text-sm text-zinc-500">
@@ -217,7 +211,7 @@
 
                 <div class="sticky bottom-0 -mx-4 border-t border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
                     <flux:button type="button" variant="primary" class="w-full" wire:click="$set('filtersOpen', false)">
-                        {{ __('search.actions.show_results', ['count' => $results['showing']]) }}
+                        {{ __('search.actions.show_results', ['count' => $results['total']]) }}
                     </flux:button>
                 </div>
             </section>

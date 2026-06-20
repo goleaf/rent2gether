@@ -11,6 +11,7 @@ use App\Services\BookingService;
 use App\Services\CancellationService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -120,6 +121,11 @@ class BookingShow extends Component
             'roomTitle' => $this->booking->room?->title ?: $this->booking->bed?->room?->title ?: __('booking.room'),
             'propertyTitle' => $this->booking->property?->title ?: $this->booking->bed?->room?->property?->title ?: __('booking.property'),
         ]);
+    }
+
+    public function money(float|int|string|null $amount, string $currency): string
+    {
+        return Number::currency((float) ($amount ?: 0), $currency, app()->getLocale());
     }
 
     private function placeTitle(): string

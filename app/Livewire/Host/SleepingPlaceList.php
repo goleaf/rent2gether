@@ -8,6 +8,7 @@ use App\Enums\SleepingPlaceType;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Services\Localization\LocalizedModelContentResolver;
+use App\Services\Localization\SupportedContentLocales;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule as ValidationRule;
 use Livewire\Attributes\Computed;
@@ -96,6 +97,7 @@ class SleepingPlaceList extends Component
     public function sleepingPlaces(): array
     {
         $resolver = app(LocalizedModelContentResolver::class);
+        $contentLocales = app(SupportedContentLocales::class);
 
         return $this->ownedSleepingPlaceQuery()
             ->with(['translations:id,sleeping_place_id,locale,title,description,special_conditions'])
@@ -103,12 +105,12 @@ class SleepingPlaceList extends Component
             ->orderBy('place_number')
             ->orderBy('id')
             ->get()
-            ->map(function (SleepingPlace $place) use ($resolver): array {
+            ->map(function (SleepingPlace $place) use ($resolver, $contentLocales): array {
                 $translation = $resolver->resolve($place->translations, app()->getLocale(), 'en');
                 $readiness = [
                     [
                         'label' => __('host.sleeping_place_wizard.readiness.title_field'),
-                        'done' => $this->hasLocaleTitle($place, 'en') && $this->hasLocaleTitle($place, 'ru'),
+                        'done' => $contentLocales->hasAllTranslations($place->translations, ['title']),
                     ],
                     [
                         'label' => __('host.sleeping_place_wizard.readiness.exact_photo'),
@@ -224,11 +226,6 @@ class SleepingPlaceList extends Component
             ->whereHas('property', fn ($query) => $query
                 ->where('host_user_id', auth()->id())
                 ->orWhere('user_id', auth()->id()));
-    }
-
-    private function hasLocaleTitle(SleepingPlace $place, string $locale): bool
-    {
-        return filled($place->translations->firstWhere('locale', $locale)?->title);
     }
 
     /**

@@ -31,7 +31,7 @@ return [
             'power_socket' => 'Power socket',
             'privacy' => 'Privacy',
             'condition' => 'Condition',
-            'translations' => 'English and Russian texts',
+            'translations' => 'Localized texts',
         ],
     ],
     'fields' => [
@@ -248,10 +248,12 @@ return [
         ],
     ],
     'validation_attributes' => [
-        'titleEn' => 'English title',
-        'titleRu' => 'Russian title',
         'sleepingPlaceType' => 'sleeping place type',
         'basePricePerNight' => 'price per night',
+    ],
+    'translation_fields' => [
+        'title' => 'Title (:language)',
+        'short_description' => 'Short description (:language)',
     ],
     'values' => [
         'centimeters' => ':count cm',

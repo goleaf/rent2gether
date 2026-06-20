@@ -69,6 +69,7 @@ return [
         'nights' => ':count ночь|:count ночи|:count ночей',
         'calendar_days' => ':count календарный день|:count календарных дня|:count календарных дней',
         'showing_results' => 'Показано :count место|Показано :count места|Показано :count мест',
+        'matched_results' => 'Найдено :count место|Найдено :count места|Найдено :count мест',
         'updating' => 'Обновляем результаты...',
     ],
     'date_warnings' => [

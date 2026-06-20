@@ -199,23 +199,23 @@
 
                 @case(4)
                     <div class="grid gap-5">
-                        @foreach(['en' => 'En', 'ru' => 'Ru'] as $locale => $suffix)
+                        @foreach($this->contentLocales() as $locale)
                             <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                                <flux:heading size="sm">{{ __('host.room_wizard.locales.'.$locale) }}</flux:heading>
+                                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
                                 <flux:field>
-                                    <flux:label>{{ __('host.room_wizard.fields.title_'.$locale) }}</flux:label>
-                                    <flux:input wire:model.blur="title{{ $suffix }}" />
-                                    <flux:error name="title{{ $suffix }}" />
+                                    <flux:label>{{ __('host.room_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.room_wizard.fields.description_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="4" wire:model.blur="description{{ $suffix }}" />
-                                    <flux:error name="description{{ $suffix }}" />
+                                    <flux:label>{{ __('host.room_wizard.translation_fields.description', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.description" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.description" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.room_wizard.fields.notes_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="3" wire:model.blur="notes{{ $suffix }}" />
-                                    <flux:error name="notes{{ $suffix }}" />
+                                    <flux:label>{{ __('host.room_wizard.translation_fields.notes', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.notes" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.notes" />
                                 </flux:field>
                             </div>
                         @endforeach

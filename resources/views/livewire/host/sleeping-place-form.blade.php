@@ -241,23 +241,23 @@
 
                 @case(5)
                     <div class="grid gap-5">
-                        @foreach(['en' => 'En', 'ru' => 'Ru'] as $locale => $suffix)
+                        @foreach($this->contentLocales() as $locale)
                             <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                                <flux:heading size="sm">{{ __('host.sleeping_place_wizard.locales.'.$locale) }}</flux:heading>
+                                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
                                 <flux:field>
-                                    <flux:label>{{ __('host.sleeping_place_wizard.fields.title_'.$locale) }}</flux:label>
-                                    <flux:input wire:model.blur="title{{ $suffix }}" />
-                                    <flux:error name="title{{ $suffix }}" />
+                                    <flux:label>{{ __('host.sleeping_place_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.sleeping_place_wizard.fields.description_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="4" wire:model.blur="description{{ $suffix }}" />
-                                    <flux:error name="description{{ $suffix }}" />
+                                    <flux:label>{{ __('host.sleeping_place_wizard.translation_fields.description', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.description" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.description" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.sleeping_place_wizard.fields.special_conditions_'.$locale) }}</flux:label>
-                                    <flux:textarea rows="3" wire:model.blur="specialConditions{{ $suffix }}" />
-                                    <flux:error name="specialConditions{{ $suffix }}" />
+                                    <flux:label>{{ __('host.sleeping_place_wizard.translation_fields.special_conditions', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.special_conditions" />
+                                    <flux:error name="translations.{{ $locale['code'] }}.special_conditions" />
                                 </flux:field>
                             </div>
                         @endforeach

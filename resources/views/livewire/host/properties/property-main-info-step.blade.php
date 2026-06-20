@@ -11,44 +11,26 @@
             </flux:callout>
         @endif
 
-        <div class="grid gap-4 sm:grid-cols-2">
-            <flux:field>
-                <flux:label>{{ __('property.fields.title_en') }}</flux:label>
-                <flux:input wire:model.blur="titleEn" />
-                <flux:error name="titleEn" />
-            </flux:field>
-            <flux:field>
-                <flux:label>{{ __('property.fields.title_ru') }}</flux:label>
-                <flux:input wire:model.blur="titleRu" />
-                <flux:error name="titleRu" />
-            </flux:field>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            <flux:field>
-                <flux:label>{{ __('property.fields.short_description_en') }}</flux:label>
-                <flux:textarea rows="3" wire:model.blur="shortDescriptionEn" />
-                <flux:error name="shortDescriptionEn" />
-            </flux:field>
-            <flux:field>
-                <flux:label>{{ __('property.fields.short_description_ru') }}</flux:label>
-                <flux:textarea rows="3" wire:model.blur="shortDescriptionRu" />
-                <flux:error name="shortDescriptionRu" />
-            </flux:field>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            <flux:field>
-                <flux:label>{{ __('property.fields.full_description_en') }}</flux:label>
-                <flux:textarea rows="5" wire:model.blur="fullDescriptionEn" />
-                <flux:error name="fullDescriptionEn" />
-            </flux:field>
-            <flux:field>
-                <flux:label>{{ __('property.fields.full_description_ru') }}</flux:label>
-                <flux:textarea rows="5" wire:model.blur="fullDescriptionRu" />
-                <flux:error name="fullDescriptionRu" />
-            </flux:field>
-        </div>
+        @foreach($this->contentLocales() as $locale)
+            <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
+                <flux:field>
+                    <flux:label>{{ __('property.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                    <flux:error name="translations.{{ $locale['code'] }}.title" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>{{ __('property.translation_fields.short_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.short_description" />
+                    <flux:error name="translations.{{ $locale['code'] }}.short_description" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>{{ __('property.translation_fields.full_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:textarea rows="5" wire:model.blur="translations.{{ $locale['code'] }}.full_description" />
+                    <flux:error name="translations.{{ $locale['code'] }}.full_description" />
+                </flux:field>
+            </div>
+        @endforeach
 
         <flux:field>
             <flux:label>{{ __('property.fields.property_type') }}</flux:label>

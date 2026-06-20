@@ -12,6 +12,7 @@ use App\Services\Favorites\FavoriteService;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
 use App\Services\Localization\LocalizedModelContentResolver;
+use App\Services\Localization\SupportedContentLocales;
 use App\Services\PricingService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -285,12 +286,7 @@ class ComparePlaces extends Component
      */
     private function translationLocales(): array
     {
-        return array_values(array_unique(array_filter([
-            app()->getLocale(),
-            config('app.fallback_locale', 'en'),
-            'en',
-            'ru',
-        ])));
+        return app(SupportedContentLocales::class)->preferred();
     }
 
     private function label(mixed $value): string

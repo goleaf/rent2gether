@@ -20,7 +20,7 @@ return [
             'access_storage' => 'Access and storage',
             'condition' => 'Condition',
             'rules' => 'Rules',
-            'translations' => 'English and Russian texts',
+            'translations' => 'Localized texts',
         ],
     ],
     'directions' => [
@@ -250,10 +250,20 @@ return [
         ],
     ],
     'validation_attributes' => [
-        'titleEn' => 'English room title',
-        'titleRu' => 'Russian room title',
         'roomType' => 'room type',
         'genderPolicy' => 'room format',
+    ],
+    'translation_fields' => [
+        'title' => 'Room title (:language)',
+        'short_description' => 'Short description (:language)',
+        'full_description' => 'Full description (:language)',
+    ],
+    'rule_translation_fields' => [
+        'room_rules_text' => 'Room rules (:language)',
+        'quiet_hours_text' => 'Quiet hours (:language)',
+        'food_rules_text' => 'Food rules (:language)',
+        'conflict_instructions' => 'Conflict instructions (:language)',
+        'special_notes' => 'Special notes (:language)',
     ],
     'values' => [
         'area_square_meters' => ':count m²',

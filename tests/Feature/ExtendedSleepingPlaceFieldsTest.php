@@ -146,8 +146,8 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
 
         Livewire::actingAs($host)
             ->test(SleepingPlaceMainInfoStep::class, ['sleepingPlace' => $place])
-            ->set('titleEn', 'Lower bunk with curtain')
-            ->set('titleRu', 'Нижнее место с занавеской')
+            ->set('translations.en.title', 'Lower bunk with curtain')
+            ->set('translations.ru.title', 'Нижнее место с занавеской')
             ->set('placeNumber', '2')
             ->set('sleepingPlaceType', SleepingPlaceType::BunkBottom->value)
             ->set('bunkLevel', 'bottom')

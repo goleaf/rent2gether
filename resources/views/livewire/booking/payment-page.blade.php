@@ -1,7 +1,3 @@
-@php
-    $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
-@endphp
-
 <div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-28 sm:px-6">
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('booking.payment_page.eyebrow') }}</flux:badge>
@@ -50,7 +46,7 @@
 
             <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
                 <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('booking.total') }}</div>
-                <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $money($booking->total_amount, $booking->currency) }}</div>
+                <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $this->money($booking->total_amount, $booking->currency) }}</div>
             </div>
         </div>
 
@@ -81,7 +77,7 @@
                             <div class="text-xs text-emerald-700 dark:text-emerald-300">{{ __('booking.payment_page.price.refundable') }}</div>
                         @endif
                     </div>
-                    <div class="shrink-0">{{ $money($line['amount'], $line['currency']) }}</div>
+                    <div class="shrink-0">{{ $this->money($line['amount'], $line['currency']) }}</div>
                 </div>
             @endforeach
         </div>
@@ -90,7 +86,7 @@
             <div class="rounded-lg border border-zinc-200 px-3 py-3 dark:border-zinc-800">
                 <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ __('booking.payment_page.deposit.title') }}</div>
                 <div class="mt-1 text-zinc-600 dark:text-zinc-400">
-                    {{ __('booking.payment_page.deposit.text', ['amount' => $money($booking->deposit_amount, $booking->currency)]) }}
+                    {{ __('booking.payment_page.deposit.text', ['amount' => $this->money($booking->deposit_amount, $booking->currency)]) }}
                 </div>
             </div>
 
@@ -98,8 +94,8 @@
                 <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ __('booking.payment_page.refund.title') }}</div>
                 <div class="mt-1 text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.payment_page.refund.text', [
-                        'refundable' => $money($booking->refundable_amount, $booking->currency),
-                        'non_refundable' => $money($booking->non_refundable_amount, $booking->currency),
+                        'refundable' => $this->money($booking->refundable_amount, $booking->currency),
+                        'non_refundable' => $this->money($booking->non_refundable_amount, $booking->currency),
                     ]) }}
                 </div>
             </div>
@@ -167,7 +163,7 @@
         <div class="mx-auto flex max-w-3xl items-center gap-3 sm:block">
             <div class="min-w-0 flex-1 sm:hidden">
                 <div class="text-xs text-zinc-500">{{ __('booking.total') }}</div>
-                <div class="truncate text-sm font-semibold">{{ $money($booking->total_amount, $booking->currency) }}</div>
+                <div class="truncate text-sm font-semibold">{{ $this->money($booking->total_amount, $booking->currency) }}</div>
             </div>
 
             @if ($canPay && $canUseDemoDriver)

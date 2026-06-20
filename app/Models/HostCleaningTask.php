@@ -6,6 +6,7 @@ use Database\Factories\HostCleaningTaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HostCleaningTask extends Model
 {
@@ -61,5 +62,10 @@ class HostCleaningTask extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function hostCalendarEvents(): HasMany
+    {
+        return $this->hasMany(HostCalendarEvent::class, 'cleaning_task_id');
     }
 }

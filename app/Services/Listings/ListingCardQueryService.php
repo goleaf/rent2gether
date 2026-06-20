@@ -10,6 +10,7 @@ use App\Models\Favorite;
 use App\Models\SavedSearch;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Localization\SupportedContentLocales;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListingCardQueryService
@@ -94,13 +95,14 @@ class ListingCardQueryService
             'mobile_path',
             'full_path',
             'alt_text',
-            'caption_en',
-            'caption_ru',
             'sort_order',
             'is_primary',
             'is_cover',
             'status',
         ];
+        $mediaTranslations = fn ($query) => $query
+            ->select(['id', 'media_item_id', 'locale', 'caption'])
+            ->whereIn('locale', $locales);
         $amenitySelect = ['amenities.id', 'amenities.slug', 'amenities.category', 'amenities.status'];
         $ruleSelect = ['rules.id', 'rules.slug', 'rules.category', 'rules.status'];
         $roomCompatibilitySelect = [
@@ -189,7 +191,7 @@ class ListingCardQueryService
             'translations' => fn ($query) => $query
                 ->select(['id', 'sleeping_place_id', 'locale', 'title', 'summary'])
                 ->whereIn('locale', $locales),
-            'cardMedia' => fn ($query) => $query->select($mediaSelect),
+            'cardMedia' => fn ($query) => $query->select($mediaSelect)->with(['translations' => $mediaTranslations]),
             'amenities' => $amenities,
             'amenities.translations' => $amenityTranslations,
             'rules' => $rules,
@@ -242,7 +244,7 @@ class ListingCardQueryService
                     'translations' => fn ($translation) => $translation
                         ->select(['id', 'room_id', 'locale', 'title', 'summary'])
                         ->whereIn('locale', $locales),
-                    'cardMedia' => fn ($media) => $media->select($mediaSelect),
+                    'cardMedia' => fn ($media) => $media->select($mediaSelect)->with(['translations' => $mediaTranslations]),
                     'amenities' => $amenities,
                     'amenities.translations' => $amenityTranslations,
                     'rules' => $rules,
@@ -272,7 +274,7 @@ class ListingCardQueryService
                         ->select(['id', 'property_id', 'locale', 'title', 'summary'])
                         ->whereIn('locale', $locales),
                     'cityModel:id,name',
-                    'cardMedia' => fn ($media) => $media->select($mediaSelect),
+                    'cardMedia' => fn ($media) => $media->select($mediaSelect)->with(['translations' => $mediaTranslations]),
                     'amenities' => $amenities,
                     'amenities.translations' => $amenityTranslations,
                     'rules' => $rules,
@@ -335,10 +337,7 @@ class ListingCardQueryService
     private function translationLocales(ListingCardContext $context): array
     {
         return array_values(array_unique(array_filter([
-            $context->locale,
-            config('app.fallback_locale', 'en'),
-            'en',
-            'ru',
+            ...app(SupportedContentLocales::class)->preferred($context->locale),
         ])));
     }
 }

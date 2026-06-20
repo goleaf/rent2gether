@@ -156,6 +156,9 @@ class CreateReview extends Component
             'booking' => $booking,
             'isHostReview' => $this->reviewType === ReviewType::HostToGuest->value,
             'placeTitle' => $this->placeTitle($booking),
+            'ratingOptions' => $this->ratingOptions(),
+            'guestRatings' => $this->guestRatings(),
+            'hostRatings' => $this->hostRatings(),
         ])->layout('layouts.app', [
             'title' => $this->reviewType === ReviewType::HostToGuest->value
                 ? __('booking.review.host_title')
@@ -270,5 +273,47 @@ class CreateReview extends Component
             ?: $booking->sleepingPlace?->place_number
             ?: $booking->bed?->title
             ?: __('booking.payment_page.summary.unnamed_place');
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function ratingOptions(): array
+    {
+        return [5, 4, 3, 2, 1];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function guestRatings(): array
+    {
+        return [
+            'overallRating' => 'overall_rating',
+            'cleanlinessRating' => 'cleanliness_rating',
+            'safetyRating' => 'safety_rating',
+            'locationRating' => 'location_rating',
+            'accuracyRating' => 'accuracy_rating',
+            'sleepingPlaceComfortRating' => 'sleeping_place_comfort_rating',
+            'amenitiesRating' => 'amenities_rating',
+            'hostCommunicationRating' => 'host_communication_rating',
+            'neighborsRating' => 'neighbors_rating',
+            'valueRating' => 'value_rating',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function hostRatings(): array
+    {
+        return [
+            'overallRating' => 'overall_rating',
+            'ruleFollowingRating' => 'rule_following_rating',
+            'cleanlinessRating' => 'guest_cleanliness_rating',
+            'communicationRating' => 'communication_rating',
+            'punctualityRating' => 'punctuality_rating',
+            'respectRating' => 'respect_rating',
+        ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services\Rooms;
 
 use App\Models\Room;
+use App\Services\Localization\SupportedContentLocales;
 
 class RoomCompletionService
 {
@@ -26,7 +27,7 @@ class RoomCompletionService
             ['key' => 'access_storage', 'label' => __('room.completion.items.access_storage'), 'complete' => $room->accessDetails !== null],
             ['key' => 'condition', 'label' => __('room.completion.items.condition'), 'complete' => $room->conditionDetails !== null],
             ['key' => 'rules', 'label' => __('room.completion.items.rules'), 'complete' => filled($translation?->room_rules_text ?? $room->room_rules_text)],
-            ['key' => 'translations', 'label' => __('room.completion.items.translations'), 'complete' => $room->translations->whereIn('locale', ['en', 'ru'])->count() >= 2],
+            ['key' => 'translations', 'label' => __('room.completion.items.translations'), 'complete' => app(SupportedContentLocales::class)->hasAllTranslations($room->translations, ['title'])],
         ];
     }
 

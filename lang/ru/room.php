@@ -20,7 +20,7 @@ return [
             'access_storage' => 'Доступ и хранение',
             'condition' => 'Состояние',
             'rules' => 'Правила',
-            'translations' => 'Тексты на русском и английском',
+            'translations' => 'Локализованные тексты',
         ],
     ],
     'directions' => [
@@ -250,10 +250,20 @@ return [
         ],
     ],
     'validation_attributes' => [
-        'titleEn' => 'название комнаты на английском',
-        'titleRu' => 'название комнаты на русском',
         'roomType' => 'тип комнаты',
         'genderPolicy' => 'формат комнаты',
+    ],
+    'translation_fields' => [
+        'title' => 'Название комнаты (:language)',
+        'short_description' => 'Краткое описание (:language)',
+        'full_description' => 'Полное описание (:language)',
+    ],
+    'rule_translation_fields' => [
+        'room_rules_text' => 'Правила комнаты (:language)',
+        'quiet_hours_text' => 'Тихие часы (:language)',
+        'food_rules_text' => 'Правила еды (:language)',
+        'conflict_instructions' => 'Инструкции при конфликте (:language)',
+        'special_notes' => 'Особые заметки (:language)',
     ],
     'values' => [
         'area_square_meters' => ':count м²',

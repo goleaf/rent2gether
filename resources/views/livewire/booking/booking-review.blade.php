@@ -1,7 +1,3 @@
-@php
-    $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
-@endphp
-
 <div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-28 sm:px-6">
     <div class="space-y-2">
         <flux:button
@@ -95,7 +91,7 @@
                 </div>
                 <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
                     <div class="text-zinc-500">{{ __('booking.deposit') }}</div>
-                    <div class="font-medium">{{ $money($quote['deposit_amount'], $quote['currency']) }}</div>
+                    <div class="font-medium">{{ $this->money($quote['deposit_amount'], $quote['currency']) }}</div>
                 </div>
             </div>
 
@@ -103,7 +99,7 @@
                 @foreach($quote['line_items'] as $line)
                     <div class="flex items-start justify-between gap-3 {{ $line['type'] === 'total' ? 'border-t border-zinc-200 pt-2 text-base font-semibold dark:border-zinc-700' : '' }}">
                         <span>{{ __($line['label_key']) }}</span>
-                        <span class="shrink-0">{{ $money($line['amount'], $line['currency']) }}</span>
+                        <span class="shrink-0">{{ $this->money($line['amount'], $line['currency']) }}</span>
                     </div>
                 @endforeach
             </div>
@@ -112,8 +108,8 @@
                 <flux:callout.heading>{{ __('booking.flow.price.refund_title') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('booking.date_selector.price.refund_summary', [
-                        'refundable' => $money($quote['refundable_amount'], $quote['currency']),
-                        'non_refundable' => $money($quote['non_refundable_amount'], $quote['currency']),
+                        'refundable' => $this->money($quote['refundable_amount'], $quote['currency']),
+                        'non_refundable' => $this->money($quote['non_refundable_amount'], $quote['currency']),
                     ]) }}
                 </flux:callout.text>
             </flux:callout>
@@ -177,7 +173,7 @@
                 <div class="text-xs text-zinc-500">{{ __('booking.total') }}</div>
                 <div class="truncate text-sm font-semibold">
                     @if($quote)
-                        {{ $money($quote['total_amount'], $quote['currency']) }}
+                        {{ $this->money($quote['total_amount'], $quote['currency']) }}
                     @else
                         {{ __('booking.flow.price.pending') }}
                     @endif

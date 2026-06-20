@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Bed;
 use App\Services\CompatibilityService;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BedController extends Controller
@@ -36,6 +38,15 @@ class BedController extends Controller
             ? $compatibility->check(auth()->user(), $bed)
             : null;
 
-        return view('beds.show', compact('bed', 'blockedDates', 'compatibilityResult'));
+        $media = $bed->room->property->cardMedia;
+        $propertyAmenityLabels = collect($bed->room->property->amenities ?: [])
+            ->map(function (string $amenity): string {
+                $key = 'listing.legacy_amenities.'.Str::of($amenity)->snake()->toString();
+
+                return Lang::has($key) ? __($key) : __('listing.legacy_amenities.other');
+            })
+            ->all();
+
+        return view('beds.show', compact('bed', 'blockedDates', 'compatibilityResult', 'media', 'propertyAmenityLabels'));
     }
 }

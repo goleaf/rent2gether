@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Host\Rooms;
 
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Livewire\Host\Rooms\Concerns\HandlesRoomStep;
 use App\Models\Room;
 use Illuminate\Contracts\View\View;
@@ -10,74 +11,53 @@ use Livewire\Component;
 class RoomRulesStep extends Component
 {
     use HandlesRoomStep;
+    use ManagesLocalizedFormTranslations;
 
-    public string $roomRulesTextEn = '';
-
-    public string $roomRulesTextRu = '';
-
-    public string $quietHoursTextEn = '';
-
-    public string $quietHoursTextRu = '';
-
-    public string $foodRulesTextEn = '';
-
-    public string $foodRulesTextRu = '';
-
-    public string $conflictInstructionsEn = '';
-
-    public string $conflictInstructionsRu = '';
-
-    public string $specialNotesEn = '';
-
-    public string $specialNotesRu = '';
+    private const TRANSLATION_FIELDS = [
+        'room_rules_text',
+        'quiet_hours_text',
+        'food_rules_text',
+        'conflict_instructions',
+        'special_notes',
+    ];
 
     public function mount(Room $room): void
     {
         $this->mountRoom($room);
         $room->loadMissing('translations');
-        $en = $room->translations->firstWhere('locale', 'en');
-        $ru = $room->translations->firstWhere('locale', 'ru');
-
-        $this->roomRulesTextEn = (string) ($en?->room_rules_text ?? $room->room_rules_text ?? '');
-        $this->roomRulesTextRu = (string) ($ru?->room_rules_text ?? '');
-        $this->quietHoursTextEn = (string) ($en?->quiet_hours_text ?? '');
-        $this->quietHoursTextRu = (string) ($ru?->quiet_hours_text ?? '');
-        $this->foodRulesTextEn = (string) ($en?->food_rules_text ?? '');
-        $this->foodRulesTextRu = (string) ($ru?->food_rules_text ?? '');
-        $this->conflictInstructionsEn = (string) ($en?->conflict_instructions ?? '');
-        $this->conflictInstructionsRu = (string) ($ru?->conflict_instructions ?? '');
-        $this->specialNotesEn = (string) ($en?->special_notes ?? '');
-        $this->specialNotesRu = (string) ($ru?->special_notes ?? '');
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+        $this->loadLocalizedTranslations($room->translations, self::TRANSLATION_FIELDS);
     }
 
     public function save(): void
     {
         $validated = $this->validate([
-            'roomRulesTextEn' => ['nullable', 'string', 'max:5000'],
-            'roomRulesTextRu' => ['nullable', 'string', 'max:5000'],
-            'quietHoursTextEn' => ['nullable', 'string', 'max:2000'],
-            'quietHoursTextRu' => ['nullable', 'string', 'max:2000'],
-            'foodRulesTextEn' => ['nullable', 'string', 'max:2000'],
-            'foodRulesTextRu' => ['nullable', 'string', 'max:2000'],
-            'conflictInstructionsEn' => ['nullable', 'string', 'max:2000'],
-            'conflictInstructionsRu' => ['nullable', 'string', 'max:2000'],
-            'specialNotesEn' => ['nullable', 'string', 'max:2000'],
-            'specialNotesRu' => ['nullable', 'string', 'max:2000'],
-        ], attributes: __('room.validation_attributes'));
+            ...$this->localizedTranslationRules([
+                'room_rules_text' => ['nullable', 'string', 'max:5000'],
+                'quiet_hours_text' => ['nullable', 'string', 'max:2000'],
+                'food_rules_text' => ['nullable', 'string', 'max:2000'],
+                'conflict_instructions' => ['nullable', 'string', 'max:2000'],
+                'special_notes' => ['nullable', 'string', 'max:2000'],
+            ]),
+        ], attributes: array_merge(
+            (array) __('room.validation_attributes'),
+            $this->localizedValidationAttributes('room.rule_translation_fields', self::TRANSLATION_FIELDS),
+        ));
 
         $room = $this->room();
-        $room->update(['room_rules_text' => $validated['roomRulesTextEn'] ?: null]);
+        $room->update(['room_rules_text' => $this->firstTranslationValue('room_rules_text') ?: null]);
 
-        foreach (['en', 'ru'] as $locale) {
-            $suffix = $locale === 'en' ? 'En' : 'Ru';
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $validated['translations'][$locale] ?? [];
             $room->translations()->updateOrCreate(
                 ['locale' => $locale],
                 [
-                    'room_rules_text' => $validated['roomRulesText'.$suffix] ?: null,
-                    'quiet_hours_text' => $validated['quietHoursText'.$suffix] ?: null,
-                    'food_rules_text' => $validated['foodRulesText'.$suffix] ?: null,
-                    'conflict_instructions' => $validated['conflictInstructions'.$suffix] ?: null,
-                    'special_notes' => $validated['specialNotes'.$suffix] ?: null,
+                    'room_rules_text' => ($translation['room_rules_text'] ?? '') ?: null,
+                    'quiet_hours_text' => ($translation['quiet_hours_text'] ?? '') ?: null,
+                    'food_rules_text' => ($translation['food_rules_text'] ?? '') ?: null,
+                    'conflict_instructions' => ($translation['conflict_instructions'] ?? '') ?: null,
+                    'special_notes' => ($translation['special_notes'] ?? '') ?: null,
                 ],
             );
         }

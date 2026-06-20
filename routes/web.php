@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BedController;
+use App\Http\Controllers\ProfileIndexRedirectController;
 use App\Http\Controllers\SearchController;
 use App\Http\Middleware\SetLocale;
 use App\Livewire\Account\AccountSettingsPage;
@@ -18,6 +19,7 @@ use App\Livewire\Booking\BookingReview;
 use App\Livewire\Booking\CancelBooking;
 use App\Livewire\Booking\CreateBooking;
 use App\Livewire\Booking\PaymentPage;
+use App\Livewire\Bookings\CheckIn\GuestCheckInPage;
 use App\Livewire\Checkin\CheckIn;
 use App\Livewire\Checkin\CheckOut;
 use App\Livewire\Checkin\ProblemReport;
@@ -34,6 +36,7 @@ use App\Livewire\Host\HostOnboardingPage;
 use App\Livewire\Host\HostProfileEditPage;
 use App\Livewire\Host\Listings\CreateListingWizard;
 use App\Livewire\Host\ManageBooking;
+use App\Livewire\Host\Occupants\CurrentOccupantsPage;
 use App\Livewire\Host\Properties\PropertyAccessStep;
 use App\Livewire\Host\Properties\PropertyCompletionPanel;
 use App\Livewire\Host\Properties\PropertyConditionStep;
@@ -80,7 +83,6 @@ use App\Livewire\Shell\HostListingsPage;
 use App\Livewire\Shell\HostProfilePage;
 use App\Livewire\Shell\HostRequestsPage;
 use App\Livewire\Shell\MessagesPage;
-use App\Livewire\Shell\ProfilePage;
 use App\Livewire\Trips\BookingDetail;
 use App\Livewire\Trips\CurrentStay;
 use App\Livewire\Trips\TripList;
@@ -135,6 +137,7 @@ Route::prefix('{locale}')
             Route::get('/', TripList::class)->name('index');
             Route::get('/{booking}/payment', PaymentPage::class)->name('payment');
             Route::get('/{booking}/cancel', CancelBooking::class)->name('cancel');
+            Route::get('/{booking}/check-in', GuestCheckInPage::class)->name('check-in');
             Route::get('/{booking}', BookingDetail::class)->name('show');
         });
 
@@ -148,7 +151,7 @@ Route::prefix('{locale}')
         Route::get('/places/{sleepingPlace}/book', BookingReview::class)->name('places.book');
 
         Route::prefix('profile')->name('profile.')->group(function (): void {
-            Route::get('/', ProfilePage::class)->name('index');
+            Route::get('/', ProfileIndexRedirectController::class)->name('index');
             Route::get('/setup', ProfileSetupPage::class)->name('setup');
             Route::get('/preferences', GuestPreferenceEditPage::class)->name('preferences.edit');
             Route::get('/preferences/setup', GuestPreferenceWizardPage::class)->name('preferences.setup');
@@ -203,6 +206,7 @@ Route::prefix('{locale}')
                 ->whereIn('scope', ['drafts', 'hidden'])
                 ->name('listings.scope');
             Route::get('/calendar', HostCalendarPage::class)->name('calendar');
+            Route::get('/occupants', CurrentOccupantsPage::class)->name('occupants.index');
             Route::get('/requests', HostRequestsPage::class)->name('requests.index');
             Route::get('/profile', HostProfilePage::class)->name('profile');
             Route::get('/profile/onboarding', HostOnboardingPage::class)->name('profile.onboarding');

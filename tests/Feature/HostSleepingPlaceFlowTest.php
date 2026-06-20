@@ -45,12 +45,12 @@ class HostSleepingPlaceFlowTest extends TestCase
             ->set('currency', 'EUR')
             ->set('minNights', 2)
             ->set('requiresHostApproval', true)
-            ->set('titleEn', 'Lower bunk by the window')
-            ->set('titleRu', 'Нижняя кровать у окна')
-            ->set('descriptionEn', 'A quiet lower bunk with a socket and shelf.')
-            ->set('descriptionRu', 'Тихая нижняя кровать с розеткой и полкой.')
-            ->set('specialConditionsEn', 'Please keep the curtain open during cleaning.')
-            ->set('specialConditionsRu', 'Пожалуйста, оставляйте шторку открытой для уборки.')
+            ->set('translations.en.title', 'Lower bunk by the window')
+            ->set('translations.ru.title', 'Нижняя кровать у окна')
+            ->set('translations.en.description', 'A quiet lower bunk with a socket and shelf.')
+            ->set('translations.ru.description', 'Тихая нижняя кровать с розеткой и полкой.')
+            ->set('translations.en.special_conditions', 'Please keep the curtain open during cleaning.')
+            ->set('translations.ru.special_conditions', 'Пожалуйста, оставляйте шторку открытой для уборки.')
             ->call('publish')
             ->assertHasNoErrors()
             ->assertRedirect();
@@ -151,14 +151,14 @@ class HostSleepingPlaceFlowTest extends TestCase
             ->test(SleepingPlaceForm::class, ['room' => $room])
             ->set('displayName', '')
             ->set('basePricePerNight', -1)
-            ->set('titleEn', '')
-            ->set('titleRu', '')
+            ->set('translations.en.title', '')
+            ->set('translations.ru.title', '')
             ->call('publish')
             ->assertHasErrors([
                 'displayName' => 'required',
                 'basePricePerNight' => 'min',
-                'titleEn' => 'required',
-                'titleRu' => 'required',
+                'translations.en.title' => 'required',
+                'translations.ru.title' => 'required',
             ]);
 
         $this->assertDatabaseCount('sleeping_places', 0);

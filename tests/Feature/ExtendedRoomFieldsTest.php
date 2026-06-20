@@ -124,8 +124,8 @@ class ExtendedRoomFieldsTest extends TestCase
 
         Livewire::actingAs($host)
             ->test(RoomMainInfoStep::class, ['room' => $room])
-            ->set('titleEn', 'Quiet mixed room')
-            ->set('titleRu', 'Тихая смешанная комната')
+            ->set('translations.en.title', 'Quiet mixed room')
+            ->set('translations.ru.title', 'Тихая смешанная комната')
             ->set('roomNumber', '101')
             ->set('roomType', RoomType::Shared->value)
             ->set('livingFormat', 'long_stay')
@@ -184,12 +184,12 @@ class ExtendedRoomFieldsTest extends TestCase
 
         Livewire::actingAs($host)
             ->test(RoomRulesStep::class, ['room' => $room])
-            ->set('roomRulesTextEn', 'Keep quiet after 22:00 and use personal lamps at night.')
-            ->set('roomRulesTextRu', 'После 22:00 соблюдайте тишину и используйте личные лампы ночью.')
-            ->set('foodRulesTextEn', 'Food is stored in the kitchen only.')
-            ->set('foodRulesTextRu', 'Еду хранить только на кухне.')
-            ->set('conflictInstructionsEn', 'Message the host if someone takes your place.')
-            ->set('conflictInstructionsRu', 'Напишите хозяину, если кто-то занял ваше место.')
+            ->set('translations.en.room_rules_text', 'Keep quiet after 22:00 and use personal lamps at night.')
+            ->set('translations.ru.room_rules_text', 'После 22:00 соблюдайте тишину и используйте личные лампы ночью.')
+            ->set('translations.en.food_rules_text', 'Food is stored in the kitchen only.')
+            ->set('translations.ru.food_rules_text', 'Еду хранить только на кухне.')
+            ->set('translations.en.conflict_instructions', 'Message the host if someone takes your place.')
+            ->set('translations.ru.conflict_instructions', 'Напишите хозяину, если кто-то занял ваше место.')
             ->call('save')
             ->assertHasNoErrors();
 

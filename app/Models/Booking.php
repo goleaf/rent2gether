@@ -314,9 +314,29 @@ class Booking extends Model
         return $this->hasOne(CheckinRecord::class);
     }
 
+    public function checkIn(): HasOne
+    {
+        return $this->hasOne(BookingCheckIn::class);
+    }
+
+    public function bookingCheckIn(): HasOne
+    {
+        return $this->checkIn();
+    }
+
     public function checkoutRecord(): HasOne
     {
         return $this->hasOne(CheckoutRecord::class);
+    }
+
+    public function checkOut(): HasOne
+    {
+        return $this->hasOne(BookingCheckOut::class);
+    }
+
+    public function bookingCheckOut(): HasOne
+    {
+        return $this->checkOut();
     }
 
     public function complaints(): HasMany
@@ -332,6 +352,36 @@ class Booking extends Model
     public function occupantSnapshot(): HasOne
     {
         return $this->hasOne(RoomOccupantSnapshot::class);
+    }
+
+    public function hostCalendarEvents(): HasMany
+    {
+        return $this->hasMany(HostCalendarEvent::class);
+    }
+
+    public function hostCalendarNotes(): HasMany
+    {
+        return $this->hasMany(HostCalendarNote::class);
+    }
+
+    public function hostCurrentStaySnapshot(): HasOne
+    {
+        return $this->hasOne(HostCurrentStaySnapshot::class);
+    }
+
+    public function hostGuestStayNotes(): HasMany
+    {
+        return $this->hasMany(HostGuestStayNote::class);
+    }
+
+    public function hostGuestStayFlags(): HasMany
+    {
+        return $this->hasMany(HostGuestStayFlag::class);
+    }
+
+    public function reviewRequests(): HasMany
+    {
+        return $this->hasMany(BookingReviewRequest::class);
     }
 
     public function guestReview(): ?Review

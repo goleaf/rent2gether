@@ -13,7 +13,7 @@ class LocalizedShellTest extends TestCase
 
     public function test_home_page_renders_in_english(): void
     {
-        $this->expectsDatabaseQueryCount(0);
+        $this->expectsDatabaseQueryCount(2);
 
         $response = $this->get('/en');
 

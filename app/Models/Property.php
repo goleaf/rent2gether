@@ -252,6 +252,26 @@ class Property extends Model
         return $this->hasMany(ListingPublicationCheck::class);
     }
 
+    public function hostCalendarEvents(): HasMany
+    {
+        return $this->hasMany(HostCalendarEvent::class);
+    }
+
+    public function hostCalendarNotes(): HasMany
+    {
+        return $this->hasMany(HostCalendarNote::class);
+    }
+
+    public function hostCurrentStaySnapshots(): HasMany
+    {
+        return $this->hasMany(HostCurrentStaySnapshot::class);
+    }
+
+    public function hostGuestStayNotes(): HasMany
+    {
+        return $this->hasMany(HostGuestStayNote::class);
+    }
+
     public function beds(): HasManyThrough
     {
         return $this->hasManyThrough(Bed::class, Room::class);

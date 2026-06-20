@@ -85,17 +85,29 @@ class RulePicker extends Component
     }
 
     /**
-     * @return list<array{category:string,category_label:string,options:list<array{id:int,slug:string,category:string,label:string,description:?string}>}>
+     * @return list<array{category:string,category_label:string,options:list<array{id:int,slug:string,category:string,label:string,description:?string,selected:bool}>}>
      */
     #[Computed]
     public function groups(): array
     {
-        return app(AmenityRuleLookupService::class)->ruleGroups(
+        $selected = $this->integerIds($this->selectedIds);
+
+        return collect(app(AmenityRuleLookupService::class)->ruleGroups(
             locale: app()->getLocale(),
             search: $this->search,
             categories: $this->categoriesForContext(),
             limit: $this->limit,
-        );
+        ))
+            ->map(fn (array $group): array => [
+                ...$group,
+                'options' => collect($group['options'])
+                    ->map(fn (array $option): array => [
+                        ...$option,
+                        'selected' => in_array((int) $option['id'], $selected, true),
+                    ])
+                    ->all(),
+            ])
+            ->all();
     }
 
     public function render(): View

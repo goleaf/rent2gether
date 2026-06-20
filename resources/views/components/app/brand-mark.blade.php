@@ -1,9 +1,3 @@
-@props(['size' => 'base'])
-
-@php
-    $classes = $size === 'sm' ? 'size-6 text-[0.625rem]' : 'size-8 text-xs';
-@endphp
-
 <span
     {{ $attributes->class([
         $classes,

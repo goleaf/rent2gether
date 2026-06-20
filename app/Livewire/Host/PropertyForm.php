@@ -7,6 +7,8 @@ use App\Actions\Media\StoreMediaItemAction;
 use App\Enums\PropertyRentalUnitType;
 use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
+use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\MediaItem;
@@ -26,6 +28,8 @@ use Livewire\WithFileUploads;
 
 class PropertyForm extends Component
 {
+    use BuildsLocalizedMediaCaptions;
+    use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 
     private const STEP_COUNT = 9;
@@ -36,6 +40,15 @@ class PropertyForm extends Component
         'kitchenPhoto' => 'kitchen',
         'bathroomPhoto' => 'bathroom',
         'commonAreaPhoto' => 'common_area',
+    ];
+
+    private const TRANSLATION_FIELDS = [
+        'title',
+        'summary',
+        'description',
+        'what_to_know',
+        'suitable_for',
+        'not_suitable_for',
     ];
 
     public ?int $propertyId = null;
@@ -102,30 +115,6 @@ class PropertyForm extends Component
 
     public string $safetyLevel = '';
 
-    public string $titleEn = '';
-
-    public string $titleRu = '';
-
-    public string $summaryEn = '';
-
-    public string $summaryRu = '';
-
-    public string $descriptionEn = '';
-
-    public string $descriptionRu = '';
-
-    public string $whatToKnowEn = '';
-
-    public string $whatToKnowRu = '';
-
-    public string $suitableForEn = '';
-
-    public string $suitableForRu = '';
-
-    public string $notSuitableForEn = '';
-
-    public string $notSuitableForRu = '';
-
     /** @var list<int> */
     public array $amenityIds = [];
 
@@ -144,6 +133,8 @@ class PropertyForm extends Component
 
     public function mount(?Property $property = null): void
     {
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+
         if (! $property?->exists) {
             return;
         }
@@ -194,25 +185,7 @@ class PropertyForm extends Component
         $this->amenityIds = $property->getRelation('amenities')->pluck('id')->map(fn (int $id): int => $id)->all();
         $this->ruleIds = $property->getRelation('rules')->pluck('id')->map(fn (int $id): int => $id)->all();
 
-        foreach ($property->translations as $translation) {
-            if ($translation->locale === 'en') {
-                $this->titleEn = $translation->title;
-                $this->summaryEn = $translation->summary ?: '';
-                $this->descriptionEn = $translation->description ?: '';
-                $this->whatToKnowEn = $translation->what_to_know ?: '';
-                $this->suitableForEn = $translation->suitable_for ?: '';
-                $this->notSuitableForEn = $translation->not_suitable_for ?: '';
-            }
-
-            if ($translation->locale === 'ru') {
-                $this->titleRu = $translation->title;
-                $this->summaryRu = $translation->summary ?: '';
-                $this->descriptionRu = $translation->description ?: '';
-                $this->whatToKnowRu = $translation->what_to_know ?: '';
-                $this->suitableForRu = $translation->suitable_for ?: '';
-                $this->notSuitableForRu = $translation->not_suitable_for ?: '';
-            }
-        }
+        $this->loadLocalizedTranslations($property->translations, self::TRANSLATION_FIELDS);
     }
 
     public function updatedCountryQuery(): void
@@ -334,13 +307,12 @@ class PropertyForm extends Component
                 'mobile_path',
                 'full_path',
                 'alt_text',
-                'caption_en',
-                'caption_ru',
                 'sort_order',
                 'is_primary',
                 'is_cover',
                 'status',
             ])
+            ->with(['translations:id,media_item_id,locale,caption'])
             ->whereIn('collection', array_values(self::PHOTO_FIELDS))
             ->active()
             ->orderByDesc('is_primary')
@@ -498,20 +470,14 @@ class PropertyForm extends Component
                 'cleanlinessLevel' => ['nullable', ValidationRule::in(['low', 'moderate', 'good', 'high'])],
                 'safetyLevel' => ['nullable', ValidationRule::in(['low', 'moderate', 'good', 'high'])],
             ],
-            5 => [
-                'titleEn' => ['required', 'string', 'max:255'],
-                'titleRu' => ['required', 'string', 'max:255'],
-                'summaryEn' => ['nullable', 'string', 'max:500'],
-                'summaryRu' => ['nullable', 'string', 'max:500'],
-                'descriptionEn' => ['nullable', 'string', 'max:4000'],
-                'descriptionRu' => ['nullable', 'string', 'max:4000'],
-                'whatToKnowEn' => ['nullable', 'string', 'max:1000'],
-                'whatToKnowRu' => ['nullable', 'string', 'max:1000'],
-                'suitableForEn' => ['nullable', 'string', 'max:1000'],
-                'suitableForRu' => ['nullable', 'string', 'max:1000'],
-                'notSuitableForEn' => ['nullable', 'string', 'max:1000'],
-                'notSuitableForRu' => ['nullable', 'string', 'max:1000'],
-            ],
+            5 => $this->localizedTranslationRules([
+                'title' => ['required', 'string', 'max:255'],
+                'summary' => ['nullable', 'string', 'max:500'],
+                'description' => ['nullable', 'string', 'max:4000'],
+                'what_to_know' => ['nullable', 'string', 'max:1000'],
+                'suitable_for' => ['nullable', 'string', 'max:1000'],
+                'not_suitable_for' => ['nullable', 'string', 'max:1000'],
+            ]),
             6 => [
                 'amenityIds' => ['array'],
                 'amenityIds.*' => ['integer', 'exists:amenities,id'],
@@ -554,7 +520,10 @@ class PropertyForm extends Component
     {
         $attributes = app('translator')->get('host.property_wizard.validation_attributes');
 
-        return is_array($attributes) ? $attributes : [];
+        return array_merge(
+            is_array($attributes) ? $attributes : [],
+            $this->localizedValidationAttributes('host.property_wizard.translation_fields', self::TRANSLATION_FIELDS),
+        );
     }
 
     private function persistProperty(string $status): Property
@@ -563,7 +532,7 @@ class PropertyForm extends Component
         $country = $this->countryId ? Country::query()->find($this->countryId) : null;
         $city = $this->cityId ? City::query()->with('region')->find($this->cityId) : null;
         $region = $this->regionModel($country, $city);
-        $fallbackTitle = $this->titleEn ?: $this->titleRu ?: $property?->title ?: __('host.property_wizard.draft_title');
+        $fallbackTitle = $this->firstTranslationValue('title') ?: $property?->title ?: __('host.property_wizard.draft_title');
         $countryName = $country?->localizedName() ?: $this->countryQuery ?: $property?->country ?: '';
         $cityName = $city?->localizedName() ?: $this->cityQuery ?: $property?->city ?: '';
         $approximateLatitude = $this->useApproximatePublicLocation ? ($city?->latitude ?: $property?->approximate_latitude) : null;
@@ -575,7 +544,7 @@ class PropertyForm extends Component
             'rental_unit_type' => $this->rentalUnitType ?: PropertyRentalUnitType::SleepingPlace->value,
             'type' => $this->propertyType ?: PropertyType::Apartment->value,
             'title' => $fallbackTitle,
-            'description' => $this->descriptionEn ?: $this->descriptionRu ?: $property?->description,
+            'description' => $this->firstTranslationValue('description') ?: $property?->description,
             'country_id' => $country?->id,
             'region_id' => $region?->id,
             'region_name' => $this->regionName ?: $region?->name,
@@ -654,27 +623,10 @@ class PropertyForm extends Component
 
     private function syncTranslations(Property $property): void
     {
-        $translations = [
-            'en' => [
-                'title' => $this->titleEn,
-                'summary' => $this->summaryEn,
-                'description' => $this->descriptionEn,
-                'what_to_know' => $this->whatToKnowEn,
-                'suitable_for' => $this->suitableForEn,
-                'not_suitable_for' => $this->notSuitableForEn,
-            ],
-            'ru' => [
-                'title' => $this->titleRu,
-                'summary' => $this->summaryRu,
-                'description' => $this->descriptionRu,
-                'what_to_know' => $this->whatToKnowRu,
-                'suitable_for' => $this->suitableForRu,
-                'not_suitable_for' => $this->notSuitableForRu,
-            ],
-        ];
-
-        foreach ($translations as $locale => $translation) {
-            $title = trim((string) $translation['title']);
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $this->translations[$locale] ?? [];
+            $title = trim((string) ($translation['title'] ?? ''));
 
             if ($title === '') {
                 continue;
@@ -718,8 +670,7 @@ class PropertyForm extends Component
                 file: $photo,
                 user: auth()->user(),
                 collection: $collection,
-                captionEn: __('host.property_wizard.photos.'.$collection, [], 'en'),
-                captionRu: __('host.property_wizard.photos.'.$collection, [], 'ru'),
+                captions: $this->localizedCaptions('host.property_wizard.photos.'.$collection),
                 makePrimary: $collection === 'entrance',
             );
 

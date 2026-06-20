@@ -1,8 +1,3 @@
-@php
-    $money = static fn (float|int|string $amount, string $currency): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
-    $hasAdjustedDates = $quote && collect($quote['date_prices'])->contains(fn (array $datePrice): bool => $datePrice['source'] !== 'base');
-@endphp
-
 <div class="space-y-4">
     <flux:card class="space-y-4">
         <div class="space-y-1">
@@ -107,15 +102,15 @@
                 @foreach($quote['line_items'] as $line)
                     <div class="flex items-start justify-between gap-3 {{ $line['type'] === 'total' ? 'border-t border-zinc-200 pt-2 text-base font-semibold dark:border-zinc-700' : '' }}">
                         <span>{{ __($line['label_key']) }}</span>
-                        <span class="shrink-0">{{ $money($line['amount'], $line['currency']) }}</span>
+                        <span class="shrink-0">{{ $this->money($line['amount'], $line['currency']) }}</span>
                     </div>
                 @endforeach
             </div>
 
             <div class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-950/40 dark:text-green-200">
                 {{ __('booking.date_selector.price.refund_summary', [
-                    'refundable' => $money($quote['refundable_amount'], $quote['currency']),
-                    'non_refundable' => $money($quote['non_refundable_amount'], $quote['currency']),
+                    'refundable' => $this->money($quote['refundable_amount'], $quote['currency']),
+                    'non_refundable' => $this->money($quote['non_refundable_amount'], $quote['currency']),
                 ]) }}
             </div>
         </flux:card>
@@ -131,7 +126,7 @@
                                     {{ \Carbon\CarbonImmutable::parse($datePrice['date'])->translatedFormat('d M, l') }}
                                     <span class="block text-xs text-zinc-500">{{ __('booking.date_selector.date_prices.sources.'.$datePrice['source']) }}</span>
                                 </span>
-                                <span class="font-medium">{{ $money($datePrice['price'], $quote['currency']) }}</span>
+                                <span class="font-medium">{{ $this->money($datePrice['price'], $quote['currency']) }}</span>
                             </div>
                         @endif
                     @endforeach

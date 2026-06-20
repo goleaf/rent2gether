@@ -13,8 +13,7 @@ return [
     ],
     'validation_attributes' => [
         'photo' => 'photo',
-        'captionEn' => 'English caption',
-        'captionRu' => 'Russian caption',
+        'caption' => ':language caption',
     ],
     'manager' => [
         'title' => 'Photos',
@@ -23,8 +22,7 @@ return [
         'file_helper' => 'JPG, PNG, or WebP. Up to 4 MB.',
         'uploading' => 'Uploading',
         'preview_alt' => 'Selected photo preview',
-        'caption_en' => 'Caption in English',
-        'caption_ru' => 'Caption in Russian',
+        'caption' => ':language caption',
         'warning' => 'Use clear photos that show the real place. We will use smaller images on mobile cards.',
         'primary' => 'Primary',
         'dimensions' => ':width x :height px',

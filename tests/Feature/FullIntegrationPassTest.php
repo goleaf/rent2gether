@@ -652,12 +652,12 @@ class FullIntegrationPassTest extends TestCase
             ->set('cleanlinessLevel', 'high')
             ->set('safetyLevel', 'good')
             ->call('nextStep')
-            ->set('titleEn', 'Integration host apartment')
-            ->set('titleRu', 'Квартира интеграционного хозяина')
-            ->set('summaryEn', 'Small shared stay with clear rules.')
-            ->set('summaryRu', 'Небольшое общее жильё с понятными правилами.')
-            ->set('descriptionEn', 'Guests book exact sleeping places.')
-            ->set('descriptionRu', 'Гости бронируют точные спальные места.')
+            ->set('translations.en.title', 'Integration host apartment')
+            ->set('translations.ru.title', 'Квартира интеграционного хозяина')
+            ->set('translations.en.summary', 'Small shared stay with clear rules.')
+            ->set('translations.ru.summary', 'Небольшое общее жильё с понятными правилами.')
+            ->set('translations.en.description', 'Guests book exact sleeping places.')
+            ->set('translations.ru.description', 'Гости бронируют точные спальные места.')
             ->call('nextStep')
             ->set('amenityIds', $amenityIds)
             ->call('nextStep')
@@ -677,8 +677,8 @@ class FullIntegrationPassTest extends TestCase
             ->set('status', RoomStatus::Active->value)
             ->set('bedsCount', 1)
             ->set('maxGuests', 1)
-            ->set('descriptionEn', 'A quiet shared room.')
-            ->set('descriptionRu', 'Тихая общая комната.')
+            ->set('translations.en.description', 'A quiet shared room.')
+            ->set('translations.ru.description', 'Тихая общая комната.')
             ->call('publish')
             ->assertHasNoErrors();
 
@@ -704,10 +704,10 @@ class FullIntegrationPassTest extends TestCase
             ->set('maxNights', 20)
             ->set('instantBookingEnabled', false)
             ->set('requiresHostApproval', true)
-            ->set('titleEn', 'Integration lower bunk')
-            ->set('titleRu', 'Интеграционное нижнее место')
-            ->set('descriptionEn', 'Exact lower bunk for the integration path.')
-            ->set('descriptionRu', 'Точное нижнее место для интеграционного пути.')
+            ->set('translations.en.title', 'Integration lower bunk')
+            ->set('translations.ru.title', 'Интеграционное нижнее место')
+            ->set('translations.en.description', 'Exact lower bunk for the integration path.')
+            ->set('translations.ru.description', 'Точное нижнее место для интеграционного пути.')
             ->set('ruleIds', $ruleIds)
             ->call('publish')
             ->assertHasNoErrors();
@@ -719,15 +719,19 @@ class FullIntegrationPassTest extends TestCase
 
     private function storeListingPhoto(User $host, string $ownerType, int $ownerId, string $collection, string $filename): void
     {
-        Livewire::actingAs($host)
+        $component = Livewire::actingAs($host)
             ->test(ManageMedia::class, [
                 'ownerType' => $ownerType,
                 'ownerId' => $ownerId,
                 'collection' => $collection,
             ])
-            ->set('photo', UploadedFile::fake()->image($filename, 1000, 700)->size(250))
-            ->set('captionEn', 'Demo '.$filename)
-            ->set('captionRu', 'Демо '.$filename)
+            ->set('photo', UploadedFile::fake()->image($filename, 1000, 700)->size(250));
+
+        foreach (config('localization.supported_locales', []) as $locale) {
+            $component->set('captions.'.$locale, 'Demo '.$filename);
+        }
+
+        $component
             ->call('savePhoto')
             ->assertHasNoErrors();
     }

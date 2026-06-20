@@ -11,13 +11,18 @@
             </flux:callout>
         @endif
 
-        <div class="grid gap-4 sm:grid-cols-2">
-            @foreach(['roomRulesTextEn', 'roomRulesTextRu', 'quietHoursTextEn', 'quietHoursTextRu', 'foodRulesTextEn', 'foodRulesTextRu', 'conflictInstructionsEn', 'conflictInstructionsRu', 'specialNotesEn', 'specialNotesRu'] as $field)
-                <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
-                    <flux:textarea rows="4" wire:model.blur="{{ $field }}" />
-                    <flux:error name="{{ $field }}" />
-                </flux:field>
+        <div class="grid gap-4">
+            @foreach($this->contentLocales() as $locale)
+                <div class="grid gap-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700 sm:grid-cols-2">
+                    <flux:heading size="sm" class="sm:col-span-2">{{ $locale['name'] }}</flux:heading>
+                    @foreach(['room_rules_text', 'quiet_hours_text', 'food_rules_text', 'conflict_instructions', 'special_notes'] as $field)
+                        <flux:field>
+                            <flux:label>{{ __('room.rule_translation_fields.'.$field, ['language' => $locale['name']]) }}</flux:label>
+                            <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.{{ $field }}" />
+                            <flux:error name="translations.{{ $locale['code'] }}.{{ $field }}" />
+                        </flux:field>
+                    @endforeach
+                </div>
             @endforeach
         </div>
     </flux:card>

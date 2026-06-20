@@ -154,4 +154,4 @@ Primary coverage:
 php artisan test tests/Feature/ExtendedPropertyFieldsTest.php --compact
 ```
 
-This verifies detail relationships, cascade deletes, key indexes, English/Russian translation fields, host step updates, owner authorization, privacy-safe public summaries, confirmed access instructions, condition warnings, and private access data hidden before booking.
+This verifies detail relationships, cascade deletes, key indexes, supported-locale translation fields, host step updates, owner authorization, privacy-safe public summaries, confirmed access instructions, condition warnings, and private access data hidden before booking.

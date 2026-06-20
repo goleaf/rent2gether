@@ -14,7 +14,6 @@
             {{-- Left column: details --}}
             <div class="lg:col-span-2 space-y-6">
 
-                @php($media = $bed->room->property->cardMedia)
                 @if($media)
                     <img
                         src="{{ $media->imageUrl('mobile') }}"
@@ -151,15 +150,14 @@
                 @endif
 
                 {{-- Property amenities --}}
-                @if($bed->room->property->amenities)
+                @if($propertyAmenityLabels)
                     <flux:separator />
                     <div class="space-y-3">
                         <flux:heading size="sm">{{ __('listing.bed.property_amenities') }}</flux:heading>
                         <div class="flex flex-wrap gap-2">
-                            @foreach($bed->room->property->amenities as $amenity)
-                                @php($amenityKey = 'listing.legacy_amenities.'.\Illuminate\Support\Str::of((string) $amenity)->snake()->toString())
+                            @foreach($propertyAmenityLabels as $amenityLabel)
                                 <flux:badge color="blue" size="sm">
-                                    {{ \Illuminate\Support\Facades\Lang::has($amenityKey) ? __($amenityKey) : __('listing.legacy_amenities.other') }}
+                                    {{ $amenityLabel }}
                                 </flux:badge>
                             @endforeach
                         </div>

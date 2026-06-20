@@ -28,6 +28,8 @@ class BedCard extends Component
 
     public function render(): View
     {
-        return view('livewire.search.bed-card');
+        return view('livewire.search.bed-card', [
+            'media' => $this->bed->room->property->cardMedia,
+        ]);
     }
 }

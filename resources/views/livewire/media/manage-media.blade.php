@@ -40,16 +40,13 @@
             @endif
 
             <div class="grid gap-3 sm:grid-cols-2">
-                <flux:field>
-                    <flux:label>{{ __('media.manager.caption_en') }}</flux:label>
-                    <flux:input wire:model.blur="captionEn" maxlength="160" />
-                    <flux:error name="captionEn" />
-                </flux:field>
-                <flux:field>
-                    <flux:label>{{ __('media.manager.caption_ru') }}</flux:label>
-                    <flux:input wire:model.blur="captionRu" maxlength="160" />
-                    <flux:error name="captionRu" />
-                </flux:field>
+                @foreach($this->contentLocales() as $locale)
+                    <flux:field wire:key="media-caption-{{ $locale['code'] }}">
+                        <flux:label>{{ __('media.manager.caption', ['language' => $locale['name']]) }}</flux:label>
+                        <flux:input wire:model.blur="captions.{{ $locale['code'] }}" maxlength="160" />
+                        <flux:error name="captions.{{ $locale['code'] }}" />
+                    </flux:field>
+                @endforeach
             </div>
 
             <flux:button type="button" variant="primary" class="w-full" wire:click="savePhoto" wire:loading.attr="disabled" wire:target="savePhoto,photo">

@@ -13,8 +13,7 @@ return [
     ],
     'validation_attributes' => [
         'photo' => 'фото',
-        'captionEn' => 'подпись на английском',
-        'captionRu' => 'подпись на русском',
+        'caption' => 'подпись: :language',
     ],
     'manager' => [
         'title' => 'Фото',
@@ -23,8 +22,7 @@ return [
         'file_helper' => 'JPG, PNG или WebP. До 4 МБ.',
         'uploading' => 'Загружаем',
         'preview_alt' => 'Предпросмотр выбранного фото',
-        'caption_en' => 'Подпись на английском',
-        'caption_ru' => 'Подпись на русском',
+        'caption' => 'Подпись: :language',
         'warning' => 'Используйте понятные фото реального места. В мобильных карточках мы покажем облегчённые изображения.',
         'primary' => 'Главное',
         'dimensions' => ':width x :height px',

@@ -6,6 +6,8 @@ use App\Actions\Media\DeleteMediaItemAction;
 use App\Actions\Media\StoreMediaItemAction;
 use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
+use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Models\MediaItem;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -19,6 +21,8 @@ use Livewire\WithFileUploads;
 
 class SleepingPlaceForm extends Component
 {
+    use BuildsLocalizedMediaCaptions;
+    use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 
     private const STEP_COUNT = 7;
@@ -26,6 +30,12 @@ class SleepingPlaceForm extends Component
     private const PHOTO_FIELDS = [
         'exactPhoto' => 'exact_place',
         'detailPhoto' => 'detail',
+    ];
+
+    private const TRANSLATION_FIELDS = [
+        'title',
+        'description',
+        'special_conditions',
     ];
 
     public ?int $roomId = null;
@@ -132,18 +142,6 @@ class SleepingPlaceForm extends Component
 
     public bool $extensionsAllowed = true;
 
-    public string $titleEn = '';
-
-    public string $titleRu = '';
-
-    public string $descriptionEn = '';
-
-    public string $descriptionRu = '';
-
-    public string $specialConditionsEn = '';
-
-    public string $specialConditionsRu = '';
-
     /** @var list<int> */
     public array $ruleIds = [];
 
@@ -153,6 +151,8 @@ class SleepingPlaceForm extends Component
 
     public function mount(Room $room, ?SleepingPlace $sleepingPlace = null): void
     {
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+
         $room->loadMissing('property');
 
         abort_unless($room->property?->isOwnedBy(auth()->user()), 403);
@@ -220,19 +220,7 @@ class SleepingPlaceForm extends Component
         $this->extensionsAllowed = (bool) $sleepingPlace->extensions_allowed;
         $this->ruleIds = $sleepingPlace->getRelation('rules')->pluck('id')->map(fn (int $id): int => $id)->all();
 
-        foreach ($sleepingPlace->translations as $translation) {
-            if ($translation->locale === 'en') {
-                $this->titleEn = $translation->title;
-                $this->descriptionEn = $translation->description ?: '';
-                $this->specialConditionsEn = $translation->special_conditions ?: '';
-            }
-
-            if ($translation->locale === 'ru') {
-                $this->titleRu = $translation->title;
-                $this->descriptionRu = $translation->description ?: '';
-                $this->specialConditionsRu = $translation->special_conditions ?: '';
-            }
-        }
+        $this->loadLocalizedTranslations($sleepingPlace->translations, self::TRANSLATION_FIELDS);
     }
 
     public function nextStep(): void
@@ -299,13 +287,12 @@ class SleepingPlaceForm extends Component
                 'mobile_path',
                 'full_path',
                 'alt_text',
-                'caption_en',
-                'caption_ru',
                 'sort_order',
                 'is_primary',
                 'is_cover',
                 'status',
             ])
+            ->with(['translations:id,media_item_id,locale,caption'])
             ->whereIn('collection', array_values(self::PHOTO_FIELDS))
             ->active()
             ->orderByDesc('is_primary')
@@ -395,7 +382,7 @@ class SleepingPlaceForm extends Component
             [
                 'key' => 'title',
                 'label' => __('host.sleeping_place_wizard.readiness.title_field'),
-                'done' => trim($this->titleEn) !== '' && trim($this->titleRu) !== '',
+                'done' => $this->hasEveryLocaleValue('title'),
             ],
             [
                 'key' => 'exact_photo',
@@ -515,14 +502,11 @@ class SleepingPlaceForm extends Component
                 'requiresHostApproval' => ['boolean'],
                 'extensionsAllowed' => ['boolean'],
             ],
-            5 => [
-                'titleEn' => ['required', 'string', 'max:255'],
-                'titleRu' => ['required', 'string', 'max:255'],
-                'descriptionEn' => ['nullable', 'string', 'max:4000'],
-                'descriptionRu' => ['nullable', 'string', 'max:4000'],
-                'specialConditionsEn' => ['nullable', 'string', 'max:2000'],
-                'specialConditionsRu' => ['nullable', 'string', 'max:2000'],
-            ],
+            5 => $this->localizedTranslationRules([
+                'title' => ['required', 'string', 'max:255'],
+                'description' => ['nullable', 'string', 'max:4000'],
+                'special_conditions' => ['nullable', 'string', 'max:2000'],
+            ]),
             6 => [
                 'ruleIds' => ['array'],
                 'ruleIds.*' => ['integer', 'exists:rules,id'],
@@ -561,13 +545,16 @@ class SleepingPlaceForm extends Component
     {
         $attributes = app('translator')->get('host.sleeping_place_wizard.validation_attributes');
 
-        return is_array($attributes) ? $attributes : [];
+        return array_merge(
+            is_array($attributes) ? $attributes : [],
+            $this->localizedValidationAttributes('host.sleeping_place_wizard.translation_fields', self::TRANSLATION_FIELDS),
+        );
     }
 
     private function persistSleepingPlace(string $status): SleepingPlace
     {
         $room = $this->room;
-        $displayName = $this->displayName ?: $this->titleEn ?: $this->titleRu ?: __('host.sleeping_places.default_name');
+        $displayName = $this->displayName ?: $this->firstTranslationValue('title') ?: __('host.sleeping_places.default_name');
         $basePrice = $this->basePricePerNight ?? 0;
 
         $data = [
@@ -655,21 +642,10 @@ class SleepingPlaceForm extends Component
 
     private function syncTranslations(SleepingPlace $sleepingPlace): void
     {
-        $translations = [
-            'en' => [
-                'title' => $this->titleEn ?: $this->displayName,
-                'description' => $this->descriptionEn,
-                'special_conditions' => $this->specialConditionsEn,
-            ],
-            'ru' => [
-                'title' => $this->titleRu ?: $this->displayName,
-                'description' => $this->descriptionRu,
-                'special_conditions' => $this->specialConditionsRu,
-            ],
-        ];
-
-        foreach ($translations as $locale => $translation) {
-            $title = $this->blankToNull($translation['title']);
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $this->translations[$locale] ?? [];
+            $title = $this->blankToNull($translation['title'] ?? '') ?: $this->blankToNull($this->displayName);
 
             if (! $title) {
                 continue;
@@ -712,8 +688,7 @@ class SleepingPlaceForm extends Component
                 file: $photo,
                 user: auth()->user(),
                 collection: $collection,
-                captionEn: __('host.sleeping_place_wizard.photos.'.$collection, [], 'en'),
-                captionRu: __('host.sleeping_place_wizard.photos.'.$collection, [], 'ru'),
+                captions: $this->localizedCaptions('host.sleeping_place_wizard.photos.'.$collection),
                 makePrimary: $collection === 'exact_place',
             );
 

@@ -14,6 +14,7 @@ use App\Services\PricingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Number;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -233,6 +234,11 @@ class BookingReview extends Component
                 : __('booking.flow.mode.request'),
             'profileChecklist' => $this->profileChecklist(),
         ])->layout('layouts.app', ['title' => __('booking.flow.title')]);
+    }
+
+    public function money(float|int|string $amount, string $currency): string
+    {
+        return Number::currency((float) $amount, $currency, app()->getLocale());
     }
 
     private function place(): SleepingPlace

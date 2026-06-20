@@ -75,10 +75,14 @@ class HostListingsDashboardTest extends TestCase
     public function test_readiness_and_tips_are_calculated(): void
     {
         app()->setLocale('en');
+        config([
+            'localization.supported_locales' => ['en', 'ru', 'de'],
+            'localization.locale_names.de' => 'German',
+        ]);
 
         $incompleteHost = User::factory()->create(['is_host' => true]);
         $completeHost = User::factory()->create(['is_host' => true]);
-        $incomplete = $this->createListing($incompleteHost, propertyTitle: 'Needs work home', placeTitle: 'Needs work bed', withRussianTranslation: false);
+        $incomplete = $this->createListing($incompleteHost, propertyTitle: 'Needs work home', placeTitle: 'Needs work bed', missingPropertyTranslationLocales: ['ru', 'de']);
         $complete = $this->createListing($completeHost, propertyTitle: 'Ready home', placeTitle: 'Ready lower bed', complete: true);
 
         $incompleteCards = collect(app(HostListingDashboardService::class)->propertyCards($incompleteHost));
@@ -87,9 +91,17 @@ class HostListingsDashboardTest extends TestCase
         $incompleteCard = $incompleteCards->firstWhere('id', $incomplete['property']->id);
         $completeCard = $completeCards->firstWhere('id', $complete['property']->id);
 
-        $this->assertSame(45, $incompleteCard['readiness']);
-        $this->assertContains('exact_sleeping_place_photo', array_column($incompleteCard['tips'], 'key'));
-        $this->assertContains('complete_ru', array_column($incompleteCard['tips'], 'key'));
+        $incompleteTipKeys = array_column($incompleteCard['tips'], 'key');
+
+        $this->assertSame(36, $incompleteCard['readiness']);
+        $this->assertContains('exact_sleeping_place_photo', $incompleteTipKeys);
+        $this->assertContains('missing_translations', $incompleteTipKeys);
+        $this->assertNotContains('complete_ru', $incompleteTipKeys);
+        $this->assertNotContains('complete_en', $incompleteTipKeys);
+
+        $translationTip = collect($incompleteCard['tips'])->firstWhere('key', 'missing_translations');
+        $this->assertSame(2, $translationTip['params']['count']);
+        $this->assertSame('Russian, German', $translationTip['params']['locales']);
 
         $this->assertSame(100, $completeCard['readiness']);
         $this->assertContains('ready', array_column($completeCard['tips'], 'key'));
@@ -200,7 +212,7 @@ class HostListingsDashboardTest extends TestCase
         PropertyStatus $propertyStatus = PropertyStatus::Active,
         RoomStatus $roomStatus = RoomStatus::Active,
         SleepingPlaceStatus $placeStatus = SleepingPlaceStatus::Active,
-        bool $withRussianTranslation = true,
+        array $missingPropertyTranslationLocales = [],
         bool $complete = false,
     ): array {
         [$country, $region, $city] = $this->geo();
@@ -232,25 +244,23 @@ class HostListingsDashboardTest extends TestCase
                 'status' => $propertyStatus,
             ]);
 
-        $property->translations()->create([
-            'locale' => 'en',
-            'title' => $propertyTitle,
-            'summary' => 'A calm shared stay.',
-            'description' => 'A clear property description.',
-            'check_in_instructions' => $complete ? 'Use the key box near the door.' : null,
-            'house_rules_text' => $complete ? 'Quiet hours after 22:00.' : null,
-            'safety_notes' => 'Common areas are lit.',
-        ]);
+        foreach ($this->supportedTestLocales() as $locale) {
+            if (in_array($locale, $missingPropertyTranslationLocales, true)) {
+                continue;
+            }
 
-        if ($withRussianTranslation) {
             $property->translations()->create([
-                'locale' => 'ru',
-                'title' => $propertyTitle.' RU',
-                'summary' => 'Спокойное общее проживание.',
-                'description' => 'Понятное описание объекта.',
-                'check_in_instructions' => $complete ? 'Используйте бокс для ключей у двери.' : null,
-                'house_rules_text' => $complete ? 'Тихие часы после 22:00.' : null,
-                'safety_notes' => 'Общие зоны освещены.',
+                'locale' => $locale,
+                'title' => $locale === 'en' ? $propertyTitle : $propertyTitle.' '.strtoupper($locale),
+                'summary' => $this->localizedFixture($locale, 'A calm shared stay.', ['ru' => 'Спокойное общее проживание.']),
+                'description' => $this->localizedFixture($locale, 'A clear property description.', ['ru' => 'Понятное описание объекта.']),
+                'check_in_instructions' => $complete
+                    ? $this->localizedFixture($locale, 'Use the key box near the door.', ['ru' => 'Используйте бокс для ключей у двери.'])
+                    : null,
+                'house_rules_text' => $complete
+                    ? $this->localizedFixture($locale, 'Quiet hours after 22:00.', ['ru' => 'Тихие часы после 22:00.'])
+                    : null,
+                'safety_notes' => $this->localizedFixture($locale, 'Common areas are lit.', ['ru' => 'Общие зоны освещены.']),
             ]);
         }
 
@@ -264,20 +274,15 @@ class HostListingsDashboardTest extends TestCase
             'noise_level' => 'quiet',
         ]);
 
-        $room->translations()->create([
-            'locale' => 'en',
-            'title' => 'Shared room for '.$propertyTitle,
-            'summary' => 'A quiet shared room.',
-            'description' => 'A quiet shared room.',
-            'notes' => 'Keep personal items tidy.',
-        ]);
-        $room->translations()->create([
-            'locale' => 'ru',
-            'title' => 'Общая комната',
-            'summary' => 'Тихая общая комната.',
-            'description' => 'Тихая общая комната.',
-            'notes' => 'Держите личные вещи аккуратно.',
-        ]);
+        foreach ($this->supportedTestLocales() as $locale) {
+            $room->translations()->create([
+                'locale' => $locale,
+                'title' => $locale === 'en' ? 'Shared room for '.$propertyTitle : 'Shared room '.$locale,
+                'summary' => $this->localizedFixture($locale, 'A quiet shared room.', ['ru' => 'Тихая общая комната.']),
+                'description' => $this->localizedFixture($locale, 'A quiet shared room.', ['ru' => 'Тихая общая комната.']),
+                'notes' => $this->localizedFixture($locale, 'Keep personal items tidy.', ['ru' => 'Держите личные вещи аккуратно.']),
+            ]);
+        }
 
         $place = SleepingPlace::factory()
             ->for($room)
@@ -294,20 +299,15 @@ class HostListingsDashboardTest extends TestCase
                 'has_locker' => true,
             ]);
 
-        $place->translations()->create([
-            'locale' => 'en',
-            'title' => $placeTitle,
-            'summary' => 'A comfortable lower bed.',
-            'description' => 'A comfortable lower bed with a locker.',
-            'special_conditions' => 'Please keep the shared room quiet.',
-        ]);
-        $place->translations()->create([
-            'locale' => 'ru',
-            'title' => $placeTitle.' RU',
-            'summary' => 'Удобное нижнее место.',
-            'description' => 'Удобное нижнее место со шкафчиком.',
-            'special_conditions' => 'Пожалуйста, соблюдайте тишину в общей комнате.',
-        ]);
+        foreach ($this->supportedTestLocales() as $locale) {
+            $place->translations()->create([
+                'locale' => $locale,
+                'title' => $locale === 'en' ? $placeTitle : $placeTitle.' '.strtoupper($locale),
+                'summary' => $this->localizedFixture($locale, 'A comfortable lower bed.', ['ru' => 'Удобное нижнее место.']),
+                'description' => $this->localizedFixture($locale, 'A comfortable lower bed with a locker.', ['ru' => 'Удобное нижнее место со шкафчиком.']),
+                'special_conditions' => $this->localizedFixture($locale, 'Please keep the shared room quiet.', ['ru' => 'Пожалуйста, соблюдайте тишину в общей комнате.']),
+            ]);
+        }
 
         if ($complete) {
             $amenity = Amenity::query()->firstOrCreate(
@@ -393,6 +393,25 @@ class HostListingsDashboardTest extends TestCase
         );
 
         return [$country, $region, $city];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function supportedTestLocales(): array
+    {
+        return collect(config('localization.supported_locales', [(string) config('app.fallback_locale', 'en')]))
+            ->filter(fn (mixed $locale): bool => is_string($locale) && $locale !== '')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<string, string>  $translations
+     */
+    private function localizedFixture(string $locale, string $fallback, array $translations): string
+    {
+        return $translations[$locale] ?? $fallback;
     }
 
     private function createMedia(Model $model, User $host, string $collection): MediaItem

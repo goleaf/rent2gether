@@ -59,6 +59,7 @@ use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserSetting;
 use App\Models\WaitlistItem;
+use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\DemoMediaFileService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -1254,14 +1255,26 @@ class MarketplaceDemoSeeder extends Seeder
             'size_bytes' => 72_000,
             'width' => 1200,
             'height' => 800,
-            'caption_en' => 'Demo image placeholder',
-            'caption_ru' => 'Демо-заполнитель изображения',
             'sort_order' => $sortOrder,
             'is_primary' => $primary,
             'is_cover' => $primary,
         ]);
 
+        $this->createMediaPlaceholderTranslations($mediaItem);
+
         app(DemoMediaFileService::class)->ensureForMediaItem($mediaItem, 'Rent2Gether '.$collection);
+    }
+
+    private function createMediaPlaceholderTranslations(MediaItem $mediaItem): void
+    {
+        foreach (app(SupportedContentLocales::class)->locales() as $locale) {
+            $caption = __('media.default_caption', [], $locale);
+
+            $mediaItem->translations()->firstOrCreate(
+                ['locale' => $locale],
+                ['caption' => $caption === 'media.default_caption' ? $mediaItem->alt_text : $caption],
+            );
+        }
     }
 
     /**

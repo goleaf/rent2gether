@@ -1,12 +1,3 @@
-@php
-    $money = static fn (float|int|string|null $amount, string $currency): string => \Illuminate\Support\Number::currency((float) ($amount ?: 0), $currency, app()->getLocale());
-    $placeTitle = $booking->sleepingPlace?->translations?->firstWhere('locale', app()->getLocale())?->title
-        ?: $booking->sleepingPlace?->translations?->firstWhere('locale', config('app.fallback_locale', 'en'))?->title
-        ?: $booking->sleepingPlace?->display_name
-        ?: $booking->sleepingPlace?->place_number
-        ?: __('booking.payment_page.summary.unnamed_place');
-@endphp
-
 <div class="mx-auto max-w-2xl space-y-5 px-4 py-4 pb-32 sm:px-6">
     <section class="space-y-3">
         <flux:badge color="amber">{{ __('booking.cancellation.eyebrow') }}</flux:badge>
@@ -52,15 +43,15 @@
         <div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
             <div class="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800">
                 <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('booking.cancellation.estimate.paid_amount') }}</div>
-                <div class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $money($estimate['paid_amount'], $estimate['currency']) }}</div>
+                <div class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $this->money($estimate['paid_amount'], $estimate['currency']) }}</div>
             </div>
             <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-900 dark:bg-emerald-950">
                 <div class="text-xs text-emerald-700 dark:text-emerald-300">{{ __('booking.cancellation.estimate.refund_amount') }}</div>
-                <div class="font-semibold text-emerald-900 dark:text-emerald-100">{{ $money($estimate['refund_amount'], $estimate['currency']) }}</div>
+                <div class="font-semibold text-emerald-900 dark:text-emerald-100">{{ $this->money($estimate['refund_amount'], $estimate['currency']) }}</div>
             </div>
             <div class="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800">
                 <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('booking.cancellation.estimate.non_refundable_amount') }}</div>
-                <div class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $money($estimate['non_refundable_amount'], $estimate['currency']) }}</div>
+                <div class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $this->money($estimate['non_refundable_amount'], $estimate['currency']) }}</div>
             </div>
         </div>
 
@@ -75,7 +66,7 @@
                             <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('booking.cancellation.estimate.not_refundable') }}</div>
                         @endif
                     </div>
-                    <div class="shrink-0 font-medium">{{ $money($line['amount'], $line['currency']) }}</div>
+                    <div class="shrink-0 font-medium">{{ $this->money($line['amount'], $line['currency']) }}</div>
                 </div>
             @endforeach
         </div>

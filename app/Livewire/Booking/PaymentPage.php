@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Localization\LocalizedModelContentResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Number;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -54,6 +55,11 @@ class PaymentPage extends Component
         ])->layout('layouts.app', [
             'title' => __('booking.payment_page.title'),
         ]);
+    }
+
+    public function money(float|int|string|null $amount, string $currency): string
+    {
+        return Number::currency((float) ($amount ?: 0), $currency, app()->getLocale());
     }
 
     /**

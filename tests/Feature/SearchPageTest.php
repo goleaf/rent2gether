@@ -186,6 +186,22 @@ class SearchPageTest extends TestCase
             ->assertSet('wifi', true);
     }
 
+    public function test_filter_sheet_result_count_tracks_total_matching_places_after_filter_changes(): void
+    {
+        $city = $this->city('Count City');
+
+        for ($i = 1; $i <= 13; $i++) {
+            $this->createSearchPlace("Count Place {$i}", $city, ['base_price_per_night' => 25]);
+        }
+
+        Livewire::test(SleepingPlaceSearch::class)
+            ->set('filtersOpen', true)
+            ->set('city', (string) $city->id)
+            ->set('priceMax', '40')
+            ->assertSee(__('search.actions.show_results', ['count' => 13]))
+            ->assertDontSee(__('search.actions.show_results', ['count' => 0]));
+    }
+
     public function test_search_results_are_localized(): void
     {
         $city = $this->city('Minsk');

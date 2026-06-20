@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\CancellationService;
 use App\Services\RefundCalculator;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Number;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -73,9 +74,15 @@ class CancelBooking extends Component
             'booking' => $booking,
             'estimate' => $refunds->calculate($booking)->toArray(),
             'reasons' => $this->reasons(),
+            'placeTitle' => $this->placeTitle($booking),
         ])->layout('layouts.app', [
             'title' => __('booking.cancellation.title'),
         ]);
+    }
+
+    public function money(float|int|string|null $amount, string $currency): string
+    {
+        return Number::currency((float) ($amount ?: 0), $currency, app()->getLocale());
     }
 
     /**
@@ -137,5 +144,14 @@ class CancelBooking extends Component
             ])
             ->forGuest((int) auth()->id())
             ->findOrFail($this->bookingId);
+    }
+
+    private function placeTitle(Booking $booking): string
+    {
+        return $booking->sleepingPlace?->translations?->firstWhere('locale', app()->getLocale())?->title
+            ?: $booking->sleepingPlace?->translations?->firstWhere('locale', config('localization.fallback_locale', 'en'))?->title
+            ?: $booking->sleepingPlace?->display_name
+            ?: $booking->sleepingPlace?->place_number
+            ?: __('booking.payment_page.summary.unnamed_place');
     }
 }

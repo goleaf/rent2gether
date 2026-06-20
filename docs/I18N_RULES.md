@@ -25,7 +25,7 @@ Internal localized links must pass the current locale and should use named route
 
 Store important translated listing content in child translation tables. This includes titles, summaries, descriptions, house rules, check-in instructions, check-out instructions, safety notes, and cancellation text.
 
-Media captions that are visible to guests must be stored with locale-specific fields or translation rows. The current `media_items` contract supports `caption_en` and `caption_ru`; future languages should move captions to translation rows instead of adding unlimited per-language columns.
+Media captions that are visible to guests must be stored in `media_item_translations` with one row per locale. Do not add language-bound caption columns or camelCase locale-specific Livewire fields; forms must build caption state from configured supported locales.
 
 Each translated row should contain:
 

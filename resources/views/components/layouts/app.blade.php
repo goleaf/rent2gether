@@ -36,7 +36,7 @@
                 <flux:sidebar.item icon="calendar-days" href="{{ route('trips.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.trips') }}</flux:sidebar.item>
                 <flux:sidebar.item icon="heart" href="{{ route('favorites.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.favorites') }}</flux:sidebar.item>
                 <flux:sidebar.item icon="chat-bubble-left-right" href="{{ route('messages.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.messages') }}</flux:sidebar.item>
-                <flux:sidebar.item icon="user-circle" href="{{ route('profile.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile') }}</flux:sidebar.item>
+                <flux:sidebar.item icon="user-circle" href="{{ route('profile.edit', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile') }}</flux:sidebar.item>
             </flux:sidebar.nav>
 
             @auth
@@ -57,7 +57,7 @@
             <flux:sidebar.nav>
                 <flux:sidebar.item icon="information-circle" href="#">{{ __('navigation.help') }}</flux:sidebar.item>
                 @auth
-                <flux:sidebar.item icon="user-circle" href="{{ route('profile.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile') }}</flux:sidebar.item>
+                <flux:sidebar.item icon="user-circle" href="{{ route('profile.edit', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile') }}</flux:sidebar.item>
                 <flux:sidebar.item icon="cog-6-tooth" href="{{ route('account.settings', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.account_settings') }}</flux:sidebar.item>
                 <flux:sidebar.item icon="shield-check" href="{{ route('account.privacy', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.privacy_settings') }}</flux:sidebar.item>
                 @endauth
@@ -99,7 +99,7 @@
                 <flux:profile :initials="Str::substr(auth()->user()->name, 0, 2)" circle />
 
                 <flux:menu>
-                    <flux:menu.item icon="user-circle" href="{{ route('profile.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile') }}</flux:menu.item>
+                    <flux:menu.item icon="user-circle" href="{{ route('profile.edit', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile') }}</flux:menu.item>
                     <flux:menu.item icon="sparkles" href="{{ route('profile.setup', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.profile_setup') }}</flux:menu.item>
                     <flux:menu.item icon="adjustments-horizontal" href="{{ route('profile.preferences.edit', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.guest_preferences') }}</flux:menu.item>
                     <flux:menu.item icon="cog-6-tooth" href="{{ route('account.settings', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.account_settings') }}</flux:menu.item>

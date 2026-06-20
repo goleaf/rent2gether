@@ -680,8 +680,7 @@ Every new feature must include, when applicable:
 - Blade view.
 - Flux UI.
 - Mobile-first layout.
-- English translations.
-- Russian translations.
+- Translations for every supported locale.
 - Validation.
 - Friendly empty state.
 - Friendly loading state.

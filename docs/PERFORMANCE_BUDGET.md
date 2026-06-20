@@ -32,6 +32,7 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 | First HTML for public listing detail | 180 kB raw / 55 kB gzip target |
 | Home page application queries | 0 |
 | Health page application queries | 0 |
+| Portal page cache infrastructure queries | 2 maximum on MISS / 1 maximum on HIT |
 | Top-level shell page queries | 0-1 lightweight account query |
 | Public card-list queries | 5 per initial request |
 | Guest search initial cards | 12 maximum, plus one lookahead row |
@@ -71,6 +72,11 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 
 ## Loading rules
 
+- Warm portal page cache in real time through `WarmPortalPageCache` on the web middleware group. Successful GET HTML pages are stored after the response is generated, using `PORTAL_PAGE_CACHE_STORE=database` by default so SQLite owns the warmed page cache.
+- Keep page cache keys scoped by route locale, normalized query string, session ID, authenticated user ID, and account mode. This keeps translated pages, guest sessions, private pages, and CSRF-bearing HTML separate.
+- Tune retention with `PORTAL_PAGE_CACHE_TTL`, `PORTAL_PRIVATE_PAGE_CACHE_TTL`, and `PORTAL_PAGE_CACHE_MAX_BYTES`. Keep the max response size conservative so the SQLite `cache` table does not become a gallery or large export store.
+- Browser/session responses may still carry `Cache-Control: no-store`; the server-side DB cache ignores that by default because entries are scoped to the visitor session. Set `PORTAL_PAGE_CACHE_RESPECT_NO_STORE=true` only for pages where that response header must fully opt out of server-side page cache warming.
+- Page cache warming fails open: if the configured cache store or `cache` table is unavailable, the portal renders normally and skips the cache read/write for that request.
 - Do not load a map library on the home page or initial search render.
 - Keep top-level shell pages as translated empty states and action entry points; defer real lists to feature screens.
 - Keep guest search mobile-first: no map, no full galleries, no hidden desktop filter tree, and no complete city/country list in HTML.

@@ -230,9 +230,12 @@ return [
         ],
     ],
     'validation_attributes' => [
-        'titleEn' => 'название на английском',
-        'titleRu' => 'название на русском',
         'propertyType' => 'тип помещения',
+    ],
+    'translation_fields' => [
+        'title' => 'Название (:language)',
+        'short_description' => 'Краткое описание (:language)',
+        'full_description' => 'Полное описание (:language)',
     ],
     'values' => [
         'area_square_meters' => ':count м²',

@@ -231,7 +231,7 @@ class ReportMissingTranslations extends Command
 
         foreach (['amenity' => AmenityRuleCatalog::amenities(), 'rule' => AmenityRuleCatalog::rules()] as $type => $items) {
             foreach ($items as $item) {
-                foreach (['en', 'ru'] as $locale) {
+                foreach (config('localization.supported_locales', []) as $locale) {
                     if (! isset($item[$locale]) || trim((string) $item[$locale]) === '') {
                         $problems[] = ['catalog_translation', $locale, $type.'.'.$item['slug']];
                     }

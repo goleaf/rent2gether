@@ -230,9 +230,12 @@ return [
         ],
     ],
     'validation_attributes' => [
-        'titleEn' => 'English title',
-        'titleRu' => 'Russian title',
         'propertyType' => 'property type',
+    ],
+    'translation_fields' => [
+        'title' => 'Title (:language)',
+        'short_description' => 'Short description (:language)',
+        'full_description' => 'Full description (:language)',
     ],
     'values' => [
         'area_square_meters' => ':count m²',

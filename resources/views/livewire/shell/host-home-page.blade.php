@@ -120,7 +120,7 @@
             <div class="grid gap-2 sm:grid-cols-2">
                 @foreach($dashboard['tips'] as $tip)
                     <div class="rounded-lg border border-dashed border-zinc-200 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
-                        {{ __($tip['label_key']) }}
+                        {{ __($tip['label_key'], $tip['params'] ?? []) }}
                     </div>
                 @endforeach
             </div>

@@ -56,6 +56,7 @@ use App\Models\UserProfile;
 use App\Models\UserSetting;
 use App\Models\WaitlistEntry;
 use App\Models\WaitlistItem;
+use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\DemoMediaFileService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -66,8 +67,6 @@ use Illuminate\Support\Str;
 class BulkMarketplaceSeeder extends Seeder
 {
     private const TARGET_COUNT = 1000;
-
-    private const LOCALES = ['en', 'ru'];
 
     public function run(): void
     {
@@ -840,7 +839,7 @@ class BulkMarketplaceSeeder extends Seeder
         $userIds = $this->ids(User::class);
         $propertyIds = $this->ids(Property::class);
 
-        MediaItem::factory()
+        $mediaItems = MediaItem::factory()
             ->count($this->missingFor(MediaItem::class))
             ->sequence(function (Sequence $sequence) use ($userIds, $propertyIds): array {
                 $propertyId = $this->pick($propertyIds, $sequence->index);
@@ -856,14 +855,13 @@ class BulkMarketplaceSeeder extends Seeder
                     'thumb_path' => sprintf('bulk-demo/properties/%04d-thumb.jpg', $sequence->index + 1),
                     'mobile_path' => sprintf('bulk-demo/properties/%04d-mobile.jpg', $sequence->index + 1),
                     'full_path' => sprintf('bulk-demo/properties/%04d-full.jpg', $sequence->index + 1),
-                    'caption_en' => sprintf('Bulk demo property photo %04d', $sequence->index + 1),
-                    'caption_ru' => sprintf('Bulk demo property photo RU %04d', $sequence->index + 1),
                     'is_primary' => $sequence->index % 5 === 0,
                     'is_cover' => $sequence->index % 5 === 0,
                 ];
             })
             ->create();
 
+        $this->seedMediaTranslations($mediaItems);
         $this->ensureBulkMediaFiles();
 
         Notification::factory()
@@ -899,13 +897,27 @@ class BulkMarketplaceSeeder extends Seeder
                 'width',
                 'height',
                 'alt_text',
-                'caption_en',
-                'caption_ru',
             ])
             ->where('path', 'like', 'bulk-demo/%')
             ->chunkById(200, function ($mediaItems) use ($files): void {
                 $files->ensureForMediaItems($mediaItems);
             });
+    }
+
+    private function seedMediaTranslations(iterable $mediaItems): void
+    {
+        foreach ($mediaItems as $index => $mediaItem) {
+            if (! $mediaItem instanceof MediaItem) {
+                continue;
+            }
+
+            foreach ($this->contentLocales() as $locale) {
+                $mediaItem->translations()->firstOrCreate(
+                    ['locale' => $locale],
+                    ['caption' => $this->localizedSeedText('Bulk demo property photo', $locale, $index)],
+                );
+            }
+        }
     }
 
     private function seedAmenityTranslations(): void
@@ -918,7 +930,7 @@ class BulkMarketplaceSeeder extends Seeder
                 'amenity_id' => $amenityId,
                 'locale' => $locale,
                 'name' => $this->localizedSeedText('Bulk amenity', $locale, $index),
-                'name_normalized' => Str::lower($this->localizedSeedText('Bulk amenity', 'en', $index)),
+                'name_normalized' => Str::lower($this->localizedSeedText('Bulk amenity', $this->fallbackLocale(), $index)),
                 'description' => $this->localizedSeedText('Amenity description', $locale, $index),
             ],
         );
@@ -934,7 +946,7 @@ class BulkMarketplaceSeeder extends Seeder
                 'rule_id' => $ruleId,
                 'locale' => $locale,
                 'name' => $this->localizedSeedText('Bulk rule', $locale, $index),
-                'name_normalized' => Str::lower($this->localizedSeedText('Bulk rule', 'en', $index)),
+                'name_normalized' => Str::lower($this->localizedSeedText('Bulk rule', $this->fallbackLocale(), $index)),
                 'description' => $this->localizedSeedText('Rule description', $locale, $index),
             ],
         );
@@ -1102,7 +1114,7 @@ class BulkMarketplaceSeeder extends Seeder
             ->all();
 
         foreach ($ownerIds as $index => $ownerId) {
-            foreach (self::LOCALES as $locale) {
+            foreach ($this->contentLocales() as $locale) {
                 $key = $ownerId.':'.$locale;
 
                 if (isset($existing[$key])) {
@@ -1252,8 +1264,21 @@ class BulkMarketplaceSeeder extends Seeder
 
     private function localizedSeedText(string $base, string $locale, int $index): string
     {
-        $prefix = $locale === 'ru' ? 'RU ' : '';
+        $prefix = $locale === $this->fallbackLocale() ? '' : strtoupper($locale).' ';
 
         return sprintf('%s%s %04d', $prefix, $base, $index + 1);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function contentLocales(): array
+    {
+        return app(SupportedContentLocales::class)->locales();
+    }
+
+    private function fallbackLocale(): string
+    {
+        return (string) config('localization.fallback_locale', config('app.fallback_locale', 'en'));
     }
 }

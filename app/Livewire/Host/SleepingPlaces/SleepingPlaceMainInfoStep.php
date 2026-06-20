@@ -4,6 +4,7 @@ namespace App\Livewire\Host\SleepingPlaces;
 
 use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Livewire\Host\SleepingPlaces\Concerns\HandlesSleepingPlaceStep;
 use App\Models\SleepingPlace;
 use Illuminate\Contracts\View\View;
@@ -13,14 +14,12 @@ use Livewire\Component;
 class SleepingPlaceMainInfoStep extends Component
 {
     use HandlesSleepingPlaceStep;
+    use ManagesLocalizedFormTranslations;
 
-    public string $titleEn = '';
-
-    public string $titleRu = '';
-
-    public string $shortDescriptionEn = '';
-
-    public string $shortDescriptionRu = '';
+    private const TRANSLATION_FIELDS = [
+        'title',
+        'short_description',
+    ];
 
     public string $placeNumber = '';
 
@@ -56,14 +55,8 @@ class SleepingPlaceMainInfoStep extends Component
     {
         $this->mountSleepingPlace($sleepingPlace);
         $sleepingPlace->loadMissing('translations');
-
-        $en = $sleepingPlace->translations->firstWhere('locale', 'en');
-        $ru = $sleepingPlace->translations->firstWhere('locale', 'ru');
-
-        $this->titleEn = (string) ($en?->title ?? $sleepingPlace->display_name ?? '');
-        $this->titleRu = (string) ($ru?->title ?? '');
-        $this->shortDescriptionEn = (string) ($en?->short_description ?? $en?->summary ?? '');
-        $this->shortDescriptionRu = (string) ($ru?->short_description ?? $ru?->summary ?? '');
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+        $this->loadLocalizedTranslations($sleepingPlace->translations, self::TRANSLATION_FIELDS);
         $this->placeNumber = (string) ($sleepingPlace->place_number ?? '');
         $this->internalName = (string) ($sleepingPlace->internal_name ?? '');
         $this->sleepingPlaceType = (string) ($sleepingPlace->sleeping_place_type?->value ?? $sleepingPlace->type?->value ?? SleepingPlaceType::Single->value);
@@ -84,10 +77,10 @@ class SleepingPlaceMainInfoStep extends Component
     public function save(): void
     {
         $validated = $this->validate([
-            'titleEn' => ['required', 'string', 'max:160'],
-            'titleRu' => ['required', 'string', 'max:160'],
-            'shortDescriptionEn' => ['nullable', 'string', 'max:1000'],
-            'shortDescriptionRu' => ['nullable', 'string', 'max:1000'],
+            ...$this->localizedTranslationRules([
+                'title' => ['required', 'string', 'max:160'],
+                'short_description' => ['nullable', 'string', 'max:1000'],
+            ]),
             'placeNumber' => ['nullable', 'string', 'max:80'],
             'internalName' => ['nullable', 'string', 'max:160'],
             'sleepingPlaceType' => ['required', Rule::in(array_column(SleepingPlaceType::cases(), 'value'))],
@@ -103,11 +96,14 @@ class SleepingPlaceMainInfoStep extends Component
             'minGuestAge' => ['nullable', 'integer', 'min:0', 'max:120'],
             'maxGuestAge' => ['nullable', 'integer', 'min:0', 'max:120'],
             'status' => ['required', Rule::in(array_column(SleepingPlaceStatus::cases(), 'value'))],
-        ], attributes: __('sleeping_place.validation_attributes'));
+        ], attributes: array_merge(
+            (array) __('sleeping_place.validation_attributes'),
+            $this->localizedValidationAttributes('sleeping_place.translation_fields', self::TRANSLATION_FIELDS),
+        ));
 
         $place = $this->sleepingPlace();
         $place->update([
-            'display_name' => $validated['titleEn'],
+            'display_name' => $this->firstTranslationValue('title'),
             'type' => $validated['sleepingPlaceType'],
             'sleeping_place_type' => $validated['sleepingPlaceType'],
             'sleeping_place_subtype' => $validated['sleepingPlaceSubtype'] ?: null,
@@ -126,14 +122,15 @@ class SleepingPlaceMainInfoStep extends Component
             'status' => $validated['status'],
         ]);
 
-        foreach (['en', 'ru'] as $locale) {
-            $suffix = $locale === 'en' ? 'En' : 'Ru';
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $validated['translations'][$locale] ?? [];
             $place->translations()->updateOrCreate(
                 ['locale' => $locale],
                 [
-                    'title' => $validated['title'.$suffix],
-                    'short_description' => $validated['shortDescription'.$suffix] ?: null,
-                    'summary' => $validated['shortDescription'.$suffix] ?: null,
+                    'title' => (string) ($translation['title'] ?? ''),
+                    'short_description' => ($translation['short_description'] ?? '') ?: null,
+                    'summary' => ($translation['short_description'] ?? '') ?: null,
                 ],
             );
         }

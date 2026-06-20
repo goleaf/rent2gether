@@ -33,6 +33,11 @@ class MediaUploadSystemTest extends TestCase
 
     public function test_host_can_upload_valid_image_with_mobile_variants(): void
     {
+        config([
+            'localization.supported_locales' => ['en', 'ru', 'de'],
+            'localization.locale_names.de' => 'German',
+        ]);
+
         [$host, $property] = $this->hostProperty();
         $photo = UploadedFile::fake()->image('entrance.jpg', 1200, 800)->size(500);
 
@@ -43,8 +48,9 @@ class MediaUploadSystemTest extends TestCase
                 'collection' => 'gallery',
             ])
             ->set('photo', $photo)
-            ->set('captionEn', 'Sunny entrance')
-            ->set('captionRu', 'Светлый вход')
+            ->set('captions.en', 'Sunny entrance')
+            ->set('captions.ru', 'Светлый вход')
+            ->set('captions.de', 'Sonniger Eingang')
             ->call('savePhoto')
             ->assertHasNoErrors()
             ->assertSet('statusMessage', __('media.flash.uploaded'))
@@ -56,7 +62,9 @@ class MediaUploadSystemTest extends TestCase
         $this->assertSame($property->id, $media->owner_id);
         $this->assertSame('gallery', $media->collection);
         $this->assertSame('entrance.jpg', $media->original_filename);
-        $this->assertSame('Sunny entrance', $media->caption_en);
+        $this->assertSame('Sunny entrance', $media->translations->firstWhere('locale', 'en')?->caption);
+        $this->assertSame('Светлый вход', $media->translations->firstWhere('locale', 'ru')?->caption);
+        $this->assertSame('Sonniger Eingang', $media->translations->firstWhere('locale', 'de')?->caption);
         $this->assertTrue($media->is_primary);
         $this->assertNotNull($media->thumb_path);
         $this->assertNotNull($media->mobile_path);
@@ -174,11 +182,14 @@ class MediaUploadSystemTest extends TestCase
                 'thumbnail_path' => 'properties/thumb.jpg',
                 'mobile_path' => 'properties/mobile-primary.jpg',
                 'full_path' => 'properties/full.jpg',
-                'caption_en' => 'Primary property photo',
                 'is_primary' => true,
                 'is_cover' => true,
                 'status' => 'active',
             ]);
+        $media->translations()->create([
+            'locale' => 'en',
+            'caption' => 'Primary property photo',
+        ]);
 
         Storage::disk('public')->put($media->mobile_path, 'mobile-image');
 
@@ -248,7 +259,7 @@ class MediaUploadSystemTest extends TestCase
             file: UploadedFile::fake()->image($filename, 1000, 700)->size(300),
             user: $host,
             collection: $collection,
-            captionEn: $filename,
+            captions: ['en' => $filename],
         );
     }
 }

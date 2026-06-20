@@ -1,38 +1,10 @@
-@props([
-    'host' => null,
-    'hostProfile' => null,
-])
-
-@php
-    $loadedProfile = $host?->relationLoaded('hostProfile') ? $host->hostProfile : null;
-    $profile = $hostProfile ?: $loadedProfile;
-    $displayName = $profile?->display_name ?: $host?->name;
-    $avatarPath = $profile?->avatar_path ?: $host?->avatar;
-    $avatarUrl = $avatarPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($avatarPath) : null;
-    $languages = collect($profile?->languages_json ?: $host?->languages ?: [])
-        ->filter()
-        ->take(4)
-        ->map(fn (string $language): string => \Illuminate\Support\Facades\Lang::has('navigation.languages.'.(string) $language)
-            ? \Illuminate\Support\Facades\Lang::get('navigation.languages.'.(string) $language)
-            : strtoupper($language))
-        ->join(', ');
-    $responseMinutes = $profile?->response_time_minutes;
-    $responseLabel = null;
-
-    if ($responseMinutes) {
-        $responseLabel = $responseMinutes < 60
-            ? __('host.profile.public_card.response_time_minutes', ['count' => $responseMinutes])
-            : __('host.profile.public_card.response_time_hours', ['count' => (int) ceil($responseMinutes / 60)]);
-    }
-@endphp
-
 <flux:card class="space-y-4">
     <div class="flex items-start gap-3">
         <div class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 text-lg font-semibold text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
             @if($avatarUrl)
                 <img src="{{ $avatarUrl }}" alt="{{ __('host.profile.public_card.photo_alt', ['name' => $displayName]) }}" loading="lazy" decoding="async" class="size-full object-cover">
             @else
-                {{ \Illuminate\Support\Str::of((string) $displayName)->substr(0, 1)->upper() }}
+                {{ $initial }}
             @endif
         </div>
 

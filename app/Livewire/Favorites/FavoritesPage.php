@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Favorites\FavoriteCardPresenter;
 use App\Services\Favorites\FavoriteChangeNotificationService;
 use App\Services\Favorites\FavoriteCollectionService;
+use App\Services\Localization\SupportedContentLocales;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
@@ -160,12 +161,7 @@ class FavoritesPage extends Component
      */
     private function cardRelations(): array
     {
-        $locales = array_values(array_unique(array_filter([
-            app()->getLocale(),
-            config('app.fallback_locale', 'en'),
-            'en',
-            'ru',
-        ])));
+        $locales = app(SupportedContentLocales::class)->preferred();
 
         return [
             'sleepingPlace' => fn ($query) => $query
@@ -194,7 +190,11 @@ class FavoritesPage extends Component
                     'room:id,property_id,type,status,gender_policy,beds_count,max_guests,occupied_places_count',
                     'property:id,city_id,host_user_id,type,status,city,district',
                     'property.cityModel:id,name',
-                    'cardMedia:id,mediable_type,mediable_id,disk,path,thumb_path,thumbnail_path,mobile_path,full_path,alt_text,caption_en,caption_ru,is_primary,is_cover,sort_order,status',
+                    'cardMedia' => fn ($media) => $media
+                        ->select(['id', 'mediable_type', 'mediable_id', 'disk', 'path', 'thumb_path', 'thumbnail_path', 'mobile_path', 'full_path', 'alt_text', 'is_primary', 'is_cover', 'sort_order', 'status'])
+                        ->with(['translations' => fn ($translation) => $translation
+                            ->select(['id', 'media_item_id', 'locale', 'caption'])
+                            ->whereIn('locale', $locales)]),
                 ]),
         ];
     }

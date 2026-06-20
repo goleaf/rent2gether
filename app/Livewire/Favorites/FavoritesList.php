@@ -7,6 +7,7 @@ use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\AvailabilityService;
 use App\Services\Localization\LocalizedModelContentResolver;
+use App\Services\Localization\SupportedContentLocales;
 use App\Services\PricingService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -152,7 +153,11 @@ class FavoritesList extends Component
                         'room:id,property_id,type,status,gender_policy,beds_count,max_guests,occupied_places_count',
                         'property:id,city_id,host_user_id,type,status,city,district',
                         'property.cityModel:id,name',
-                        'cardMedia:id,mediable_type,mediable_id,disk,path,thumb_path,thumbnail_path,mobile_path,full_path,alt_text,caption_en,caption_ru,is_primary,is_cover,sort_order,status',
+                        'cardMedia' => fn ($media) => $media
+                            ->select(['id', 'mediable_type', 'mediable_id', 'disk', 'path', 'thumb_path', 'thumbnail_path', 'mobile_path', 'full_path', 'alt_text', 'is_primary', 'is_cover', 'sort_order', 'status'])
+                            ->with(['translations' => fn ($translation) => $translation
+                                ->select(['id', 'media_item_id', 'locale', 'caption'])
+                                ->whereIn('locale', $locales)]),
                     ]),
             ])
             ->orderByDesc('priority')
@@ -315,12 +320,7 @@ class FavoritesList extends Component
      */
     private function translationLocales(): array
     {
-        return array_values(array_unique(array_filter([
-            app()->getLocale(),
-            config('app.fallback_locale', 'en'),
-            'en',
-            'ru',
-        ])));
+        return app(SupportedContentLocales::class)->preferred();
     }
 
     private function label(mixed $value): string

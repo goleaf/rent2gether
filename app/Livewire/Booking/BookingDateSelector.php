@@ -8,6 +8,7 @@ use App\Services\AvailabilityService;
 use App\Services\PricingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Number;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -126,7 +127,14 @@ class BookingDateSelector extends Component
 
     public function render(): View
     {
-        return view('livewire.booking.booking-date-selector');
+        return view('livewire.booking.booking-date-selector', [
+            'hasAdjustedDates' => $this->hasAdjustedDates(),
+        ]);
+    }
+
+    public function money(float|int|string $amount, string $currency): string
+    {
+        return Number::currency((float) $amount, $currency, app()->getLocale());
     }
 
     private function sleepingPlace(): SleepingPlace
@@ -195,5 +203,11 @@ class BookingDateSelector extends Component
         $attributes = app('translator')->get('booking.date_selector.validation_attributes');
 
         return is_array($attributes) ? $attributes : [];
+    }
+
+    private function hasAdjustedDates(): bool
+    {
+        return $this->quote !== null
+            && collect($this->quote['date_prices'])->contains(fn (array $datePrice): bool => $datePrice['source'] !== 'base');
     }
 }

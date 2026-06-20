@@ -1,18 +1,3 @@
-@props([
-    'card',
-    'showActions' => true,
-    'cardVariant' => null,
-    'embedded' => false,
-])
-
-@php
-    $cardVariant = $cardVariant ?: ($card['variant'] ?? 'search');
-    $embedded = filter_var($embedded, FILTER_VALIDATE_BOOLEAN);
-
-    $isCompact = in_array($cardVariant, ['compact', 'comparison', 'waitlist', 'host-preview'], true);
-    $placeId = (int) ($card['sleeping_place_id'] ?? $card['id']);
-@endphp
-
 <article
     {{ $attributes->merge([
         'class' => $embedded
@@ -108,16 +93,7 @@
         @if(! empty($card['hints']))
             <div class="flex flex-wrap gap-1.5" aria-label="{{ __('guest_hints.title') }}">
                 @forelse(array_slice($card['hints'], 0, $isCompact ? 2 : 3) as $hint)
-                    @php
-                        $hintType = $hint['type'] ?? 'info';
-                        $hintColor = match ($hintType) {
-                            'warning', 'urgent', 'rule' => 'amber',
-                            'positive', 'discount' => 'emerald',
-                            default => 'zinc',
-                        };
-                    @endphp
-
-                    <flux:badge size="sm" color="{{ $hintColor }}">
+                    <flux:badge size="sm" color="{{ $hintColor($hint) }}">
                         {{ $hint['text'] }}
                     </flux:badge>
                 @empty

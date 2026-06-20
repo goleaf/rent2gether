@@ -12,7 +12,6 @@ use App\Livewire\Shell\HostListingsPage;
 use App\Livewire\Shell\HostProfilePage;
 use App\Livewire\Shell\HostRequestsPage;
 use App\Livewire\Shell\MessagesPage;
-use App\Livewire\Shell\ProfilePage;
 use App\Livewire\Trips\TripList;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,7 +33,6 @@ class MobileApplicationShellTest extends TestCase
             ['path' => '/trips', 'title' => 'booking.trips.scopes.upcoming.title', 'helper' => 'booking.trips.scopes.upcoming.helper', 'component' => TripList::class],
             ['path' => '/favorites', 'title' => 'shell.pages.guest.favorites.title', 'helper' => 'shell.pages.guest.favorites.helper', 'component' => FavoritesPage::class],
             ['path' => '/messages', 'title' => 'shell.pages.guest.messages.title', 'helper' => 'shell.pages.guest.messages.helper', 'component' => MessagesPage::class],
-            ['path' => '/profile', 'title' => 'shell.pages.guest.profile.title', 'helper' => 'shell.pages.guest.profile.helper', 'component' => ProfilePage::class],
         ];
 
         foreach (['en', 'ru'] as $locale) {

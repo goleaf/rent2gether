@@ -71,6 +71,8 @@ class CityAutocomplete extends Component
 
     public function render(): View
     {
-        return view('livewire.geo.city-autocomplete');
+        return view('livewire.geo.city-autocomplete', [
+            'results' => $this->results,
+        ]);
     }
 }

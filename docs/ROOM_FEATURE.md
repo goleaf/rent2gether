@@ -119,7 +119,7 @@ php artisan test tests/Feature/ExtendedRoomFieldsTest.php --compact
 Covered behavior:
 
 - detail tables, columns, indexes, relationships, and cascade delete
-- English/Russian translation fields
+- supported-locale translation fields
 - host step updates
 - cross-host authorization
 - completion percentage

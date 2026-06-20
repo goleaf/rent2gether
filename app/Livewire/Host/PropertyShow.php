@@ -10,6 +10,7 @@ use App\Models\Room;
 use App\Models\User;
 use App\Services\HostListings\HostListingDashboardService;
 use App\Services\Localization\LocalizedModelContentResolver;
+use App\Services\Localization\SupportedContentLocales;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -98,6 +99,7 @@ class PropertyShow extends Component
     public function rooms(): array
     {
         $resolver = app(LocalizedModelContentResolver::class);
+        $contentLocales = app(SupportedContentLocales::class);
 
         return $this->ownedRoomQuery()
             ->with([
@@ -109,9 +111,9 @@ class PropertyShow extends Component
             ->orderBy('room_number')
             ->orderBy('id')
             ->get()
-            ->map(function (Room $room) use ($resolver): array {
+            ->map(function (Room $room) use ($resolver, $contentLocales): array {
                 $translation = $resolver->resolve($room->translations, app()->getLocale(), 'en');
-                $descriptionReady = $this->hasLocaleDescription($room, 'en') && $this->hasLocaleDescription($room, 'ru');
+                $descriptionReady = $contentLocales->hasAllTranslations($room->translations, ['description']);
                 $photosCount = $room->mediaItems->count();
                 $placesCount = $room->sleepingPlaces->count();
                 $rulesCount = $room->getRelation('rules')->count();
@@ -222,10 +224,5 @@ class PropertyShow extends Component
             ->whereHas('property', fn ($query) => $query
                 ->where('host_user_id', auth()->id())
                 ->orWhere('user_id', auth()->id()));
-    }
-
-    private function hasLocaleDescription(Room $room, string $locale): bool
-    {
-        return filled($room->translations->firstWhere('locale', $locale)?->description);
     }
 }

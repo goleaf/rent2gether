@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Host\Properties;
 
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Livewire\Host\Properties\Concerns\HandlesPropertyStep;
 use App\Models\Property;
 use Illuminate\Contracts\View\View;
@@ -10,18 +11,13 @@ use Livewire\Component;
 class PropertyMainInfoStep extends Component
 {
     use HandlesPropertyStep;
+    use ManagesLocalizedFormTranslations;
 
-    public string $titleEn = '';
-
-    public string $titleRu = '';
-
-    public string $shortDescriptionEn = '';
-
-    public string $shortDescriptionRu = '';
-
-    public string $fullDescriptionEn = '';
-
-    public string $fullDescriptionRu = '';
+    private const TRANSLATION_FIELDS = [
+        'title',
+        'short_description',
+        'full_description',
+    ];
 
     public string $propertyType = '';
 
@@ -54,16 +50,9 @@ class PropertyMainInfoStep extends Component
         $this->mountProperty($property);
 
         $property->loadMissing('translations');
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+        $this->loadLocalizedTranslations($property->translations, self::TRANSLATION_FIELDS);
 
-        $translationEn = $property->translations->firstWhere('locale', 'en');
-        $translationRu = $property->translations->firstWhere('locale', 'ru');
-
-        $this->titleEn = (string) ($translationEn?->title ?? $property->title ?? '');
-        $this->titleRu = (string) ($translationRu?->title ?? '');
-        $this->shortDescriptionEn = (string) ($translationEn?->short_description ?? $translationEn?->summary ?? '');
-        $this->shortDescriptionRu = (string) ($translationRu?->short_description ?? $translationRu?->summary ?? '');
-        $this->fullDescriptionEn = (string) ($translationEn?->full_description ?? $translationEn?->description ?? '');
-        $this->fullDescriptionRu = (string) ($translationRu?->full_description ?? $translationRu?->description ?? '');
         $this->propertyType = (string) ($property->property_type?->value ?? $property->property_type ?? $property->type?->value ?? $property->type ?? '');
         $this->propertySubtype = (string) ($property->property_subtype ?? '');
         $this->district = (string) ($property->district ?? '');
@@ -82,12 +71,11 @@ class PropertyMainInfoStep extends Component
     public function save(): void
     {
         $validated = $this->validate([
-            'titleEn' => ['required', 'string', 'max:160'],
-            'titleRu' => ['nullable', 'string', 'max:160'],
-            'shortDescriptionEn' => ['nullable', 'string', 'max:500'],
-            'shortDescriptionRu' => ['nullable', 'string', 'max:500'],
-            'fullDescriptionEn' => ['nullable', 'string', 'max:5000'],
-            'fullDescriptionRu' => ['nullable', 'string', 'max:5000'],
+            ...$this->localizedTranslationRules([
+                'title' => ['required', 'string', 'max:160'],
+                'short_description' => ['nullable', 'string', 'max:500'],
+                'full_description' => ['nullable', 'string', 'max:5000'],
+            ]),
             'propertyType' => ['required', 'string', 'max:80'],
             'propertySubtype' => ['nullable', 'string', 'max:80'],
             'district' => ['nullable', 'string', 'max:120'],
@@ -101,11 +89,14 @@ class PropertyMainInfoStep extends Component
             'showExactAddressAfterConfirmation' => ['boolean'],
             'showExactAddressAfterPayment' => ['boolean'],
             'showOnlyApproximateLocation' => ['boolean'],
-        ]);
+        ], attributes: array_merge(
+            (array) __('property.validation_attributes'),
+            $this->localizedValidationAttributes('property.translation_fields', self::TRANSLATION_FIELDS),
+        ));
 
         $property = $this->property();
         $property->update([
-            'title' => $validated['titleEn'],
+            'title' => $this->firstTranslationValue('title'),
             'type' => $validated['propertyType'],
             'property_type' => $validated['propertyType'],
             'property_subtype' => $validated['propertySubtype'] ?: null,
@@ -125,10 +116,12 @@ class PropertyMainInfoStep extends Component
             'show_only_approximate_location' => $validated['showOnlyApproximateLocation'],
         ]);
 
-        foreach (['en', 'ru'] as $locale) {
-            $title = $validated['title'.ucfirst($locale)];
-            $shortDescription = $validated['shortDescription'.ucfirst($locale)];
-            $fullDescription = $validated['fullDescription'.ucfirst($locale)];
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $validated['translations'][$locale] ?? [];
+            $title = (string) ($translation['title'] ?? '');
+            $shortDescription = (string) ($translation['short_description'] ?? '');
+            $fullDescription = (string) ($translation['full_description'] ?? '');
 
             if ($title === '' && $shortDescription === '' && $fullDescription === '') {
                 continue;

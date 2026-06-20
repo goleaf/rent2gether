@@ -31,7 +31,7 @@ return [
             'power_socket' => 'Розетка',
             'privacy' => 'Приватность',
             'condition' => 'Состояние',
-            'translations' => 'Тексты на русском и английском',
+            'translations' => 'Локализованные тексты',
         ],
     ],
     'fields' => [
@@ -248,10 +248,12 @@ return [
         ],
     ],
     'validation_attributes' => [
-        'titleEn' => 'название на английском',
-        'titleRu' => 'название на русском',
         'sleepingPlaceType' => 'тип спального места',
         'basePricePerNight' => 'цена за ночь',
+    ],
+    'translation_fields' => [
+        'title' => 'Название (:language)',
+        'short_description' => 'Краткое описание (:language)',
     ],
     'values' => [
         'centimeters' => ':count см',

@@ -5,6 +5,7 @@ namespace App\Livewire\Host\Rooms;
 use App\Enums\GenderType;
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
+use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Livewire\Host\Rooms\Concerns\HandlesRoomStep;
 use App\Models\Room;
 use Illuminate\Contracts\View\View;
@@ -14,18 +15,13 @@ use Livewire\Component;
 class RoomMainInfoStep extends Component
 {
     use HandlesRoomStep;
+    use ManagesLocalizedFormTranslations;
 
-    public string $titleEn = '';
-
-    public string $titleRu = '';
-
-    public string $shortDescriptionEn = '';
-
-    public string $shortDescriptionRu = '';
-
-    public string $fullDescriptionEn = '';
-
-    public string $fullDescriptionRu = '';
+    private const TRANSLATION_FIELDS = [
+        'title',
+        'short_description',
+        'full_description',
+    ];
 
     public string $roomNumber = '';
 
@@ -67,16 +63,8 @@ class RoomMainInfoStep extends Component
     {
         $this->mountRoom($room);
         $room->loadMissing('translations');
-
-        $en = $room->translations->firstWhere('locale', 'en');
-        $ru = $room->translations->firstWhere('locale', 'ru');
-
-        $this->titleEn = (string) ($en?->title ?? '');
-        $this->titleRu = (string) ($ru?->title ?? '');
-        $this->shortDescriptionEn = (string) ($en?->short_description ?? $en?->summary ?? '');
-        $this->shortDescriptionRu = (string) ($ru?->short_description ?? $ru?->summary ?? '');
-        $this->fullDescriptionEn = (string) ($en?->full_description ?? $en?->description ?? '');
-        $this->fullDescriptionRu = (string) ($ru?->full_description ?? $ru?->description ?? '');
+        $this->fillBlankTranslations(self::TRANSLATION_FIELDS);
+        $this->loadLocalizedTranslations($room->translations, self::TRANSLATION_FIELDS);
         $this->roomNumber = (string) ($room->room_number ?? '');
         $this->internalName = (string) ($room->internal_name ?? '');
         $this->roomType = (string) ($room->room_type?->value ?? $room->type?->value ?? RoomType::Shared->value);
@@ -100,12 +88,11 @@ class RoomMainInfoStep extends Component
     public function save(): void
     {
         $validated = $this->validate([
-            'titleEn' => ['required', 'string', 'max:160'],
-            'titleRu' => ['required', 'string', 'max:160'],
-            'shortDescriptionEn' => ['nullable', 'string', 'max:1000'],
-            'shortDescriptionRu' => ['nullable', 'string', 'max:1000'],
-            'fullDescriptionEn' => ['nullable', 'string', 'max:5000'],
-            'fullDescriptionRu' => ['nullable', 'string', 'max:5000'],
+            ...$this->localizedTranslationRules([
+                'title' => ['required', 'string', 'max:160'],
+                'short_description' => ['nullable', 'string', 'max:1000'],
+                'full_description' => ['nullable', 'string', 'max:5000'],
+            ]),
             'roomNumber' => ['nullable', 'string', 'max:80'],
             'internalName' => ['nullable', 'string', 'max:160'],
             'roomType' => ['required', Rule::in(array_column(RoomType::cases(), 'value'))],
@@ -124,11 +111,14 @@ class RoomMainInfoStep extends Component
             'status' => ['required', Rule::in(array_column(RoomStatus::cases(), 'value'))],
             'canBookEntireRoom' => ['boolean'],
             'canBookIndividualPlaces' => ['boolean'],
-        ], attributes: __('room.validation_attributes'));
+        ], attributes: array_merge(
+            (array) __('room.validation_attributes'),
+            $this->localizedValidationAttributes('room.translation_fields', self::TRANSLATION_FIELDS),
+        ));
 
         $room = $this->room();
         $room->update([
-            'title' => $validated['titleEn'],
+            'title' => $this->firstTranslationValue('title'),
             'room_number' => $validated['roomNumber'] ?: null,
             'internal_name' => $validated['internalName'] ?: null,
             'type' => $validated['roomType'],
@@ -153,16 +143,17 @@ class RoomMainInfoStep extends Component
             'can_book_individual_places' => $validated['canBookIndividualPlaces'],
         ]);
 
-        foreach (['en', 'ru'] as $locale) {
-            $suffix = $locale === 'en' ? 'En' : 'Ru';
+        foreach ($this->contentLocales() as $localeData) {
+            $locale = $localeData['code'];
+            $translation = $validated['translations'][$locale] ?? [];
             $room->translations()->updateOrCreate(
                 ['locale' => $locale],
                 [
-                    'title' => $validated['title'.$suffix],
-                    'short_description' => $validated['shortDescription'.$suffix] ?: null,
-                    'full_description' => $validated['fullDescription'.$suffix] ?: null,
-                    'summary' => $validated['shortDescription'.$suffix] ?: null,
-                    'description' => $validated['fullDescription'.$suffix] ?: null,
+                    'title' => (string) ($translation['title'] ?? ''),
+                    'short_description' => ($translation['short_description'] ?? '') ?: null,
+                    'full_description' => ($translation['full_description'] ?? '') ?: null,
+                    'summary' => ($translation['short_description'] ?? '') ?: null,
+                    'description' => ($translation['full_description'] ?? '') ?: null,
                 ],
             );
         }

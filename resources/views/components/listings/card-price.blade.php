@@ -1,10 +1,3 @@
-@props(['card'])
-
-@php
-    $currency = $card['currency'] ?: 'EUR';
-    $money = static fn (float|int|string $amount): string => \Illuminate\Support\Number::currency((float) $amount, $currency, app()->getLocale());
-@endphp
-
 <div class="space-y-2 rounded-lg bg-zinc-50 px-3 py-3 dark:bg-zinc-950/60">
     <div class="flex items-end justify-between gap-3">
         <div>

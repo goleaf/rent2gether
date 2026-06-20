@@ -3,6 +3,7 @@
 namespace App\Services\SleepingPlaces;
 
 use App\Models\SleepingPlace;
+use App\Services\Localization\SupportedContentLocales;
 
 class SleepingPlaceCompletionService
 {
@@ -39,7 +40,7 @@ class SleepingPlaceCompletionService
             ['key' => 'power_socket', 'label' => __('sleeping_place.completion.items.power_socket'), 'complete' => $place->positionDetails?->has_power_socket !== null],
             ['key' => 'privacy', 'label' => __('sleeping_place.completion.items.privacy'), 'complete' => filled($place->positionDetails?->privacy_level)],
             ['key' => 'condition', 'label' => __('sleeping_place.completion.items.condition'), 'complete' => filled($place->conditionDetails?->condition_state)],
-            ['key' => 'translations', 'label' => __('sleeping_place.completion.items.translations'), 'complete' => $place->translations->whereIn('locale', ['en', 'ru'])->count() >= 2],
+            ['key' => 'translations', 'label' => __('sleeping_place.completion.items.translations'), 'complete' => app(SupportedContentLocales::class)->hasAllTranslations($place->translations, ['title'])],
         ];
     }
 
