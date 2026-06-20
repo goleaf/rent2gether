@@ -9,6 +9,7 @@ final readonly class ListingCardData
      * @param  list<string>  $keyRules
      * @param  list<array{key:string,label:string,tone:string,icon:?string}>  $badges
      * @param  list<string>  $warnings
+     * @param  list<array<string, mixed>>  $hints
      */
     public function __construct(
         public int $sleepingPlaceId,
@@ -62,6 +63,7 @@ final readonly class ListingCardData
         public ?int $compatibilityScore,
         public array $badges,
         public array $warnings,
+        public array $hints,
         public string $url,
         public ?string $bookUrl,
         public ?string $checkInDate = null,
@@ -130,6 +132,7 @@ final readonly class ListingCardData
             'compatibility_score' => $this->compatibilityScore,
             'badges' => $this->badges,
             'warnings' => $this->warnings,
+            'hints' => $this->hints,
             'href' => $this->url,
             'url' => $this->url,
             'book_url' => $this->bookUrl,

@@ -105,13 +105,25 @@
 
         <x-listings.card-price :card="$card" />
 
-        <livewire:hints.listing-card-hints
-            :sleeping-place-id="$placeId"
-            :check-in="$card['check_in_date'] ?? request('in', '')"
-            :check-out="$card['check_out_date'] ?? request('out', '')"
-            :limit="$isCompact ? 2 : 3"
-            :key="'listing-card-hints-'.$cardVariant.'-'.$placeId.'-'.($card['nights_count'] ?? 'none')"
-        />
+        @if(! empty($card['hints']))
+            <div class="flex flex-wrap gap-1.5" aria-label="{{ __('guest_hints.title') }}">
+                @forelse(array_slice($card['hints'], 0, $isCompact ? 2 : 3) as $hint)
+                    @php
+                        $hintType = $hint['type'] ?? 'info';
+                        $hintColor = match ($hintType) {
+                            'warning', 'urgent', 'rule' => 'amber',
+                            'positive', 'discount' => 'emerald',
+                            default => 'zinc',
+                        };
+                    @endphp
+
+                    <flux:badge size="sm" color="{{ $hintColor }}">
+                        {{ $hint['text'] }}
+                    </flux:badge>
+                @empty
+                @endforelse
+            </div>
+        @endif
 
         @if(! empty($card['compatibility_score']))
             <div class="flex flex-wrap items-center gap-2">

@@ -2,6 +2,7 @@
 
 namespace App\Services\Listings;
 
+use App\Data\Hints\GuestHintData;
 use App\Data\Listings\ListingCardContext;
 use App\Data\Listings\ListingCardData;
 use App\Data\Occupants\DateRange;
@@ -12,6 +13,7 @@ use App\Models\WaitlistItem;
 use App\Services\AvailabilityService;
 use App\Services\Compatibility\CompatibilityCalculatorService;
 use App\Services\CompatibilityService;
+use App\Services\Hints\HintPriorityService;
 use BackedEnum;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
@@ -33,6 +35,7 @@ class ListingCardService
         private readonly AvailabilityService $availability,
         private readonly CompatibilityService $compatibility,
         private readonly CompatibilityCalculatorService $compatibilityCalculator,
+        private readonly HintPriorityService $hintPriority,
     ) {}
 
     public function build(SleepingPlace $place, ListingCardContext $context): ListingCardData
@@ -152,6 +155,7 @@ class ListingCardService
             compatibilityScore: $compatibility['score'],
             badges: $this->badges->badges($place, $price, $occupancy, $isAvailable, $hostVerified, $selfCheckIn),
             warnings: $compatibility['warnings'],
+            hints: $this->cardHints($place, $context),
             url: route('places.show', array_filter([
                 'locale' => $context->locale,
                 'sleepingPlace' => $place,
@@ -168,6 +172,26 @@ class ListingCardService
             guestsCount: max(1, $context->guestsCount),
             variant: (string) ($context->filters['variant'] ?? 'search'),
         );
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function cardHints(SleepingPlace $place, ListingCardContext $context): array
+    {
+        if (! $place->relationLoaded('listingHintSnapshots')) {
+            return [];
+        }
+
+        return $this->hintPriority
+            ->chooseForCard(
+                $place->listingHintSnapshots
+                    ->map(fn ($snapshot): GuestHintData => GuestHintData::fromSnapshot($snapshot))
+                    ->filter(fn (GuestHintData $hint): bool => $hint->showOnCard),
+                3,
+            )
+            ->map(fn (GuestHintData $hint): array => $hint->toArray($context->locale))
+            ->all();
     }
 
     /**

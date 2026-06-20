@@ -195,6 +195,31 @@ class ListingCardQueryService
             'rules' => $rules,
             'rules.translations' => $ruleTranslations,
             'compatibilityProfile' => fn ($query) => $query->select($sleepingPlaceCompatibilitySelect),
+            'listingHintSnapshots' => fn ($query) => $query
+                ->select([
+                    'id',
+                    'sleeping_place_id',
+                    'hint_key',
+                    'category',
+                    'type',
+                    'importance',
+                    'priority',
+                    'message_key',
+                    'message_params_json',
+                    'source',
+                    'show_on_card',
+                    'show_on_detail',
+                    'show_before_booking',
+                    'show_in_favorites',
+                    'show_in_saved_search',
+                    'calculated_at',
+                    'expires_at',
+                    'valid_from',
+                    'valid_until',
+                ])
+                ->fresh()
+                ->where('show_on_card', true)
+                ->orderByDesc('priority'),
             'room' => fn ($query) => $query
                 ->select([
                     'id',

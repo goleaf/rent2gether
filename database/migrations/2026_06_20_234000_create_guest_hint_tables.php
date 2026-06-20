@@ -35,6 +35,8 @@ return new class extends Migration
 
             $table->index(['sleeping_place_id', 'category'], 'listing_hint_snapshots_place_category_index');
             $table->index(['sleeping_place_id', 'priority'], 'listing_hint_snapshots_place_priority_index');
+            $table->index('property_id', 'listing_hint_snapshots_property_index');
+            $table->index('room_id', 'listing_hint_snapshots_room_index');
             $table->index(['city_id', 'category'], 'listing_hint_snapshots_city_category_index');
             $table->index('hint_key', 'listing_hint_snapshots_hint_key_index');
             $table->index('expires_at', 'listing_hint_snapshots_expires_at_index');
@@ -55,6 +57,7 @@ return new class extends Migration
 
             $table->index(['user_id', 'hint_key'], 'guest_hint_dismissals_user_hint_index');
             $table->index(['user_id', 'sleeping_place_id'], 'guest_hint_dismissals_user_place_index');
+            $table->index('sleeping_place_id', 'guest_hint_dismissals_place_index');
             $table->index('expires_at', 'guest_hint_dismissals_expires_at_index');
         });
 
