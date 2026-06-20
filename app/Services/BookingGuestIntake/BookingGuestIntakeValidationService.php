@@ -159,7 +159,6 @@ class BookingGuestIntakeValidationService
     }
 
     /**
-     * @param  mixed  $values
      * @return list<string>
      */
     private function values(mixed $values): array
