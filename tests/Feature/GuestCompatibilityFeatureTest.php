@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Data\Occupants\DateRange;
 use App\Data\Listings\ListingCardContext;
+use App\Data\Occupants\DateRange;
 use App\Enums\GenderType;
 use App\Enums\PropertyStatus;
 use App\Enums\RoomStatus;
