@@ -97,6 +97,40 @@ class FluxProComponentUsageTest extends TestCase
         $this->assertStringNotContainsString('type="file"', $view);
     }
 
+    public function test_frontend_assets_use_scss_and_flux_pro_styles(): void
+    {
+        $this->assertFileExists(resource_path('css/app.scss'));
+        $this->assertFileDoesNotExist(resource_path('css/app.css'));
+        $this->assertDirectoryDoesNotExist(resource_path('js'));
+
+        $stylesheet = File::get(resource_path('css/app.scss'));
+
+        $this->assertStringContainsString("@use 'tailwindcss';", $stylesheet);
+        $this->assertStringContainsString("@import '../../vendor/livewire/flux/dist/flux.css';", $stylesheet);
+        $this->assertStringContainsString("@import '../../vendor/livewire/flux-pro/dist/editor.css';", $stylesheet);
+
+        $this->assertStringContainsString(
+            "input: ['resources/css/app.scss']",
+            File::get(base_path('vite.config.js')),
+        );
+
+        $this->assertStringContainsString(
+            "'@tailwindcss/postcss': {}",
+            File::get(base_path('postcss.config.mjs')),
+        );
+
+        foreach ([
+            resource_path('views/components/layouts/app.blade.php'),
+            resource_path('views/components/layouts/guest.blade.php'),
+        ] as $layout) {
+            $layoutContents = File::get($layout);
+
+            $this->assertStringContainsString("@vite('resources/css/app.scss')", $layoutContents);
+            $this->assertStringNotContainsString('resources/css/app.css', $layoutContents);
+            $this->assertStringNotContainsString('resources/js/app.js', $layoutContents);
+        }
+    }
+
     public function test_root_level_custom_rounded_panels_are_not_used_for_livewire_and_shared_components(): void
     {
         $offenders = collect([

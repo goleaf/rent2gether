@@ -42,7 +42,7 @@ Do not commit `_data/flux-pro`, `auth.json`, or license material.
 
 Flux is wired in:
 
-- `resources/css/app.css`
+- `resources/css/app.scss`
 - `resources/views/components/layouts/app.blade.php`
 - `resources/views/layouts/app.blade.php`
 
@@ -58,10 +58,13 @@ The shared layout includes:
 The CSS includes:
 
 ```css
-@import 'tailwindcss';
+@use 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import '../../vendor/livewire/flux-pro/dist/editor.css';
 @custom-variant dark (&:where(.dark, .dark *));
 ```
+
+Tailwind is processed through `@tailwindcss/postcss` after Sass so the SCSS entrypoint can keep Tailwind v4 directives working.
 
 ## Agent Skill
 

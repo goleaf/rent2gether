@@ -259,7 +259,7 @@ Flux theming is based on a base gray palette and an accent color palette managed
 
 ### Livewire and Laravel usage
 
-- Keep theme changes in `resources/css/app.css`.
+- Keep theme changes in `resources/css/app.scss`.
 - Do not use per-view inline theme hacks.
 - Ensure translated content remains readable in both light and dark themes.
 
@@ -293,8 +293,9 @@ Flux supports dark mode and can manage appearance by toggling the `.dark` class 
 ### Basic usage
 
 ```css
-@import "tailwindcss";
+@use "tailwindcss";
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import '../../vendor/livewire/flux-pro/dist/editor.css';
 @custom-variant dark (&:where(.dark, .dark *));
 ```
 
