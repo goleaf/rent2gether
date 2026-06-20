@@ -251,6 +251,22 @@
                 </flux:button>
             </flux:card>
 
+            <livewire:listings.detail.compatibility-summary-section
+                :sleeping-place-id="$place->id"
+                :check-in="$checkIn"
+                :check-out="$checkOut"
+                :key="'detail-compatibility-summary-'.$place->id.'-'.$checkIn.'-'.$checkOut"
+                lazy
+            />
+
+            <livewire:listings.detail.compatibility-details-sheet
+                :sleeping-place-id="$place->id"
+                :check-in="$checkIn"
+                :check-out="$checkOut"
+                :key="'detail-compatibility-details-'.$place->id.'-'.$checkIn.'-'.$checkOut"
+                lazy
+            />
+
             @if(session('listing-contact-status'))
                 <flux:callout color="green" icon="check-circle">
                     <flux:callout.text>{{ session('listing-contact-status') }}</flux:callout.text>

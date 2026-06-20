@@ -4,10 +4,12 @@ namespace App\Services\Listings;
 
 use App\Data\Listings\ListingCardContext;
 use App\Data\Listings\ListingCardData;
+use App\Data\Occupants\DateRange;
 use App\Models\Favorite;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\WaitlistItem;
+use App\Services\Compatibility\CompatibilityCalculatorService;
 use App\Services\AvailabilityService;
 use App\Services\CompatibilityService;
 use BackedEnum;
@@ -17,6 +19,11 @@ use Illuminate\Support\Str;
 
 class ListingCardService
 {
+    /**
+     * @var array<int, User|null>
+     */
+    private array $compatibilityUsers = [];
+
     public function __construct(
         private readonly ListingCardPriceService $prices,
         private readonly ListingCardBadgeService $badges,
@@ -25,6 +32,7 @@ class ListingCardService
         private readonly ListingCardPrivacyService $privacy,
         private readonly AvailabilityService $availability,
         private readonly CompatibilityService $compatibility,
+        private readonly CompatibilityCalculatorService $compatibilityCalculator,
     ) {}
 
     public function build(SleepingPlace $place, ListingCardContext $context): ListingCardData
@@ -195,7 +203,26 @@ class ListingCardService
             return ['fit_status' => null, 'score' => null, 'warnings' => []];
         }
 
-        $user = User::query()->with('guestPreference')->find($context->userId);
+        $user = $this->compatibilityUser($context->userId);
+
+        if ($user?->guestCompatibilityProfile && $context->hasDates()) {
+            $result = $this->compatibilityCalculator->calculate(
+                $user,
+                $place,
+                new DateRange((string) $context->checkInDate, (string) $context->checkOutDate),
+            );
+
+            return [
+                'fit_status' => $result->fitStatus,
+                'score' => $result->score,
+                'warnings' => collect([...$result->blockingReasons, ...$result->warningReasons])
+                    ->pluck('message')
+                    ->filter()
+                    ->take(2)
+                    ->values()
+                    ->all(),
+            ];
+        }
 
         if (! $user?->guestPreference) {
             return ['fit_status' => null, 'score' => null, 'warnings' => []];
@@ -213,6 +240,17 @@ class ListingCardService
             'score' => isset($result['score']) ? (int) $result['score'] : null,
             'warnings' => array_slice($result['warning_reasons'] ?? [], 0, 2),
         ];
+    }
+
+    private function compatibilityUser(int $userId): ?User
+    {
+        if (array_key_exists($userId, $this->compatibilityUsers)) {
+            return $this->compatibilityUsers[$userId];
+        }
+
+        return $this->compatibilityUsers[$userId] = User::query()
+            ->with(['guestPreference', 'guestCompatibilityProfile', 'guestCompatibilityVisibilitySetting'])
+            ->find($userId);
     }
 
     /**

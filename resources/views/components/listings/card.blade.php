@@ -105,6 +105,23 @@
 
         <x-listings.card-price :card="$card" />
 
+        @if(! empty($card['compatibility_score']))
+            <div class="flex flex-wrap items-center gap-2">
+                <flux:badge
+                    size="sm"
+                    color="{{ ($card['fit_status'] ?? null) === 'not_suitable' ? 'red' : (in_array(($card['fit_status'] ?? null), ['attention', 'uncomfortable'], true) ? 'yellow' : 'green') }}"
+                >
+                    {{ __('compatibility.title') }} · {{ __('compatibility.badge_short', ['score' => $card['compatibility_score']]) }}
+                </flux:badge>
+
+                @if(! $isCompact && ! empty($card['fit_status']))
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400">
+                        {{ __('compatibility.fit_statuses.'.$card['fit_status']) }}
+                    </span>
+                @endif
+            </div>
+        @endif
+
         @if(! $isCompact)
             <x-listings.card-amenities :amenities="$card['key_amenities'] ?? []" />
             <x-listings.card-rules :rules="$card['key_rules'] ?? []" />

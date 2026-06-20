@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Data\Occupants\DateRange;
+use App\Data\Listings\ListingCardContext;
 use App\Enums\GenderType;
 use App\Enums\PropertyStatus;
 use App\Enums\RoomStatus;
@@ -27,6 +28,8 @@ use App\Services\Compatibility\CompatibilityCacheService;
 use App\Services\Compatibility\CompatibilityCalculatorService;
 use App\Services\Compatibility\RoomCompatibilityProfileService;
 use App\Services\Compatibility\SleepingPlaceCompatibilityProfileService;
+use App\Services\Listings\ListingCardQueryService;
+use App\Services\Listings\ListingCardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
@@ -305,6 +308,20 @@ class GuestCompatibilityFeatureTest extends TestCase
                 'checkOut' => '2026-07-13',
             ])
             ->assertSee(__('compatibility.title'));
+
+        $context = new ListingCardContext(
+            userId: $guest->id,
+            locale: 'en',
+            checkInDate: '2026-07-10',
+            checkOutDate: '2026-07-13',
+        );
+        $loaded = app(ListingCardQueryService::class)->forComparison([$place->id], $context)->firstOrFail();
+        $card = app(ListingCardService::class)->build($loaded, $context);
+
+        $this->assertNotNull($card->compatibilityScore);
+        $this->blade('<x-listings.card :card="$card" card-variant="search" />', [
+            'card' => $card->toArray(),
+        ])->assertSee(__('compatibility.title'));
 
         Livewire::test(CompatibilityFilter::class)
             ->set('minimumFit', 'good')
