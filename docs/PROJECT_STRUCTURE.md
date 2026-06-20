@@ -9,14 +9,16 @@ The application is Livewire-first and controllerless for web UI.
 Do not create:
 
 - `app/Http/Controllers/`
+- root-level Blade page files under `resources/views/*.blade.php`
 - `resources/views/auth/`
+- `resources/views/beds/`
 - `resources/views/search/`
 - controller-backed web routes
 - Filament resources, panels, widgets, or admin pages
 - Livewire Volt components
 - Inertia, React, or Vue pages
 
-The existing `app/Http/` surface is limited to middleware and form requests. User-facing pages belong in Livewire class components.
+The existing `app/Http/` surface is limited to middleware and form requests. User-facing pages belong in Livewire class components. Page and feature views must live under `resources/views/livewire/...`; `resources/views/components/...` and `resources/views/layouts/...` are support surfaces for Livewire layouts and reusable Blade components only.
 
 ## Route And Page Placement
 
@@ -26,7 +28,7 @@ The existing `app/Http/` surface is limited to middleware and form requests. Use
 | Auth pages | Livewire page route | `app/Livewire/Auth/` | `resources/views/livewire/auth/` |
 | Account and profile | Livewire page route | `app/Livewire/Account/`, `app/Livewire/Profile/` | `resources/views/livewire/account/`, `resources/views/livewire/profile/` |
 | Public search | `search.index` | `app/Livewire/Search/SleepingPlaceSearch.php` | `resources/views/livewire/search/` |
-| Legacy bed detail bridge | `beds.show` | `app/Livewire/Beds/ShowBed.php` | `resources/views/beds/show.blade.php` |
+| Legacy bed detail bridge | `beds.show` | `app/Livewire/Beds/ShowBed.php` | `resources/views/livewire/beds/show-bed.blade.php` |
 | Canonical sleeping-place detail | `places.show` | `app/Livewire/Places/ShowSleepingPlace.php` | `resources/views/livewire/places/` |
 | Guest booking flow | Livewire page routes | `app/Livewire/Booking/`, `app/Livewire/Bookings/`, `app/Livewire/Trips/` | Matching `resources/views/livewire/...` folders |
 | Host listings | Livewire page routes | `app/Livewire/Host/Listings/`, `app/Livewire/Host/Properties/`, `app/Livewire/Host/Rooms/`, `app/Livewire/Host/SleepingPlaces/` | Matching `resources/views/livewire/host/...` folders |
@@ -137,14 +139,16 @@ These paths were intentionally removed. Do not recreate them:
 - `app/Http/Controllers/Host/*`
 - `resources/views/auth/login.blade.php`
 - `resources/views/auth/register.blade.php`
+- `resources/views/beds/show.blade.php`
 - `resources/views/search/index.blade.php`
+- `resources/views/welcome.blade.php`
 
 Replacement surfaces:
 
 - login/register: `app/Livewire/Auth/LoginPage.php`, `app/Livewire/Auth/RegisterPage.php`
 - logout: `app/Livewire/Auth/LogoutButton.php`
 - search: `app/Livewire/Search/SleepingPlaceSearch.php`
-- legacy bed detail: `app/Livewire/Beds/ShowBed.php`
+- legacy bed detail: `app/Livewire/Beds/ShowBed.php` with `resources/views/livewire/beds/show-bed.blade.php`
 - profile index/edit: `app/Livewire/Profile/EditProfile.php`
 
-The architecture regression test is `Tests\Feature\FoundationPointOneArchitectureTest::test_http_controller_surface_has_been_removed_for_livewire_pages`.
+The architecture regression tests are `Tests\Feature\FoundationPointOneArchitectureTest::test_http_controller_surface_has_been_removed_for_livewire_pages` and `Tests\Feature\FoundationPointOneArchitectureTest::test_view_surface_is_limited_to_livewire_views_and_support_layouts`.

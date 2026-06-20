@@ -45,7 +45,6 @@ Flux is wired in:
 - `resources/css/app.css`
 - `resources/views/components/layouts/app.blade.php`
 - `resources/views/layouts/app.blade.php`
-- `resources/views/welcome.blade.php`
 
 The shared layout includes:
 

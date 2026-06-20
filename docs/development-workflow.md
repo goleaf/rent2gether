@@ -18,8 +18,10 @@ Keep the core marketplace loop in view: guest chooses city, dates, and sleeping 
 ## Implementation Rules
 
 - Do not create `app/Http/Controllers/`.
-- Do not create controller-backed web routes, `resources/views/auth/`, or `resources/views/search/`.
+- Do not create controller-backed web routes, root-level Blade page files under `resources/views/*.blade.php`, `resources/views/auth/`, `resources/views/beds/`, or `resources/views/search/`.
 - Use Livewire class components for user-facing workflows and actions.
+- Put every page or feature view rendered by `app/Livewire/...` under `resources/views/livewire/...`.
+- Keep `resources/views/components/...` and `resources/views/layouts/...` as Livewire support surfaces only.
 - Use actions/services for behavior.
 - Use Form Requests for validation.
 - Use Policies for authorization.
@@ -103,7 +105,8 @@ For documentation-only changes, summarize changed files and verification.
 ## Pre-Commit Checklist
 
 - [ ] No query inside a loop, Blade view, or Livewire render method.
-- [ ] No `app/Http/Controllers/`, controller-backed web route, `resources/views/auth/`, or `resources/views/search/`.
+- [ ] No `app/Http/Controllers/`, controller-backed web route, root-level Blade page files, `resources/views/auth/`, `resources/views/beds/`, or `resources/views/search/`.
+- [ ] Every Livewire class that returns a literal view name returns `livewire.*`.
 - [ ] No Filament, Livewire Volt, admin/staff panels, Inertia, React, Vue, or SPA routing.
 - [ ] No unbounded `Model::all()`.
 - [ ] Relationships used by views/tables are eager loaded.

@@ -27,7 +27,7 @@ class ShowBed extends Component
         $compatibilityResult = $this->compatibilityResult($bed);
         $media = $bed->room->property->cardMedia;
 
-        return view('beds.show', [
+        return view('livewire.beds.show-bed', [
             'bed' => $bed,
             'blockedDates' => $this->blockedDates($bed),
             'compatibilityResult' => $compatibilityResult,

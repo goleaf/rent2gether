@@ -20,6 +20,7 @@ use App\Services\Users\UserRoleModeService;
 use Composer\InstalledVersions;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -266,6 +267,48 @@ class FoundationPointOneArchitectureTest extends TestCase
         );
 
         $this->assertCount(0, $controllerRoutes);
+    }
+
+    public function test_view_surface_is_limited_to_livewire_views_and_support_layouts(): void
+    {
+        $viewsPath = resource_path('views');
+
+        $topLevelDirectories = collect(File::directories($viewsPath))
+            ->map(fn (string $path): string => basename($path))
+            ->sort()
+            ->values()
+            ->all();
+
+        $this->assertSame(['components', 'layouts', 'livewire'], $topLevelDirectories);
+
+        $topLevelBladeFiles = collect(File::files($viewsPath))
+            ->map(fn ($file): string => $file->getFilename())
+            ->filter(fn (string $filename): bool => Str::endsWith($filename, '.blade.php'))
+            ->values()
+            ->all();
+
+        $this->assertSame([], $topLevelBladeFiles);
+
+        foreach (['auth', 'beds', 'search'] as $deletedViewDirectory) {
+            $this->assertDirectoryDoesNotExist(resource_path("views/{$deletedViewDirectory}"));
+        }
+
+        $nonLivewireRenderViews = collect(File::allFiles(app_path('Livewire')))
+            ->filter(fn ($file): bool => $file->getExtension() === 'php')
+            ->flatMap(function ($file): array {
+                preg_match_all(
+                    "/return\\s+view\\(\\s*['\\\"]([^'\\\"]+)['\\\"]/",
+                    (string) file_get_contents($file->getPathname()),
+                    $matches,
+                );
+
+                return $matches[1];
+            })
+            ->reject(fn (string $view): bool => Str::startsWith($view, 'livewire.'))
+            ->values()
+            ->all();
+
+        $this->assertSame([], $nonLivewireRenderViews);
     }
 
     /**

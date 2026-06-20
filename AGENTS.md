@@ -20,8 +20,10 @@ Use Livewire class components and Blade views.
 ## Current file placement contract
 
 This project is controllerless for web UI. Do not create or recreate `app/Http/Controllers/`.
-Do not create controller-backed routes, `resources/views/auth/`, or `resources/views/search/`.
+Do not create controller-backed routes, root-level Blade page files under `resources/views/*.blade.php`, `resources/views/auth/`, `resources/views/beds/`, or `resources/views/search/`.
 Use Livewire class components for user-facing pages and actions.
+Every page or feature view rendered by `app/Livewire/...` must live under `resources/views/livewire/...`.
+`resources/views/components/...` and `resources/views/layouts/...` are allowed only as Livewire support surfaces for reusable Blade components and layouts.
 
 Before creating any new PHP or Blade file, read `docs/PROJECT_STRUCTURE.md` and extend the existing folder listed there.
 If a generic Laravel tool suggests a controller, route closure, Filament resource, or old auth/search Blade wrapper, treat that suggestion as incompatible with this project.
