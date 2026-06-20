@@ -3,8 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\City;
+use App\Models\CityTranslation;
 use App\Models\Country;
+use App\Models\CountryTranslation;
 use App\Models\Region;
+use App\Support\Geo\GeoNameNormalizer;
 use Illuminate\Database\Seeder;
 
 class TestingGeoSeeder extends Seeder
@@ -45,6 +48,11 @@ class TestingGeoSeeder extends Seeder
             ],
         );
 
+        $this->countryTranslation($lithuania, 'en', 'Lithuania');
+        $this->countryTranslation($lithuania, 'ru', 'Литва');
+        $this->countryTranslation($germany, 'en', 'Germany');
+        $this->countryTranslation($germany, 'ru', 'Германия');
+
         $vilniusRegion = Region::query()->updateOrCreate(
             ['country_id' => $lithuania->id, 'code' => 'VL'],
             [
@@ -63,7 +71,7 @@ class TestingGeoSeeder extends Seeder
             ],
         );
 
-        City::query()->updateOrCreate(
+        $vilnius = City::query()->updateOrCreate(
             ['geoname_id' => 593116],
             [
                 'country_id' => $lithuania->id,
@@ -84,7 +92,7 @@ class TestingGeoSeeder extends Seeder
             ],
         );
 
-        City::query()->updateOrCreate(
+        $berlin = City::query()->updateOrCreate(
             ['geoname_id' => 2950159],
             [
                 'country_id' => $germany->id,
@@ -102,6 +110,45 @@ class TestingGeoSeeder extends Seeder
                 'source' => 'testing',
                 'source_id' => '2950159',
                 'is_active' => true,
+            ],
+        );
+
+        $this->cityTranslation($vilnius, 'en', 'Vilnius');
+        $this->cityTranslation($vilnius, 'ru', 'Вильнюс');
+        $this->cityTranslation($berlin, 'en', 'Berlin');
+        $this->cityTranslation($berlin, 'ru', 'Берлин');
+    }
+
+    private function countryTranslation(Country $country, string $locale, string $name): void
+    {
+        CountryTranslation::query()->updateOrCreate(
+            [
+                'country_id' => $country->id,
+                'locale' => CountryTranslation::normalizeLocale($locale),
+                'name_normalized' => GeoNameNormalizer::normalize($name),
+            ],
+            [
+                'name' => $name,
+                'source' => 'testing',
+                'source_id' => $country->iso2,
+                'is_preferred' => true,
+            ],
+        );
+    }
+
+    private function cityTranslation(City $city, string $locale, string $name): void
+    {
+        CityTranslation::query()->updateOrCreate(
+            [
+                'city_id' => $city->id,
+                'locale' => CountryTranslation::normalizeLocale($locale),
+                'name_normalized' => GeoNameNormalizer::normalize($name),
+            ],
+            [
+                'name' => $name,
+                'source' => 'testing',
+                'source_id' => $city->source_id,
+                'is_preferred' => true,
             ],
         );
     }

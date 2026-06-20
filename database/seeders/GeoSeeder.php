@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\City;
+use App\Models\CityTranslation;
 use App\Models\Country;
+use App\Models\CountryTranslation;
 use App\Models\Region;
 use App\Support\Geo\GeoNameNormalizer;
 use Illuminate\Database\Seeder;
@@ -13,8 +15,8 @@ class GeoSeeder extends Seeder
     public function run(): void
     {
         $countries = collect($this->countries())
-            ->mapWithKeys(fn (array $country): array => [
-                $country['iso2'] => Country::query()->updateOrCreate(
+            ->mapWithKeys(function (array $country): array {
+                $model = Country::query()->updateOrCreate(
                     ['iso2' => $country['iso2']],
                     [
                         'code' => $country['iso2'],
@@ -31,8 +33,13 @@ class GeoSeeder extends Seeder
                         'source' => 'iso_3166_demo',
                         'is_active' => true,
                     ],
-                ),
-            ]);
+                );
+
+                $this->countryTranslation($model, 'en', $country['name_en']);
+                $this->countryTranslation($model, 'ru', $country['name_ru']);
+
+                return [$country['iso2'] => $model];
+            });
 
         $regions = collect($this->regions())
             ->mapWithKeys(function (array $region) use ($countries): array {
@@ -55,7 +62,7 @@ class GeoSeeder extends Seeder
             $country = $countries->get($city['country']);
             $region = $regions->get($city['region']);
 
-            City::query()->updateOrCreate(
+            $model = City::query()->updateOrCreate(
                 ['geoname_id' => $city['geoname_id']],
                 [
                     'country_id' => $country->id,
@@ -76,7 +83,45 @@ class GeoSeeder extends Seeder
                     'is_active' => true,
                 ],
             );
+
+            foreach ($city['translations'] as $locale => $name) {
+                $this->cityTranslation($model, $locale, $name);
+            }
         }
+    }
+
+    private function countryTranslation(Country $country, string $locale, string $name): void
+    {
+        CountryTranslation::query()->updateOrCreate(
+            [
+                'country_id' => $country->id,
+                'locale' => CountryTranslation::normalizeLocale($locale),
+                'name_normalized' => GeoNameNormalizer::normalize($name),
+            ],
+            [
+                'name' => $name,
+                'source' => 'geo_demo',
+                'source_id' => $country->geoname_id ? (string) $country->geoname_id : $country->iso2,
+                'is_preferred' => true,
+            ],
+        );
+    }
+
+    private function cityTranslation(City $city, string $locale, string $name): void
+    {
+        CityTranslation::query()->updateOrCreate(
+            [
+                'city_id' => $city->id,
+                'locale' => CountryTranslation::normalizeLocale($locale),
+                'name_normalized' => GeoNameNormalizer::normalize($name),
+            ],
+            [
+                'name' => $name,
+                'source' => 'geo_demo',
+                'source_id' => $city->geoname_id ? (string) $city->geoname_id : null,
+                'is_preferred' => true,
+            ],
+        );
     }
 
     /**
@@ -123,7 +168,7 @@ class GeoSeeder extends Seeder
     }
 
     /**
-     * @return list<array{geoname_id:int,country:string,region:string,name:string,ascii_name:string,alternate_names:string,latitude:float,longitude:float,population:int,timezone:string,feature_code:string}>
+     * @return list<array{geoname_id:int,country:string,region:string,name:string,ascii_name:string,alternate_names:string,latitude:float,longitude:float,population:int,timezone:string,feature_code:string,translations:array<string,string>}>
      */
     private function cities(): array
     {
@@ -140,6 +185,7 @@ class GeoSeeder extends Seeder
                 'population' => 542366,
                 'timezone' => 'Europe/Vilnius',
                 'feature_code' => 'PPLC',
+                'translations' => ['en' => 'Vilnius', 'ru' => 'Вильнюс'],
             ],
             [
                 'geoname_id' => 598316,
@@ -153,6 +199,7 @@ class GeoSeeder extends Seeder
                 'population' => 289380,
                 'timezone' => 'Europe/Vilnius',
                 'feature_code' => 'PPLA',
+                'translations' => ['en' => 'Kaunas', 'ru' => 'Каунас'],
             ],
             [
                 'geoname_id' => 598098,
@@ -166,6 +213,7 @@ class GeoSeeder extends Seeder
                 'population' => 183433,
                 'timezone' => 'Europe/Vilnius',
                 'feature_code' => 'PPLA',
+                'translations' => ['en' => 'Klaipeda', 'ru' => 'Клайпеда'],
             ],
             [
                 'geoname_id' => 2950159,
@@ -179,6 +227,7 @@ class GeoSeeder extends Seeder
                 'population' => 3426354,
                 'timezone' => 'Europe/Berlin',
                 'feature_code' => 'PPLC',
+                'translations' => ['en' => 'Berlin', 'ru' => 'Берлин'],
             ],
             [
                 'geoname_id' => 2867714,
@@ -192,6 +241,7 @@ class GeoSeeder extends Seeder
                 'population' => 1260391,
                 'timezone' => 'Europe/Berlin',
                 'feature_code' => 'PPLA',
+                'translations' => ['en' => 'Munich', 'ru' => 'Мюнхен'],
             ],
         ];
     }

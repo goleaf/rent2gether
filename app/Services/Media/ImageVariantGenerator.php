@@ -16,7 +16,7 @@ class ImageVariantGenerator
         $contents = $this->readUpload($file);
         [$width, $height, $mime] = $this->imageMetadata($contents, $file);
         $size = $file->getSize();
-        $source = $this->sourceImage($contents);
+        $source = $this->hasMemoryForImageDecode($width, $height) ? $this->sourceImage($contents) : false;
 
         if (! $source) {
             $extension = $this->extension($file, $mime);
@@ -39,9 +39,13 @@ class ImageVariantGenerator
         $mobilePath = $directory.'/'.$baseName.'-mobile.jpg';
         $thumbPath = $directory.'/'.$baseName.'-thumb.jpg';
 
-        $this->writeJpegVariant($source, $contents, $mime, $width, $height, $fullPath, 1600, 84, $disk);
-        $this->writeJpegVariant($source, $contents, $mime, $width, $height, $mobilePath, 720, 80, $disk);
-        $this->writeJpegVariant($source, $contents, $mime, $width, $height, $thumbPath, 320, 76, $disk);
+        try {
+            $this->writeJpegVariant($source, $contents, $mime, $width, $height, $fullPath, 1600, 84, $disk);
+            $this->writeJpegVariant($source, $contents, $mime, $width, $height, $mobilePath, 720, 80, $disk);
+            $this->writeJpegVariant($source, $contents, $mime, $width, $height, $thumbPath, 320, 76, $disk);
+        } finally {
+            $this->destroyImage($source);
+        }
 
         return [
             'path' => $fullPath,
@@ -112,15 +116,26 @@ class ImageVariantGenerator
         $scale = min($maxSize / max(1, $sourceWidth), $maxSize / max(1, $sourceHeight), 1);
         $targetWidth = max(1, (int) round($sourceWidth * $scale));
         $targetHeight = max(1, (int) round($sourceHeight * $scale));
+
+        if (! $this->hasMemoryForResize($targetWidth, $targetHeight)) {
+            $this->put($disk, $path, $originalContents);
+
+            return;
+        }
+
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
 
-        $white = imagecolorallocate($target, 255, 255, 255);
-        imagefill($target, 0, 0, $white);
-        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
+        try {
+            $white = imagecolorallocate($target, 255, 255, 255);
+            imagefill($target, 0, 0, $white);
+            imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
 
-        ob_start();
-        $written = imagejpeg($target, null, $quality);
-        $contents = (string) ob_get_clean();
+            ob_start();
+            $written = imagejpeg($target, null, $quality);
+            $contents = (string) ob_get_clean();
+        } finally {
+            $this->destroyImage($target);
+        }
 
         if (! $written || $contents === '') {
             throw new RuntimeException('The uploaded image variant could not be generated.');
@@ -152,6 +167,57 @@ class ImageVariantGenerator
     {
         if (Storage::disk($disk)->put($path, $contents) === false) {
             throw new RuntimeException('The uploaded image could not be stored.');
+        }
+    }
+
+    private function hasMemoryForImageDecode(?int $width, ?int $height): bool
+    {
+        if (! $width || ! $height) {
+            return true;
+        }
+
+        return $this->hasAvailableMemory(($width * $height * 5) + (8 * 1024 * 1024));
+    }
+
+    private function hasMemoryForResize(int $width, int $height): bool
+    {
+        return $this->hasAvailableMemory(($width * $height * 5) + (8 * 1024 * 1024));
+    }
+
+    private function hasAvailableMemory(int $estimatedBytes): bool
+    {
+        $limit = $this->memoryLimitBytes();
+
+        if ($limit <= 0) {
+            return true;
+        }
+
+        return ($limit - memory_get_usage(true)) > $estimatedBytes;
+    }
+
+    private function memoryLimitBytes(): int
+    {
+        $value = trim((string) ini_get('memory_limit'));
+
+        if ($value === '' || $value === '-1') {
+            return -1;
+        }
+
+        $unit = strtolower($value[-1]);
+        $number = (int) $value;
+
+        return match ($unit) {
+            'g' => $number * 1024 * 1024 * 1024,
+            'm' => $number * 1024 * 1024,
+            'k' => $number * 1024,
+            default => $number,
+        };
+    }
+
+    private function destroyImage(mixed $image): void
+    {
+        if (is_resource($image) || $image instanceof \GdImage) {
+            imagedestroy($image);
         }
     }
 }

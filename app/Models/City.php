@@ -77,6 +77,11 @@ class City extends Model
         return $this->hasMany(Property::class);
     }
 
+    public function translations(): HasMany
+    {
+        return $this->hasMany(CityTranslation::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_ACTIVE)
@@ -90,7 +95,13 @@ class City extends Model
 
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
-        return $query;
+        $locales = CountryTranslation::localeCandidates($locale);
+
+        return $query->with([
+            'translations' => fn (HasMany $query): HasMany => $query
+                ->select(['id', 'city_id', 'locale', 'name'])
+                ->whereIn('locale', $locales),
+        ]);
     }
 
     public function scopeInCountry(Builder $query, int $countryId): Builder
@@ -106,5 +117,49 @@ class City extends Model
     public function scopeNameContains(Builder $query, string $value): Builder
     {
         return $query->where('name_normalized', 'like', '%'.GeoNameNormalizer::normalize($value).'%');
+    }
+
+    public function scopeNameContainsInLocale(Builder $query, string $value, ?string $locale = null): Builder
+    {
+        $normalized = GeoNameNormalizer::normalize($value);
+        $locale = CountryTranslation::normalizeLocale($locale ?: app()->getLocale());
+
+        return $query->where(fn (Builder $query): Builder => $query
+            ->where('name_normalized', 'like', '%'.$normalized.'%')
+            ->orWhereHas(
+                'translations',
+                fn (Builder $query): Builder => $query
+                    ->where('locale', $locale)
+                    ->where('name_normalized', 'like', '%'.$normalized.'%'),
+            ));
+    }
+
+    public function localizedName(?string $locale = null): string
+    {
+        $locale = CountryTranslation::normalizeLocale($locale ?: app()->getLocale());
+
+        if ($locale !== '') {
+            if ($this->relationLoaded('translations')) {
+                $translation = $this->translations
+                    ->firstWhere('locale', $locale)
+                    ?: $this->translations->firstWhere('locale', CountryTranslation::fallbackLocale());
+
+                if ($translation) {
+                    return $translation->name;
+                }
+            } else {
+                foreach (CountryTranslation::localeCandidates($locale) as $candidateLocale) {
+                    $translation = $this->translations()
+                        ->where('locale', $candidateLocale)
+                        ->first();
+
+                    if ($translation) {
+                        return $translation->name;
+                    }
+                }
+            }
+        }
+
+        return $this->name;
     }
 }

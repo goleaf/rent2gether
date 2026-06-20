@@ -105,6 +105,15 @@ class Property extends Model
         'has_cctv_common_areas',
         'emergency_contact_name',
         'emergency_contact_phone',
+        'publication_status',
+        'review_status',
+        'review_requested_at',
+        'reviewed_at',
+        'review_comment',
+        'rejection_reason',
+        'published_at',
+        'paused_at',
+        'archived_at',
     ];
 
     protected function casts(): array
@@ -140,6 +149,11 @@ class Property extends Model
             'has_parking' => 'boolean',
             'has_security' => 'boolean',
             'has_cctv_common_areas' => 'boolean',
+            'review_requested_at' => 'datetime',
+            'reviewed_at' => 'datetime',
+            'published_at' => 'datetime',
+            'paused_at' => 'datetime',
+            'archived_at' => 'datetime',
         ];
     }
 
@@ -153,6 +167,8 @@ class Property extends Model
         static::deleting(function (Property $property): void {
             $property->hostHintSnapshots()->delete();
             $property->hostHintDismissals()->delete();
+            $property->listingWizardSessions()->delete();
+            $property->publicationChecks()->delete();
         });
     }
 
@@ -224,6 +240,16 @@ class Property extends Model
     public function bookingGuestIntakes(): HasMany
     {
         return $this->hasMany(BookingGuestIntake::class);
+    }
+
+    public function listingWizardSessions(): HasMany
+    {
+        return $this->hasMany(HostListingWizardSession::class);
+    }
+
+    public function publicationChecks(): HasMany
+    {
+        return $this->hasMany(ListingPublicationCheck::class);
     }
 
     public function beds(): HasManyThrough

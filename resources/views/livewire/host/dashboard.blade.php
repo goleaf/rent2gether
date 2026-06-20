@@ -1,6 +1,8 @@
 <div class="max-w-5xl mx-auto space-y-6">
     <flux:heading size="xl">{{ __('host.dashboard') }}</flux:heading>
 
+    <livewire:host.hints.host-hints-panel lazy />
+
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <flux:card class="text-center">
             <div class="text-2xl font-bold">&euro;{{ number_format($this->monthlyIncome, 2) }}</div>

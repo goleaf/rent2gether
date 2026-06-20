@@ -39,6 +39,25 @@
         </div>
     </flux:card>
 
+    @if($sleepingPlaceId)
+        @php
+            $hostHintStep = match ($step) {
+                4 => 'pricing',
+                5 => 'description',
+                6 => 'rules',
+                7 => 'photos',
+                default => 'overview',
+            };
+        @endphp
+
+        <livewire:host.hints.host-wizard-hints
+            target-type="sleeping_place"
+            :target-id="$sleepingPlaceId"
+            :step="$hostHintStep"
+            :key="'host-wizard-hints-'.$sleepingPlaceId.'-'.$step"
+        />
+    @endif
+
     <form wire:submit="publish" class="space-y-5">
         <flux:card class="space-y-5">
             <div class="space-y-1">
@@ -290,6 +309,13 @@
                     @break
             @endswitch
         </flux:card>
+
+        @if($sleepingPlaceId && $step === 7)
+            <livewire:host.hints.host-before-publish-checklist
+                :sleeping-place-id="$sleepingPlaceId"
+                :key="'host-before-publish-'.$sleepingPlaceId"
+            />
+        @endif
 
         <div class="sticky bottom-20 z-10 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
             <div class="grid grid-cols-2 gap-3">

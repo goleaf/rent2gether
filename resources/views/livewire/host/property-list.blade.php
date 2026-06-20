@@ -10,8 +10,8 @@
             </div>
         </div>
 
-        <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate class="w-full sm:w-auto">
-            {{ __('host.add_property') }}
+        <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate class="w-full sm:w-auto">
+            {{ __('listing_wizard.title') }}
         </flux:button>
     </section>
 
@@ -22,8 +22,8 @@
             <flux:card class="space-y-3 text-center">
                 <flux:heading size="lg">{{ __('host.listings.properties.empty_title') }}</flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('host.empty_properties') }}</flux:text>
-                <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
-                    {{ __('host.add_property') }}
+                <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
+                    {{ __('listing_wizard.title') }}
                 </flux:button>
             </flux:card>
         @endforelse

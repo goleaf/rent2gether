@@ -2,6 +2,8 @@
 
 Normal user search must use offline SQLite data. Do not call external geo APIs while a user types, filters, or searches.
 
+Geo country/city search follows the selected interface locale. If the interface is Russian, the autocomplete searches Russian `country_translations` / `city_translations` rows and displays Russian names when available. Future languages must use the same `locale` table design; do not add new language-specific columns or code branches.
+
 ## Default Demo Geography
 
 The default `GeoSeeder` is deliberately lightweight. It loads only 2 countries and 5 cities so local demos, tests, and `php artisan app:demo-reset` stay fast:
@@ -9,7 +11,7 @@ The default `GeoSeeder` is deliberately lightweight. It loads only 2 countries a
 - Lithuania: Vilnius, Kaunas, Klaipeda
 - Germany: Berlin, Munich
 
-Do not add full GeoNames datasets to the default seeder. Use the import commands below for larger offline datasets.
+Full GeoNames datasets are opt-in through `config/geo.php` and local `.env` values. Testing stays protected from accidental large downloads, while local development may enable full imports through `php artisan migrate:fresh --seed`.
 
 ## Countries
 
@@ -27,20 +29,38 @@ Import:
 php artisan geo:import-countries --source=storage/app/geo/countries.csv
 ```
 
-The importer accepts common headers including `iso2`, `code`, `alpha-2`, `iso3`, `alpha-3`, `name`, `name_en`, `name_ru`, `name_native`, `phone_code`, `currency_code`, `timezone_default`, and `status`.
+Full GeoNames seed path:
+
+```bash
+php artisan geo:seed-geonames
+php artisan geo:seed-geonames --download-only
+php artisan migrate:fresh --seed
+```
+
+When `GEONAMES_SEED_ENABLED=true`, `DatabaseSeeder` downloads/prepares configured GeoNames files if needed and imports them during `php artisan migrate:fresh --seed`. The current local full mode uses `allCountries` plus `alternateNamesV2` so city and country lookup can search translated names for every language code available in GeoNames.
+
+The legacy CSV importer accepts common headers including `iso2`, `code`, `alpha-2`, `iso3`, `alpha-3`, `name`, `name_en`, `name_ru`, `name_native`, `phone_code`, `currency_code`, `timezone_default`, and `status`. New multilingual imports must write language-specific names to `country_translations.locale` rather than adding more columns.
 
 Stored fields:
 
 - `iso2`
 - `iso3`
-- `name_en`
-- `name_ru`
-- `name_native`
+- canonical `name`
+- legacy/source compatibility fields such as `name_en`, `name_ru`, and `name_native`
+- multilingual rows in `country_translations`
 - `phone_code`
 - `currency_code`
 - `timezone_default`
 - `status`
 - `name_normalized`
+
+Country translations are stored in `country_translations`:
+
+- `country_id`
+- `locale`
+- `name`
+- `name_normalized`
+- GeoNames source metadata and alternate-name flags
 
 License notes:
 
@@ -88,9 +108,12 @@ Stored fields:
 - `feature_class`
 - `feature_code`
 - `name_normalized`
+- multilingual rows in `city_translations`
 - `status`
 
 GeoNames data requires attribution under its license. Keep the source file name and update date in release notes or import run logs when production imports are performed.
+
+City translations are stored in `city_translations` with `city_id`, `locale`, `name`, `name_normalized`, source metadata, and GeoNames alternate-name flags. Pseudo alternate-name rows such as links, postal codes, IATA codes, and other non-language identifiers are skipped by requiring a real language-like locale code.
 
 ## Search Index
 
@@ -106,6 +129,8 @@ Search rules:
 - Debounce autocomplete by 500ms.
 - Return at most 10 compact city results.
 - Prioritize city prefix matches, then larger population.
+- Search translated place names for the selected interface locale; display that same locale and fall back only when a translated row does not exist.
+- Do not use language-specific columns for new languages; use `country_translations.locale` and `city_translations.locale`.
 - Use SQLite indexes on normalized names, status, country filters, and GeoNames IDs.
 - Never load the complete country or city list into a mobile select.
 - Advanced place filters for district, street, landmark, nearby transit, airports, universities, hospitals, sea, parks, shopping, gyms, coworking, nightlife, and area type must use stored local metadata or offline/imported point data.
@@ -135,8 +160,10 @@ For sustained production geocoding, use a self-hosted or contracted provider.
 
 Recommended local paths:
 
-- `storage/app/geo/countries.csv`
-- `storage/app/geo/cities1000.txt`
-- `storage/app/geo/allCountries.txt`
+- `storage/app/geo/geonames/countryInfo.txt`
+- `storage/app/geo/geonames/allCountries.zip`
+- `storage/app/geo/geonames/allCountries.txt`
+- `storage/app/geo/geonames/alternateNamesV2.zip`
+- `storage/app/geo/geonames/alternateNamesV2.txt`
 
-Large geo imports must run from Artisan or a queued job, not from a web request or default seeder.
+Large geo imports must run from Artisan, a seeder, or a queued job, never from a web request. In this project the full import is intentionally opt-in through `GEONAMES_SEED_ENABLED=true` so one local command can rebuild everything while automated tests remain lightweight.

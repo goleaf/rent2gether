@@ -32,6 +32,7 @@ use App\Livewire\Host\HostBookings;
 use App\Livewire\Host\HostIncome;
 use App\Livewire\Host\HostOnboardingPage;
 use App\Livewire\Host\HostProfileEditPage;
+use App\Livewire\Host\Listings\CreateListingWizard;
 use App\Livewire\Host\ManageBooking;
 use App\Livewire\Host\Properties\PropertyAccessStep;
 use App\Livewire\Host\Properties\PropertyCompletionPanel;
@@ -195,6 +196,9 @@ Route::prefix('{locale}')
         Route::prefix('host')->name('host.')->group(function (): void {
             Route::get('/', HostHomePage::class)->name('dashboard');
             Route::get('/listings', HostListingsPage::class)->name('listings.index');
+            Route::get('/listings/wizard/{propertyId?}', CreateListingWizard::class)
+                ->whereNumber('propertyId')
+                ->name('listings.create');
             Route::get('/listings/{scope}', HostListingsPage::class)
                 ->whereIn('scope', ['drafts', 'hidden'])
                 ->name('listings.scope');

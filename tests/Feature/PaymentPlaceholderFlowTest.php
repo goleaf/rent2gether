@@ -102,7 +102,7 @@ class PaymentPlaceholderFlowTest extends TestCase
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
             'booking_id' => $booking->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::Booked->value,
         ]);
     }
@@ -160,7 +160,7 @@ class PaymentPlaceholderFlowTest extends TestCase
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
             'booking_id' => $booking->id,
-            'date' => '2026-07-11 00:00:00',
+            'date' => '2026-07-11',
             'status' => AvailabilityStatus::Booked->value,
         ]);
     }

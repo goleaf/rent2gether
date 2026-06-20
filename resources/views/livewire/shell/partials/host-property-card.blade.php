@@ -86,7 +86,7 @@
         <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $property['id']]) }}" variant="primary" wire:navigate>
             {{ __('host.listings.actions.open_property') }}
         </flux:button>
-        <flux:button href="{{ route('host.properties.edit', ['locale' => app()->getLocale(), 'property' => $property['id']]) }}" variant="ghost" wire:navigate>
+        <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale(), 'propertyId' => $property['id']]) }}" variant="ghost" wire:navigate>
             {{ __('app.actions.edit') }}
         </flux:button>
         <flux:button href="{{ route('host.calendar', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>

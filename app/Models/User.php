@@ -246,6 +246,16 @@ class User extends Authenticatable
         return $this->hasMany(HostHintAction::class);
     }
 
+    public function hostListingWizardSessions(): HasMany
+    {
+        return $this->hasMany(HostListingWizardSession::class);
+    }
+
+    public function listingPublicationChecks(): HasMany
+    {
+        return $this->hasMany(ListingPublicationCheck::class);
+    }
+
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');

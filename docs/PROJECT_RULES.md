@@ -56,7 +56,9 @@ Use this command when the schema is already current and only demo rows should be
 php artisan app:demo-reset --seed-only
 ```
 
-Large GeoNames imports are not part of the default seeder. Run `geo:import-countries`, `geo:import-geonames-cities`, and `geo:rebuild-search-index` explicitly when a larger offline geo dataset is needed.
+Large GeoNames imports are controlled by `config/geo.php`. Keep testing and small demo resets protected from accidental full imports, but the local project may opt in to a full `migrate:fresh --seed` GeoNames load.
+
+Geo country/city search and display must use the currently selected interface locale. Store multilingual place names in `country_translations` and `city_translations` with a `locale` column, search only the selected locale plus canonical fallback fields, and never add new language-specific columns or branches such as `name_lt`, `name_pl`, or locale-specific conditionals. Existing legacy name columns are fallback/source compatibility only.
 
 ## Integration Coverage
 

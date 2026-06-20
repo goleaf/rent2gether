@@ -93,6 +93,7 @@ class SleepingPlace extends Model
         'currency',
         'min_nights',
         'max_nights',
+        'cleaning_gap_days',
         'instant_booking_enabled',
         'requires_host_approval',
         'extensions_allowed',
@@ -102,6 +103,9 @@ class SleepingPlace extends Model
         'second_guest_allowed',
         'second_guest_fee',
         'cancellation_policy',
+        'publication_status',
+        'completed_at',
+        'published_at',
     ];
 
     protected function casts(): array
@@ -145,6 +149,7 @@ class SleepingPlace extends Model
             'holiday_price' => 'decimal:2',
             'cleaning_fee' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
+            'cleaning_gap_days' => 'integer',
             'instant_booking_enabled' => 'boolean',
             'requires_host_approval' => 'boolean',
             'extensions_allowed' => 'boolean',
@@ -153,6 +158,8 @@ class SleepingPlace extends Model
             'late_check_out_allowed' => 'boolean',
             'second_guest_allowed' => 'boolean',
             'second_guest_fee' => 'decimal:2',
+            'completed_at' => 'datetime',
+            'published_at' => 'datetime',
         ];
     }
 
@@ -206,6 +213,21 @@ class SleepingPlace extends Model
         return $this->hasMany(AvailabilityDay::class);
     }
 
+    public function calendarSettings(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceCalendarSetting::class);
+    }
+
+    public function calendarDays(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceCalendarDay::class);
+    }
+
+    public function calendarRules(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceCalendarRule::class);
+    }
+
     public function priceRules(): HasMany
     {
         return $this->hasMany(PriceRule::class);
@@ -249,6 +271,11 @@ class SleepingPlace extends Model
     public function compatibilityResults(): HasMany
     {
         return $this->hasMany(CompatibilityResult::class);
+    }
+
+    public function publicationChecks(): HasMany
+    {
+        return $this->hasMany(ListingPublicationCheck::class);
     }
 
     public function listingHintSnapshots(): HasMany

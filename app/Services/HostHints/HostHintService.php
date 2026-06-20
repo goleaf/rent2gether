@@ -10,6 +10,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class HostHintService
@@ -121,6 +122,12 @@ class HostHintService
             ->whereNotIn('status', ['completed', 'auto_closed'])
             ->delete();
 
+        $completedKeys = HostHintSnapshot::query()
+            ->where('user_id', $host->id)
+            ->where('sleeping_place_id', $place->id)
+            ->where('status', 'completed')
+            ->pluck('hint_key');
+
         $payloads = collect()
             ->merge($this->photos->forSleepingPlace($place))
             ->merge($this->descriptions->forSleepingPlace($place))
@@ -130,6 +137,7 @@ class HostHintService
             ->merge($this->safety->forSleepingPlace($place))
             ->merge($this->access->forSleepingPlace($place))
             ->unique('hint_key')
+            ->reject(fn (array $payload): bool => $completedKeys->contains($payload['hint_key']))
             ->values();
 
         $payloads->each(function (array $payload) use ($host, $place): void {
@@ -175,7 +183,7 @@ class HostHintService
             ->values();
     }
 
-    private function baseQuery(User $host, Property|Room|SleepingPlace $target)
+    private function baseQuery(User $host, Property|Room|SleepingPlace $target): Builder
     {
         $query = HostHintSnapshot::query()
             ->active()

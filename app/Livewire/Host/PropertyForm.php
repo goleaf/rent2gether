@@ -12,6 +12,7 @@ use App\Models\Country;
 use App\Models\Property;
 use App\Models\Region;
 use App\Services\Catalog\AmenityRuleLookupService;
+use App\Services\Geo\GeoSearchService;
 use App\Support\Geo\GeoNameNormalizer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -152,8 +153,12 @@ class PropertyForm extends Component
             'translations',
             'amenities:id',
             'rules:id',
-            'countryModel:id,iso2,code,name,name_en,name_ru',
-            'cityModel:id,name',
+            'countryModel' => fn ($query) => $query
+                ->select(['id', 'iso2', 'code', 'name'])
+                ->translated(app()->getLocale()),
+            'cityModel' => fn ($query) => $query
+                ->select(['id', 'name'])
+                ->translated(app()->getLocale()),
             'region:id,name',
         ]);
 
@@ -163,7 +168,7 @@ class PropertyForm extends Component
         $this->countryId = $property->country_id;
         $this->countryQuery = $property->countryModel?->localizedName() ?: $property->country ?: '';
         $this->cityId = $property->city_id;
-        $this->cityQuery = $property->cityModel?->name ?: $property->city ?: '';
+        $this->cityQuery = $property->cityModel?->localizedName() ?: $property->city ?: '';
         $this->regionName = $property->region_name ?: $property->region?->name ?: '';
         $this->district = $property->district ?: '';
         $this->street = $property->street ?: $property->address_line_1 ?: '';
@@ -226,8 +231,9 @@ class PropertyForm extends Component
     public function selectCountry(int $countryId): void
     {
         $country = Country::query()
-            ->select(['id', 'iso2', 'code', 'name', 'name_en', 'name_ru', 'status', 'is_active'])
+            ->select(['id', 'iso2', 'code', 'name', 'status', 'is_active'])
             ->visible()
+            ->translated(app()->getLocale())
             ->find($countryId);
 
         if (! $country) {
@@ -247,6 +253,7 @@ class PropertyForm extends Component
             ->select(['id', 'country_id', 'region_id', 'name', 'status', 'is_active'])
             ->with(['region:id,name'])
             ->visible()
+            ->translated(app()->getLocale())
             ->when($this->countryId, fn (Builder $query): Builder => $query->where('country_id', $this->countryId))
             ->find($cityId);
 
@@ -255,7 +262,7 @@ class PropertyForm extends Component
         }
 
         $this->cityId = $city->id;
-        $this->cityQuery = $city->name;
+        $this->cityQuery = $city->localizedName();
         $this->citySearchOpen = false;
 
         if (! $this->regionName && $city->region) {
@@ -347,37 +354,12 @@ class PropertyForm extends Component
     #[Computed]
     public function countryResults(): array
     {
-        $normalized = GeoNameNormalizer::normalize($this->countryQuery);
-
-        if (! $this->countrySearchOpen || Str::length($normalized) < 2) {
+        if (! $this->countrySearchOpen || Str::length(GeoNameNormalizer::normalize($this->countryQuery)) < 2) {
             return [];
         }
 
-        $prefixMatches = Country::query()
-            ->select(['id', 'iso2', 'code', 'name', 'name_en', 'name_ru', 'name_normalized', 'status', 'is_active'])
-            ->visible()
-            ->namePrefix($normalized)
-            ->orderBy('name_en')
-            ->limit(10)
-            ->get();
-
-        $remaining = 10 - $prefixMatches->count();
-        $matches = $prefixMatches;
-
-        if ($remaining > 0) {
-            $containsMatches = Country::query()
-                ->select(['id', 'iso2', 'code', 'name', 'name_en', 'name_ru', 'name_normalized', 'status', 'is_active'])
-                ->visible()
-                ->where('name_normalized', 'like', '%'.$normalized.'%')
-                ->whereNotIn('id', $prefixMatches->pluck('id'))
-                ->orderBy('name_en')
-                ->limit($remaining)
-                ->get();
-
-            $matches = $matches->concat($containsMatches);
-        }
-
-        return $matches
+        return app(GeoSearchService::class)
+            ->countries($this->countryQuery, app()->getLocale())
             ->map(fn (Country $country): array => [
                 'id' => $country->id,
                 'name' => $country->localizedName(),
@@ -390,36 +372,15 @@ class PropertyForm extends Component
     #[Computed]
     public function cityResults(): array
     {
-        $normalized = GeoNameNormalizer::normalize($this->cityQuery);
-
-        if (! $this->citySearchOpen || Str::length($normalized) < 2) {
+        if (! $this->citySearchOpen || Str::length(GeoNameNormalizer::normalize($this->cityQuery)) < 2) {
             return [];
         }
 
-        $prefixMatches = $this->citySearchQuery()
-            ->namePrefix($normalized)
-            ->orderByDesc('population')
-            ->limit(10)
-            ->get();
-
-        $remaining = 10 - $prefixMatches->count();
-        $matches = $prefixMatches;
-
-        if ($remaining > 0) {
-            $containsMatches = $this->citySearchQuery()
-                ->nameContains($normalized)
-                ->whereNotIn('id', $prefixMatches->pluck('id'))
-                ->orderByDesc('population')
-                ->limit($remaining)
-                ->get();
-
-            $matches = $matches->concat($containsMatches);
-        }
-
-        return $matches
+        return app(GeoSearchService::class)
+            ->cities($this->cityQuery, app()->getLocale(), countryId: $this->countryId)
             ->map(fn (City $city): array => [
                 'id' => $city->id,
-                'name' => $city->name,
+                'name' => $city->localizedName(),
                 'country' => $city->country?->localizedName(),
                 'region' => $city->region?->name,
             ])
@@ -553,8 +514,8 @@ class PropertyForm extends Component
         $city = $this->cityId ? City::query()->with('region')->find($this->cityId) : null;
         $region = $this->regionModel($country, $city);
         $fallbackTitle = $this->titleEn ?: $this->titleRu ?: $property?->title ?: __('host.property_wizard.draft_title');
-        $countryName = $country?->localizedName('en') ?: $this->countryQuery ?: $property?->country ?: '';
-        $cityName = $city?->name ?: $this->cityQuery ?: $property?->city ?: '';
+        $countryName = $country?->localizedName() ?: $this->countryQuery ?: $property?->country ?: '';
+        $cityName = $city?->localizedName() ?: $this->cityQuery ?: $property?->city ?: '';
         $approximateLatitude = $this->useApproximatePublicLocation ? ($city?->latitude ?: $property?->approximate_latitude) : null;
         $approximateLongitude = $this->useApproximatePublicLocation ? ($city?->longitude ?: $property?->approximate_longitude) : null;
 
@@ -714,18 +675,6 @@ class PropertyForm extends Component
 
             $this->{$field} = null;
         }
-    }
-
-    private function citySearchQuery(): Builder
-    {
-        return City::query()
-            ->select(['id', 'country_id', 'region_id', 'name', 'ascii_name', 'name_normalized', 'population', 'status', 'is_active'])
-            ->with([
-                'country:id,iso2,code,name,name_en,name_ru',
-                'region:id,name',
-            ])
-            ->visible()
-            ->when($this->countryId, fn (Builder $query): Builder => $query->where('country_id', $this->countryId));
     }
 
     private function regionModel(?Country $country, ?City $city): ?Region

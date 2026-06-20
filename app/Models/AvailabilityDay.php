@@ -29,7 +29,7 @@ class AvailabilityDay extends Model
     protected function casts(): array
     {
         return [
-            'date' => 'date',
+            'date' => 'date:Y-m-d',
             'status' => AvailabilityStatus::class,
             'price_override' => 'decimal:2',
             'check_in_allowed' => 'boolean',

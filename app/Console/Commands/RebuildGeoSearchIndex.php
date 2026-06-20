@@ -21,10 +21,10 @@ class RebuildGeoSearchIndex extends Command
         $cities = 0;
 
         Country::query()
-            ->select(['id', 'iso2', 'code', 'iso3', 'name', 'name_en', 'status', 'is_active', 'name_normalized'])
+            ->select(['id', 'iso2', 'code', 'iso3', 'name', 'status', 'is_active', 'name_normalized'])
             ->chunkById(500, function ($items) use (&$countries): void {
                 foreach ($items as $country) {
-                    $country->name_normalized = GeoNameNormalizer::normalize($country->name_en ?: $country->name);
+                    $country->name_normalized = GeoNameNormalizer::normalize($country->name);
                     $country->save();
                     $countries++;
                 }

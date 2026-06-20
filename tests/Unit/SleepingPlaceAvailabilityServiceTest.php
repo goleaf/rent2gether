@@ -101,7 +101,7 @@ class SleepingPlaceAvailabilityServiceTest extends TestCase
         $this->assertDatabaseHas('availability_days', [
             'booking_id' => $booking->id,
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::PendingPayment->value,
         ]);
 
@@ -112,7 +112,7 @@ class SleepingPlaceAvailabilityServiceTest extends TestCase
         $this->assertDatabaseHas('availability_days', [
             'booking_id' => null,
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::Available->value,
         ]);
     }

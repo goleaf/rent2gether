@@ -85,6 +85,8 @@ class Room extends Model
         'can_turn_light_at_night',
         'can_talk_at_night',
         'room_rules_text',
+        'publication_status',
+        'completed_at',
     ];
 
     protected function casts(): array
@@ -125,6 +127,7 @@ class Room extends Model
             'can_talk_at_night' => 'boolean',
             'can_book_entire_room' => 'boolean',
             'can_book_individual_places' => 'boolean',
+            'completed_at' => 'datetime',
         ];
     }
 
@@ -181,6 +184,11 @@ class Room extends Model
     public function occupantSnapshots(): HasMany
     {
         return $this->hasMany(RoomOccupantSnapshot::class);
+    }
+
+    public function publicationChecks(): HasMany
+    {
+        return $this->hasMany(ListingPublicationCheck::class);
     }
 
     public function amenities(): BelongsToMany

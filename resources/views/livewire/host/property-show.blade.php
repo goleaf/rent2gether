@@ -11,7 +11,7 @@
 
             <flux:button
                 size="sm"
-                href="{{ route('host.properties.edit', ['locale' => app()->getLocale(), 'property' => $propertyId]) }}"
+                href="{{ route('host.listings.create', ['locale' => app()->getLocale(), 'propertyId' => $propertyId]) }}"
                 icon="pencil"
                 wire:navigate
             >

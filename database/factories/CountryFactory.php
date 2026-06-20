@@ -18,6 +18,7 @@ class CountryFactory extends Factory
         $iso3 = $this->uniqueCode('iso3', 3);
 
         return [
+            'geoname_id' => $this->faker->unique()->numberBetween(100_000, 9_999_999),
             'iso2' => $iso2,
             'code' => $iso2,
             'iso3' => $iso3,

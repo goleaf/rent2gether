@@ -14,8 +14,8 @@
         </div>
 
         <div class="grid gap-2 sm:grid-cols-3">
-            <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
-                {{ __('host.add_property') }}
+            <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
+                {{ __('listing_wizard.title') }}
             </flux:button>
             <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
                 {{ __('host.listings.actions.my_properties') }}
@@ -107,8 +107,8 @@
             <flux:card class="space-y-3 text-center">
                 <flux:heading size="lg">{{ __('shell.pages.host.home.empty_title') }}</flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('shell.pages.host.home.empty_text') }}</flux:text>
-                <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
-                    {{ __('host.add_property') }}
+                <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
+                    {{ __('listing_wizard.title') }}
                 </flux:button>
             </flux:card>
         @endforelse

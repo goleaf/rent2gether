@@ -238,8 +238,17 @@ return [
     'geo_import' => [
         'source_missing' => 'Geo source file was not found: :source',
         'source_unreadable' => 'Geo source file could not be read: :source',
+        'download_failed' => 'GeoNames download failed: :url',
+        'zip_unreadable' => 'GeoNames archive could not be opened: :source',
+        'zip_entry_missing' => 'GeoNames archive :source does not contain :entry',
         'countries_imported' => 'Countries imported: :count. Skipped rows: :skipped.',
         'cities_imported' => 'Cities imported: :count. Skipped rows: :skipped.',
         'search_index_rebuilt' => 'Geo search index rebuilt. Countries: :countries, regions: :regions, cities: :cities.',
+        'geonames_downloading' => 'Downloading GeoNames file: :file',
+        'geonames_import_countries' => 'Importing GeoNames countries.',
+        'geonames_import_cities' => 'Importing GeoNames populated places.',
+        'geonames_import_translations' => 'Importing GeoNames multilingual alternate names.',
+        'geonames_download_complete' => 'GeoNames files are ready in :storage_path.',
+        'geonames_seed_complete' => 'GeoNames seed complete. Countries: :countries, cities: :cities, country names: :country_translations, city names: :city_translations, skipped rows: :skipped.',
     ],
 ];

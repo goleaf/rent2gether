@@ -54,8 +54,8 @@
             <flux:card class="space-y-4 text-center">
                 <flux:heading size="lg">{{ __($page['empty_title_key']) }}</flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __($page['empty_text_key']) }}</flux:text>
-                <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
-                    {{ __('host.add_property') }}
+                <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
+                    {{ __('listing_wizard.title') }}
                 </flux:button>
             </flux:card>
         @endforelse

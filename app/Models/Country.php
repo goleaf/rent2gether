@@ -19,6 +19,7 @@ class Country extends Model
     public const STATUS_INACTIVE = 'inactive';
 
     protected $fillable = [
+        'geoname_id',
         'iso2',
         'code',
         'iso3',
@@ -38,6 +39,7 @@ class Country extends Model
     protected function casts(): array
     {
         return [
+            'geoname_id' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -48,11 +50,11 @@ class Country extends Model
             $country->iso2 = strtoupper((string) ($country->iso2 ?: $country->code));
             $country->code = strtoupper((string) ($country->code ?: $country->iso2));
             $country->iso3 = $country->iso3 === null ? null : strtoupper($country->iso3);
+            $country->name = $country->name ?: ($country->name_en ?: $country->name_native ?: $country->iso2);
             $country->name_en = $country->name_en ?: $country->name;
-            $country->name = $country->name ?: $country->name_en;
             $country->status = $country->status ?: (($country->is_active ?? true) ? self::STATUS_ACTIVE : self::STATUS_INACTIVE);
             $country->is_active = $country->status === self::STATUS_ACTIVE;
-            $country->name_normalized = GeoNameNormalizer::normalize($country->name_en ?: $country->name);
+            $country->name_normalized = GeoNameNormalizer::normalize($country->name);
         });
     }
 
@@ -64,6 +66,11 @@ class Country extends Model
     public function cities(): HasMany
     {
         return $this->hasMany(City::class);
+    }
+
+    public function translations(): HasMany
+    {
+        return $this->hasMany(CountryTranslation::class);
     }
 
     public function scopeActive(Builder $query): Builder
@@ -79,7 +86,13 @@ class Country extends Model
 
     public function scopeTranslated(Builder $query, string $locale): Builder
     {
-        return $query;
+        $locales = CountryTranslation::localeCandidates($locale);
+
+        return $query->with([
+            'translations' => fn (HasMany $query): HasMany => $query
+                ->select(['id', 'country_id', 'locale', 'name'])
+                ->whereIn('locale', $locales),
+        ]);
     }
 
     public function scopeNamePrefix(Builder $query, string $value): Builder
@@ -89,12 +102,39 @@ class Country extends Model
 
     public function localizedName(?string $locale = null): string
     {
-        $locale = $locale ?: app()->getLocale();
+        $locale = CountryTranslation::normalizeLocale($locale ?: app()->getLocale());
 
-        if ($locale === 'ru' && $this->name_ru) {
-            return $this->name_ru;
+        $translation = $this->translationForLocale($locale);
+
+        if ($translation) {
+            return $translation->name;
         }
 
-        return $this->name_en ?: $this->name;
+        return $this->name;
+    }
+
+    private function translationForLocale(string $locale): ?CountryTranslation
+    {
+        if ($locale === '') {
+            return null;
+        }
+
+        if ($this->relationLoaded('translations')) {
+            return $this->translations
+                ->firstWhere('locale', $locale)
+                ?: $this->translations->firstWhere('locale', CountryTranslation::fallbackLocale());
+        }
+
+        foreach (CountryTranslation::localeCandidates($locale) as $candidateLocale) {
+            $translation = $this->translations()
+                ->where('locale', $candidateLocale)
+                ->first();
+
+            if ($translation) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }

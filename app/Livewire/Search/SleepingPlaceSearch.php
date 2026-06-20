@@ -14,6 +14,7 @@ use App\Models\Property;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\CompatibilityService;
+use App\Services\Geo\GeoSearchService;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
 use App\Services\Localization\LocalizedModelContentResolver;
@@ -330,23 +331,15 @@ class SleepingPlaceSearch extends Component
     #[Computed]
     public function cityOptions(): array
     {
-        $normalized = GeoNameNormalizer::normalize($this->cityQuery);
-
-        if (! $this->cityOpen || Str::length($normalized) < 2) {
+        if (! $this->cityOpen || Str::length(GeoNameNormalizer::normalize($this->cityQuery)) < 2) {
             return [];
         }
 
-        return City::query()
-            ->select(['id', 'country_id', 'name', 'ascii_name', 'name_normalized', 'population', 'status', 'is_active'])
-            ->with(['country:id,iso2,code,name,name_en,name_ru'])
-            ->visible()
-            ->namePrefix($normalized)
-            ->orderByDesc('population')
-            ->limit(10)
-            ->get()
+        return app(GeoSearchService::class)
+            ->cities($this->cityQuery, app()->getLocale())
             ->map(fn (City $city): array => [
                 'id' => $city->id,
-                'name' => $city->name,
+                'name' => $city->localizedName(),
                 'country' => $city->country?->localizedName(),
             ])
             ->all();
@@ -535,7 +528,7 @@ class SleepingPlaceSearch extends Component
         } elseif ($this->city !== '') {
             $query->where(function (Builder $builder): void {
                 $builder->where('search_properties.city', 'like', '%'.$this->city.'%')
-                    ->orWhereHas('property.cityModel', fn (Builder $city) => $city->nameContains($this->city));
+                    ->orWhereHas('property.cityModel', fn (Builder $city) => $city->nameContainsInLocale($this->city, app()->getLocale()));
             });
         }
 

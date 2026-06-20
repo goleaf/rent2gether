@@ -77,7 +77,7 @@ class AvailabilityCalendarFlowTest extends TestCase
 
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::Available->value,
         ]);
     }
@@ -98,7 +98,7 @@ class AvailabilityCalendarFlowTest extends TestCase
 
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::BlockedByHost->value,
         ]);
     }
@@ -125,7 +125,7 @@ class AvailabilityCalendarFlowTest extends TestCase
 
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::Available->value,
             'price_override' => 31.50,
             'min_nights_override' => 2,
@@ -154,12 +154,12 @@ class AvailabilityCalendarFlowTest extends TestCase
 
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-12 00:00:00',
+            'date' => '2026-07-12',
             'status' => AvailabilityStatus::Repair->value,
         ]);
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-13 00:00:00',
+            'date' => '2026-07-13',
             'status' => AvailabilityStatus::Cleaning->value,
         ]);
     }
@@ -193,7 +193,7 @@ class AvailabilityCalendarFlowTest extends TestCase
 
         $this->assertDatabaseHas('availability_days', [
             'sleeping_place_id' => $place->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'booking_id' => $booking->id,
             'status' => AvailabilityStatus::Booked->value,
         ]);
@@ -239,7 +239,7 @@ class AvailabilityCalendarFlowTest extends TestCase
 
         $this->assertDatabaseMissing('availability_days', [
             'sleeping_place_id' => $otherPlace->id,
-            'date' => '2026-07-10 00:00:00',
+            'date' => '2026-07-10',
             'status' => AvailabilityStatus::BlockedByHost->value,
         ]);
     }

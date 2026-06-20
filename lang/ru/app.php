@@ -238,8 +238,17 @@ return [
     'geo_import' => [
         'source_missing' => 'Файл геоданных не найден: :source',
         'source_unreadable' => 'Не удалось прочитать файл геоданных: :source',
+        'download_failed' => 'Не удалось скачать файл GeoNames: :url',
+        'zip_unreadable' => 'Не удалось открыть архив GeoNames: :source',
+        'zip_entry_missing' => 'В архиве GeoNames :source нет файла :entry',
         'countries_imported' => 'Страны импортированы: :count. Пропущено строк: :skipped.',
         'cities_imported' => 'Города импортированы: :count. Пропущено строк: :skipped.',
         'search_index_rebuilt' => 'Поисковый индекс геоданных обновлён. Страны: :countries, регионы: :regions, города: :cities.',
+        'geonames_downloading' => 'Скачиваем файл GeoNames: :file',
+        'geonames_import_countries' => 'Импортируем страны GeoNames.',
+        'geonames_import_cities' => 'Импортируем населённые пункты GeoNames.',
+        'geonames_import_translations' => 'Импортируем многоязычные варианты названий GeoNames.',
+        'geonames_download_complete' => 'Файлы GeoNames готовы в :storage_path.',
+        'geonames_seed_complete' => 'Сидер GeoNames завершён. Страны: :countries, города: :cities, названия стран: :country_translations, названия городов: :city_translations, пропущено строк: :skipped.',
     ],
 ];

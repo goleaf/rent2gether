@@ -301,15 +301,21 @@ Each translation table needs a locale index and a unique constraint covering its
 
 ## Geo tables
 
-Countries use ISO-compatible identifiers: `iso2`, `iso3`, localized names, default timezone, currency, phone code, `status`, and `name_normalized`. The legacy `code` and `name` columns are kept as compatibility aliases while the marketplace transitions to the open-data import contract.
+Countries use ISO-compatible identifiers: `iso2`, `iso3`, GeoNames ID, canonical fallback `name`, default timezone, currency, phone code, `status`, and `name_normalized`. User-facing country names are stored in `country_translations` by `locale`; legacy name columns are source compatibility only and must not become the pattern for new languages.
 
-Cities use GeoNames identifiers and compact search fields: `geoname_id`, `country_id`, optional `region_id`, `name`, `ascii_name`, `alternate_names`, coordinates, population, timezone, feature class/code, `status`, and `name_normalized`. The legacy `source_id` column is kept in sync with `geoname_id`.
+Cities use GeoNames identifiers and compact search fields: `geoname_id`, `country_id`, optional `region_id`, canonical fallback `name`, `ascii_name`, `alternate_names`, coordinates, population, timezone, feature class/code, `status`, and `name_normalized`. User-facing city names are stored in `city_translations` by `locale`; `source_id` is kept in sync with `geoname_id`.
 
 Geo imports run through:
 
 - `php artisan geo:import-countries --source=storage/app/geo/countries.csv`
 - `php artisan geo:import-geonames-cities --source=storage/app/geo/cities1000.txt`
+- `php artisan geo:seed-geonames`
+- `php artisan geo:seed-geonames --download-only`
 - `php artisan geo:rebuild-search-index`
+
+When `GEONAMES_SEED_ENABLED=true`, `php artisan migrate:fresh --seed` runs the full GeoNames import through `GeoNamesFullSeeder`. Tests set this flag to false.
+
+Geo autocomplete uses `app()->getLocale()` as the search/display locale. It queries `country_translations.locale` and `city_translations.locale` first, then falls back to canonical names when translated rows are unavailable.
 
 Do not load cities from external APIs during search. Public Nominatim is only for occasional geocoding and must never be used for bulk imports.
 
@@ -318,7 +324,9 @@ Do not load cities from external APIs during search. Public Nominatim is only fo
 Plan indexes around actual UI access patterns, including:
 
 - country ISO lookup and normalized name search
+- country translation lookup by `locale + name_normalized`
 - city GeoNames lookup, active normalized prefix search, and country/status filters
+- city translation lookup by `locale + name_normalized`
 - property owner and status
 - city and visible status
 - preferred guest city and currency
