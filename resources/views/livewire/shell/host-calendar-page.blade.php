@@ -1,17 +1,3 @@
-@php
-    $page = [
-        'eyebrow' => __('shell.pages.host.calendar.eyebrow'),
-        'title' => __('shell.pages.host.calendar.title'),
-        'helper' => __('shell.pages.host.calendar.helper'),
-        'action' => __('shell.pages.host.calendar.action'),
-        'empty_title' => __('shell.pages.host.calendar.empty_title'),
-        'empty_text' => __('shell.pages.host.calendar.empty_text'),
-        'note' => __('shell.pages.host.calendar.note'),
-        'icon' => __('shell.pages.host.calendar.icon'),
-    ];
-    $summary = $this->summary;
-@endphp
-
 <div class="mx-auto max-w-5xl space-y-5 pb-24">
     <section class="space-y-3">
         <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>
@@ -121,7 +107,7 @@
                         <flux:button type="button" size="sm" variant="ghost" icon="chevron-left" wire:click="previousMonth">
                             {{ __('availability.calendar.actions.previous_month') }}
                         </flux:button>
-                        <flux:heading size="sm">{{ \Carbon\CarbonImmutable::createFromFormat('Y-m-d', $month.'-01')->translatedFormat('F Y') }}</flux:heading>
+                        <flux:heading size="sm">{{ $monthLabel }}</flux:heading>
                         <flux:button type="button" size="sm" variant="ghost" icon="chevron-right" wire:click="nextMonth">
                             {{ __('availability.calendar.actions.next_month') }}
                         </flux:button>

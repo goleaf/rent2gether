@@ -1,7 +1,3 @@
-@php
-    $primaryImage = $gallery[0] ?? null;
-@endphp
-
 <div class="mx-auto max-w-6xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
     <flux:button
         variant="ghost"

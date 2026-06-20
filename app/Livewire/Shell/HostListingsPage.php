@@ -22,8 +22,11 @@ class HostListingsPage extends Component
 
         abort_unless($user instanceof User, 403);
 
+        $page = $dashboard->listingPage($user, $this->scope);
+
         return view('livewire.shell.host-listings-page', [
-            'page' => $dashboard->listingPage($user, $this->scope),
+            'page' => $page,
+            'metrics' => $page['metrics'],
         ])->layout('layouts.app', [
             'title' => __('shell.pages.host.listings.title'),
         ]);

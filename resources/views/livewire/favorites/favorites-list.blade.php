@@ -55,8 +55,6 @@
 
     <div class="grid gap-4 sm:grid-cols-2">
         @forelse($cards as $card)
-            @php($favorite = $card['favorite'])
-
             <flux:card class="space-y-4">
                 <div class="flex gap-3">
                     <a href="{{ $card['url'] }}" wire:navigate class="block size-24 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
@@ -93,7 +91,7 @@
                                 size="sm"
                                 variant="ghost"
                                 icon="heart"
-                                wire:click="remove({{ $favorite->id }})"
+                                wire:click="remove({{ $card['favorite']->id }})"
                                 wire:confirm="{{ __('decision.favorites.remove_confirmation') }}"
                                 aria-label="{{ __('decision.favorites.remove') }}"
                             />
@@ -145,9 +143,9 @@
                         <flux:label>{{ __('decision.favorites.personal_note') }}</flux:label>
                         <flux:textarea
                             rows="2"
-                            wire:change="updateNote({{ $favorite->id }}, $event.target.value)"
+                            wire:change="updateNote({{ $card['favorite']->id }}, $event.target.value)"
                             placeholder="{{ __('decision.favorites.personal_note_placeholder') }}"
-                        >{{ $favorite->note }}</flux:textarea>
+                        >{{ $card['favorite']->note }}</flux:textarea>
                     </flux:field>
 
                     <flux:field>
@@ -157,8 +155,8 @@
                             min="0"
                             max="9"
                             inputmode="numeric"
-                            value="{{ $favorite->priority }}"
-                            wire:change="updatePriority({{ $favorite->id }}, $event.target.value)"
+                            value="{{ $card['favorite']->priority }}"
+                            wire:change="updatePriority({{ $card['favorite']->id }}, $event.target.value)"
                         />
                     </flux:field>
                 </div>

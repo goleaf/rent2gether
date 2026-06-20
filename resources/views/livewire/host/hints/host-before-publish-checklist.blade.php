@@ -5,11 +5,6 @@
     </div>
 
     @if($hints)
-        @php
-            $critical = collect($hints)->filter(fn ($hint) => $hint['critical_before_publish']);
-            $recommended = collect($hints)->reject(fn ($hint) => $hint['critical_before_publish']);
-        @endphp
-
         @if($critical->isNotEmpty())
             <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/40">
                 <div class="text-sm font-medium text-amber-950 dark:text-amber-100">{{ __('host_hints.critical') }}</div>

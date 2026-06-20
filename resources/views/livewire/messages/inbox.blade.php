@@ -1,14 +1,3 @@
-@php
-    $page = [
-        'eyebrow' => __('shell.pages.guest.messages.eyebrow'),
-        'title' => __('shell.pages.guest.messages.title'),
-        'helper' => __('shell.pages.guest.messages.helper'),
-        'action' => __('shell.pages.guest.messages.action'),
-        'empty_title' => __('shell.pages.guest.messages.empty_title'),
-        'empty_text' => __('shell.pages.guest.messages.empty_text'),
-    ];
-@endphp
-
 <div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6">
     <section class="space-y-2">
         <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>
@@ -19,17 +8,8 @@
     </section>
 
     <div class="space-y-3">
-        @forelse($this->threads as $thread)
-            @php
-                $other = (int) $thread->guest_user_id === (int) auth()->id() ? $thread->host : $thread->guest;
-                $lastMessage = $thread->messages->first();
-                $threadType = $thread->type?->value ?? 'pre_booking';
-                $placeTitle = $thread->sleepingPlace?->translations?->firstWhere('locale', app()->getLocale())?->title
-                    ?: $thread->sleepingPlace?->translations?->firstWhere('locale', config('app.fallback_locale', 'en'))?->title
-                    ?: $thread->sleepingPlace?->display_name;
-            @endphp
-
-            <a href="{{ route('messages.show', ['locale' => app()->getLocale(), 'thread' => $thread]) }}" wire:navigate class="block">
+        @forelse($threadCards as $card)
+            <a href="{{ route('messages.show', ['locale' => app()->getLocale(), 'thread' => $card['thread']]) }}" wire:navigate class="block">
                 <flux:card class="space-y-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-900">
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex min-w-0 items-start gap-3">
@@ -38,24 +18,24 @@
                             </div>
                             <div class="min-w-0 space-y-1">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <flux:text class="font-medium text-zinc-950 dark:text-zinc-50">{{ $other?->name ?: __('messages.inbox.unknown_user') }}</flux:text>
-                                    <flux:badge size="sm">{{ __('statuses.message_thread_type.'.$threadType) }}</flux:badge>
+                                    <flux:text class="font-medium text-zinc-950 dark:text-zinc-50">{{ $card['other_name'] }}</flux:text>
+                                    <flux:badge size="sm">{{ __('statuses.message_thread_type.'.$card['thread_type']) }}</flux:badge>
                                 </div>
-                                @if($placeTitle)
-                                    <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $placeTitle }}</flux:text>
+                                @if($card['place_title'])
+                                    <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $card['place_title'] }}</flux:text>
                                 @endif
                                 <flux:text size="sm" class="line-clamp-2 text-zinc-600 dark:text-zinc-300">
-                                    {{ $lastMessage ? \Illuminate\Support\Str::limit($lastMessage->body, 90) : __('messages.inbox.no_messages') }}
+                                    {{ $card['last_message'] }}
                                 </flux:text>
                             </div>
                         </div>
 
                         <div class="shrink-0 space-y-2 text-right">
-                            @if($thread->unread_count > 0)
-                                <flux:badge color="red" size="sm">{{ $thread->unread_count }}</flux:badge>
+                            @if($card['thread']->unread_count > 0)
+                                <flux:badge color="red" size="sm">{{ $card['thread']->unread_count }}</flux:badge>
                             @endif
-                            @if($lastMessage)
-                                <flux:text size="sm" class="text-zinc-400">{{ $lastMessage->created_at->diffForHumans() }}</flux:text>
+                            @if($card['last_message_time'])
+                                <flux:text size="sm" class="text-zinc-400">{{ $card['last_message_time'] }}</flux:text>
                             @endif
                         </div>
                     </div>

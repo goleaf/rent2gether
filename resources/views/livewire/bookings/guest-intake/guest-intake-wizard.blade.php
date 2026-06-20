@@ -1,11 +1,3 @@
-@php
-    $tripPurposes = ['tourism', 'work', 'study', 'relocation', 'business_trip', 'medical', 'housing_search', 'other'];
-    $baggageLevels = ['none', 'small_bag', 'one_bag', 'two_bags', 'many_bags'];
-    $petTypes = ['cat', 'dog', 'other'];
-    $petSizes = ['small', 'medium', 'large'];
-    $noiseLevels = ['low', 'medium', 'high'];
-@endphp
-
 <section class="space-y-4" aria-labelledby="guest-intake-title">
     <flux:card class="space-y-4">
         <div class="space-y-2">

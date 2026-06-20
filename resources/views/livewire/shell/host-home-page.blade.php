@@ -1,8 +1,3 @@
-@php
-    $money = static fn (float|int|string|null $amount, string $currency): string => \Illuminate\Support\Number::currency((float) ($amount ?: 0), $currency, app()->getLocale());
-    $metrics = $dashboard['metrics'];
-@endphp
-
 <div class="mx-auto max-w-5xl space-y-5 pb-28 sm:pb-8">
     <section class="space-y-3">
         <flux:badge color="emerald">{{ __('host.listings.home.eyebrow') }}</flux:badge>
@@ -52,7 +47,7 @@
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('host.listings.income.helper') }}</flux:text>
             </div>
             <div class="text-right">
-                <div class="text-xl font-semibold">{{ $money($metrics['monthly_income'], $metrics['currency']) }}</div>
+                <div class="text-xl font-semibold">{{ $this->money($metrics['monthly_income'], $metrics['currency']) }}</div>
                 <flux:badge color="zinc">{{ __('host.listings.income.placeholder') }}</flux:badge>
             </div>
         </div>

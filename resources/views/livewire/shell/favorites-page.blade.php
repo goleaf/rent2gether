@@ -1,5 +1,3 @@
-@php($page = __('shell.pages.'.$pageKey))
-
 <div class="mx-auto max-w-5xl space-y-5">
     <section class="space-y-3">
         <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>

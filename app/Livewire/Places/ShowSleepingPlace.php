@@ -278,12 +278,14 @@ class ShowSleepingPlace extends Component
     {
         $place = $this->place();
         $title = $this->title($place);
+        $gallery = $this->gallery();
 
         return view('livewire.places.show-sleeping-place', [
             'place' => $place,
             'title' => $title,
             'summary' => $this->summary($place),
-            'gallery' => $this->gallery(),
+            'gallery' => $gallery,
+            'primaryImage' => $gallery[0] ?? null,
             'decisionFlow' => $this->decisionFlow($place),
             'priceBreakdown' => $this->priceBreakdown($place),
             'extendedContent' => app(ListingDetailContentService::class)->forSleepingPlace($place, auth()->user()),

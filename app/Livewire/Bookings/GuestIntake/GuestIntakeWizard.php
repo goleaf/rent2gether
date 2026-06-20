@@ -206,7 +206,52 @@ class GuestIntakeWizard extends Component
         return view('livewire.bookings.guest-intake.guest-intake-wizard', [
             'summary' => $summary,
             'templates' => $templates,
+            'tripPurposes' => $this->tripPurposes(),
+            'baggageLevels' => $this->baggageLevels(),
+            'petTypes' => $this->petTypes(),
+            'petSizes' => $this->petSizes(),
+            'noiseLevels' => $this->noiseLevels(),
         ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function tripPurposes(): array
+    {
+        return ['tourism', 'work', 'study', 'relocation', 'business_trip', 'medical', 'housing_search', 'other'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function baggageLevels(): array
+    {
+        return ['none', 'small_bag', 'one_bag', 'two_bags', 'many_bags'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function petTypes(): array
+    {
+        return ['cat', 'dog', 'other'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function petSizes(): array
+    {
+        return ['small', 'medium', 'large'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function noiseLevels(): array
+    {
+        return ['low', 'medium', 'high'];
     }
 
     private function intake(): ?BookingGuestIntake

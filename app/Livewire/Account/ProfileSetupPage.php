@@ -193,8 +193,26 @@ class ProfileSetupPage extends Component
 
     public function render(): View
     {
-        return view('livewire.account.profile-setup-page')
+        return view('livewire.account.profile-setup-page', [
+            'checklist' => $this->profileChecklist(),
+        ])
             ->layout('layouts.app', ['title' => __('account.profile_setup.title')]);
+    }
+
+    /**
+     * @return list<array{done:bool,label:string}>
+     */
+    private function profileChecklist(): array
+    {
+        $user = auth()->user();
+
+        return [
+            ['done' => (bool) ($user->profile?->avatar_path || $user->avatar), 'label' => __('account.profile_setup.checklist.photo')],
+            ['done' => (bool) $user->email_verified_at, 'label' => __('account.profile_setup.checklist.email')],
+            ['done' => (bool) $user->profile?->phone_verified_at, 'label' => __('account.profile_setup.checklist.phone')],
+            ['done' => filled($this->about), 'label' => __('account.profile_setup.checklist.about')],
+            ['done' => $this->prefersQuiet || filled($this->sleepSchedule) || filled($this->socialLevel), 'label' => __('account.profile_setup.checklist.preferences')],
+        ];
     }
 
     private function countryModel(?string $name): ?Country

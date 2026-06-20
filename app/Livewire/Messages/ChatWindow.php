@@ -129,11 +129,39 @@ class ChatWindow extends Component
 
     public function render(): View
     {
+        $thread = $this->thread();
+
         return view('livewire.messages.chat-window', [
-            'thread' => $this->thread(),
+            'thread' => $thread,
+            'threadType' => $thread->type?->value ?? 'pre_booking',
+            'placeTitle' => $this->placeTitle($thread),
+            'otherUser' => $thread->otherParticipant(auth()->user()),
+            'messageCards' => $this->messageCards(),
         ])->layout('layouts.app', [
             'title' => __('messages.thread.title'),
         ]);
+    }
+
+    /**
+     * @return list<array{message:mixed,mine:bool,attachments:list<array<string,mixed>>}>
+     */
+    private function messageCards(): array
+    {
+        return $this->threadMessages
+            ->map(fn ($message): array => [
+                'message' => $message,
+                'mine' => (int) ($message->sender_user_id ?: $message->sender_id) === (int) auth()->id(),
+                'attachments' => $message->attachments ?: $message->attachments_json ?: [],
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function placeTitle(MessageThread $thread): ?string
+    {
+        return $thread->sleepingPlace?->translations?->firstWhere('locale', app()->getLocale())?->title
+            ?: $thread->sleepingPlace?->translations?->firstWhere('locale', config('localization.fallback_locale', 'en'))?->title
+            ?: $thread->sleepingPlace?->display_name;
     }
 
     /**

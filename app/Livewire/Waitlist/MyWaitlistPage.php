@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Waitlist;
 
+use App\Models\SleepingPlace;
 use App\Models\WaitlistItem;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -51,6 +52,36 @@ class MyWaitlistPage extends Component
             ->limit(30)
             ->get();
 
-        return view('livewire.waitlist.my-waitlist-page', ['items' => $items]);
+        return view('livewire.waitlist.my-waitlist-page', [
+            'cards' => $items->map(fn (WaitlistItem $item): array => $this->card($item)),
+        ]);
+    }
+
+    /**
+     * @return array{item:WaitlistItem,place:?SleepingPlace,title:?string,location:string}
+     */
+    private function card(WaitlistItem $item): array
+    {
+        $place = $item->sleepingPlace;
+
+        return [
+            'item' => $item,
+            'place' => $place,
+            'title' => $this->title($place),
+            'location' => $this->location($place),
+        ];
+    }
+
+    private function title(?SleepingPlace $place): ?string
+    {
+        return $place?->translations?->firstWhere('locale', app()->getLocale())?->title
+            ?: $place?->translations?->firstWhere('locale', config('localization.fallback_locale', 'en'))?->title
+            ?: $place?->display_name
+            ?: $place?->place_number;
+    }
+
+    private function location(?SleepingPlace $place): string
+    {
+        return trim(collect([$place?->property?->district, $place?->property?->city])->filter()->implode(', '));
     }
 }

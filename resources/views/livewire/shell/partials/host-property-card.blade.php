@@ -1,18 +1,9 @@
-@php
-    $statusColor = match ($property['status']) {
-        'active' => 'emerald',
-        'draft' => 'amber',
-        'hidden', 'unavailable', 'suspended' => 'zinc',
-        default => 'zinc',
-    };
-@endphp
-
 <flux:card class="space-y-4">
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0 space-y-1">
             <div class="flex flex-wrap items-center gap-2">
                 <flux:heading size="lg" class="truncate">{{ $property['title'] }}</flux:heading>
-                <flux:badge color="{{ $statusColor }}">{{ $property['status_label'] }}</flux:badge>
+                <flux:badge color="{{ $property['status_color'] }}">{{ $property['status_label'] }}</flux:badge>
             </div>
 
             @if($property['location'])

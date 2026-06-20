@@ -69,7 +69,9 @@ class HostIncome extends Component
 
     public function render(): View
     {
-        return view('livewire.host.host-income')
+        return view('livewire.host.host-income', [
+            'summary' => $this->summary,
+        ])
             ->layout('layouts.app', ['title' => __('host.income.title')]);
     }
 

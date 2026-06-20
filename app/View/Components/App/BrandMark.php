@@ -7,7 +7,7 @@ use Illuminate\View\Component;
 
 class BrandMark extends Component
 {
-    public readonly string $classes;
+    public string $classes;
 
     public function __construct(public readonly string $size = 'base')
     {
@@ -16,6 +16,8 @@ class BrandMark extends Component
 
     public function render(): View
     {
-        return view('components.app.brand-mark');
+        return view('components.app.brand-mark', [
+            'classes' => $this->classes,
+        ]);
     }
 }

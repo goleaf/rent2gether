@@ -13,7 +13,7 @@ class FavoritesPage extends ShellPage
     public function render(): View
     {
         return view('livewire.shell.favorites-page', [
-            'pageKey' => $this->pageKey,
+            'page' => $this->page(),
             'actionHref' => $this->actionHref(),
         ])->layout('layouts.app', [
             'title' => __('shell.pages.'.$this->pageKey.'.title'),

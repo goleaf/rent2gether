@@ -10,16 +10,6 @@
         </flux:callout>
     @endif
 
-    @php
-        $checklist = [
-            ['done' => auth()->user()->profile?->avatar_path || auth()->user()->avatar, 'label' => __('account.profile_setup.checklist.photo')],
-            ['done' => (bool) auth()->user()->email_verified_at, 'label' => __('account.profile_setup.checklist.email')],
-            ['done' => (bool) auth()->user()->profile?->phone_verified_at, 'label' => __('account.profile_setup.checklist.phone')],
-            ['done' => filled($about), 'label' => __('account.profile_setup.checklist.about')],
-            ['done' => $prefersQuiet || filled($sleepSchedule) || filled($socialLevel), 'label' => __('account.profile_setup.checklist.preferences')],
-        ];
-    @endphp
-
     <flux:card class="space-y-3">
         <flux:heading size="sm">{{ __('account.profile_setup.checklist.title') }}</flux:heading>
         <div class="grid gap-2 sm:grid-cols-2">

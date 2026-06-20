@@ -20,6 +20,7 @@ use App\Livewire\Booking\CancelBooking;
 use App\Livewire\Booking\CreateBooking;
 use App\Livewire\Booking\PaymentPage;
 use App\Livewire\Bookings\CheckIn\GuestCheckInPage;
+use App\Livewire\Bookings\CheckOut\GuestCheckOutPage;
 use App\Livewire\Checkin\CheckIn;
 use App\Livewire\Checkin\CheckOut;
 use App\Livewire\Checkin\ProblemReport;
@@ -138,6 +139,7 @@ Route::prefix('{locale}')
             Route::get('/{booking}/payment', PaymentPage::class)->name('payment');
             Route::get('/{booking}/cancel', CancelBooking::class)->name('cancel');
             Route::get('/{booking}/check-in', GuestCheckInPage::class)->name('check-in');
+            Route::get('/{booking}/check-out', GuestCheckOutPage::class)->name('check-out');
             Route::get('/{booking}', BookingDetail::class)->name('show');
         });
 

@@ -9,11 +9,11 @@ use Illuminate\View\Component;
 class MobileNav extends Component
 {
     /** @var list<array{href: string, icon: string, label: string, active: bool}> */
-    public readonly array $items;
+    public array $items;
 
-    public readonly string $gridColumns;
+    public string $gridColumns;
 
-    public readonly bool $isHostMode;
+    public bool $isHostMode;
 
     public function __construct(private readonly Request $request)
     {
@@ -54,6 +54,10 @@ class MobileNav extends Component
 
     public function render(): View
     {
-        return view('components.app.mobile-nav');
+        return view('components.app.mobile-nav', [
+            'gridColumns' => $this->gridColumns,
+            'isHostMode' => $this->isHostMode,
+            'items' => $this->items,
+        ]);
     }
 }

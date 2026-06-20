@@ -208,6 +208,7 @@ class HostListingDashboardService
             'title' => $fallbackTitle,
             'location' => collect([$property->city, $property->district, $property->country])->filter()->implode(', '),
             'status' => $property->status?->value ?? (string) $property->status,
+            'status_color' => $this->statusColor($property->status?->value ?? (string) $property->status),
             'status_label' => $property->status?->label() ?? (string) $property->status,
             'type_label' => $property->type?->label() ?? '',
             'readiness' => $readiness,
@@ -226,6 +227,16 @@ class HostListingDashboardService
                 'upcoming_checkouts' => (int) ($maps['checkouts'][$property->id] ?? 0),
             ],
         ];
+    }
+
+    private function statusColor(string $status): string
+    {
+        return match ($status) {
+            'active' => 'emerald',
+            'draft' => 'amber',
+            'hidden', 'unavailable', 'suspended' => 'zinc',
+            default => 'zinc',
+        };
     }
 
     /**

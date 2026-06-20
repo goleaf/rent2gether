@@ -1,7 +1,3 @@
-@php
-    $summary = $this->summary;
-@endphp
-
 <div class="mx-auto max-w-5xl space-y-5 pb-28 sm:pb-8">
     <section class="space-y-3">
         <flux:badge color="emerald">{{ __('host.income.eyebrow') }}</flux:badge>

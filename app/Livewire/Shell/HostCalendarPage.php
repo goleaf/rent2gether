@@ -453,8 +453,29 @@ class HostCalendarPage extends Component
 
     public function render(): View
     {
-        return view('livewire.shell.host-calendar-page')
+        return view('livewire.shell.host-calendar-page', [
+            'page' => $this->page(),
+            'summary' => $this->summary,
+            'monthLabel' => $this->monthDate()->translatedFormat('F Y'),
+        ])
             ->layout('layouts.app', ['title' => __('shell.pages.host.calendar.title')]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function page(): array
+    {
+        return [
+            'eyebrow' => __('shell.pages.host.calendar.eyebrow'),
+            'title' => __('shell.pages.host.calendar.title'),
+            'helper' => __('shell.pages.host.calendar.helper'),
+            'action' => __('shell.pages.host.calendar.action'),
+            'empty_title' => __('shell.pages.host.calendar.empty_title'),
+            'empty_text' => __('shell.pages.host.calendar.empty_text'),
+            'note' => __('shell.pages.host.calendar.note'),
+            'icon' => __('shell.pages.host.calendar.icon'),
+        ];
     }
 
     private function selectedSleepingPlace(): ?SleepingPlace

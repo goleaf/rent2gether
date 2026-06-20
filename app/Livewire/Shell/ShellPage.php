@@ -16,11 +16,18 @@ abstract class ShellPage extends Component
     public function render(): View
     {
         return view('livewire.shell.page', [
-            'pageKey' => $this->pageKey,
+            'page' => $this->page(),
             'actionHref' => $this->actionHref(),
         ])->layout('layouts.app', [
             'title' => __('shell.pages.'.$this->pageKey.'.title'),
         ]);
+    }
+
+    protected function page(): array
+    {
+        $page = __('shell.pages.'.$this->pageKey);
+
+        return is_array($page) ? $page : [];
     }
 
     protected function actionHref(): ?string

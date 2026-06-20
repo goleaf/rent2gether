@@ -86,8 +86,6 @@
 
         <div class="grid gap-3">
             @forelse($items as $card)
-                @php($item = $card['item'])
-
                 <flux:card class="space-y-3">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0 space-y-1">
@@ -104,7 +102,7 @@
                             size="sm"
                             variant="ghost"
                             icon="x-mark"
-                            wire:click="remove({{ $item->id }})"
+                            wire:click="remove({{ $card['item']->id }})"
                             wire:confirm="{{ __('decision.waitlist.remove_confirmation') }}"
                             aria-label="{{ __('decision.waitlist.remove') }}"
                         />
@@ -113,7 +111,7 @@
                     <div class="flex flex-wrap gap-1">
                         <flux:badge size="sm">{{ $card['room_type'] }}</flux:badge>
                         <flux:badge size="sm">{{ $card['sleeping_place_type'] }}</flux:badge>
-                        @if($item->auto_request)
+                        @if($card['item']->auto_request)
                             <flux:badge size="sm" color="blue">{{ __('decision.waitlist.auto_request_badge') }}</flux:badge>
                         @endif
                     </div>
@@ -121,11 +119,11 @@
                     <div class="grid gap-2 text-sm sm:grid-cols-4">
                         <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
                             <div class="text-zinc-500">{{ __('decision.waitlist.fields.desired_check_in') }}</div>
-                            <div class="font-medium">{{ $item->desired_check_in?->toFormattedDateString() }}</div>
+                            <div class="font-medium">{{ $card['item']->desired_check_in?->toFormattedDateString() }}</div>
                         </div>
                         <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
                             <div class="text-zinc-500">{{ __('decision.waitlist.fields.desired_check_out') }}</div>
-                            <div class="font-medium">{{ $item->desired_check_out?->toFormattedDateString() }}</div>
+                            <div class="font-medium">{{ $card['item']->desired_check_out?->toFormattedDateString() }}</div>
                         </div>
                         <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
                             <div class="text-zinc-500">{{ __('decision.waitlist.current_price') }}</div>
@@ -138,10 +136,10 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                        @if($item->notify_available)
+                        @if($card['item']->notify_available)
                             <flux:badge color="green">{{ __('decision.waitlist.notify_available_badge') }}</flux:badge>
                         @endif
-                        @if($item->notify_price_drop)
+                        @if($card['item']->notify_price_drop)
                             <flux:badge color="green">{{ __('decision.waitlist.notify_price_badge') }}</flux:badge>
                         @endif
                     </div>
