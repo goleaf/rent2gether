@@ -37,6 +37,34 @@ Build a friendly mobile website where:
 - The system automatically calculates nights, calendar days, price, discounts, deposit, fees, refund estimates, and availability.
 - The system supports Russian and English from day one and can add more languages later.
 
+## Core marketplace loop
+
+Guest chooses:
+- city
+- dates
+- sleeping place
+
+System calculates:
+- availability
+- nights
+- calendar days
+- price
+- discount
+- deposit
+- rules
+- compatibility
+
+Host controls:
+- property
+- rooms
+- sleeping places
+- calendar
+- price
+- rules
+- requests
+
+Everything must be mobile-first, multilingual, fast, friendly, and Livewire-native. This frame prevents drift into Filament, Volt, admin panels, desktop-first interfaces, or heavy SPA architecture.
+
 ## Mandatory mobile-first rules
 
 Design every page first for 320px–430px wide screens.
@@ -66,16 +94,25 @@ Never store huge arrays in Livewire public properties.
 Store IDs, filters, and compact state only.
 Use computed properties for derived data.
 Use form objects or dedicated component state when useful.
-Use wire:model.blur for most text fields.
+Use wire:model.blur for normal text fields.
 Use wire:model.change for selects, checkboxes, radios.
-Use wire:model.live.debounce.500ms or slower only for search fields that need live results.
+Use wire:model.live.debounce.500ms or wire:model.live.debounce.750ms only for search and autocomplete fields.
 Never use live typing updates for long textareas.
+Never load full countries or cities into a select.
+Never render hidden huge filter sections.
+Use bottom sheets, drawers, and lazy components for large secondary UI.
 Use pagination or cursor pagination for lists.
+Use cursor pagination or load-more behavior for public search results.
 Use URL query state for search filters that should be shareable.
 Use events carefully and keep component boundaries simple.
 Use WithFileUploads only for upload components.
 Validate every action server-side.
 Show friendly validation errors in the active locale.
+Use compact DTO arrays for cards.
+Use selected columns for all list/card queries.
+Use cached lookup values for amenities, rules, countries, and common cities.
+Use data-loading states, wire:loading, and skeletons for network actions.
+Use optimistic UI only where the rollback path is safe and obvious.
 
 ## SQLite rules
 
@@ -113,10 +150,14 @@ For listings, rooms, sleeping places, rules, amenities, policies, and help text,
 
 Countries and cities must come from open data sources, not manually typed lists.
 Use offline imports into SQLite, not live API calls during search.
-Use GeoNames for cities and populated places.
-Use ISO 3166-compatible country codes.
-Use Natural Earth only if map/country shape data is needed.
-Use Nominatim/OpenStreetMap only for occasional geocoding with respect for usage limits; do not bulk-geocode through public Nominatim.
+Use ISO 3166-compatible country sources.
+REST Countries can be used as a convenient country export source when extra fields are needed.
+DataHub country-list can be used for a small ISO 3166-1 alpha-2 CSV, but document its ISO licensing note before production use.
+Use GeoNames `cities1000` for city autocomplete by default.
+Use GeoNames `allCountries` only when the full place catalog is truly needed.
+Do not load a map on the first search screen.
+Use Natural Earth only if map/country shape data is needed later.
+Use Nominatim/OpenStreetMap only for occasional geocoding with respect for usage limits; do not bulk-geocode or mass-import addresses through public Nominatim.
 
 ## Friendly UX rules
 
@@ -128,6 +169,27 @@ Every booking calculation must be transparent.
 Every price must show what is included and what is refundable.
 Every rule must be visible before booking.
 Every important action must have a confirmation step.
+
+## Feature definition of done
+
+Every new feature must include, when applicable:
+- Migration if data is needed
+- Model relationships
+- Factory
+- Seeder if lookup data is introduced
+- Livewire class component
+- Blade view
+- Flux UI
+- Mobile-first layout
+- English translations
+- Russian translations
+- Validation
+- Friendly empty state
+- Friendly loading state
+- Authorization or policy if needed
+- Tests
+- Indexes for queries
+- Docs update if behavior is important
 
 ## Testing rules
 

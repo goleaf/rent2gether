@@ -1,4 +1,10 @@
-<div class="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+<div class="min-h-screen space-y-4 bg-zinc-50 dark:bg-zinc-900">
+    <section class="mx-auto max-w-7xl px-4 pt-4">
+        <div class="space-y-2">
+            <flux:heading size="xl" level="1">{{ __('search.title') }}</flux:heading>
+            <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ __('search.helper') }}</flux:text>
+        </div>
+    </section>
 
     {{-- Search bar --}}
     <div class="sticky top-0 z-10 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 shadow-sm">
@@ -7,27 +13,27 @@
 
                 <flux:field class="flex-1 min-w-40">
                     <flux:label>{{ __('search.city') }}</flux:label>
-                    <flux:input wire:model.live.debounce.400ms="city" placeholder="{{ __('search.city_placeholder') }}" icon="map-pin" />
+                    <flux:input wire:model.live.debounce.500ms="city" placeholder="{{ __('search.city_placeholder') }}" icon="map-pin" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
                     <flux:label>{{ __('search.check_in') }}</flux:label>
-                    <flux:input type="date" wire:model.live="checkIn" :min="now()->toDateString()" />
+                    <flux:input type="date" wire:model.change="checkIn" :min="now()->toDateString()" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
                     <flux:label>{{ __('search.check_out') }}</flux:label>
-                    <flux:input type="date" wire:model.live="checkOut" :min="$checkIn ?: now()->addDay()->toDateString()" />
+                    <flux:input type="date" wire:model.change="checkOut" :min="$checkIn ?: now()->addDay()->toDateString()" />
                 </flux:field>
 
                 <flux:field class="min-w-28">
                     <flux:label>{{ __('search.max_price') }}</flux:label>
-                    <flux:input type="number" wire:model.live.debounce.500ms="priceMax" :placeholder="__('search.any_gender')" min="1" />
+                    <flux:input type="number" wire:model.blur="priceMax" :placeholder="__('search.any_gender')" min="1" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
                     <flux:label>{{ __('search.sort') }}</flux:label>
-                    <flux:select wire:model.live="sort">
+                    <flux:select wire:model.change="sort">
                         <flux:select.option value="price_asc">{{ __('search.sort_price_asc') }}</flux:select.option>
                         <flux:select.option value="price_desc">{{ __('search.sort_price_desc') }}</flux:select.option>
                     </flux:select>
@@ -47,7 +53,7 @@
 
                 <flux:field>
                     <flux:label>{{ __('search.bed_type') }}</flux:label>
-                    <flux:select wire:model.live="bedType">
+                    <flux:select wire:model.change="bedType">
                         <flux:select.option value="">{{ __('search.any_type') }}</flux:select.option>
                         @foreach($this->bedTypeOptions() as $value => $label)
                             <flux:select.option :value="$value">{{ $label }}</flux:select.option>
@@ -57,7 +63,7 @@
 
                 <flux:field>
                     <flux:label>{{ __('search.room_gender') }}</flux:label>
-                    <flux:select wire:model.live="genderType">
+                    <flux:select wire:model.change="genderType">
                         <flux:select.option value="">{{ __('search.any_gender') }}</flux:select.option>
                         @foreach($this->genderOptions() as $value => $label)
                             <flux:select.option :value="$value">{{ $label }}</flux:select.option>
@@ -68,9 +74,9 @@
                 <flux:separator />
 
                 <div class="space-y-3">
-                    <flux:checkbox wire:model.live="instantOnly" label="{{ __('search.instant_only') }}" />
-                    <flux:checkbox wire:model.live="hasLocker" label="{{ __('search.locker_only') }}" />
-                    <flux:checkbox wire:model.live="hasWifi" label="{{ __('search.wifi_only') }}" />
+                    <flux:checkbox wire:model.change="instantOnly" label="{{ __('search.instant_only') }}" />
+                    <flux:checkbox wire:model.change="hasLocker" label="{{ __('search.locker_only') }}" />
+                    <flux:checkbox wire:model.change="hasWifi" label="{{ __('search.wifi_only') }}" />
                 </div>
 
                 @if($city || $checkIn || $checkOut || $priceMax || $bedType || $genderType || $instantOnly || $hasLocker || $hasWifi)

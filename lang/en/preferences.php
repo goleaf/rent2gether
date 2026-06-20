@@ -1,0 +1,93 @@
+<?php
+
+return [
+    'wizard' => [
+        'title' => 'Guest preference setup',
+        'heading' => 'Tell us what feels comfortable',
+        'helper' => 'A few calm choices help us show sleeping places that fit your stay.',
+        'steps' => [
+            1 => 'Budget',
+            2 => 'Place',
+            3 => 'Comfort',
+            4 => 'Schedule',
+        ],
+    ],
+    'edit' => [
+        'title' => 'Guest preferences',
+        'heading' => 'Guest preferences',
+        'helper' => 'Keep this short and practical. You can change it before every trip.',
+    ],
+    'sections' => [
+        'budget' => 'Budget and location',
+        'place' => 'Room and bed',
+        'comfort' => 'Comfort needs',
+        'lifestyle' => 'Schedule and sensitivities',
+    ],
+    'actions' => [
+        'back' => 'Back',
+        'next' => 'Next',
+        'save' => 'Save preferences',
+    ],
+    'helpers' => [
+        'preferred_city' => 'Start typing a city name. We use saved open data when it matches.',
+    ],
+    'fields' => [
+        'preferred_budget_min' => 'Budget min',
+        'preferred_budget_max' => 'Budget max',
+        'preferred_currency' => 'Currency',
+        'preferred_city' => 'Preferred city',
+        'preferred_room_type' => 'Room type',
+        'preferred_sleeping_place_type' => 'Sleeping place type',
+        'wants_wifi' => 'Wi-Fi matters',
+        'wants_kitchen' => 'Kitchen matters',
+        'wants_washing_machine' => 'Washing machine matters',
+        'wants_locker' => 'Personal locker matters',
+        'wants_lower_bunk' => 'I prefer a lower bunk',
+        'wants_workspace' => 'I need a workspace',
+        'wants_quiet_hours' => 'I need quiet hours',
+        'avoids_smoking' => 'I avoid smoking nearby',
+        'avoids_pets' => 'I avoid pets nearby',
+        'avoids_mixed_room' => 'I avoid mixed rooms',
+        'needs_late_check_in' => 'I may need late check-in',
+        'needs_early_check_out' => 'I may need early check-out',
+        'needs_accessibility' => 'I need accessible access',
+        'max_people_in_room' => 'Max people in room',
+        'max_walking_distance_to_transport_meters' => 'Max walk to transport, meters',
+        'sleep_schedule' => 'Sleep schedule',
+        'social_level' => 'Social level',
+        'allergies' => 'Allergies',
+        'baggage_size' => 'Baggage size',
+    ],
+    'options' => [
+        'any' => 'Any',
+        'room_type' => [
+            'shared' => 'Shared room',
+            'private' => 'Private room',
+            'dormitory' => 'Dormitory',
+            'studio_room' => 'Studio room',
+        ],
+        'sleeping_place_type' => [
+            'single' => 'Single',
+            'double' => 'Double',
+            'bunk_bottom' => 'Lower bunk',
+            'bunk_top' => 'Upper bunk',
+            'capsule' => 'Capsule',
+        ],
+        'sleep_schedule' => [
+            'early_bird' => 'Early sleeper',
+            'night_owl' => 'Late sleeper',
+            'flexible' => 'Flexible',
+            'regular' => 'Regular',
+        ],
+        'social_level' => [
+            'quiet' => 'Quiet',
+            'balanced' => 'Balanced',
+            'social' => 'Social',
+        ],
+        'baggage_size' => [
+            'small' => 'Small',
+            'medium' => 'Medium',
+            'large' => 'Large',
+        ],
+    ],
+];

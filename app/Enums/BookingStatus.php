@@ -5,6 +5,8 @@ namespace App\Enums;
 enum BookingStatus: string
 {
     case Draft = 'draft';
+    case AwaitingHostApproval = 'awaiting_host_approval';
+    case AwaitingPayment = 'awaiting_payment';
     case Created = 'created';
     case PendingHostConfirmation = 'pending_host';
     case PendingGuestResponse = 'pending_guest';
@@ -15,12 +17,17 @@ enum BookingStatus: string
     case Paid = 'paid';
     case ReadyForCheckIn = 'ready_for_checkin';
     case CheckedIn = 'checked_in';
+    case InProgress = 'in_progress';
     case ActiveStay = 'active_stay';
     case LeavingSoon = 'leaving_soon';
     case CheckedOut = 'checked_out';
     case Completed = 'completed';
     case AwaitingReview = 'awaiting_review';
     case Closed = 'closed';
+    case DeclinedByHost = 'declined_by_host';
+    case CancelledByGuestFlow = 'cancelled_by_guest';
+    case CancelledByHostFlow = 'cancelled_by_host';
+    case Expired = 'expired';
     case CancelledByGuest = 'cancelled_guest';
     case CancelledByHost = 'cancelled_host';
     case CancelledBySystem = 'cancelled_system';
@@ -28,6 +35,8 @@ enum BookingStatus: string
     case NoShow = 'no_show';
     case HostNoShow = 'host_no_show';
     case Disputed = 'disputed';
+    case ProblemReported = 'problem_reported';
+    case RefundRequested = 'refund_requested';
     case FrozenUntilDisputeResolved = 'frozen_until_dispute_resolved';
     case NeedsSupportIntervention = 'needs_support_intervention';
 
@@ -39,6 +48,8 @@ enum BookingStatus: string
     public function isCancelled(): bool
     {
         return in_array($this, [
+            self::CancelledByGuestFlow,
+            self::CancelledByHostFlow,
             self::CancelledByGuest,
             self::CancelledByHost,
             self::CancelledBySystem,
@@ -48,6 +59,6 @@ enum BookingStatus: string
 
     public function isActive(): bool
     {
-        return in_array($this, [self::CheckedIn, self::ActiveStay]);
+        return in_array($this, [self::CheckedIn, self::InProgress, self::ActiveStay]);
     }
 }

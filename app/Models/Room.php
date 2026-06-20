@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Room extends Model
 {
@@ -36,6 +37,8 @@ class Room extends Model
         'rules',
         'status',
         'type',
+        'is_private',
+        'is_pass_through',
         'room_number',
         'floor',
         'area',
@@ -46,6 +49,7 @@ class Room extends Model
         'gender_policy',
         'min_guest_age',
         'max_guest_age',
+        'windows_count',
         'window_view',
         'has_chair',
         'has_mirror',
@@ -54,9 +58,12 @@ class Room extends Model
         'has_blackout_curtains',
         'noise_level',
         'light_level',
+        'ventilation_level',
         'can_eat',
         'can_work_at_night',
         'can_turn_light_at_night',
+        'can_talk_at_night',
+        'room_rules_text',
     ];
 
     protected function casts(): array
@@ -66,8 +73,11 @@ class Room extends Model
             'gender_policy' => GenderType::class,
             'type' => RoomType::class,
             'status' => RoomStatus::class,
+            'is_private' => 'boolean',
+            'is_pass_through' => 'boolean',
             'has_lock' => 'boolean',
             'has_window' => 'boolean',
+            'windows_count' => 'integer',
             'has_wardrobe' => 'boolean',
             'has_desk' => 'boolean',
             'has_ac' => 'boolean',
@@ -84,6 +94,7 @@ class Room extends Model
             'can_eat' => 'boolean',
             'can_work_at_night' => 'boolean',
             'can_turn_light_at_night' => 'boolean',
+            'can_talk_at_night' => 'boolean',
         ];
     }
 
@@ -122,6 +133,16 @@ class Room extends Model
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    public function cardMedia(): MorphOne
+    {
+        return $this->morphOne(MediaItem::class, 'mediable')
+            ->active()
+            ->orderByDesc('is_primary')
+            ->orderByDesc('is_cover')
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', RoomStatus::Active->value);
@@ -137,11 +158,32 @@ class Room extends Model
         return $query->whereHas('translations', fn (Builder $translation) => $translation->where('locale', $locale));
     }
 
+    public function scopeInCity(Builder $query, int $cityId): Builder
+    {
+        return $query->whereHas('property', fn (Builder $property) => $property->where('city_id', $cityId));
+    }
+
+    public function scopeAvailableBetween(Builder $query, string $start, string $end): Builder
+    {
+        return $query->whereHas('sleepingPlaces', fn (Builder $sleepingPlace) => $sleepingPlace->availableBetween($start, $end));
+    }
+
+    public function scopeForHost(Builder $query, int $userId): Builder
+    {
+        return $query->whereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
+    }
+
+    public function scopeForGuest(Builder $query, int $userId): Builder
+    {
+        return $query->whereHas('sleepingPlaces.bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
+    }
+
     public function scopeGender(Builder $query, GenderType $gender): Builder
     {
         return $query->where(function (Builder $builder) use ($gender): void {
             $builder->where('gender_policy', $gender->value)
-                ->orWhere('gender_policy', GenderType::Mixed->value);
+                ->orWhere('gender_policy', GenderType::Mixed->value)
+                ->orWhere('gender_policy', GenderType::NoRestriction->value);
         });
     }
 }

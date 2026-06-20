@@ -19,6 +19,7 @@ class SleepingPlaceTranslationFactory extends Factory
             'title' => 'Comfortable sleeping place',
             'summary' => $this->faker->sentence(),
             'description' => $this->faker->paragraph(),
+            'special_conditions' => $this->faker->sentence(),
             'privacy_notes' => $this->faker->sentence(),
             'accessibility_notes' => $this->faker->sentence(),
         ];

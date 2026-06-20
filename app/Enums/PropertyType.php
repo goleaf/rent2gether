@@ -7,9 +7,11 @@ enum PropertyType: string
     case Apartment = 'apartment';
     case House = 'house';
     case Studio = 'studio';
+    case RoomInApartment = 'room_in_apartment';
+    case RoomInHouse = 'room_in_house';
+    case Dormitory = 'dormitory';
     case Hostel = 'hostel';
     case GuestHouse = 'guesthouse';
-    case Dormitory = 'dormitory';
     case Cottage = 'cottage';
     case Other = 'other';
 

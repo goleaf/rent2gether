@@ -18,6 +18,7 @@ class RoomTranslation extends Model
         'title',
         'summary',
         'description',
+        'notes',
         'sleeping_arrangement',
         'privacy_notes',
     ];

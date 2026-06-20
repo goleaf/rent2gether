@@ -12,9 +12,11 @@ Use this workflow for code changes in `rent2gether`.
 6. Use `fluxui-development` before Flux, Flux Pro, Livewire UI, or Laravel component-system work.
 7. Inspect sibling files and follow existing conventions.
 
+Keep the core marketplace loop in view: guest chooses city, dates, and sleeping place; the system calculates availability, nights, calendar days, price, discount, deposit, rules, and compatibility; host controls property, rooms, sleeping places, calendar, price, rules, and requests.
+
 ## Implementation Rules
 
-- Keep controllers thin.
+- Keep any controllers thin; prefer Livewire class components for user-facing workflows.
 - Use actions/services for behavior.
 - Use Form Requests for validation.
 - Use Policies for authorization.
@@ -24,7 +26,8 @@ Use this workflow for code changes in `rent2gether`.
 - Use Blade components for reusable UI.
 - Keep Blade free of queries and business logic.
 - Use Flux components for common UI primitives after Flux Pro is installed.
-- Use Filament schemas, resource queries, filters, and actions when Filament is installed.
+- Use Livewire class components and Blade views for user-facing workflows.
+- Do not introduce Filament, Livewire Volt, admin/staff panels, Inertia, React, Vue, or SPA routing.
 
 ## Query-Sensitive Changes
 
@@ -75,7 +78,7 @@ Use this structure when code was written, reviewed, or refactored:
 3. `QUERY DELTA` - before/after query count or estimate, if query-related.
 4. `REUSABLE SNIPPET` - extracted scope, action, component, trait, or pattern.
 5. `BLADE USAGE` - controller-to-view data flow, if Blade-related.
-6. `FILAMENT INTEGRATION` - resource/widget/action integration, if applicable.
+6. `LIVEWIRE/FLUX UI` - component and view integration, if applicable.
 7. `TESTS` - focused tests run or added.
 8. `CAVEATS` - index requirements, cache invalidation, Laravel version notes, or MCP checks.
 
@@ -83,7 +86,8 @@ For documentation-only changes, summarize changed files and verification.
 
 ## Pre-Commit Checklist
 
-- [ ] No query inside a loop, Blade view, or Filament renderer.
+- [ ] No query inside a loop, Blade view, or Livewire render method.
+- [ ] No Filament, Livewire Volt, admin/staff panels, Inertia, React, Vue, or SPA routing.
 - [ ] No unbounded `Model::all()`.
 - [ ] Relationships used by views/tables are eager loaded.
 - [ ] Aggregates are calculated with database aggregate loaders, not in loops.

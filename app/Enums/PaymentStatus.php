@@ -5,6 +5,7 @@ namespace App\Enums;
 enum PaymentStatus: string
 {
     case Unpaid = 'unpaid';
+    case AwaitingPayment = 'awaiting_payment';
     case Pending = 'pending';
     case PartiallyPaid = 'partially_paid';
     case Paid = 'paid';

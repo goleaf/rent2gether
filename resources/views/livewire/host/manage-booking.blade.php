@@ -32,7 +32,7 @@
             <flux:heading size="sm">{{ __('booking.details') }}</flux:heading>
             <div class="space-y-2 text-sm">
                 <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.status') }}</span><flux:badge>{{ $booking->status->label() }}</flux:badge></div>
-                <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.bed') }}</span><span>{{ $booking->bed->title }}</span></div>
+                <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.bed') }}</span><span>{{ $placeTitle }}</span></div>
                 <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.check_in') }}</span><span>{{ $booking->check_in->translatedFormat('d M Y') }}</span></div>
                 <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.check_out') }}</span><span>{{ $booking->check_out->translatedFormat('d M Y') }}</span></div>
                 <div class="flex justify-between"><span class="text-zinc-500">{{ __('booking.nights') }}</span><span>{{ $booking->nights }}</span></div>
@@ -52,9 +52,19 @@
             <flux:button wire:click="$set('showCancelModal', true)" variant="danger">{{ __('app.actions.cancel') }}</flux:button>
         @endif
 
-        @if(in_array($booking->status->value, ['checked_in', 'active_stay', 'leaving_soon']))
+        @if(in_array($booking->status->value, ['checked_in', 'in_progress', 'active_stay', 'leaving_soon', 'checked_out']))
             <flux:button wire:click="confirmCheckOut" variant="primary">{{ __('host.manage_booking.confirm_checkout') }}</flux:button>
         @endif
+
+        @if($booking->status->value === 'completed' && ! $booking->host_review_left)
+            <flux:button href="{{ route('host.reviews.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary">
+                {{ __('host.manage_booking.review_guest') }}
+            </flux:button>
+        @endif
+
+        <flux:button href="{{ route('complaints.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost">
+            {{ __('booking.trips.actions.report_problem') }}
+        </flux:button>
 
         <flux:button href="{{ route('host.bookings.index', ['locale' => app()->getLocale()]) }}" variant="ghost">
             {{ __('app.actions.back') }}
@@ -64,7 +74,7 @@
     @if($showRejectModal)
         <flux:modal wire:model="showRejectModal">
             <flux:heading size="lg">{{ __('host.manage_booking.reject_title') }}</flux:heading>
-            <flux:textarea wire:model="rejectReason" label="{{ __('host.manage_booking.reason_optional') }}" rows="3" />
+            <flux:textarea wire:model.blur="rejectReason" label="{{ __('host.manage_booking.reason_optional') }}" rows="3" />
             <div class="flex gap-3 mt-4">
                 <flux:button wire:click="reject" variant="danger">{{ __('host.manage_booking.reject') }}</flux:button>
                 <flux:button wire:click="$set('showRejectModal', false)" variant="ghost">{{ __('app.actions.cancel') }}</flux:button>
@@ -76,7 +86,7 @@
         <flux:modal wire:model="showCancelModal">
             <flux:heading size="lg">{{ __('host.manage_booking.cancel_title') }}</flux:heading>
             <flux:text class="text-zinc-500">{{ __('host.manage_booking.full_refund') }}</flux:text>
-            <flux:textarea wire:model="cancelReason" label="{{ __('host.manage_booking.reason_optional') }}" rows="3" />
+            <flux:textarea wire:model.blur="cancelReason" label="{{ __('host.manage_booking.reason_optional') }}" rows="3" />
             <div class="flex gap-3 mt-4">
                 <flux:button wire:click="cancel" variant="danger">{{ __('host.manage_booking.confirm_cancellation') }}</flux:button>
                 <flux:button wire:click="$set('showCancelModal', false)" variant="ghost">{{ __('app.actions.back') }}</flux:button>

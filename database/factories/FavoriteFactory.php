@@ -21,7 +21,11 @@ class FavoriteFactory extends Factory
             'sleeping_place_id' => SleepingPlace::factory(),
             'collection' => 'default',
             'note' => null,
+            'priority' => 0,
             'price_at_save' => $this->faker->randomFloat(2, 10, 50),
+            'check_in' => now()->addWeek()->toDateString(),
+            'check_out' => now()->addDays(10)->toDateString(),
+            'guests_count' => 1,
             'notify_available' => false,
             'notify_price_drop' => false,
         ];

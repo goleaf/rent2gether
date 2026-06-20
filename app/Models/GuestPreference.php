@@ -17,6 +17,7 @@ class GuestPreference extends Model
         'preferred_budget_min',
         'preferred_budget_max',
         'preferred_currency',
+        'preferred_city_id',
         'preferred_room_type',
         'preferred_sleeping_place_type',
         'wants_wifi',
@@ -28,8 +29,16 @@ class GuestPreference extends Model
         'avoids_smoking',
         'avoids_pets',
         'needs_late_check_in',
+        'needs_early_check_out',
         'needs_workspace',
         'needs_quiet_hours',
+        'needs_accessibility',
+        'max_people_in_room',
+        'max_walking_distance_to_transport_meters',
+        'sleep_schedule',
+        'social_level',
+        'allergies',
+        'baggage_size',
         'accessibility_needs_json',
     ];
 
@@ -47,8 +56,10 @@ class GuestPreference extends Model
             'avoids_smoking' => 'boolean',
             'avoids_pets' => 'boolean',
             'needs_late_check_in' => 'boolean',
+            'needs_early_check_out' => 'boolean',
             'needs_workspace' => 'boolean',
             'needs_quiet_hours' => 'boolean',
+            'needs_accessibility' => 'boolean',
             'accessibility_needs_json' => 'array',
         ];
     }
@@ -56,5 +67,10 @@ class GuestPreference extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function preferredCity(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'preferred_city_id');
     }
 }

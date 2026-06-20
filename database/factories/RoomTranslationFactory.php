@@ -19,6 +19,7 @@ class RoomTranslationFactory extends Factory
             'title' => 'Shared room',
             'summary' => $this->faker->sentence(),
             'description' => $this->faker->paragraph(),
+            'notes' => $this->faker->sentence(),
             'sleeping_arrangement' => $this->faker->sentence(),
             'privacy_notes' => $this->faker->sentence(),
         ];

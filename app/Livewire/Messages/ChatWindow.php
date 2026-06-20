@@ -2,54 +2,207 @@
 
 namespace App\Livewire\Messages;
 
-use App\Models\Conversation;
+use App\Models\MessageThread;
 use App\Services\MessageService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class ChatWindow extends Component
 {
+    use WithFileUploads;
+
     #[Locked]
-    public Conversation $conversation;
+    public int $threadId;
 
-    public string $newMessage = '';
+    public string $body = '';
 
-    public function mount(Conversation $conversation): void
+    public bool $important = false;
+
+    public string $templateKey = '';
+
+    /** @var array<int, mixed> */
+    public array $uploads = [];
+
+    public function mount(MessageThread $thread): void
     {
-        $this->conversation = $conversation;
-        app(MessageService::class)->markConversationRead($conversation, auth()->user());
+        abort_unless(auth()->check() && $thread->hasParticipant(auth()->user()), 403);
+
+        $this->threadId = $thread->id;
+        app(MessageService::class)->markThreadRead($thread, auth()->user());
+    }
+
+    public function applyTemplate(string $key): void
+    {
+        $templates = $this->quickTemplates();
+
+        if (! array_key_exists($key, $templates)) {
+            return;
+        }
+
+        $this->templateKey = $key;
+        $this->body = $templates[$key];
+    }
+
+    public function send(): void
+    {
+        $validated = $this->validate($this->rules(), attributes: $this->validationAttributes());
+
+        try {
+            app(MessageService::class)->send(
+                $this->thread(),
+                auth()->user(),
+                (string) ($validated['body'] ?? ''),
+                $this->storedAttachments(),
+                $this->important,
+            );
+        } catch (ValidationException $exception) {
+            foreach ($exception->errors() as $field => $messages) {
+                foreach ($messages as $message) {
+                    $this->addError($field, $message);
+                }
+            }
+
+            return;
+        } catch (AuthorizationException) {
+            abort(403);
+        }
+
+        $this->body = '';
+        $this->important = false;
+        $this->templateKey = '';
+        $this->uploads = [];
+        unset($this->threadMessages);
     }
 
     #[Computed]
-    public function messages()
+    public function threadMessages()
     {
-        return $this->conversation->messages()
-            ->with('sender')
+        return $this->thread()
+            ->messages()
+            ->select([
+                'id',
+                'thread_id',
+                'sender_id',
+                'sender_user_id',
+                'recipient_user_id',
+                'body',
+                'attachments',
+                'attachments_json',
+                'is_system_message',
+                'system_message',
+                'is_important',
+                'important',
+                'read_at',
+                'created_at',
+            ])
+            ->with(['sender:id,name'])
             ->orderBy('created_at')
+            ->limit(100)
             ->get();
     }
 
     #[Computed]
     public function otherUser()
     {
-        return $this->conversation->participant_one_id === auth()->id()
-            ? $this->conversation->participantTwo
-            : $this->conversation->participantOne;
+        return $this->thread()->otherParticipant(auth()->user());
     }
 
-    public function send(): void
+    /**
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function quickTemplates(): array
     {
-        $this->validate(['newMessage' => ['required', 'string', 'max:5000']]);
+        $role = (int) $this->thread()->guest_user_id === (int) auth()->id()
+            ? 'guest'
+            : 'host';
 
-        app(MessageService::class)->send($this->conversation, auth()->user(), $this->newMessage);
-        $this->newMessage = '';
-        unset($this->messages);
+        $templates = app('translator')->get("messages.templates.{$role}");
+
+        return is_array($templates) ? $templates : [];
     }
 
     public function render(): View
     {
-        return view('livewire.messages.chat-window');
+        return view('livewire.messages.chat-window', [
+            'thread' => $this->thread(),
+        ])->layout('layouts.app', [
+            'title' => __('messages.thread.title'),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function rules(): array
+    {
+        return [
+            'body' => ['nullable', 'string', 'max:5000', 'required_without:uploads'],
+            'important' => ['boolean'],
+            'uploads' => ['array', 'max:3'],
+            'uploads.*' => ['file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function validationAttributes(): array
+    {
+        $attributes = app('translator')->get('messages.validation_attributes');
+
+        return is_array($attributes) ? $attributes : [];
+    }
+
+    private function thread(): MessageThread
+    {
+        return MessageThread::query()
+            ->select([
+                'id',
+                'type',
+                'guest_user_id',
+                'host_user_id',
+                'booking_id',
+                'property_id',
+                'sleeping_place_id',
+                'last_message_at',
+                'status',
+            ])
+            ->with([
+                'guest:id,name',
+                'host:id,name',
+                'booking:id,reference,status,payment_status',
+                'sleepingPlace:id,display_name',
+                'sleepingPlace.translations:id,sleeping_place_id,locale,title',
+            ])
+            ->findOrFail($this->threadId);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function storedAttachments(): array
+    {
+        $attachments = [];
+
+        foreach ($this->uploads as $upload) {
+            $path = $upload->store("messages/{$this->threadId}", 'public');
+            $mime = $upload->getMimeType() ?: 'application/octet-stream';
+
+            $attachments[] = [
+                'path' => $path,
+                'original_name' => $upload->getClientOriginalName(),
+                'mime' => $mime,
+                'size' => $upload->getSize(),
+                'type' => str_starts_with($mime, 'image/') ? 'image' : 'document',
+            ];
+        }
+
+        return $attachments;
     }
 }

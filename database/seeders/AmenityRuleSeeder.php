@@ -4,62 +4,55 @@ namespace Database\Seeders;
 
 use App\Models\Amenity;
 use App\Models\Rule;
+use App\Services\Catalog\AmenityRuleCatalog;
+use App\Services\Catalog\AmenityRuleLookupService;
 use Illuminate\Database\Seeder;
 
 class AmenityRuleSeeder extends Seeder
 {
     public function run(): void
     {
-        $amenities = [
-            ['slug' => 'wifi', 'name_normalized' => 'wifi', 'en' => 'Wi-Fi', 'ru' => 'Wi-Fi'],
-            ['slug' => 'kitchen', 'name_normalized' => 'kitchen', 'en' => 'Kitchen', 'ru' => 'Кухня'],
-            ['slug' => 'locker', 'name_normalized' => 'locker', 'en' => 'Locker', 'ru' => 'Шкафчик'],
-        ];
-
-        foreach ($amenities as $item) {
-            $amenity = Amenity::query()->firstOrCreate(
+        foreach (AmenityRuleCatalog::amenities() as $item) {
+            $amenity = Amenity::query()->updateOrCreate(
                 ['slug' => $item['slug']],
                 [
-                    'name_normalized' => $item['name_normalized'],
-                    'category' => 'comfort',
+                    'name_normalized' => AmenityRuleCatalog::normalize($item['en']),
+                    'category' => $item['category'],
                     'status' => 'active',
                 ]
             );
 
-            $amenity->translations()->firstOrCreate(['locale' => 'en'], [
+            $amenity->translations()->updateOrCreate(['locale' => 'en'], [
                 'name' => $item['en'],
-                'name_normalized' => $item['name_normalized'],
+                'name_normalized' => AmenityRuleCatalog::normalize($item['en']),
             ]);
-            $amenity->translations()->firstOrCreate(['locale' => 'ru'], [
+            $amenity->translations()->updateOrCreate(['locale' => 'ru'], [
                 'name' => $item['ru'],
-                'name_normalized' => $item['name_normalized'],
+                'name_normalized' => AmenityRuleCatalog::normalize($item['ru']),
             ]);
         }
 
-        $rules = [
-            ['slug' => 'no_smoking', 'name_normalized' => 'no smoking', 'en' => 'No smoking', 'ru' => 'Не курить'],
-            ['slug' => 'quiet_hours', 'name_normalized' => 'quiet hours', 'en' => 'Quiet hours', 'ru' => 'Тихие часы'],
-        ];
-
-        foreach ($rules as $item) {
-            $rule = Rule::query()->firstOrCreate(
+        foreach (AmenityRuleCatalog::rules() as $item) {
+            $rule = Rule::query()->updateOrCreate(
                 ['slug' => $item['slug']],
                 [
-                    'name_normalized' => $item['name_normalized'],
-                    'category' => 'house',
-                    'requires_confirmation' => true,
+                    'name_normalized' => AmenityRuleCatalog::normalize($item['en']),
+                    'category' => $item['category'],
+                    'requires_confirmation' => $item['requires_confirmation'],
                     'status' => 'active',
                 ]
             );
 
-            $rule->translations()->firstOrCreate(['locale' => 'en'], [
+            $rule->translations()->updateOrCreate(['locale' => 'en'], [
                 'name' => $item['en'],
-                'name_normalized' => $item['name_normalized'],
+                'name_normalized' => AmenityRuleCatalog::normalize($item['en']),
             ]);
-            $rule->translations()->firstOrCreate(['locale' => 'ru'], [
+            $rule->translations()->updateOrCreate(['locale' => 'ru'], [
                 'name' => $item['ru'],
-                'name_normalized' => $item['name_normalized'],
+                'name_normalized' => AmenityRuleCatalog::normalize($item['ru']),
             ]);
         }
+
+        AmenityRuleLookupService::clearAll();
     }
 }

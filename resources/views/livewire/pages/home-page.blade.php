@@ -48,4 +48,19 @@
             <flux:callout.heading>{{ __('app.home_calculation_heading') }}</flux:callout.heading>
             <flux:callout.text>{{ __('app.home_calculation_text') }}</flux:callout.text>
         </flux:callout>
+
+        <flux:card class="space-y-3">
+            <div class="flex items-start gap-3">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
+                    <flux:icon name="magnifying-glass" class="size-5" />
+                </div>
+                <div class="space-y-1">
+                    <flux:heading size="lg">{{ __('app.home_empty_title') }}</flux:heading>
+                    <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('app.home_empty_text') }}</flux:text>
+                </div>
+            </div>
+            <div class="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                {{ __('app.home_empty_note') }}
+            </div>
+        </flux:card>
     </div>

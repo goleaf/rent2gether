@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -187,6 +189,21 @@ class User extends Authenticatable
     public function appNotifications(): HasMany
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function mediaItems(): MorphMany
+    {
+        return $this->morphMany(MediaItem::class, 'mediable');
+    }
+
+    public function avatarMedia(): MorphOne
+    {
+        return $this->morphOne(MediaItem::class, 'mediable')
+            ->active()
+            ->where('collection', 'avatar')
+            ->orderByDesc('is_primary')
+            ->orderBy('sort_order')
+            ->orderBy('id');
     }
 
     public function scopeHosts(Builder $query): Builder

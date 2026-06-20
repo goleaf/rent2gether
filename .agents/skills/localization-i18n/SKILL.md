@@ -19,6 +19,7 @@ Rules:
 - Every notification title/body must be translated.
 - Every enum/status label must be translated.
 - Every amenity/rule label must be translatable.
+- Every new feature must include English and Russian translations for headings, labels, buttons, empty states, loading states, validation attributes, statuses, notifications, seed labels, and any user-visible copy.
 - User-generated listing content must support translations:
   title, summary, description, house rules, check-in instructions, check-out instructions, safety notes, cancellation text.
 - Use separate translation tables for important public content:

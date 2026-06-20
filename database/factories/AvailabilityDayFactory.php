@@ -16,6 +16,7 @@ class AvailabilityDayFactory extends Factory
     {
         return [
             'sleeping_place_id' => SleepingPlace::factory(),
+            'booking_id' => null,
             'date' => $this->faker->dateTimeBetween('+1 week', '+3 months')->format('Y-m-d'),
             'status' => AvailabilityStatus::Available->value,
             'price_override' => null,

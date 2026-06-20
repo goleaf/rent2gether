@@ -1,9 +1,21 @@
 <a href="{{ route('beds.show', ['locale' => app()->getLocale(), 'bed' => $bed]) }}" class="group block bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-600 transition-all">
 
-    {{-- Placeholder image area --}}
-    <div class="h-44 bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center">
-        <flux:icon name="home" class="size-12 text-zinc-300 dark:text-zinc-600" />
-    </div>
+    @php($media = $bed->room->property->cardMedia)
+    @if($media)
+        <img
+            src="{{ $media->imageUrl('mobile') }}"
+            alt="{{ $media->localizedCaption() ?: __('listing.media.primary_alt', ['title' => $bed->title]) }}"
+            loading="lazy"
+            decoding="async"
+            width="720"
+            height="480"
+            class="h-44 w-full bg-zinc-100 object-cover dark:bg-zinc-700"
+        />
+    @else
+        <div class="h-44 bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center">
+            <flux:icon name="home" class="size-12 text-zinc-300 dark:text-zinc-600" />
+        </div>
+    @endif
 
     <div class="p-4 space-y-2">
 

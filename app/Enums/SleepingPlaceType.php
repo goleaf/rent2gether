@@ -12,5 +12,12 @@ enum SleepingPlaceType: string
     case SofaBed = 'sofa_bed';
     case Mattress = 'mattress';
     case FoldOut = 'fold_out';
+    case ArmchairBed = 'armchair_bed';
     case Capsule = 'capsule';
+    case Other = 'other';
+
+    public function label(): string
+    {
+        return __('statuses.sleeping_place_type.'.$this->value);
+    }
 }

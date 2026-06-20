@@ -115,7 +115,7 @@ class BedSearch extends Component
     {
         $query = Bed::query()
             ->active()
-            ->with(['room.property'])
+            ->with(['room.property.cardMedia'])
             ->whereHas('room', fn (Builder $q) => $q->active()
                 ->whereHas('property', fn (Builder $pq) => $pq->active()
                     ->when($this->city, fn ($q) => $q->where('city', 'like', '%'.$this->city.'%'))

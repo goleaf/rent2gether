@@ -16,13 +16,13 @@ class NotificationFactory extends Factory
     {
         return [
             'id' => (string) Str::uuid(),
-            'type' => 'booking_update',
+            'type' => 'action_needed',
             'notifiable_type' => User::class,
             'notifiable_id' => User::factory(),
             'user_id' => User::factory(),
-            'data' => ['booking_reference' => 'RTG-DEMO'],
-            'title_key' => 'notifications.booking_update.title',
-            'body_key' => 'notifications.booking_update.body',
+            'data' => ['params' => ['reference' => 'RTG-DEMO']],
+            'title_key' => 'notifications.action_needed.title',
+            'body_key' => 'notifications.action_needed.body',
             'action_url' => null,
             'channel' => 'database',
             'status' => 'unread',

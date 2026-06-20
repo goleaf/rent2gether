@@ -14,7 +14,7 @@
                 </flux:select>
                 <flux:input type="number" wire:model="maxGuests" label="{{ __('listing.form.max_guests') }}" min="1" />
             </div>
-            <flux:textarea wire:model="description" label="{{ __('listing.form.description') }}" rows="2" />
+            <flux:textarea wire:model.blur="description" label="{{ __('listing.form.description') }}" rows="2" />
         </flux:card>
 
         <flux:card class="space-y-4">

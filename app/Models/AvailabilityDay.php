@@ -15,6 +15,7 @@ class AvailabilityDay extends Model
 
     protected $fillable = [
         'sleeping_place_id',
+        'booking_id',
         'date',
         'status',
         'price_override',
@@ -39,5 +40,10 @@ class AvailabilityDay extends Model
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
+    }
+
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
     }
 }

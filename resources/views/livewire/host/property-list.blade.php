@@ -1,31 +1,30 @@
-<div class="max-w-4xl mx-auto space-y-6">
-    <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('host.my_properties') }}</flux:heading>
-        <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus">
+<div class="mx-auto max-w-5xl space-y-5 pb-28 sm:pb-8">
+    <section class="space-y-3">
+        <div class="flex items-start justify-between gap-3">
+            <div class="space-y-2">
+                <flux:badge color="emerald">{{ __('host.listings.properties.eyebrow') }}</flux:badge>
+                <flux:heading size="xl" level="1">{{ __('host.my_properties') }}</flux:heading>
+                <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">
+                    {{ __('host.listings.properties.helper') }}
+                </flux:text>
+            </div>
+        </div>
+
+        <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate class="w-full sm:w-auto">
             {{ __('host.add_property') }}
         </flux:button>
-    </div>
+    </section>
 
     <div class="space-y-4">
-        @forelse($this->properties as $property)
-            <flux:card class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <a href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $property]) }}">
-                        <flux:heading size="sm" class="hover:text-blue-600 transition">{{ $property->title }}</flux:heading>
-                    </a>
-                    <flux:text size="sm" class="text-zinc-500">
-                        {{ $property->city }}, {{ $property->country }}
-                        &middot; {{ $property->rooms_count }} {{ __('app.units.rooms') }}
-                        &middot; {{ $property->beds_count }} {{ __('app.units.beds') }}
-                    </flux:text>
-                    <flux:badge size="sm">{{ $property->type->label() }}</flux:badge>
-                    <flux:badge size="sm" color="{{ $property->status->value === 'active' ? 'green' : 'zinc' }}">{{ $property->status->label() }}</flux:badge>
-                </div>
-                <flux:button size="sm" href="{{ route('host.properties.edit', ['locale' => app()->getLocale(), 'property' => $property]) }}" icon="pencil" variant="ghost" />
-            </flux:card>
+        @forelse($properties as $property)
+            @include('livewire.shell.partials.host-property-card', ['property' => $property])
         @empty
-            <flux:card>
-                <flux:text class="text-center text-zinc-500 py-8">{{ __('host.empty_properties') }}</flux:text>
+            <flux:card class="space-y-3 text-center">
+                <flux:heading size="lg">{{ __('host.listings.properties.empty_title') }}</flux:heading>
+                <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('host.empty_properties') }}</flux:text>
+                <flux:button href="{{ route('host.properties.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
+                    {{ __('host.add_property') }}
+                </flux:button>
             </flux:card>
         @endforelse
     </div>

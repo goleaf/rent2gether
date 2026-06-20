@@ -1,38 +1,303 @@
-<div class="max-w-3xl mx-auto space-y-6">
-    <flux:heading size="xl">{{ $room ? __('listing.form.edit_room') : __('listing.form.new_room') }}</flux:heading>
-    <flux:text class="text-zinc-500">{{ $property->title }}</flux:text>
+<div class="mx-auto max-w-3xl space-y-5">
+    <section class="space-y-2">
+        <flux:badge color="emerald">{{ __('host.room_wizard.eyebrow') }}</flux:badge>
+        <flux:heading size="xl" level="1">{{ $roomId ? __('host.room_wizard.edit_heading') : __('host.room_wizard.heading') }}</flux:heading>
+        <flux:text class="text-zinc-600 dark:text-zinc-400">
+            {{ __('host.room_wizard.helper', ['property' => $this->property->title]) }}
+        </flux:text>
+    </section>
 
-    <form wire:submit="save" class="space-y-6">
-        <flux:card class="space-y-4">
-            <flux:input wire:model="title" label="{{ __('listing.form.title') }}" :error="$errors->first('title')" />
-            <flux:select wire:model="genderType" label="{{ __('listing.form.gender_type') }}">
-                @foreach($this->genderTypes() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </flux:select>
-            <flux:textarea wire:model="description" label="{{ __('listing.form.description') }}" rows="2" />
-            <div class="grid grid-cols-2 gap-4">
-                <flux:input type="number" wire:model="capacity" label="{{ __('listing.form.capacity') }}" min="1" :error="$errors->first('capacity')" />
-                <flux:input type="number" wire:model="areaSqm" label="{{ __('listing.form.area') }}" step="0.1" />
+    @if($wasSaved)
+        <flux:callout color="green" icon="check-circle">
+            <flux:callout.text>{{ __('host.room_wizard.saved_notice') }}</flux:callout.text>
+        </flux:callout>
+    @endif
+
+    <flux:card class="space-y-3">
+        <div class="flex items-center justify-between gap-3">
+            <flux:text size="sm" class="font-medium text-zinc-700 dark:text-zinc-200">
+                {{ __('host.room_wizard.progress', ['current' => $step, 'total' => 6]) }}
+            </flux:text>
+            <flux:badge size="sm">{{ $status ? __('statuses.room.'.$status) : __('statuses.room.draft') }}</flux:badge>
+        </div>
+
+        <div class="h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+            <div class="h-full rounded-full bg-emerald-500 transition-all" style="width: {{ (int) (($step / 6) * 100) }}%"></div>
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto pb-1">
+            @foreach($this->wizardSteps() as $wizardStep)
+                <button
+                    type="button"
+                    wire:click="$set('step', {{ $wizardStep['number'] }})"
+                    class="shrink-0 rounded-full border px-3 py-1.5 text-xs {{ $step === $wizardStep['number'] ? 'border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200' : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400' }}"
+                    title="{{ $wizardStep['title'] }}"
+                >
+                    {{ $wizardStep['number'] }}
+                </button>
+            @endforeach
+        </div>
+    </flux:card>
+
+    <form wire:submit="publish" class="space-y-5">
+        <flux:card class="space-y-5">
+            <div class="space-y-1">
+                <flux:heading size="lg">{{ __('host.room_wizard.steps.'.$step.'.title') }}</flux:heading>
+                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
+                    {{ __('host.room_wizard.steps.'.$step.'.helper') }}
+                </flux:text>
             </div>
+
+            @switch($step)
+                @case(1)
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.room_number') }}</flux:label>
+                            <flux:input wire:model.blur="roomNumber" />
+                            <flux:error name="roomNumber" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.title') }}</flux:label>
+                            <flux:input wire:model.blur="title" />
+                            <flux:error name="title" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.room_type') }}</flux:label>
+                            <flux:select wire:model.change="roomType">
+                                @foreach($this->roomTypeOptions() as $value => $label)
+                                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="roomType" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.gender_policy') }}</flux:label>
+                            <flux:select wire:model.change="genderPolicy">
+                                @foreach($this->genderPolicyOptions() as $value => $label)
+                                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="genderPolicy" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.status') }}</flux:label>
+                            <flux:select wire:model.change="status">
+                                @foreach($this->statusOptions() as $value => $label)
+                                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="status" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-3">
+                        <flux:checkbox wire:model.change="isPrivate" label="{{ __('host.room_wizard.fields.is_private') }}" />
+                        <flux:checkbox wire:model.change="isPassThrough" label="{{ __('host.room_wizard.fields.is_pass_through') }}" />
+                    </div>
+                    @break
+
+                @case(2)
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.area') }}</flux:label>
+                            <flux:input type="number" inputmode="decimal" step="0.1" wire:model.blur="area" />
+                            <flux:error name="area" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.floor') }}</flux:label>
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="floor" />
+                            <flux:error name="floor" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.windows_count') }}</flux:label>
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="windowsCount" />
+                            <flux:error name="windowsCount" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.window_view') }}</flux:label>
+                            <flux:input wire:model.blur="windowView" />
+                            <flux:error name="windowView" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <flux:checkbox wire:model.change="hasLock" label="{{ __('host.room_wizard.fields.has_lock') }}" />
+                        <flux:checkbox wire:model.change="hasWindow" label="{{ __('host.room_wizard.fields.has_window') }}" />
+                        <flux:checkbox wire:model.change="hasWardrobe" label="{{ __('host.room_wizard.fields.has_wardrobe') }}" />
+                        <flux:checkbox wire:model.change="hasDesk" label="{{ __('host.room_wizard.fields.has_desk') }}" />
+                        <flux:checkbox wire:model.change="hasChair" label="{{ __('host.room_wizard.fields.has_chair') }}" />
+                        <flux:checkbox wire:model.change="hasMirror" label="{{ __('host.room_wizard.fields.has_mirror') }}" />
+                        <flux:checkbox wire:model.change="hasHeating" label="{{ __('host.room_wizard.fields.has_heating') }}" />
+                        <flux:checkbox wire:model.change="hasAirConditioning" label="{{ __('host.room_wizard.fields.has_air_conditioning') }}" />
+                        <flux:checkbox wire:model.change="hasBalcony" label="{{ __('host.room_wizard.fields.has_balcony') }}" />
+                        <flux:checkbox wire:model.change="hasCurtains" label="{{ __('host.room_wizard.fields.has_curtains') }}" />
+                        <flux:checkbox wire:model.change="hasBlackoutCurtains" label="{{ __('host.room_wizard.fields.has_blackout_curtains') }}" />
+                    </div>
+                    @break
+
+                @case(3)
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        @foreach(['noiseLevel' => 'noise_level', 'lightLevel' => 'light_level', 'ventilationLevel' => 'ventilation_level'] as $property => $field)
+                            <flux:field>
+                                <flux:label>{{ __('host.room_wizard.fields.'.$field) }}</flux:label>
+                                <flux:select wire:model.change="{{ $property }}">
+                                    <flux:select.option value="">{{ __('host.room_wizard.options.not_specified') }}</flux:select.option>
+                                    @foreach($this->levelOptions($field) as $value => $label)
+                                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:error name="{{ $property }}" />
+                            </flux:field>
+                        @endforeach
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.max_guests') }}</flux:label>
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" />
+                            <flux:error name="maxGuests" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.beds_count') }}</flux:label>
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="bedsCount" />
+                            <flux:error name="bedsCount" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.min_guest_age') }}</flux:label>
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="minGuestAge" />
+                            <flux:error name="minGuestAge" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.max_guest_age') }}</flux:label>
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuestAge" />
+                            <flux:error name="maxGuestAge" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-3">
+                        <flux:checkbox wire:model.change="canEat" label="{{ __('host.room_wizard.fields.can_eat') }}" />
+                        <flux:checkbox wire:model.change="canWorkAtNight" label="{{ __('host.room_wizard.fields.can_work_at_night') }}" />
+                        <flux:checkbox wire:model.change="canUseLightAtNight" label="{{ __('host.room_wizard.fields.can_use_light_at_night') }}" />
+                        <flux:checkbox wire:model.change="canTalkAtNight" label="{{ __('host.room_wizard.fields.can_talk_at_night') }}" />
+                    </div>
+
+                    @if((int) $bedsCount > 0)
+                        <flux:callout icon="plus-circle">
+                            <flux:callout.text>{{ __('host.room_wizard.generate_offer', ['count' => (int) $bedsCount]) }}</flux:callout.text>
+                        </flux:callout>
+                        <flux:checkbox wire:model.change="generateSleepingPlacesAfterSave" label="{{ __('host.room_wizard.fields.generate_sleeping_places') }}" />
+                    @endif
+                    @break
+
+                @case(4)
+                    <div class="grid gap-5">
+                        @foreach(['en' => 'En', 'ru' => 'Ru'] as $locale => $suffix)
+                            <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                                <flux:heading size="sm">{{ __('host.room_wizard.locales.'.$locale) }}</flux:heading>
+                                <flux:field>
+                                    <flux:label>{{ __('host.room_wizard.fields.title_'.$locale) }}</flux:label>
+                                    <flux:input wire:model.blur="title{{ $suffix }}" />
+                                    <flux:error name="title{{ $suffix }}" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('host.room_wizard.fields.description_'.$locale) }}</flux:label>
+                                    <flux:textarea rows="4" wire:model.blur="description{{ $suffix }}" />
+                                    <flux:error name="description{{ $suffix }}" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('host.room_wizard.fields.notes_'.$locale) }}</flux:label>
+                                    <flux:textarea rows="3" wire:model.blur="notes{{ $suffix }}" />
+                                    <flux:error name="notes{{ $suffix }}" />
+                                </flux:field>
+                            </div>
+                        @endforeach
+                    </div>
+                    @break
+
+                @case(5)
+                    <div class="space-y-4">
+                        <flux:field>
+                            <flux:label>{{ __('host.room_wizard.fields.room_rules_text') }}</flux:label>
+                            <flux:textarea rows="3" wire:model.blur="roomRulesText" />
+                            <flux:error name="roomRulesText" />
+                        </flux:field>
+
+                        <livewire:catalog.rule-picker wire:model="ruleIds" context="room" />
+                        <flux:error name="ruleIds" />
+                    </div>
+                    @break
+
+                @case(6)
+                    <div class="grid gap-4">
+                        @if($roomId)
+                            <livewire:media.manage-media
+                                owner-type="room"
+                                :owner-id="$roomId"
+                                collection="gallery"
+                                :max-items="12"
+                                :wire:key="'room-media-'.$roomId"
+                            />
+                        @endif
+
+                        @foreach(['roomPhoto' => 'room', 'windowPhoto' => 'window', 'detailPhoto' => 'detail'] as $field => $slot)
+                            <flux:field>
+                                <flux:label>{{ __('host.room_wizard.photos.'.$slot) }}</flux:label>
+                                <flux:input type="file" accept="image/*" wire:model="{{ $field }}" />
+                                <flux:description>{{ __('host.room_wizard.helpers.photo') }}</flux:description>
+                                <flux:error name="{{ $field }}" />
+                            </flux:field>
+                        @endforeach
+
+                        <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                            <flux:heading size="sm">{{ __('host.room_wizard.readiness.title') }}</flux:heading>
+                            <div class="mt-3 grid gap-2">
+                                @foreach($this->readinessChecklist() as $item)
+                                    <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                                        <span>{{ $item['label'] }}</span>
+                                        <flux:badge size="sm" color="{{ $item['done'] ? 'green' : 'zinc' }}">
+                                            {{ $item['done'] ? __('host.room_wizard.readiness.done') : __('host.room_wizard.readiness.later') }}
+                                        </flux:badge>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @break
+            @endswitch
         </flux:card>
 
-        <flux:card class="space-y-3">
-            <flux:heading size="sm">{{ __('listing.form.amenities') }}</flux:heading>
+        <div class="sticky bottom-20 z-10 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
             <div class="grid grid-cols-2 gap-3">
-                <flux:checkbox wire:model="hasLock" label="{{ __('listing.form.lock_on_door') }}" />
-                <flux:checkbox wire:model="hasWindow" label="{{ __('listing.form.window') }}" />
-                <flux:checkbox wire:model="hasWardrobe" label="{{ __('listing.form.wardrobe') }}" />
-                <flux:checkbox wire:model="hasDesk" label="{{ __('listing.form.desk') }}" />
-                <flux:checkbox wire:model="hasAc" label="{{ __('listing.form.air_conditioning') }}" />
-                <flux:checkbox wire:model="hasHeating" label="{{ __('listing.form.heating') }}" />
-                <flux:checkbox wire:model="hasBalcony" label="{{ __('listing.form.balcony') }}" />
-            </div>
-        </flux:card>
+                <flux:button type="button" variant="ghost" wire:click="previousStep" :disabled="$step === 1">
+                    {{ __('host.room_wizard.actions.back') }}
+                </flux:button>
 
-        <div class="flex gap-3">
-            <flux:button type="submit" variant="primary">{{ $room ? __('app.actions.update') : __('app.actions.create') }}</flux:button>
-            <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $property]) }}" variant="ghost">{{ __('app.actions.cancel') }}</flux:button>
+                @if($step < 6)
+                    <flux:button type="button" variant="primary" wire:click="nextStep" class="data-loading:opacity-70">
+                        <span wire:loading.remove wire:target="nextStep">{{ __('host.room_wizard.actions.save_and_continue') }}</span>
+                        <span wire:loading wire:target="nextStep">{{ __('account.actions.saving') }}</span>
+                    </flux:button>
+                @else
+                    <flux:button type="submit" variant="primary" class="data-loading:opacity-70">
+                        <span wire:loading.remove wire:target="publish">{{ __('host.room_wizard.actions.review_and_save') }}</span>
+                        <span wire:loading wire:target="publish">{{ __('account.actions.saving') }}</span>
+                    </flux:button>
+                @endif
+            </div>
+
+            <div class="mt-3">
+                <flux:button class="w-full" href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $propertyId]) }}" variant="ghost" wire:navigate>
+                    {{ __('app.actions.cancel') }}
+                </flux:button>
+            </div>
         </div>
     </form>
 </div>

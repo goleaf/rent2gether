@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Catalog\AmenityRuleLookupService;
 use Database\Factories\RuleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,16 @@ class Rule extends Model
         'requires_confirmation',
         'status',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            AmenityRuleLookupService::clearRuleCache();
+        });
+        static::deleted(function (): void {
+            AmenityRuleLookupService::clearRuleCache();
+        });
+    }
 
     protected function casts(): array
     {

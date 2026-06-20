@@ -21,6 +21,7 @@ class ComplaintFactory extends Factory
     public function definition(): array
     {
         return [
+            'reference' => strtoupper('CMP-'.$this->faker->unique()->bothify('######')),
             'reporter_id' => User::factory(),
             'reported_user_id' => User::factory(),
             'booking_id' => Booking::factory(),
@@ -29,11 +30,15 @@ class ComplaintFactory extends Factory
             'bed_id' => Bed::factory(),
             'sleeping_place_id' => SleepingPlace::factory(),
             'type' => ComplaintType::Other->value,
+            'priority' => 'normal',
             'description' => $this->faker->paragraph(),
+            'media' => [],
             'photos' => [],
             'urgency' => 'normal',
             'desired_resolution' => 'refund_review',
-            'status' => ComplaintStatus::Open->value,
+            'refund_requested' => false,
+            'deposit_hold_requested' => false,
+            'status' => ComplaintStatus::Created->value,
         ];
     }
 }

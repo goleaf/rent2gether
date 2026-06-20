@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use BackedEnum;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
@@ -10,16 +12,24 @@ class LocalizationCatalogueTest extends TestCase
 {
     /** @var list<string> */
     private const REQUIRED_FILES = [
+        'account.php',
         'app.php',
-        'navigation.php',
         'auth.php',
+        'availability.php',
         'search.php',
+        'compatibility.php',
+        'decision.php',
         'listing.php',
         'booking.php',
         'host.php',
+        'media.php',
+        'messages.php',
+        'navigation.php',
+        'notifications.php',
+        'preferences.php',
+        'shell.php',
         'validation.php',
         'statuses.php',
-        'notifications.php',
     ];
 
     public function test_root_language_catalogues_exist_and_have_matching_keys(): void
@@ -64,5 +74,71 @@ class LocalizationCatalogueTest extends TestCase
                 );
             }
         }
+    }
+
+    public function test_all_backed_enums_expose_translated_labels(): void
+    {
+        $originalLocale = app()->getLocale();
+
+        try {
+            foreach (File::allFiles(app_path('Enums')) as $file) {
+                $class = 'App\\Enums\\'.$file->getFilenameWithoutExtension();
+
+                if (! enum_exists($class) || ! is_subclass_of($class, BackedEnum::class)) {
+                    continue;
+                }
+
+                $this->assertTrue(method_exists($class, 'label'), $class.' is missing label().');
+
+                foreach (['en', 'ru'] as $locale) {
+                    app()->setLocale($locale);
+
+                    foreach ($class::cases() as $case) {
+                        $label = $case->label();
+
+                        $this->assertNotSame('', trim($label), $class.'::'.$case->name.' has an empty '.$locale.' label.');
+                        $this->assertDoesNotMatchRegularExpression('/^[a-z0-9_.-]+$/', $label, $class.'::'.$case->name.' returns a missing key in '.$locale.'.');
+                    }
+                }
+            }
+        } finally {
+            app()->setLocale($originalLocale);
+        }
+    }
+
+    public function test_validation_attributes_are_translated_for_core_form_fields(): void
+    {
+        $required = [
+            'email',
+            'password',
+            'displayName',
+            'phone',
+            'city',
+            'country',
+            'checkIn',
+            'checkOut',
+            'guestMessage',
+            'requestedNewCheckout',
+            'photo',
+            'title',
+            'description',
+            'reason',
+        ];
+
+        foreach (['en', 'ru'] as $locale) {
+            $attributes = __('validation.attributes', [], $locale);
+            $this->assertIsArray($attributes);
+
+            foreach ($required as $attribute) {
+                $this->assertArrayHasKey($attribute, $attributes, $locale.' validation attribute missing: '.$attribute);
+                $this->assertNotSame('', trim((string) $attributes[$attribute]));
+            }
+        }
+    }
+
+    public function test_missing_translation_command_reports_clean_catalogue(): void
+    {
+        $this->assertSame(0, Artisan::call('translations:missing'));
+        $this->assertStringContainsString('All', Artisan::output());
     }
 }

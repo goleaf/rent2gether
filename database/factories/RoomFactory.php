@@ -32,6 +32,8 @@ class RoomFactory extends Factory
             'has_balcony' => $this->faker->boolean(20),
             'status' => RoomStatus::Active->value,
             'type' => RoomType::Shared->value,
+            'is_private' => false,
+            'is_pass_through' => false,
             'room_number' => (string) $this->faker->numberBetween(1, 50),
             'floor' => $this->faker->numberBetween(1, 8),
             'area' => $this->faker->randomFloat(2, 10, 40),
@@ -42,6 +44,7 @@ class RoomFactory extends Factory
             'gender_policy' => GenderType::Mixed->value,
             'min_guest_age' => 18,
             'max_guest_age' => null,
+            'windows_count' => 1,
             'window_view' => 'street',
             'has_chair' => true,
             'has_mirror' => true,
@@ -49,10 +52,13 @@ class RoomFactory extends Factory
             'has_curtains' => true,
             'has_blackout_curtains' => false,
             'noise_level' => 'moderate',
-            'light_level' => 'normal',
+            'light_level' => 'moderate',
+            'ventilation_level' => 'good',
             'can_eat' => false,
             'can_work_at_night' => false,
             'can_turn_light_at_night' => false,
+            'can_talk_at_night' => false,
+            'room_rules_text' => null,
         ];
     }
 }

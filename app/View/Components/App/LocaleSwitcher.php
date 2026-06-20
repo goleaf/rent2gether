@@ -20,8 +20,16 @@ class LocaleSwitcher extends Component
     {
         $route = $this->request->route();
 
-        if (! $route || ! $route->getName() || ! array_key_exists('locale', $route->parameters())) {
+        if (! $route || ! $route->getName()) {
             return route('home', ['locale' => $locale]);
+        }
+
+        if (! array_key_exists('locale', $route->parameters())) {
+            return route($route->getName(), [
+                ...$route->parameters(),
+                ...$this->request->query(),
+                'locale' => $locale,
+            ]);
         }
 
         return route($route->getName(), [

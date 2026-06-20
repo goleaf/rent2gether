@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Livewire\Trips\Concerns;
+
+use App\Models\Booking;
+use Illuminate\Database\Eloquent\Builder;
+
+trait LoadsTripBookings
+{
+    private function tripBookingQuery(): Builder
+    {
+        return Booking::query()
+            ->select([
+                'id',
+                'reference',
+                'guest_id',
+                'guest_user_id',
+                'host_id',
+                'host_user_id',
+                'bed_id',
+                'property_id',
+                'room_id',
+                'sleeping_place_id',
+                'status',
+                'payment_status',
+                'check_in',
+                'check_out',
+                'check_in_date',
+                'check_out_date',
+                'check_in_time',
+                'check_out_time',
+                'arrival_time',
+                'nights',
+                'nights_count',
+                'guests_count',
+                'currency',
+                'subtotal',
+                'subtotal_amount',
+                'discount_amount',
+                'cleaning_fee',
+                'cleaning_fee_amount',
+                'deposit',
+                'deposit_amount',
+                'service_fee',
+                'service_fee_amount',
+                'total',
+                'total_amount',
+                'refundable_amount',
+                'non_refundable_amount',
+                'cancellation_policy',
+                'free_cancel_before',
+                'cancel_reason',
+                'cancelled_by',
+                'cancelled_at',
+                'guest_message',
+                'check_in_instructions',
+                'guest_checked_in_at',
+                'guest_checked_out_at',
+                'host_confirmed_checkin_at',
+                'host_confirmed_checkout_at',
+                'checked_in_at',
+                'checked_out_at',
+                'deposit_released_at',
+                'guest_review_left',
+            ])
+            ->with([
+                'host:id,name,phone',
+                'host.profile:id,user_id,phone',
+                'host.hostProfile:id,user_id,display_name,response_time_minutes,languages_json',
+                'bed:id,room_id,title',
+                'bed.room:id,property_id,title,room_number',
+                'bed.room.property:id,title,city,district,address_line_1,street,house_number,building,apartment_number,apartment,show_exact_address,show_exact_address_before_booking,show_exact_address_after_payment',
+                'property:id,title,city,district,address_line_1,address_line_2,street,house_number,building,apartment_number,apartment,show_exact_address,show_exact_address_before_booking,show_exact_address_after_payment,access_instructions,amenities,nearest_transport',
+                'property.translations:id,property_id,locale,title,check_in_instructions,house_rules_text',
+                'property.amenities:id,slug,status',
+                'property.amenities.translations:id,amenity_id,locale,name',
+                'property.rules:id,slug,category,status',
+                'property.rules.translations:id,rule_id,locale,name',
+                'room:id,property_id,title,room_number,room_rules_text',
+                'room.translations:id,room_id,locale,title',
+                'room.amenities:id,slug,status',
+                'room.amenities.translations:id,amenity_id,locale,name',
+                'room.rules:id,slug,category,status',
+                'room.rules.translations:id,rule_id,locale,name',
+                'sleepingPlace:id,room_id,property_id,type,display_name,place_number',
+                'sleepingPlace.translations:id,sleeping_place_id,locale,title',
+                'sleepingPlace.amenities:id,slug,status',
+                'sleepingPlace.amenities.translations:id,amenity_id,locale,name',
+                'sleepingPlace.rules:id,slug,category,status',
+                'sleepingPlace.rules.translations:id,rule_id,locale,name',
+                'priceLines:id,booking_id,type,label_key,amount,currency,is_refundable',
+                'depositRecords:id,booking_id,amount,currency,status,held_at,released_at,withheld_amount,withhold_reason',
+                'checkinRecord:id,booking_id,property_found,keys_received,code_received,room_shown,sleeping_place_shown,rules_explained,everything_ok,guest_confirmed,host_confirmed,guest_confirmed_at,host_confirmed_at,problem_reported,problem_description,status',
+                'checkoutRecord:id,booking_id,keys_returned,locker_emptied,belongings_removed,place_clean,guest_confirmed,host_confirmed,guest_confirmed_checkout_at,host_confirmed_checkout_at,damage_found,damage_description,deposit_action,status',
+            ]);
+    }
+}

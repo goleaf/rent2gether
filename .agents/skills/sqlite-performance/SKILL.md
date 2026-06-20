@@ -8,6 +8,7 @@ SQLite is the project database.
 Rules:
 - Every foreign key column gets an index unless covered by a composite index.
 - Every search/filter combination used in UI must have a planned index.
+- Every new data-backed feature must include a migration if data is needed, model relationships, factories, lookup seeders when lookup data is introduced, and indexes for its queries.
 - Use composite indexes for:
   country_id + city_id
   city_id + status
@@ -20,8 +21,10 @@ Rules:
   messages thread_id + created_at
   notifications user_id + read_at + created_at
 - Use cursor pagination for large lists.
+- Use cursor pagination or load-more behavior for public search.
 - Avoid SELECT * in heavy queries.
 - Select only columns needed for mobile cards.
+- Use compact DTO arrays for cards.
 - Avoid N+1 by eager loading small relations with selected columns.
 - Never put huge arrays into Livewire properties.
 - Cache lookup tables: amenities, rules, countries, common cities.

@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(
             LocalizedModelContentResolver::class,
-            fn (): LocalizedModelContentResolver => new LocalizedModelContentResolver(config('app.fallback_locale')),
+            fn (): LocalizedModelContentResolver => new LocalizedModelContentResolver(config('localization.fallback_locale')),
         );
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Catalog\AmenityRuleLookupService;
 use Database\Factories\AmenityFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,16 @@ class Amenity extends Model
         'icon',
         'status',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            AmenityRuleLookupService::clearAmenityCache();
+        });
+        static::deleted(function (): void {
+            AmenityRuleLookupService::clearAmenityCache();
+        });
+    }
 
     public function translations(): HasMany
     {

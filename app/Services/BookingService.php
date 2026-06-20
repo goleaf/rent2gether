@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Actions\Bookings\GuestCheckIn;
+use App\Actions\Bookings\GuestCheckOut;
 use App\Enums\BookingStatus;
 use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
@@ -122,17 +124,28 @@ class BookingService
 
     public function checkIn(Booking $booking): void
     {
-        $booking->update([
-            'status' => BookingStatus::CheckedIn->value,
-            'guest_checked_in_at' => now(),
+        $guest = User::query()->findOrFail($booking->guest_user_id ?: $booking->guest_id);
+
+        app(GuestCheckIn::class)->handle($guest, $booking, [
+            'property_found' => true,
+            'keys_received' => true,
+            'code_received' => false,
+            'room_seen' => true,
+            'sleeping_place_shown' => true,
+            'rules_seen' => true,
+            'everything_ok' => true,
         ]);
     }
 
     public function checkOut(Booking $booking): void
     {
-        $booking->update([
-            'status' => BookingStatus::CheckedOut->value,
-            'guest_checked_out_at' => now(),
+        $guest = User::query()->findOrFail($booking->guest_user_id ?: $booking->guest_id);
+
+        app(GuestCheckOut::class)->handle($guest, $booking, [
+            'keys_returned' => true,
+            'belongings_removed' => true,
+            'locker_emptied' => true,
+            'place_clean' => true,
         ]);
     }
 

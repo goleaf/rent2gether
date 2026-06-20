@@ -19,7 +19,11 @@ class Favorite extends Model
         'sleeping_place_id',
         'collection',
         'note',
+        'priority',
         'price_at_save',
+        'check_in',
+        'check_out',
+        'guests_count',
         'notify_available',
         'notify_price_drop',
     ];
@@ -28,6 +32,10 @@ class Favorite extends Model
     {
         return [
             'price_at_save' => 'decimal:2',
+            'check_in' => 'date',
+            'check_out' => 'date',
+            'guests_count' => 'integer',
+            'priority' => 'integer',
             'notify_available' => 'boolean',
             'notify_price_drop' => 'boolean',
         ];

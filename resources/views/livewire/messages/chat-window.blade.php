@@ -1,38 +1,122 @@
-<div class="max-w-3xl mx-auto space-y-4">
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <flux:button size="sm" variant="ghost" href="{{ route('messages.index', ['locale' => app()->getLocale()]) }}" icon="arrow-left" />
-            <flux:heading size="lg">{{ $otherUser->name }}</flux:heading>
-        </div>
-        @if($conversation->bed)
-            <flux:badge size="sm">{{ $conversation->bed->title }}</flux:badge>
-        @endif
-    </div>
+@php
+    $threadType = $thread->type?->value ?? 'pre_booking';
+    $placeTitle = $thread->sleepingPlace?->translations?->firstWhere('locale', app()->getLocale())?->title
+        ?: $thread->sleepingPlace?->translations?->firstWhere('locale', config('app.fallback_locale', 'en'))?->title
+        ?: $thread->sleepingPlace?->display_name;
+@endphp
 
-    <div class="border rounded-xl dark:border-zinc-700 h-[500px] overflow-y-auto p-4 space-y-3" wire:poll.5s>
-        @foreach($this->messages as $message)
-            <div class="{{ $message->sender_id === auth()->id() ? 'ml-auto' : 'mr-auto' }} max-w-[75%]">
-                @if($message->is_system_message)
-                    <div class="text-center">
-                        <flux:text size="sm" class="text-zinc-400 italic">{{ $message->body }}</flux:text>
+<div class="mx-auto flex min-h-[calc(100vh-7rem)] max-w-3xl flex-col px-4 py-4 pb-24 sm:px-6">
+    <section class="space-y-3">
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 items-start gap-3">
+                <flux:button size="sm" variant="ghost" href="{{ route('messages.index', ['locale' => app()->getLocale()]) }}" wire:navigate icon="arrow-left">
+                    {{ __('messages.thread.back') }}
+                </flux:button>
+                <div class="min-w-0 space-y-1">
+                    <flux:heading size="lg" level="1">{{ $this->otherUser?->name ?: __('messages.inbox.unknown_user') }}</flux:heading>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <flux:badge size="sm">{{ __('statuses.message_thread_type.'.$threadType) }}</flux:badge>
+                        @if($placeTitle)
+                            <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $placeTitle }}</flux:text>
+                        @endif
+                    </div>
+                    <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
+                        {{ __('messages.thread.address_note') }}
+                    </flux:text>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-4 flex-1 space-y-3 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950" wire:poll.7s>
+        @forelse($this->threadMessages as $message)
+            @php
+                $mine = (int) ($message->sender_user_id ?: $message->sender_id) === (int) auth()->id();
+                $attachments = $message->attachments ?: $message->attachments_json ?: [];
+            @endphp
+
+            <div class="{{ $mine ? 'ml-auto' : 'mr-auto' }} max-w-[88%] space-y-1">
+                @if($message->is_system_message || $message->system_message)
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 text-center dark:bg-zinc-900">
+                        <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $message->body }}</flux:text>
                     </div>
                 @else
-                    <div class="{{ $message->sender_id === auth()->id() ? 'bg-blue-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800' }} rounded-xl px-4 py-2">
-                        <flux:text>{{ $message->body }}</flux:text>
+                    <div class="{{ $mine ? 'bg-emerald-600 text-white' : 'bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-50' }} rounded-xl px-3 py-2">
+                        @if($message->is_important || $message->important)
+                            <div class="mb-1 text-xs font-medium opacity-80">{{ __('messages.thread.important') }}</div>
+                        @endif
+                        @if($message->body !== '')
+                            <p class="whitespace-pre-line text-sm">{{ $message->body }}</p>
+                        @endif
+                        @if($attachments !== [])
+                            <div class="mt-2 space-y-1">
+                                @foreach($attachments as $attachment)
+                                    <a
+                                        href="{{ asset('storage/'.$attachment['path']) }}"
+                                        target="_blank"
+                                        class="block rounded-lg bg-white/20 px-2 py-1 text-xs underline"
+                                    >
+                                        {{ $attachment['original_name'] ?? __('messages.thread.attachment') }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
-                    <flux:text size="sm" class="text-zinc-400 mt-0.5 {{ $message->sender_id === auth()->id() ? 'text-right' : '' }}">
+                    <flux:text size="sm" class="{{ $mine ? 'text-right' : '' }} text-zinc-400">
                         {{ $message->created_at->format('H:i') }}
-                        @if($message->sender_id === auth()->id() && $message->read_at)
-                            &middot; {{ __('search.messages.read') }}
+                        @if($mine && $message->read_at)
+                            - {{ __('messages.thread.read') }}
                         @endif
                     </flux:text>
                 @endif
             </div>
-        @endforeach
-    </div>
+        @empty
+            <div class="flex h-full min-h-48 items-center justify-center">
+                <flux:text class="text-center text-zinc-500 dark:text-zinc-400">{{ __('messages.thread.empty') }}</flux:text>
+            </div>
+        @endforelse
+    </section>
 
-    <form wire:submit="send" class="flex gap-2">
-        <flux:input wire:model="body" placeholder="{{ __('search.messages.placeholder') }}" class="flex-1" />
-        <flux:button type="submit" variant="primary" icon="paper-airplane" />
-    </form>
+    <section class="mt-4 space-y-3 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+            @foreach($this->quickTemplates as $key => $template)
+                <flux:button type="button" size="sm" variant="ghost" wire:click="applyTemplate('{{ $key }}')" class="shrink-0">
+                    {{ $template }}
+                </flux:button>
+            @endforeach
+        </div>
+
+        @error('body')
+            <flux:callout color="amber" icon="information-circle">
+                <flux:callout.text>{{ $message }}</flux:callout.text>
+            </flux:callout>
+        @enderror
+
+        <form wire:submit="send" class="space-y-3">
+            <flux:field>
+                <flux:label>{{ __('messages.thread.fields.body') }}</flux:label>
+                <flux:textarea rows="3" wire:model.blur="body" placeholder="{{ __('messages.thread.placeholders.body') }}" />
+                <flux:error name="body" />
+            </flux:field>
+
+            <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
+                <flux:field>
+                    <flux:label>{{ __('messages.thread.fields.attachments') }}</flux:label>
+                    <flux:input type="file" multiple wire:model="uploads" accept="image/jpeg,image/png,image/webp,application/pdf" />
+                    <flux:description>{{ __('messages.thread.attachments_helper') }}</flux:description>
+                    <flux:error name="uploads" />
+                    <flux:error name="uploads.*" />
+                </flux:field>
+
+                <div class="flex items-end">
+                    <flux:checkbox wire:model.change="important" label="{{ __('messages.thread.fields.important') }}" />
+                </div>
+            </div>
+
+            <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70">
+                <span wire:loading.remove wire:target="send">{{ __('messages.thread.actions.send') }}</span>
+                <span wire:loading wire:target="send">{{ __('messages.thread.actions.sending') }}</span>
+            </flux:button>
+        </form>
+    </section>
 </div>

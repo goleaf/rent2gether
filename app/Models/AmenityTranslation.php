@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Catalog\AmenityRuleLookupService;
 use Database\Factories\AmenityTranslationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,16 @@ class AmenityTranslation extends Model
         'name_normalized',
         'description',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            AmenityRuleLookupService::clearAmenityCache();
+        });
+        static::deleted(function (): void {
+            AmenityRuleLookupService::clearAmenityCache();
+        });
+    }
 
     public function amenity(): BelongsTo
     {

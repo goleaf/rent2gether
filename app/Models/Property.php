@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PropertyRentalUnitType;
 use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
 use Database\Factories\PropertyFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Property extends Model
@@ -23,8 +25,10 @@ class Property extends Model
     protected $fillable = [
         'user_id',
         'host_user_id',
+        'rental_unit_type',
         'country_id',
         'region_id',
+        'region_name',
         'city_id',
         'title',
         'type',
@@ -41,6 +45,7 @@ class Property extends Model
         'lng',
         'show_exact_address',
         'nearest_transport',
+        'distance_to_transport_meters',
         'access_instructions',
         'amenities',
         'rules',
@@ -82,10 +87,12 @@ class Property extends Model
     protected function casts(): array
     {
         return [
+            'rental_unit_type' => PropertyRentalUnitType::class,
             'type' => PropertyType::class,
             'status' => PropertyStatus::class,
             'has_elevator' => 'boolean',
             'show_exact_address' => 'boolean',
+            'distance_to_transport_meters' => 'integer',
             'lat' => 'decimal:7',
             'lng' => 'decimal:7',
             'amenities' => 'array',
@@ -184,6 +191,16 @@ class Property extends Model
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    public function cardMedia(): MorphOne
+    {
+        return $this->morphOne(MediaItem::class, 'mediable')
+            ->active()
+            ->orderByDesc('is_primary')
+            ->orderByDesc('is_cover')
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', PropertyStatus::Active->value);
@@ -207,6 +224,16 @@ class Property extends Model
     public function scopeForHost(Builder $query, int $userId): Builder
     {
         return $query->where('host_user_id', $userId);
+    }
+
+    public function scopeForGuest(Builder $query, int $userId): Builder
+    {
+        return $query->whereHas('sleepingPlaces.bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
+    }
+
+    public function scopeAvailableBetween(Builder $query, string $start, string $end): Builder
+    {
+        return $query->whereHas('sleepingPlaces', fn (Builder $sleepingPlace) => $sleepingPlace->availableBetween($start, $end));
     }
 
     public function isOwnedBy(User $user): bool

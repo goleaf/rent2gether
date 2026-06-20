@@ -32,11 +32,16 @@ class CancellationServiceTest extends TestCase
             'room_id' => $room->id,
             'status' => BookingStatus::Confirmed->value,
             'subtotal' => 100,
+            'subtotal_amount' => 100,
             'discount_amount' => 0,
             'cleaning_fee' => 10,
+            'cleaning_fee_amount' => 10,
             'deposit' => 50,
+            'deposit_amount' => 50,
             'service_fee' => 15,
+            'service_fee_amount' => 15,
             'total' => 175,
+            'total_amount' => 175,
         ], $overrides));
     }
 
@@ -66,7 +71,7 @@ class CancellationServiceTest extends TestCase
         $this->assertTrue($refund['deposit_refunded']);
     }
 
-    public function test_non_refundable_gives_nothing(): void
+    public function test_non_refundable_refunds_deposit_before_check_in(): void
     {
         $booking = $this->createBooking([
             'free_cancel_before' => now()->subDay(),
@@ -75,8 +80,8 @@ class CancellationServiceTest extends TestCase
 
         $refund = app(CancellationService::class)->calculateRefund($booking);
 
-        $this->assertSame(0.0, (float) $refund['refund_amount']);
-        $this->assertFalse($refund['deposit_refunded']);
+        $this->assertSame(50.0, (float) $refund['refund_amount']);
+        $this->assertTrue($refund['deposit_refunded']);
     }
 
     public function test_cancel_by_guest_updates_status(): void

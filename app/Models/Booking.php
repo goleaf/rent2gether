@@ -37,6 +37,7 @@ class Booking extends Model
         'check_out_date',
         'check_in_time',
         'check_out_time',
+        'arrival_time',
         'guests_count',
         'nights',
         'nights_count',
@@ -63,6 +64,7 @@ class Booking extends Model
         'payment_method',
         'payment_paid_at',
         'payment_deadline_at',
+        'availability_hold_expires_at',
         'requires_document_check',
         'requires_phone_check',
         'requires_identity_check',
@@ -75,6 +77,7 @@ class Booking extends Model
         'cancellation_reason',
         'cancellation_terms',
         'guest_message',
+        'rules_accepted_at',
         'host_reply',
         'host_response',
         'check_in_instructions',
@@ -90,6 +93,7 @@ class Booking extends Model
         'has_complaint',
         'guest_review_left',
         'host_review_left',
+        'review_deadline_at',
     ];
 
     protected function casts(): array
@@ -105,6 +109,7 @@ class Booking extends Model
             'check_out_date' => 'date',
             'check_in_time' => 'datetime:H:i',
             'check_out_time' => 'datetime:H:i',
+            'arrival_time' => 'datetime:H:i',
             'price_per_night' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'subtotal_amount' => 'decimal:2',
@@ -129,6 +134,7 @@ class Booking extends Model
             'has_complaint' => 'boolean',
             'guest_review_left' => 'boolean',
             'host_review_left' => 'boolean',
+            'review_deadline_at' => 'datetime',
             'guest_checked_in_at' => 'datetime',
             'guest_checked_out_at' => 'datetime',
             'host_confirmed_checkin_at' => 'datetime',
@@ -140,6 +146,8 @@ class Booking extends Model
             'deposit_released_at' => 'datetime',
             'payment_paid_at' => 'datetime',
             'payment_deadline_at' => 'datetime',
+            'availability_hold_expires_at' => 'datetime',
+            'rules_accepted_at' => 'datetime',
         ];
     }
 
@@ -245,6 +253,7 @@ class Booking extends Model
     {
         return $query->whereIn('status', [
             BookingStatus::CheckedIn->value,
+            BookingStatus::InProgress->value,
             BookingStatus::ActiveStay->value,
         ]);
     }
@@ -254,8 +263,12 @@ class Booking extends Model
         return $query->where('check_in_date', '>=', now()->toDateString())
             ->whereNotIn('status', [
                 BookingStatus::CancelledByGuest->value,
+                BookingStatus::CancelledByGuestFlow->value,
                 BookingStatus::CancelledByHost->value,
+                BookingStatus::CancelledByHostFlow->value,
                 BookingStatus::CancelledBySystem->value,
+                BookingStatus::DeclinedByHost->value,
+                BookingStatus::Expired->value,
                 BookingStatus::NoShow->value,
             ]);
     }
@@ -273,7 +286,7 @@ class Booking extends Model
     public function isCancellable(): bool
     {
         return ! $this->status->isCancelled()
-            && ! in_array($this->status, [BookingStatus::CheckedIn, BookingStatus::ActiveStay, BookingStatus::Completed], true);
+            && ! in_array($this->status, [BookingStatus::CheckedIn, BookingStatus::InProgress, BookingStatus::ActiveStay, BookingStatus::Completed], true);
     }
 
     public function canCancelFree(): bool

@@ -17,6 +17,11 @@
     <body class="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans antialiased flex items-center justify-center p-4">
 
         <div class="w-full max-w-sm">
+            <div class="mb-4 flex items-center justify-end gap-2">
+                <x-app.locale-switcher />
+                <x-app.appearance-menu />
+            </div>
+
             <div class="mb-8 text-center">
                 <a href="{{ url('/'.app()->getLocale()) }}" class="inline-flex items-center gap-2 text-zinc-900 dark:text-white hover:opacity-80 transition-opacity">
                     <flux:icon name="home" class="size-6" />

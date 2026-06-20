@@ -22,7 +22,7 @@
                 <flux:input wire:model="city" label="{{ __('listing.form.city') }}" />
                 <flux:input wire:model="occupation" label="{{ __('app.profile.occupation') }}" />
             </div>
-            <flux:textarea wire:model="bio" label="{{ __('app.profile.about_me') }}" rows="3" />
+            <flux:textarea wire:model.blur="bio" label="{{ __('app.profile.about_me') }}" rows="3" />
         </flux:card>
 
         <flux:card class="space-y-4">
@@ -55,7 +55,7 @@
             <flux:heading size="sm">{{ __('app.profile.host_profile') }}</flux:heading>
             <flux:checkbox wire:model="isHost" label="{{ __('app.profile.is_host') }}" />
             @if($isHost)
-                <flux:textarea wire:model="hostDescription" label="{{ __('app.profile.host_description') }}" rows="3" />
+                <flux:textarea wire:model.blur="hostDescription" label="{{ __('app.profile.host_description') }}" rows="3" />
                 <flux:input type="number" wire:model="hostExperienceYears" label="{{ __('app.profile.experience_years') }}" min="0" />
                 <flux:checkbox wire:model="hostLivesOnSite" label="{{ __('app.profile.lives_on_site') }}" />
             @endif

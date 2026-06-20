@@ -8,4 +8,9 @@ enum PriceRuleType: string
     case Weekend = 'weekend';
     case Holiday = 'holiday';
     case Seasonal = 'seasonal';
+
+    public function label(): string
+    {
+        return __('statuses.price_rule_type.'.$this->value);
+    }
 }

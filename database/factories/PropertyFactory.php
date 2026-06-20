@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PropertyRentalUnitType;
 use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
 use App\Models\City;
@@ -20,8 +21,10 @@ class PropertyFactory extends Factory
     {
         return [
             'host_user_id' => User::factory(),
+            'rental_unit_type' => PropertyRentalUnitType::SleepingPlace->value,
             'country_id' => Country::factory(),
             'region_id' => Region::factory(),
+            'region_name' => 'Vilnius County',
             'city_id' => City::factory(),
             'title' => $this->faker->sentence(3),
             'type' => $this->faker->randomElement(PropertyType::cases())->value,
@@ -37,6 +40,7 @@ class PropertyFactory extends Factory
             'lng' => $this->faker->longitude(25.0, 25.5),
             'show_exact_address' => false,
             'nearest_transport' => $this->faker->streetName(),
+            'distance_to_transport_meters' => $this->faker->numberBetween(100, 1200),
             'amenities' => ['wifi', 'kitchen', 'washer'],
             'rules' => ['no_smoking', 'quiet_hours'],
             'status' => PropertyStatus::Active->value,

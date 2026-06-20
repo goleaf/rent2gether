@@ -13,10 +13,10 @@
             </flux:card>
 
             <form wire:submit="book" class="space-y-4">
-                <flux:input type="date" wire:model.live="checkIn" label="{{ __('booking.check_in') }}" :error="$errors->first('checkIn')" />
-                <flux:input type="date" wire:model.live="checkOut" label="{{ __('booking.check_out') }}" :error="$errors->first('checkOut')" />
-                <flux:input type="number" wire:model.live="guestCount" label="{{ __('booking.guests') }}" min="1" :error="$errors->first('guestCount')" />
-                <flux:textarea wire:model="guestMessage" label="{{ __('booking.message_to_host') }}" rows="3" />
+                <flux:input type="date" wire:model.change="checkIn" label="{{ __('booking.check_in') }}" :error="$errors->first('checkIn')" />
+                <flux:input type="date" wire:model.change="checkOut" label="{{ __('booking.check_out') }}" :error="$errors->first('checkOut')" />
+                <flux:input type="number" wire:model.change="guestCount" label="{{ __('booking.guests') }}" min="1" :error="$errors->first('guestCount')" />
+                <flux:textarea wire:model.blur="guestMessage" label="{{ __('booking.message_to_host') }}" rows="3" />
 
                 @if($errors->has('availability'))
                     <flux:badge color="red">{{ $errors->first('availability') }}</flux:badge>

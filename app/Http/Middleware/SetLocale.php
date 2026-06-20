@@ -17,13 +17,15 @@ class SetLocale
     {
         $supportedLocales = config('localization.supported_locales');
         $routeLocale = $request->route('locale');
+        $queryLocale = $request->query('locale');
         $sessionLocale = $request->session()->get('locale');
         $previousLocale = is_string($sessionLocale) ? $sessionLocale : null;
 
         $locale = $this->supported($routeLocale, $supportedLocales)
+            ?? $this->supported($queryLocale, $supportedLocales)
             ?? $this->supported($sessionLocale, $supportedLocales)
             ?? $this->userLocale($request, $supportedLocales)
-            ?? config('app.locale');
+            ?? config('localization.fallback_locale');
 
         App::setLocale($locale);
         $request->session()->put('locale', $locale);

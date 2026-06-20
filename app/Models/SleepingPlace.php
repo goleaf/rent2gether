@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SleepingPlace extends Model
@@ -27,6 +28,7 @@ class SleepingPlace extends Model
         'type',
         'status',
         'place_number',
+        'display_name',
         'bunk_level',
         'length_cm',
         'width_cm',
@@ -41,12 +43,20 @@ class SleepingPlace extends Model
         'has_power_socket',
         'has_usb',
         'has_shelf',
+        'has_hook',
         'has_locker',
         'locker_has_lock',
         'has_luggage_space',
+        'near_window',
+        'near_door',
+        'near_radiator',
+        'near_air_conditioner',
+        'privacy_level',
+        'noise_level',
         'is_accessible',
         'suitable_for_tall_person',
         'suitable_for_elderly',
+        'suitable_for_limited_mobility',
         'max_guests',
         'min_guest_age',
         'max_guest_age',
@@ -62,6 +72,7 @@ class SleepingPlace extends Model
         'max_nights',
         'instant_booking_enabled',
         'requires_host_approval',
+        'extensions_allowed',
     ];
 
     protected function casts(): array
@@ -78,12 +89,18 @@ class SleepingPlace extends Model
             'has_power_socket' => 'boolean',
             'has_usb' => 'boolean',
             'has_shelf' => 'boolean',
+            'has_hook' => 'boolean',
             'has_locker' => 'boolean',
             'locker_has_lock' => 'boolean',
             'has_luggage_space' => 'boolean',
+            'near_window' => 'boolean',
+            'near_door' => 'boolean',
+            'near_radiator' => 'boolean',
+            'near_air_conditioner' => 'boolean',
             'is_accessible' => 'boolean',
             'suitable_for_tall_person' => 'boolean',
             'suitable_for_elderly' => 'boolean',
+            'suitable_for_limited_mobility' => 'boolean',
             'base_price_per_night' => 'decimal:2',
             'weekly_price' => 'decimal:2',
             'monthly_price' => 'decimal:2',
@@ -93,6 +110,7 @@ class SleepingPlace extends Model
             'deposit_amount' => 'decimal:2',
             'instant_booking_enabled' => 'boolean',
             'requires_host_approval' => 'boolean',
+            'extensions_allowed' => 'boolean',
         ];
     }
 
@@ -131,6 +149,11 @@ class SleepingPlace extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class, 'sleeping_place_amenity')->withTimestamps();
@@ -146,14 +169,24 @@ class SleepingPlace extends Model
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    public function cardMedia(): MorphOne
+    {
+        return $this->morphOne(MediaItem::class, 'mediable')
+            ->active()
+            ->orderByDesc('is_primary')
+            ->orderByDesc('is_cover')
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', SleepingPlaceStatus::Active);
+        return $query->where($query->qualifyColumn('status'), SleepingPlaceStatus::Active);
     }
 
     public function scopeVisible(Builder $query): Builder
     {
-        return $query->where('status', SleepingPlaceStatus::Active);
+        return $query->where($query->qualifyColumn('status'), SleepingPlaceStatus::Active);
     }
 
     public function scopeTranslated(Builder $query, string $locale): Builder
@@ -171,27 +204,55 @@ class SleepingPlace extends Model
         return $query->whereHas('property', fn (Builder $property) => $property->where('host_user_id', $userId));
     }
 
+    public function scopeForGuest(Builder $query, int $userId): Builder
+    {
+        return $query->whereHas('bookings', fn (Builder $booking) => $booking->where('guest_user_id', $userId));
+    }
+
     public function scopeAvailableBetween(Builder $query, string $start, string $end): Builder
     {
         return $query
             ->active()
+            ->whereHas('room', fn (Builder $room) => $room->active())
+            ->whereHas('property', fn (Builder $property) => $property->active())
             ->whereDoesntHave('bookings', function (Builder $booking) use ($start, $end): void {
                 $booking->whereNotIn('status', [
+                    BookingStatus::Draft->value,
+                    BookingStatus::DeclinedByHost->value,
+                    BookingStatus::CancelledByGuestFlow->value,
+                    BookingStatus::CancelledByHostFlow->value,
+                    BookingStatus::Expired->value,
                     BookingStatus::CancelledByGuest->value,
                     BookingStatus::CancelledByHost->value,
                     BookingStatus::CancelledBySystem->value,
                     BookingStatus::CancelledByService->value,
                     BookingStatus::NoShow->value,
+                    BookingStatus::HostNoShow->value,
+                    BookingStatus::CheckedOut->value,
+                    BookingStatus::Completed->value,
+                    BookingStatus::AwaitingReview->value,
+                    BookingStatus::Closed->value,
                 ])->whereDate('check_in_date', '<', $end)
                     ->whereDate('check_out_date', '>', $start);
             })
             ->whereDoesntHave('availabilityDays', function (Builder $day) use ($start, $end): void {
-                $day->whereIn('status', [
-                    AvailabilityStatus::Blocked->value,
-                    AvailabilityStatus::Maintenance->value,
-                    AvailabilityStatus::Cleaning->value,
-                ])->whereDate('date', '>=', $start)
+                $day->whereIn('status', AvailabilityStatus::blocksStayValues())
+                    ->whereDate('date', '>=', $start)
                     ->whereDate('date', '<', $end);
+            })
+            ->whereDoesntHave('availabilityDays', function (Builder $day) use ($start): void {
+                $day->whereDate('date', $start)
+                    ->where(function (Builder $query): void {
+                        $query->where('check_in_allowed', false)
+                            ->orWhere('status', AvailabilityStatus::CheckOutOnly->value);
+                    });
+            })
+            ->whereDoesntHave('availabilityDays', function (Builder $day) use ($end): void {
+                $day->whereDate('date', $end)
+                    ->where(function (Builder $query): void {
+                        $query->where('check_out_allowed', false)
+                            ->orWhere('status', AvailabilityStatus::CheckInOnly->value);
+                    });
             });
     }
 }

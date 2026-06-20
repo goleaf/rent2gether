@@ -2,24 +2,23 @@
 
 namespace App\Livewire\Host;
 
-use App\Models\Property;
+use App\Models\User;
+use App\Services\HostListings\HostListingDashboardService;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class PropertyList extends Component
 {
-    #[Computed]
-    public function properties()
+    public function render(HostListingDashboardService $dashboard): View
     {
-        return Property::where('user_id', auth()->id())
-            ->withCount('rooms', 'beds')
-            ->latest()
-            ->get();
-    }
+        $user = auth()->user();
 
-    public function render(): View
-    {
-        return view('livewire.host.property-list');
+        abort_unless($user instanceof User, 403);
+
+        return view('livewire.host.property-list', [
+            'properties' => $dashboard->propertyCards($user),
+        ])->layout('layouts.app', [
+            'title' => __('host.my_properties'),
+        ]);
     }
 }

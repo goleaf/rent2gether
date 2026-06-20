@@ -4,8 +4,8 @@ namespace Database\Factories;
 
 use App\Models\Country;
 use App\Models\Region;
+use App\Support\Geo\GeoNameNormalizer;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Region>
@@ -20,7 +20,7 @@ class RegionFactory extends Factory
             'country_id' => Country::factory(),
             'code' => strtoupper($this->faker->lexify('??')),
             'name' => $name,
-            'name_normalized' => Str::lower($name),
+            'name_normalized' => GeoNameNormalizer::normalize($name),
             'source' => 'geonames',
             'source_id' => (string) $this->faker->unique()->numberBetween(1000, 999999),
         ];

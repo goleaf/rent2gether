@@ -17,6 +17,13 @@ Always enforce:
 - SQLite performance.
 - Friendly UX.
 
+Core marketplace loop:
+- Guest chooses city + dates + sleeping place.
+- System calculates availability + nights + calendar days + price + discount + deposit + rules + compatibility.
+- Host controls property + rooms + sleeping places + calendar + price + rules + requests.
+- Everything is mobile-first + multilingual + fast + friendly + Livewire-native.
+- This frame prevents drift into Filament, Volt, admin panels, desktop-first UI, or heavy SPA architecture.
+
 Before implementing architecture:
 1. Read AGENTS.md.
 2. Check existing migrations, models, routes, Livewire components, lang files, and tests.
@@ -31,6 +38,25 @@ Before implementing architecture:
 8. Keep translations separated and indexed.
 9. Keep media metadata separated from physical files.
 10. Use domain names that are clear and stable.
+
+Every new feature must include, when applicable:
+- Migration if data is needed.
+- Model relationships.
+- Factory.
+- Seeder if lookup data is introduced.
+- Livewire class component.
+- Blade view.
+- Flux UI.
+- Mobile-first layout.
+- English translations.
+- Russian translations.
+- Validation.
+- Friendly empty state.
+- Friendly loading state.
+- Authorization or policy if needed.
+- Tests.
+- Indexes for queries.
+- Docs update if behavior is important.
 
 Core domain models:
 - User

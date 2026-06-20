@@ -18,6 +18,7 @@ class SleepingPlaceTranslation extends Model
         'title',
         'summary',
         'description',
+        'special_conditions',
         'privacy_notes',
         'accessibility_notes',
     ];

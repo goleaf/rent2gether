@@ -1,0 +1,67 @@
+<div class="space-y-4">
+    <div class="space-y-1">
+        <flux:heading size="sm">{{ __('availability.checker.title') }}</flux:heading>
+        <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('availability.checker.helper') }}</flux:text>
+    </div>
+
+    <div class="grid gap-3 sm:grid-cols-2">
+        <flux:field>
+            <flux:label>{{ __('availability.checker.fields.check_in') }}</flux:label>
+            <flux:input type="date" wire:model.change="checkIn" />
+            <flux:error name="checkIn" />
+        </flux:field>
+
+        <flux:field>
+            <flux:label>{{ __('availability.checker.fields.check_out') }}</flux:label>
+            <flux:input type="date" wire:model.change="checkOut" />
+            <flux:error name="checkOut" />
+        </flux:field>
+    </div>
+
+    <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="checkAvailability">
+        <span wire:loading.remove wire:target="checkAvailability">{{ __('availability.checker.actions.check') }}</span>
+        <span wire:loading wire:target="checkAvailability">{{ __('availability.checker.actions.checking') }}</span>
+    </flux:button>
+
+    @if($result)
+        @if($result['available'])
+            <flux:callout color="green" icon="check-circle">
+                <flux:callout.heading>{{ __('availability.checker.available_title') }}</flux:callout.heading>
+                <flux:callout.text>{{ __('availability.checker.available_text') }}</flux:callout.text>
+            </flux:callout>
+        @else
+            <flux:callout color="amber" icon="exclamation-triangle">
+                <flux:callout.heading>{{ __('availability.checker.unavailable_title') }}</flux:callout.heading>
+                <flux:callout.text>{{ __('availability.checker.unavailable_text') }}</flux:callout.text>
+            </flux:callout>
+
+            @if($result['unavailable_dates'])
+                <div class="space-y-2">
+                    <flux:heading size="sm">{{ __('availability.checker.unavailable_dates') }}</flux:heading>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($result['unavailable_dates'] as $date)
+                            <flux:badge size="sm">{{ \Carbon\CarbonImmutable::parse($date)->translatedFormat('d M') }}</flux:badge>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if($result['nearest_ranges'])
+                <div class="space-y-2">
+                    <flux:heading size="sm">{{ __('availability.checker.nearest_ranges') }}</flux:heading>
+                    <div class="space-y-2">
+                        @foreach($result['nearest_ranges'] as $range)
+                            <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+                                {{ __('availability.checker.range_label', [
+                                    'check_in' => \Carbon\CarbonImmutable::parse($range['check_in'])->translatedFormat('d M'),
+                                    'check_out' => \Carbon\CarbonImmutable::parse($range['check_out'])->translatedFormat('d M'),
+                                    'nights' => $range['nights'],
+                                ]) }}
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        @endif
+    @endif
+</div>

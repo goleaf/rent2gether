@@ -14,10 +14,21 @@
             {{-- Left column: details --}}
             <div class="lg:col-span-2 space-y-6">
 
-                {{-- Image placeholder --}}
-                <div class="h-72 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
-                    <flux:icon name="home" class="size-16 text-zinc-300 dark:text-zinc-600" />
-                </div>
+                @php($media = $bed->room->property->cardMedia)
+                @if($media)
+                    <img
+                        src="{{ $media->imageUrl('mobile') }}"
+                        alt="{{ $media->localizedCaption() ?: __('listing.media.primary_alt', ['title' => $bed->title]) }}"
+                        loading="lazy"
+                        width="720"
+                        height="480"
+                        class="h-72 w-full rounded-2xl border border-zinc-200 bg-zinc-100 object-cover dark:border-zinc-700 dark:bg-zinc-800"
+                    />
+                @else
+                    <div class="h-72 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
+                        <flux:icon name="home" class="size-16 text-zinc-300 dark:text-zinc-600" />
+                    </div>
+                @endif
 
                 {{-- Title & location --}}
                 <div>
@@ -32,6 +43,51 @@
                         </flux:text>
                     </div>
                 </div>
+
+                @if($compatibilityResult)
+                    <flux:card class="space-y-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                                <flux:heading size="sm">{{ __('compatibility.listing.title') }}</flux:heading>
+                                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
+                                    {{ __('compatibility.listing.helper') }}
+                                </flux:text>
+                            </div>
+                            <div class="shrink-0 text-right">
+                                <div class="text-2xl font-semibold text-zinc-950 dark:text-white">{{ $compatibilityResult['score'] }}%</div>
+                                <flux:badge size="sm" color="{{ $compatibilityResult['score'] >= 70 ? 'green' : ($compatibilityResult['score'] >= 45 ? 'yellow' : 'red') }}">
+                                    {{ __('compatibility.fit_levels.'.$compatibilityResult['fit_level']) }}
+                                </flux:badge>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div class="space-y-2">
+                                <flux:heading size="xs">{{ __('compatibility.listing.why_fits') }}</flux:heading>
+                                @forelse($compatibilityResult['positive_reasons'] as $reason)
+                                    <div class="flex gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-950 dark:bg-emerald-400/10 dark:text-emerald-100">
+                                        <flux:icon name="check-circle" class="mt-0.5 size-4 shrink-0" />
+                                        <span>{{ $reason }}</span>
+                                    </div>
+                                @empty
+                                    <flux:text size="sm" class="text-zinc-500">{{ __('compatibility.listing.no_positive') }}</flux:text>
+                                @endforelse
+                            </div>
+
+                            <div class="space-y-2">
+                                <flux:heading size="xs">{{ __('compatibility.listing.pay_attention') }}</flux:heading>
+                                @forelse($compatibilityResult['warning_reasons'] as $reason)
+                                    <div class="flex gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:bg-amber-400/10 dark:text-amber-100">
+                                        <flux:icon name="exclamation-triangle" class="mt-0.5 size-4 shrink-0" />
+                                        <span>{{ $reason }}</span>
+                                    </div>
+                                @empty
+                                    <flux:text size="sm" class="text-zinc-500">{{ __('compatibility.listing.no_warnings') }}</flux:text>
+                                @endforelse
+                            </div>
+                        </div>
+                    </flux:card>
+                @endif
 
                 <flux:separator />
 
@@ -101,7 +157,10 @@
                         <flux:heading size="sm">{{ __('listing.bed.property_amenities') }}</flux:heading>
                         <div class="flex flex-wrap gap-2">
                             @foreach($bed->room->property->amenities as $amenity)
-                                <flux:badge color="blue" size="sm">{{ Str::headline($amenity) }}</flux:badge>
+                                @php($amenityKey = 'listing.legacy_amenities.'.\Illuminate\Support\Str::of((string) $amenity)->snake()->toString())
+                                <flux:badge color="blue" size="sm">
+                                    {{ \Illuminate\Support\Facades\Lang::has($amenityKey) ? __($amenityKey) : __('listing.legacy_amenities.other') }}
+                                </flux:badge>
                             @endforeach
                         </div>
                     </div>
@@ -187,18 +246,17 @@
                             @endif
                             <div class="flex justify-between text-sm">
                                 <flux:text class="text-zinc-500">{{ __('listing.bed.service_fee') }}</flux:text>
-                                <flux:text>5% of subtotal</flux:text>
+                                <flux:text>{{ __('listing.bed.service_fee_detail', ['percent' => 5]) }}</flux:text>
                             </div>
                         </div>
                     @endif
 
                     <flux:separator />
 
-                    <div class="text-center">
-                        <flux:text size="sm" class="text-zinc-400">
-                            {{ __('listing.bed.hosted_by') }} <span class="font-medium text-zinc-700 dark:text-zinc-200">{{ $bed->room->property->host->name }}</span>
-                        </flux:text>
-                    </div>
+                    <x-host.public-card
+                        :host="$bed->room->property->host"
+                        :host-profile="$bed->room->property->host->hostProfile"
+                    />
 
                 </div>
             </div>
