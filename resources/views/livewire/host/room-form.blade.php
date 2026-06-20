@@ -247,27 +247,20 @@
                             />
                         @endif
 
-                        @foreach(['roomPhoto' => 'room', 'windowPhoto' => 'window', 'detailPhoto' => 'detail'] as $field => $slot)
+                        @foreach($this->wizardPhotoFields() as $photoField)
                             <flux:field>
-                                <flux:label>{{ __('host.room_wizard.photos.'.$slot) }}</flux:label>
-                                <flux:input type="file" accept="image/*" wire:model="{{ $field }}" />
+                                <flux:label>{{ __('host.room_wizard.photos.'.$photoField['slot']) }}</flux:label>
+                                <flux:input type="file" accept="image/*" wire:model="{{ $photoField['field'] }}" />
                                 <flux:description>{{ __('host.room_wizard.helpers.photo') }}</flux:description>
-                                <flux:text wire:loading wire:target="{{ $field }}" size="sm" class="text-zinc-500 dark:text-zinc-400">
+                                <flux:text wire:loading wire:target="{{ $photoField['field'] }}" size="sm" class="text-zinc-500 dark:text-zinc-400">
                                     {{ __('media.manager.uploading') }}
                                 </flux:text>
-                                <flux:error name="{{ $field }}" />
+                                <flux:error name="{{ $photoField['field'] }}" />
 
-                                @php($pendingPhoto = $this->{$field})
-                                @php($savedPreview = $this->savedPhotoPreviews[$slot] ?? null)
-                                @if($pendingPhoto && str_starts_with((string) $pendingPhoto->getMimeType(), 'image/'))
+                                @if($photoField['preview'])
                                     <div class="mt-2 flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-700 dark:bg-zinc-900">
-                                        <img src="{{ $pendingPhoto->temporaryUrl() }}" alt="{{ __('media.manager.preview_alt') }}" class="size-16 shrink-0 rounded-md object-cover">
-                                        <span class="text-sm text-zinc-600 dark:text-zinc-300">{{ __('media.manager.preview_alt') }}</span>
-                                    </div>
-                                @elseif($savedPreview)
-                                    <div class="mt-2 flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-700 dark:bg-zinc-900">
-                                        <img src="{{ $savedPreview['url'] }}" alt="{{ $savedPreview['caption'] }}" loading="lazy" decoding="async" class="size-16 shrink-0 rounded-md object-cover">
-                                        <span class="text-sm text-zinc-600 dark:text-zinc-300">{{ __('media.manager.optimized') }}</span>
+                                        <img src="{{ $photoField['preview']['url'] }}" alt="{{ $photoField['preview']['caption'] }}" @if($photoField['preview']['saved']) loading="lazy" decoding="async" @endif class="size-16 shrink-0 rounded-md object-cover">
+                                        <span class="text-sm text-zinc-600 dark:text-zinc-300">{{ $photoField['preview']['label'] }}</span>
                                     </div>
                                 @endif
                             </flux:field>

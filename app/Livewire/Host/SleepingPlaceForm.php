@@ -8,6 +8,7 @@ use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
 use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
+use App\Livewire\Host\Concerns\BuildsWizardPhotoPreviews;
 use App\Models\MediaItem;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -22,6 +23,7 @@ use Livewire\WithFileUploads;
 class SleepingPlaceForm extends Component
 {
     use BuildsLocalizedMediaCaptions;
+    use BuildsWizardPhotoPreviews;
     use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 

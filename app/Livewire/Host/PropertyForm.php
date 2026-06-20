@@ -9,6 +9,7 @@ use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
 use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
 use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
+use App\Livewire\Host\Concerns\BuildsWizardPhotoPreviews;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\MediaItem;
@@ -29,6 +30,7 @@ use Livewire\WithFileUploads;
 class PropertyForm extends Component
 {
     use BuildsLocalizedMediaCaptions;
+    use BuildsWizardPhotoPreviews;
     use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 

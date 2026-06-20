@@ -10,6 +10,7 @@ use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
 use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
+use App\Livewire\Host\Concerns\BuildsWizardPhotoPreviews;
 use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
@@ -24,6 +25,7 @@ use Livewire\WithFileUploads;
 class RoomForm extends Component
 {
     use BuildsLocalizedMediaCaptions;
+    use BuildsWizardPhotoPreviews;
     use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 
