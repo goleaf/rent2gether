@@ -175,8 +175,8 @@ class Property extends Model
             $property->street_name ??= $property->street;
             $property->floors_count ??= $property->total_floors;
             $property->max_residents_count ??= $property->max_residents;
-            $property->free_places_count ??= $property->free_sleeping_places_count;
-            $property->occupied_places_count ??= $property->occupied_sleeping_places_count;
+            $property->free_places_count ??= $property->free_sleeping_places_count ?? 0;
+            $property->occupied_places_count ??= $property->occupied_sleeping_places_count ?? 0;
         });
 
         static::deleting(function (Property $property): void {
