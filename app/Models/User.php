@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\UserStatus;
 use App\Enums\UserRoleMode;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
