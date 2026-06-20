@@ -4,10 +4,13 @@ namespace App\Services\HostBulk;
 
 use App\Models\Room;
 use App\Models\SleepingPlace;
+use App\Services\Calendar\SleepingPlaceCalendarBootstrapService;
 use Illuminate\Support\Collection;
 
 class HostBulkCloneService
 {
+    public function __construct(private readonly SleepingPlaceCalendarBootstrapService $calendarBootstrap) {}
+
     public function cloneRoom(Room $room, array $options = []): Room
     {
         $clone = $room->replicate(['created_at', 'updated_at', 'completed_at']);
@@ -66,6 +69,14 @@ class HostBulkCloneService
             $this->copyCalendar($place, $clone);
         }
 
+        if (
+            $clone->calendarSettings()->doesntExist()
+            || $clone->calendarDays()->doesntExist()
+            || $clone->availabilityDays()->doesntExist()
+        ) {
+            $this->calendarBootstrap->bootstrap($clone);
+        }
+
         return $clone->refresh();
     }
 
@@ -75,7 +86,7 @@ class HostBulkCloneService
         $created = collect();
 
         for ($index = 0; $index < $count; $index++) {
-            $created->push($room->sleepingPlaces()->create([
+            $place = $room->sleepingPlaces()->create([
                 'property_id' => $room->property_id,
                 'place_number' => (string) ($nextNumber + $index),
                 'display_name' => ($template['display_name'] ?? __('host_bulk.defaults.sleeping_place')).' '.($index + 1),
@@ -87,7 +98,10 @@ class HostBulkCloneService
                 'min_nights' => $template['min_nights'] ?? 1,
                 'max_guests' => $template['max_guests'] ?? 1,
                 'publication_status' => $template['publication_status'] ?? 'draft',
-            ]));
+            ]);
+
+            $this->calendarBootstrap->bootstrap($place);
+            $created->push($place->refresh());
         }
 
         return $created;
@@ -108,6 +122,13 @@ class HostBulkCloneService
         }
 
         foreach ($source->calendarDays as $day) {
+            $copy = $day->replicate(['created_at', 'updated_at']);
+            $copy->sleeping_place_id = $clone->id;
+            $copy->booking_id = null;
+            $copy->save();
+        }
+
+        foreach ($source->availabilityDays as $day) {
             $copy = $day->replicate(['created_at', 'updated_at']);
             $copy->sleeping_place_id = $clone->id;
             $copy->booking_id = null;

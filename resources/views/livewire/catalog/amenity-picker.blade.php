@@ -35,34 +35,22 @@
 
                 <div class="grid gap-2 sm:grid-cols-2">
                     @foreach($group['options'] as $option)
-                        <button
+                        <flux:button
                             type="button"
+                            size="sm"
+                            variant="{{ $option['selected'] ? 'primary' : 'outline' }}"
                             wire:key="amenity-option-{{ $option['id'] }}"
                             wire:click="toggle({{ $option['id'] }})"
-                            @class([
-                                'flex min-h-11 items-start gap-3 rounded-lg border px-3 py-2 text-left text-sm transition',
-                                'border-emerald-500 bg-emerald-50 text-emerald-950 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-50' => $option['selected'],
-                                'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600' => ! $option['selected'],
-                            ])
+                            class="h-auto min-h-11 w-full justify-start whitespace-normal text-left"
                             aria-pressed="{{ $option['selected'] ? 'true' : 'false' }}"
                         >
-                            <span @class([
-                                'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border',
-                                'border-emerald-500 bg-emerald-500' => $option['selected'],
-                                'border-zinc-300 dark:border-zinc-600' => ! $option['selected'],
-                            ])>
-                                <span @class([
-                                    'h-2.5 w-2.5 rounded-sm bg-white',
-                                    'hidden' => ! $option['selected'],
-                                ])></span>
-                            </span>
                             <span class="min-w-0">
                                 <span class="block font-medium">{{ $option['label'] }}</span>
                                 @if($option['description'])
                                     <span class="mt-1 block text-xs text-zinc-500 dark:text-zinc-400">{{ $option['description'] }}</span>
                                 @endif
                             </span>
-                        </button>
+                        </flux:button>
                     @endforeach
                 </div>
             </section>

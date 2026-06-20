@@ -6,11 +6,14 @@ use App\Enums\SleepingPlaceStatus;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Calendar\SleepingPlaceCalendarBootstrapService;
 use App\Services\Localization\SupportedContentLocales;
 use Illuminate\Support\Facades\DB;
 
 class BulkCreateSleepingPlacesAction
 {
+    public function __construct(private readonly SleepingPlaceCalendarBootstrapService $calendarBootstrap) {}
+
     /**
      * @param  array{
      *     count:int,
@@ -61,6 +64,7 @@ class BulkCreateSleepingPlacesAction
                     ]);
                 }
 
+                $this->calendarBootstrap->bootstrap($sleepingPlace);
                 $created++;
             }
 

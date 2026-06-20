@@ -4,8 +4,8 @@ namespace App\Livewire\Booking;
 
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\AvailabilityService;
-use App\Services\PricingService;
+use App\Services\Availability\AvailabilityService;
+use App\Services\Pricing\PricingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Number;

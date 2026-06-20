@@ -121,10 +121,11 @@
                         </div>
                         <div class="grid grid-cols-7 gap-1">
                             @foreach($this->calendarDays as $day)
-                                <button
+                                <flux:button
                                     type="button"
+                                    variant="outline"
                                     wire:click="selectDate('{{ $day['date'] }}')"
-                                    class="min-h-20 rounded-lg border px-1 py-2 text-left text-xs data-loading:opacity-70 {{ $day['is_current_month'] ? 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-950' : 'border-zinc-100 bg-zinc-50 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900/50' }}"
+                                    class="h-auto min-h-20 w-full flex-col items-start justify-start whitespace-normal px-1 py-2 text-left text-xs data-loading:opacity-70 {{ $day['is_current_month'] ? '' : 'opacity-60' }}"
                                 >
                                     <span class="block font-medium {{ $day['is_today'] ? 'text-emerald-700 dark:text-emerald-300' : '' }}">{{ $day['day'] }}</span>
                                     <span class="mt-1 block truncate rounded bg-zinc-100 px-1 py-0.5 text-[10px] dark:bg-zinc-800">
@@ -140,17 +141,18 @@
                                             {{ __('availability.calendar.price_short', ['price' => $day['price_override']]) }}
                                         </span>
                                     @endif
-                                </button>
+                                </flux:button>
                             @endforeach
                         </div>
                     @else
                         <div class="space-y-2">
                             <flux:heading size="sm">{{ __('availability.calendar.sections.date_list') }}</flux:heading>
                             @foreach($this->listDays as $day)
-                                <button
+                                <flux:button
                                     type="button"
+                                    variant="outline"
                                     wire:click="selectDate('{{ $day['date'] }}')"
-                                    class="w-full rounded-lg border border-zinc-200 px-3 py-3 text-left text-sm data-loading:opacity-70 dark:border-zinc-700"
+                                    class="h-auto w-full justify-start whitespace-normal px-3 py-3 text-left text-sm data-loading:opacity-70"
                                 >
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
@@ -173,7 +175,7 @@
                                             @endif
                                         </div>
                                     </div>
-                                </button>
+                                </flux:button>
                             @endforeach
                         </div>
                     @endif

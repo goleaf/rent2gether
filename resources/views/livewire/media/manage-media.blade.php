@@ -1,68 +1,64 @@
 <div class="space-y-4">
-    <div class="rounded-lg border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-        <div class="space-y-3" x-data="{ uploading: false, progress: 0 }"
-            x-on:livewire-upload-start="uploading = true"
-            x-on:livewire-upload-finish="uploading = false"
-            x-on:livewire-upload-cancel="uploading = false"
-            x-on:livewire-upload-error="uploading = false"
-            x-on:livewire-upload-progress="progress = $event.detail.progress"
-        >
-            <div class="space-y-1">
-                <flux:heading size="sm">{{ __('media.manager.title') }}</flux:heading>
-                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('media.manager.helper') }}</flux:text>
-            </div>
-
-            @if ($statusMessage || session('media-status'))
-                <div class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:bg-emerald-400/10 dark:text-emerald-100">
-                    {{ $statusMessage ?: session('media-status') }}
-                </div>
-            @endif
-
-            <flux:field>
-                <flux:label>{{ __('media.manager.file_label') }}</flux:label>
-                <flux:input type="file" accept="image/jpeg,image/png,image/webp" wire:model="photo" />
-                <flux:description>{{ __('media.manager.file_helper') }}</flux:description>
-                <flux:error name="photo" />
-            </flux:field>
-
-            <div x-cloak x-show="uploading" class="space-y-1">
-                <div class="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                    <span>{{ __('media.manager.uploading') }}</span>
-                    <span x-text="progress + '%'"></span>
-                </div>
-                <flux:progress x-bind:value="progress" />
-            </div>
-
-            @if($photo && str_starts_with((string) $photo->getMimeType(), 'image/'))
-                <div class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-                    <img src="{{ $photo->temporaryUrl() }}" alt="{{ __('media.manager.preview_alt') }}" class="h-40 w-full object-cover" />
-                </div>
-            @endif
-
-            <div class="grid gap-3 sm:grid-cols-2">
-                @foreach($this->contentLocales() as $locale)
-                    <flux:field wire:key="media-caption-{{ $locale['code'] }}">
-                        <flux:label>{{ __('media.manager.caption', ['language' => $locale['name']]) }}</flux:label>
-                        <flux:input wire:model.blur="captions.{{ $locale['code'] }}" maxlength="160" />
-                        <flux:error name="captions.{{ $locale['code'] }}" />
-                    </flux:field>
-                @endforeach
-            </div>
-
-            <flux:button type="button" variant="primary" class="w-full" wire:click="savePhoto" wire:loading.attr="disabled" wire:target="savePhoto,photo">
-                <span wire:loading.remove wire:target="savePhoto">{{ __('media.manager.actions.save') }}</span>
-                <span wire:loading wire:target="savePhoto">{{ __('media.manager.actions.saving') }}</span>
-            </flux:button>
-
-            <div class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:bg-amber-400/10 dark:text-amber-100">
-                {{ __('media.manager.warning') }}
-            </div>
+    <flux:card class="space-y-3">
+        <div class="space-y-1">
+            <flux:heading size="sm">{{ __('media.manager.title') }}</flux:heading>
+            <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('media.manager.helper') }}</flux:text>
         </div>
-    </div>
+
+        @if ($statusMessage || session('media-status'))
+            <flux:callout variant="success" :text="$statusMessage ?: session('media-status')" />
+        @endif
+
+        <flux:file-upload
+            wire:model="photo"
+            :label="__('media.manager.file_label')"
+            :description="__('media.manager.file_helper')"
+            :error="$errors->first('photo')"
+        >
+            <flux:file-upload.dropzone
+                :heading="__('media.manager.file_label')"
+                :text="__('media.manager.file_helper')"
+                with-progress
+                inline
+            />
+        </flux:file-upload>
+
+        @if($photo && str_starts_with((string) $photo->getMimeType(), 'image/'))
+            <flux:file-item
+                :heading="$photo->getClientOriginalName()"
+                :image="$photo->temporaryUrl()"
+                :size="$photo->getSize()"
+            >
+                <x-slot name="actions">
+                    <flux:file-item.remove
+                        wire:click="removePhoto"
+                        :aria-label="__('media.manager.remove_file', ['name' => $photo->getClientOriginalName()])"
+                    />
+                </x-slot>
+            </flux:file-item>
+        @endif
+
+        <div class="grid gap-3 sm:grid-cols-2">
+            @foreach($this->contentLocales() as $locale)
+                <flux:field wire:key="media-caption-{{ $locale['code'] }}">
+                    <flux:label>{{ __('media.manager.caption', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:input wire:model.blur="captions.{{ $locale['code'] }}" maxlength="160" />
+                    <flux:error name="captions.{{ $locale['code'] }}" />
+                </flux:field>
+            @endforeach
+        </div>
+
+        <flux:button type="button" variant="primary" class="w-full" wire:click="savePhoto" wire:loading.attr="disabled" wire:target="savePhoto,photo">
+            <span wire:loading.remove wire:target="savePhoto">{{ __('media.manager.actions.save') }}</span>
+            <span wire:loading wire:target="savePhoto">{{ __('media.manager.actions.saving') }}</span>
+        </flux:button>
+
+        <flux:callout variant="warning" icon="exclamation-triangle" :text="__('media.manager.warning')" />
+    </flux:card>
 
     <div class="space-y-3">
         @forelse($this->mediaItems as $index => $item)
-            <div class="flex gap-3 rounded-lg border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900" wire:key="media-item-{{ $item['id'] }}">
+            <flux:card size="sm" class="flex gap-3" wire:key="media-item-{{ $item['id'] }}">
                 <img
                     src="{{ $item['thumb_url'] }}"
                     alt="{{ $item['caption'] }}"
@@ -102,11 +98,9 @@
                         </flux:button>
                     </div>
                 </div>
-            </div>
+            </flux:card>
         @empty
-            <div class="rounded-lg border border-dashed border-zinc-200 px-3 py-5 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-                {{ __('media.manager.empty') }}
-            </div>
+            <flux:callout variant="secondary" :text="__('media.manager.empty')" />
         @endforelse
     </div>
 </div>

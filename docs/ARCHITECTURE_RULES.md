@@ -11,9 +11,14 @@ Hard constraints:
 - Mobile-first, starting at 320px
 - English and Russian from day one
 - SleepingPlace as the main rentable unit
+- controllerless web UI with Livewire class component routes
 
 Do not introduce:
 
+- `app/Http/Controllers/`
+- controller-backed web routes
+- `resources/views/auth/`
+- `resources/views/search/`
 - Filament
 - Livewire Volt
 - Inertia
@@ -22,8 +27,9 @@ Do not introduce:
 - support, moderator, staff, cleaner, manager, or finance panels
 - required cron, queues, or jobs for the foundation layer
 
-Business logic belongs in services, actions, policies, models, or DTO/presenter classes. Blade views should render prepared data only.
+Business logic belongs in services, actions, policies, models, or DTO/presenter classes. Blade views should render prepared data only. New services belong under `app/Services/<Domain>/`, not directly under `app/Services/`.
 
 Routes must stay grouped by middleware, prefix, and names. Public routes should keep locale support. Authenticated guest and host flows should remain separate from any future staff/admin concept.
+User-facing routes must mount Livewire class components; route model binding is handled by component `mount()` methods.
 
 SQLite-facing features need indexes for foreign keys, search filters, calendar lookups, booking ranges, translation lookups, and common sorting paths. Use `EXPLAIN QUERY PLAN` for critical search and availability queries before broad release.

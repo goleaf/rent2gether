@@ -11,16 +11,18 @@ Use [AGENTS.md](AGENTS.md) as the canonical project instruction file. This file 
   - `database-schema` before migrations, models, scopes, filters, or relationship-heavy queries.
   - `get-absolute-url` before sharing URLs.
 - Current verified stack: Laravel `13.16.1`, PHP `8.5`, SQLite, Livewire `4.3.1`, Flux UI Pro `2.14.1`, Tailwind `4.3.1`, PHPUnit `12.5.30`.
-- Filament is a target admin-panel convention, but it is not installed yet.
+- Do not add Filament, admin panels, staff panels, Livewire Volt, Inertia, React, or Vue.
 - Flux Pro is installed from the local `_data/flux-pro` Composer path repository.
 - Frontend is Blade server-side rendering only. Do not add React, Vue, Inertia, or SPA architecture without approval.
+- Web UI is controllerless. Do not create `app/Http/Controllers/`; mount Livewire class components from `routes/web.php`.
 - Eloquent is the query layer. Do not write raw SQL strings.
-- Do not query inside Blade, loops, Filament renderers, or conditionals.
+- Do not query inside Blade, loops, Livewire views, or conditionals.
 - Do not use unbounded `Model::all()`.
 - Use eager loading and aggregate loaders for relationships and counts.
 - Put business logic in actions, services, model scopes/methods, policies, jobs, events/listeners, or observers.
 - Use Form Requests for HTTP validation and Policies for authorization.
 - Routes must be named, grouped by middleware/prefix/name, and use route model binding.
+- Read [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) before creating files.
 - Use PHPUnit tests and factories. Run focused tests before finalizing code changes.
 - Run `vendor/bin/pint --dirty --format agent` after PHP edits.
 - Use `.agents/skills/fluxui-development` for Flux Pro UI work.
@@ -31,6 +33,7 @@ Use [AGENTS.md](AGENTS.md) as the canonical project instruction file. This file 
 - [AGENTS.md](AGENTS.md)
 - [README.md](README.md)
 - [docs/architecture.md](docs/architecture.md)
+- [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
 - [docs/component-system.md](docs/component-system.md)
 - [docs/development-workflow.md](docs/development-workflow.md)
 - [docs/flux-pro-integration.md](docs/flux-pro-integration.md)
@@ -166,7 +169,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Do Things the Laravel Way
 
-- Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using `php artisan list` and check their parameters with `php artisan [command] --help`.
+- Use `php artisan make:` commands to create new files when compatible with this project (for example migrations, models, requests, tests, and Livewire class components). Do not use `make:controller` in this checkout.
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
 

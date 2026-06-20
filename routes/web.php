@@ -1,10 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\BedController;
-use App\Http\Controllers\ProfileIndexRedirectController;
-use App\Http\Controllers\SearchController;
 use App\Http\Middleware\SetLocale;
 use App\Livewire\Account\AccountSettingsPage;
 use App\Livewire\Account\GuestPreferenceEditPage;
@@ -15,6 +10,7 @@ use App\Livewire\Account\SecuritySettingsPage;
 use App\Livewire\Auth\ForgotPasswordPage;
 use App\Livewire\Auth\LoginPage;
 use App\Livewire\Auth\RegisterPage;
+use App\Livewire\Beds\ShowBed;
 use App\Livewire\Booking\BookingReview;
 use App\Livewire\Booking\CancelBooking;
 use App\Livewire\Booking\CreateBooking;
@@ -77,6 +73,7 @@ use App\Livewire\Profile\ShowProfile;
 use App\Livewire\Reviews\CreateReview;
 use App\Livewire\SavedSearches\SavedSearchesPage;
 use App\Livewire\SavedSearches\SavedSearchPage;
+use App\Livewire\Search\SleepingPlaceSearch;
 use App\Livewire\Shell\FavoritesPage;
 use App\Livewire\Shell\HostCalendarPage;
 use App\Livewire\Shell\HostHomePage;
@@ -105,11 +102,11 @@ Route::prefix('{locale}')
         Route::get('/health', HealthPage::class)->name('health');
 
         Route::prefix('search')->name('search.')->group(function (): void {
-            Route::get('/', SearchController::class)->name('index');
+            Route::get('/', SleepingPlaceSearch::class)->name('index');
         });
 
         Route::prefix('beds')->name('beds.')->group(function (): void {
-            Route::get('/{bed}', [BedController::class, 'show'])->name('show');
+            Route::get('/{bed}', ShowBed::class)->name('show');
         });
 
         Route::prefix('places')->name('places.')->group(function (): void {
@@ -119,14 +116,8 @@ Route::prefix('{locale}')
 
 Route::middleware([SetLocale::class, 'guest'])->prefix('auth')->name('auth.')->group(function (): void {
     Route::get('/login', LoginPage::class)->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
     Route::get('/register', RegisterPage::class)->name('register');
-    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
     Route::get('/forgot-password', ForgotPasswordPage::class)->name('forgot-password');
-});
-
-Route::middleware([SetLocale::class, 'auth'])->group(function (): void {
-    Route::post('/auth/logout', [LoginController::class, 'destroy'])->name('auth.logout');
 });
 
 Route::prefix('{locale}')
@@ -153,7 +144,7 @@ Route::prefix('{locale}')
         Route::get('/places/{sleepingPlace}/book', BookingReview::class)->name('places.book');
 
         Route::prefix('profile')->name('profile.')->group(function (): void {
-            Route::get('/', ProfileIndexRedirectController::class)->name('index');
+            Route::get('/', EditProfile::class)->name('index');
             Route::get('/setup', ProfileSetupPage::class)->name('setup');
             Route::get('/preferences', GuestPreferenceEditPage::class)->name('preferences.edit');
             Route::get('/preferences/setup', GuestPreferenceWizardPage::class)->name('preferences.setup');

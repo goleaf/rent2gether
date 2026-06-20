@@ -169,7 +169,7 @@ Use `cursor()` for read-only iteration. Use `chunk()` / `chunkById()` when modif
 
 ## No Queries in Blade Templates
 
-Never execute queries in Blade templates. Pass data from controllers.
+Never execute queries in Blade templates. Pass prepared data from Livewire classes, presenters, services, or DTO arrays.
 
 Incorrect:
 ```blade

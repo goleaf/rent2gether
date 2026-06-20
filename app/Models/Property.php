@@ -242,6 +242,11 @@ class Property extends Model
         return $this->hasOne(PropertyAccessDetail::class);
     }
 
+    public function address(): HasOne
+    {
+        return $this->hasOne(PropertyAddress::class);
+    }
+
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class);
@@ -265,6 +270,16 @@ class Property extends Model
     public function publicationChecks(): HasMany
     {
         return $this->hasMany(ListingPublicationCheck::class);
+    }
+
+    public function readinessChecks(): HasMany
+    {
+        return $this->hasMany(ListingReadinessCheck::class);
+    }
+
+    public function listingCreationDrafts(): HasMany
+    {
+        return $this->hasMany(ListingCreationDraft::class);
     }
 
     public function hostCalendarEvents(): HasMany
@@ -297,9 +312,24 @@ class Property extends Model
         return $this->belongsToMany(Amenity::class, 'property_amenity')->withTimestamps();
     }
 
+    public function amenityRecords(): HasMany
+    {
+        return $this->hasMany(PropertyAmenity::class);
+    }
+
     public function rules(): BelongsToMany
     {
         return $this->belongsToMany(Rule::class, 'property_rule')->withTimestamps();
+    }
+
+    public function ruleRecords(): HasMany
+    {
+        return $this->hasMany(PropertyRule::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PropertyPhoto::class);
     }
 
     public function mediaItems(): MorphMany

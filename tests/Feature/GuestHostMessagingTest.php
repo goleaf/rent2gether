@@ -15,7 +15,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceTranslation;
 use App\Models\User;
-use App\Services\MessageService;
+use App\Services\Messaging\MessageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Lang;

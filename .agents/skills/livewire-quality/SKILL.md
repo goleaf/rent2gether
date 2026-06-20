@@ -6,6 +6,9 @@ description: Use when writing or reviewing Livewire components, actions, forms, 
 Livewire rules:
 - Use class components only.
 - Do not use Volt.
+- Do not create web controllers for Livewire pages or actions.
+- Do not create `resources/views/auth/` or `resources/views/search/`; use existing Livewire auth/search views.
+- Read `docs/PROJECT_STRUCTURE.md` before creating a component or view.
 - Use small public properties.
 - Use IDs instead of full models in component state.
 - Use computed properties for derived data.
@@ -32,6 +35,7 @@ Livewire rules:
   unauthorized action fails
   locale strings display correctly
 - New user-facing features must include a Livewire class component, Blade view, Flux UI where practical, validation, friendly empty and loading states, authorization or policy when needed, and tests.
+- Full-page Livewire components should be mounted directly from `routes/web.php` and should apply the project layout from the component `render()` method.
 
 Livewire 4 docs say default wire:model does not send a network request on every input update unless timing modifiers are used, .live has debounce behavior, and wire:model.blur/.change are available. This is important for old phones and 3G. (Laravel)
 Livewire 4 также поддерживает loading states/data-loading, real-time validation через #[Validate], file uploads через WithFileUploads, computed properties и wire:navigate. (Laravel)

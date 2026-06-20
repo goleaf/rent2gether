@@ -33,9 +33,9 @@
                 <flux:field>
                     <flux:label>{{ __('guest_intake.fields.trip_purpose') }}</flux:label>
                     <flux:select wire:model.change="tripPurpose">
-                        <option value="">{{ __('guest_intake.placeholders.choose') }}</option>
+                        <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                         @foreach($tripPurposes as $purpose)
-                            <option value="{{ $purpose }}">{{ __('guest_intake.trip_purposes.'.$purpose) }}</option>
+                            <flux:select.option value="{{ $purpose }}">{{ __('guest_intake.trip_purposes.'.$purpose) }}</flux:select.option>
                         @endforeach
                     </flux:select>
                     <flux:error name="tripPurpose" />
@@ -59,8 +59,8 @@
                 <flux:field>
                     <flux:label>{{ __('guest_intake.fields.trip_purpose_visibility') }}</flux:label>
                     <flux:select wire:model.change="tripPurposeVisibility">
-                        <option value="safe">{{ __('guest_intake.visibility.safe') }}</option>
-                        <option value="exact">{{ __('guest_intake.visibility.exact') }}</option>
+                        <flux:select.option value="safe">{{ __('guest_intake.visibility.safe') }}</flux:select.option>
+                        <flux:select.option value="exact">{{ __('guest_intake.visibility.exact') }}</flux:select.option>
                     </flux:select>
                     <flux:description>{{ __('guest_intake.privacy.visibility_helper') }}</flux:description>
                     <flux:error name="tripPurposeVisibility" />
@@ -134,9 +134,9 @@
                     <flux:field>
                         <flux:label>{{ __('guest_intake.fields.baggage_level') }}</flux:label>
                         <flux:select wire:model.change="baggageLevel">
-                            <option value="">{{ __('guest_intake.placeholders.choose') }}</option>
+                            <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                             @foreach($baggageLevels as $level)
-                                <option value="{{ $level }}">{{ __('guest_intake.baggage.'.$level) }}</option>
+                                <flux:select.option value="{{ $level }}">{{ __('guest_intake.baggage.'.$level) }}</flux:select.option>
                             @endforeach
                         </flux:select>
                     </flux:field>
@@ -167,18 +167,18 @@
                             <flux:field>
                                 <flux:label>{{ __('guest_intake.fields.pet_type') }}</flux:label>
                                 <flux:select wire:model.change="petType">
-                                    <option value="">{{ __('guest_intake.placeholders.choose') }}</option>
+                                    <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                                     @foreach($petTypes as $type)
-                                        <option value="{{ $type }}">{{ __('guest_intake.pet_types.'.$type) }}</option>
+                                        <flux:select.option value="{{ $type }}">{{ __('guest_intake.pet_types.'.$type) }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('guest_intake.fields.pet_size') }}</flux:label>
                                 <flux:select wire:model.change="petSize">
-                                    <option value="">{{ __('guest_intake.placeholders.choose') }}</option>
+                                    <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                                     @foreach($petSizes as $size)
-                                        <option value="{{ $size }}">{{ __('guest_intake.pet_sizes.'.$size) }}</option>
+                                        <flux:select.option value="{{ $size }}">{{ __('guest_intake.pet_sizes.'.$size) }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
                             </flux:field>
@@ -215,9 +215,9 @@
                 <flux:field>
                     <flux:label>{{ __('guest_intake.fields.noise_sensitivity_level') }}</flux:label>
                     <flux:select wire:model.change="noiseSensitivityLevel">
-                        <option value="">{{ __('guest_intake.placeholders.choose') }}</option>
+                        <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                         @foreach($noiseLevels as $level)
-                            <option value="{{ $level }}">{{ __('guest_intake.noise_sensitivity.'.$level) }}</option>
+                            <flux:select.option value="{{ $level }}">{{ __('guest_intake.noise_sensitivity.'.$level) }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </flux:field>

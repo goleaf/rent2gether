@@ -6,8 +6,8 @@ use App\Models\SavedSearch;
 use App\Models\SavedSearchResult;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\AvailabilityService;
-use App\Services\PricingService;
+use App\Services\Availability\AvailabilityService;
+use App\Services\Pricing\PricingService;
 use Carbon\CarbonImmutable;
 
 class SavedSearchSnapshotService

@@ -4,6 +4,7 @@ namespace App\Livewire\Account;
 
 use App\Actions\Account\StoreAvatarVariants;
 use App\Enums\UserStatus;
+use App\Livewire\Concerns\HandlesCountryCityAutocomplete;
 use App\Livewire\Concerns\UsesAccountValidationAttributes;
 use App\Models\City;
 use App\Models\Country;
@@ -11,7 +12,6 @@ use App\Models\GuestPreference;
 use App\Models\HostProfile;
 use App\Models\UserProfile;
 use App\Models\UserSetting;
-use App\Support\Geo\GeoNameNormalizer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -19,6 +19,7 @@ use Livewire\WithFileUploads;
 
 class ProfileSetupPage extends Component
 {
+    use HandlesCountryCityAutocomplete;
     use UsesAccountValidationAttributes;
     use WithFileUploads;
 
@@ -68,8 +69,9 @@ class ProfileSetupPage extends Component
         $this->displayName = $profile?->display_name ?: $user->name;
         $this->savedAvatarPath = $profile?->avatar_path ?: $user->avatar;
         $this->phone = $profile?->phone ?: ($user->phone ?? '');
-        $this->country = $profile?->country?->localizedName() ?: ($user->country ?? '');
-        $this->city = $profile?->city?->name ?: ($user->city ?? '');
+        $this->setCountryCityAutocomplete($profile?->country, $profile?->city, $user->country ?? '', $user->city ?? '');
+        $this->country = $this->countryQuery;
+        $this->city = $this->cityQuery;
         $this->languages = implode(', ', $profile?->languages_json ?: ($user->languages ?? []));
         $this->dateOfBirth = $profile?->date_of_birth?->format('Y-m-d') ?: $user->date_of_birth?->format('Y-m-d');
         $this->gender = $profile?->gender ?: ($user->gender ?? '');
@@ -87,12 +89,22 @@ class ProfileSetupPage extends Component
 
     public function save(StoreAvatarVariants $avatars): void
     {
+        $this->countryQuery = $this->countryQuery ?: $this->country;
+        $this->cityQuery = $this->cityQuery ?: $this->city;
+        $this->resolveCountryCityAutocompleteIdsFromQueries();
+
         $validated = $this->validate([
             'displayName' => ['required', 'string', 'max:255'],
             'avatar' => ['nullable', 'image', 'max:1024', 'dimensions:max_width=2000,max_height=2000'],
             'phone' => ['nullable', 'string', 'max:40'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'city' => ['nullable', 'string', 'max:100'],
+            'countryQuery' => ['nullable', 'string', 'max:120'],
+            'countryId' => [$this->countryQuery !== '' ? 'required' : 'nullable', 'integer', 'exists:countries,id'],
+            'cityQuery' => ['nullable', 'string', 'max:120'],
+            'cityId' => [
+                $this->cityQuery !== '' ? 'required' : 'nullable',
+                'integer',
+                Rule::exists('cities', 'id')->where('country_id', $this->countryId),
+            ],
             'languages' => ['nullable', 'string', 'max:120'],
             'dateOfBirth' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', Rule::in(['male', 'female', 'other', 'not_specified'])],
@@ -109,8 +121,8 @@ class ProfileSetupPage extends Component
         ], attributes: $this->accountValidationAttributes());
 
         $user = auth()->user();
-        $country = $this->countryModel($validated['country'] ?: null);
-        $city = $this->cityModel($validated['city'] ?: null);
+        $country = $this->selectedAutocompleteCountry();
+        $city = $this->selectedAutocompleteCity();
         $languageList = $this->languageList($validated['languages'] ?: null);
         $isHost = in_array($validated['accountRole'], ['host', 'both'], true);
         $avatarPath = $user->profile?->avatar_path ?: $user->avatar;
@@ -126,8 +138,8 @@ class ProfileSetupPage extends Component
             'avatar' => $avatarPath,
             'date_of_birth' => $validated['dateOfBirth'] ?: null,
             'gender' => $validated['gender'] ?: null,
-            'country' => $validated['country'] ?: null,
-            'city' => $validated['city'] ?: null,
+            'country' => $country?->localizedName(),
+            'city' => $city?->localizedName(),
             'languages' => $languageList,
             'bio' => $validated['about'] ?: null,
             'occupation' => $validated['occupation'] ?: null,
@@ -215,27 +227,15 @@ class ProfileSetupPage extends Component
         ];
     }
 
-    private function countryModel(?string $name): ?Country
+    protected function afterCountrySelected(Country $country): void
     {
-        if (! $name) {
-            return null;
-        }
-
-        return Country::query()
-            ->where('name_normalized', GeoNameNormalizer::normalize($name))
-            ->orWhere('iso2', strtoupper($name))
-            ->first();
+        $this->country = $country->localizedName();
+        $this->city = '';
     }
 
-    private function cityModel(?string $name): ?City
+    protected function afterCitySelected(City $city): void
     {
-        if (! $name) {
-            return null;
-        }
-
-        return City::query()
-            ->where('name_normalized', GeoNameNormalizer::normalize($name))
-            ->first();
+        $this->city = $city->localizedName();
     }
 
     /**

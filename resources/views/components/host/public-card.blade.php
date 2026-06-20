@@ -1,12 +1,15 @@
 <flux:card class="space-y-4">
     <div class="flex items-start gap-3">
-        <div class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 text-lg font-semibold text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
-            @if($avatarUrl)
-                <img src="{{ $avatarUrl }}" alt="{{ __('host.profile.public_card.photo_alt', ['name' => $displayName]) }}" loading="lazy" decoding="async" class="size-full object-cover">
-            @else
-                {{ $initial }}
-            @endif
-        </div>
+        <flux:avatar
+            :name="$displayName"
+            :src="$avatarUrl"
+            :initials="$initial"
+            alt="{{ __('host.profile.public_card.photo_alt', ['name' => $displayName]) }}"
+            color="auto"
+            color:seed="{{ $displayName }}"
+            circle
+            size="lg"
+        />
 
         <div class="min-w-0 flex-1 space-y-1">
             <div class="flex flex-wrap items-center gap-2">

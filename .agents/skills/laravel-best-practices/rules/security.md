@@ -28,7 +28,7 @@ Never use `$guarded = []` on models that accept user input.
 
 ## Authorize Every Action
 
-Use policies or gates in controllers. Never skip authorization.
+Use policies or gates in Livewire actions, service actions, and other state-changing entry points. Never skip authorization.
 
 Incorrect:
 ```php

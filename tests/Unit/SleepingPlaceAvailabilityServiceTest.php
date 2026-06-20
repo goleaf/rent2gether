@@ -13,7 +13,7 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

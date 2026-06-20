@@ -57,6 +57,7 @@ Important indexes:
 
 ## Services
 
+- `SleepingPlaceCalendarBootstrapService`: creates the initial per-sleeping-place calendar settings, calendar days, and availability days when a host-facing flow creates or copies a sleeping place.
 - `HostCalendarService`: reads calendar events, day details, and summary data.
 - `HostCalendarEventService`: creates and queries event snapshots.
 - `HostCalendarSnapshotService`: refreshes events from bookings, cleaning tasks, sleeping place calendar days, rooms, and properties.
@@ -72,6 +73,8 @@ Important indexes:
 ## Snapshot Refresh Logic
 
 No required jobs, queues, cron, staff, or admin tools are needed.
+
+Initial calendar rows are created synchronously with the `SleepingPlace`. The host calendar screen is for editing availability, prices, restrictions, notes, repairs, and operational events after the place exists.
 
 Snapshots can be refreshed synchronously:
 

@@ -1,4 +1,4 @@
-<section class="space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+<flux:card class="space-y-3">
     <div class="space-y-1">
         <flux:heading size="lg">{{ __('compatibility.before_booking.title') }}</flux:heading>
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('compatibility.before_booking.helper') }}</flux:text>
@@ -29,4 +29,4 @@
     @else
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('compatibility.empty_summary') }}</flux:text>
     @endif
-</section>
+</flux:card>

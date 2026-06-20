@@ -11,12 +11,12 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\DomainOwnershipService;
-use App\Services\PropertyService;
-use App\Services\RoomService;
-use App\Services\SleepingPlaceHierarchyService;
-use App\Services\SleepingPlaceService;
-use App\Services\UserRoleModeService;
+use App\Services\Domain\DomainOwnershipService;
+use App\Services\Properties\PropertyService;
+use App\Services\Rooms\RoomService;
+use App\Services\SleepingPlaces\SleepingPlaceHierarchyService;
+use App\Services\SleepingPlaces\SleepingPlaceService;
+use App\Services\Users\UserRoleModeService;
 use Composer\InstalledVersions;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -255,6 +255,17 @@ class FoundationPointOneArchitectureTest extends TestCase
         });
 
         $this->assertCount(0, $forbiddenRoutes);
+    }
+
+    public function test_http_controller_surface_has_been_removed_for_livewire_pages(): void
+    {
+        $this->assertDirectoryDoesNotExist(app_path('Http/Controllers'));
+
+        $controllerRoutes = collect(Route::getRoutes())->filter(
+            fn ($route): bool => Str::contains((string) $route->getActionName(), 'App\\Http\\Controllers')
+        );
+
+        $this->assertCount(0, $controllerRoutes);
     }
 
     /**

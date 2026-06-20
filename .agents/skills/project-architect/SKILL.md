@@ -11,6 +11,9 @@ Always enforce:
 - No admin area.
 - No Inertia.
 - No React/Vue SPA.
+- No `app/Http/Controllers/` for web UI.
+- No controller-backed web routes.
+- No `resources/views/auth/` or `resources/views/search/`.
 - Mobile-first.
 - Full i18n for English and Russian.
 - Future language support.
@@ -89,18 +92,27 @@ Stay relocation logic:
 
 Before implementing architecture:
 1. Read AGENTS.md.
-2. Check existing migrations, models, routes, Livewire components, lang files, and tests.
-3. Avoid duplicated concepts.
-4. Preserve the central hierarchy:
+2. Read docs/PROJECT_STRUCTURE.md.
+3. Check existing migrations, models, routes, Livewire components, services, lang files, and tests.
+4. Avoid duplicated concepts and deleted legacy surfaces.
+5. Preserve the central hierarchy:
    User -> Host profile
    Property -> Room -> SleepingPlace
    SleepingPlace -> Availability -> Booking
-5. Keep booking logic in services/actions, not in Blade.
-6. Keep pricing logic testable.
-7. Keep availability logic testable.
-8. Keep translations separated and indexed.
-9. Keep media metadata separated from physical files.
-10. Use domain names that are clear and stable.
+6. Keep booking logic in services/actions, not in Blade.
+7. Keep pricing logic testable.
+8. Keep availability logic testable.
+9. Keep translations separated and indexed.
+10. Keep media metadata separated from physical files.
+11. Use domain names that are clear and stable.
+
+Current placement rules:
+- User-facing pages and actions belong in Livewire class components under `app/Livewire/...`.
+- Livewire views belong in matching `resources/views/livewire/...` folders.
+- Domain services belong under `app/Services/<Domain>/`; never create root-level `app/Services/*Service.php` files.
+- Web routes in `routes/web.php` should mount Livewire page components inside the existing locale/auth/host groups.
+- Route model binding belongs in Livewire `mount()` methods.
+- Do not recreate deleted controller/auth/search wrapper paths. Use `docs/PROJECT_STRUCTURE.md` as the source of truth.
 
 Every new feature must include, when applicable:
 - Migration if data is needed.

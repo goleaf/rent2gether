@@ -11,7 +11,7 @@
 
     @if($openSheet)
         <div class="fixed inset-0 z-50">
-            <button type="button" class="absolute inset-0 bg-zinc-950/50" wire:click="$set('openSheet', false)" aria-label="{{ __('saved_searches.close') }}"></button>
+            <flux:button type="button" variant="ghost" class="absolute inset-0 h-auto w-full rounded-none bg-zinc-950/50 p-0 hover:bg-zinc-950/50 dark:hover:bg-zinc-950/50" wire:click="$set('openSheet', false)" aria-label="{{ __('saved_searches.close') }}" />
 
             <section class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-xl bg-white p-4 shadow-2xl dark:bg-zinc-950 sm:bottom-4 sm:left-auto sm:right-4 sm:top-4 sm:w-full sm:max-w-md sm:rounded-xl">
                 <div class="space-y-4">

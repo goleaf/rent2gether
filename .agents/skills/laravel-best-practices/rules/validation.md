@@ -2,7 +2,7 @@
 
 ## Use Form Request Classes
 
-Extract validation from controllers into dedicated Form Request classes.
+Extract HTTP validation into dedicated Form Request classes and keep Livewire validation close to the component/form object.
 
 Incorrect:
 ```php

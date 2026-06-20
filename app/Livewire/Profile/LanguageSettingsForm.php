@@ -3,7 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Models\User;
-use App\Services\UserLanguageService;
+use App\Services\Users\UserLanguageService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;

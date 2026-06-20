@@ -19,7 +19,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\UserProfile;
-use App\Services\ExtensionService;
+use App\Services\Bookings\ExtensionService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

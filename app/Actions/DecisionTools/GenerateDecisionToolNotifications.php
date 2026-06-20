@@ -7,8 +7,8 @@ use App\Models\Notification;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\WaitlistItem;
-use App\Services\AvailabilityService;
-use App\Services\PricingService;
+use App\Services\Availability\AvailabilityService;
+use App\Services\Pricing\PricingService;
 use Illuminate\Support\Str;
 
 class GenerateDecisionToolNotifications

@@ -4,8 +4,8 @@ namespace App\Livewire\Booking;
 
 use App\Models\Booking;
 use App\Models\User;
-use App\Services\CancellationService;
-use App\Services\RefundCalculator;
+use App\Services\Bookings\CancellationService;
+use App\Services\Bookings\RefundCalculator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Number;
 use Illuminate\Validation\Rule;

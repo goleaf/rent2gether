@@ -5,7 +5,7 @@ namespace App\Livewire\Reviews;
 use App\Enums\ReviewType;
 use App\Models\Booking;
 use App\Models\User;
-use App\Services\ReviewService;
+use App\Services\Reviews\ReviewService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;

@@ -20,7 +20,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\UserProfile;
-use App\Services\ReviewService;
+use App\Services\Reviews\ReviewService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

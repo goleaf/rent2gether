@@ -9,7 +9,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <flux:select wire:model="type" label="{{ __('listing.form.type') }}">
                     @foreach($this->bedTypes() as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                     @endforeach
                 </flux:select>
                 <flux:input type="number" wire:model="maxGuests" label="{{ __('listing.form.max_guests') }}" min="1" />
@@ -40,7 +40,7 @@
             <flux:checkbox wire:model="instantBook" label="{{ __('listing.form.instant_booking') }}" />
             <flux:select wire:model="cancellationPolicy" label="{{ __('listing.form.cancellation_policy') }}">
                 @foreach($this->cancellationPolicies() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
+                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
         </flux:card>

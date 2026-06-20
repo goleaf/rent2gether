@@ -11,7 +11,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\Localization\LocalizedModelContentResolver;
-use App\Services\NotificationService;
+use App\Services\Notifications\NotificationService;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;

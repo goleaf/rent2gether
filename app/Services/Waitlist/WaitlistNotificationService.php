@@ -6,7 +6,7 @@ use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\WaitlistItem;
 use App\Models\WaitlistOffer;
-use App\Services\NotificationService;
+use App\Services\Notifications\NotificationService;
 
 class WaitlistNotificationService
 {

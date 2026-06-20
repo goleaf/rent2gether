@@ -4,7 +4,7 @@ namespace App\Services\SavedSearches;
 
 use App\Models\SavedSearch;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\Notifications\NotificationService;
 
 class SavedSearchNotificationService
 {

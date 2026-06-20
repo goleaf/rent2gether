@@ -9,7 +9,7 @@ use App\Models\Booking;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\User;
-use App\Services\CancellationService;
+use App\Services\Bookings\CancellationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

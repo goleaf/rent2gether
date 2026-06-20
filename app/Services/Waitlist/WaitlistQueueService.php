@@ -8,8 +8,8 @@ use App\Data\Waitlist\WaitlistEligibilityResult;
 use App\Models\SleepingPlace;
 use App\Models\WaitlistItem;
 use App\Models\WaitlistOffer;
-use App\Services\AvailabilityService;
-use App\Services\PricingService;
+use App\Services\Availability\AvailabilityService;
+use App\Services\Pricing\PricingService;
 use Illuminate\Support\Collection;
 
 class WaitlistQueueService

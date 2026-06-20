@@ -24,14 +24,7 @@
             />
 
             <div class="space-y-2">
-                <flux:label>{{ __('booking.problem_report.photos') }}</flux:label>
-                <input
-                    type="file"
-                    wire:model="photos"
-                    multiple
-                    accept="image/*"
-                    class="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:file:bg-zinc-800"
-                >
+                <flux:input type="file" wire:model="photos" multiple accept="image/*" label="{{ __('booking.problem_report.photos') }}" />
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.problem_report.photos_helper') }}
                 </flux:text>

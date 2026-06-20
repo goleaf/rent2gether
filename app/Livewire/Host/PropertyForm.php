@@ -8,6 +8,7 @@ use App\Enums\PropertyRentalUnitType;
 use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
 use App\Livewire\Concerns\BuildsLocalizedMediaCaptions;
+use App\Livewire\Concerns\HandlesCountryCityAutocomplete;
 use App\Livewire\Concerns\ManagesLocalizedFormTranslations;
 use App\Livewire\Host\Concerns\BuildsWizardPhotoPreviews;
 use App\Models\City;
@@ -16,12 +17,9 @@ use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Region;
 use App\Services\Catalog\AmenityRuleLookupService;
-use App\Services\Geo\GeoSearchService;
 use App\Support\Geo\GeoNameNormalizer;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule as ValidationRule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -31,6 +29,7 @@ class PropertyForm extends Component
 {
     use BuildsLocalizedMediaCaptions;
     use BuildsWizardPhotoPreviews;
+    use HandlesCountryCityAutocomplete;
     use ManagesLocalizedFormTranslations;
     use WithFileUploads;
 
@@ -62,18 +61,6 @@ class PropertyForm extends Component
     public string $rentalUnitType = '';
 
     public string $propertyType = '';
-
-    public string $countryQuery = '';
-
-    public ?int $countryId = null;
-
-    public bool $countrySearchOpen = false;
-
-    public string $cityQuery = '';
-
-    public ?int $cityId = null;
-
-    public bool $citySearchOpen = false;
 
     public string $regionName = '';
 
@@ -188,62 +175,6 @@ class PropertyForm extends Component
         $this->ruleIds = $property->getRelation('rules')->pluck('id')->map(fn (int $id): int => $id)->all();
 
         $this->loadLocalizedTranslations($property->translations, self::TRANSLATION_FIELDS);
-    }
-
-    public function updatedCountryQuery(): void
-    {
-        $this->countryId = null;
-        $this->cityId = null;
-        $this->cityQuery = '';
-        $this->countrySearchOpen = true;
-    }
-
-    public function updatedCityQuery(): void
-    {
-        $this->cityId = null;
-        $this->citySearchOpen = true;
-    }
-
-    public function selectCountry(int $countryId): void
-    {
-        $country = Country::query()
-            ->select(['id', 'iso2', 'code', 'name', 'status', 'is_active'])
-            ->visible()
-            ->translated(app()->getLocale())
-            ->find($countryId);
-
-        if (! $country) {
-            return;
-        }
-
-        $this->countryId = $country->id;
-        $this->countryQuery = $country->localizedName();
-        $this->countrySearchOpen = false;
-        $this->cityId = null;
-        $this->cityQuery = '';
-    }
-
-    public function selectCity(int $cityId): void
-    {
-        $city = City::query()
-            ->select(['id', 'country_id', 'region_id', 'name', 'status', 'is_active'])
-            ->with(['region:id,name'])
-            ->visible()
-            ->translated(app()->getLocale())
-            ->when($this->countryId, fn (Builder $query): Builder => $query->where('country_id', $this->countryId))
-            ->find($cityId);
-
-        if (! $city) {
-            return;
-        }
-
-        $this->cityId = $city->id;
-        $this->cityQuery = $city->localizedName();
-        $this->citySearchOpen = false;
-
-        if (! $this->regionName && $city->region) {
-            $this->regionName = $city->region->name;
-        }
     }
 
     public function nextStep(): void
@@ -376,43 +307,6 @@ class PropertyForm extends Component
     }
 
     #[Computed]
-    public function countryResults(): array
-    {
-        if (! $this->countrySearchOpen || Str::length(GeoNameNormalizer::normalize($this->countryQuery)) < 2) {
-            return [];
-        }
-
-        return app(GeoSearchService::class)
-            ->countries($this->countryQuery, app()->getLocale())
-            ->map(fn (Country $country): array => [
-                'id' => $country->id,
-                'name' => $country->localizedName(),
-                'code' => $country->iso2 ?: $country->code,
-            ])
-            ->values()
-            ->all();
-    }
-
-    #[Computed]
-    public function cityResults(): array
-    {
-        if (! $this->citySearchOpen || Str::length(GeoNameNormalizer::normalize($this->cityQuery)) < 2) {
-            return [];
-        }
-
-        return app(GeoSearchService::class)
-            ->cities($this->cityQuery, app()->getLocale(), countryId: $this->countryId)
-            ->map(fn (City $city): array => [
-                'id' => $city->id,
-                'name' => $city->localizedName(),
-                'country' => $city->country?->localizedName(),
-                'region' => $city->region?->name,
-            ])
-            ->values()
-            ->all();
-    }
-
-    #[Computed]
     public function amenityOptions(): array
     {
         return app(AmenityRuleLookupService::class)->amenityOptions(
@@ -447,7 +341,7 @@ class PropertyForm extends Component
             ],
             3 => [
                 'countryId' => ['required', 'integer', 'exists:countries,id'],
-                'cityId' => ['required', 'integer', 'exists:cities,id'],
+                'cityId' => ['required', 'integer', ValidationRule::exists('cities', 'id')->where('country_id', $this->countryId)],
                 'regionName' => ['nullable', 'string', 'max:120'],
                 'district' => ['nullable', 'string', 'max:120'],
                 'street' => ['nullable', 'string', 'max:200'],
@@ -694,6 +588,13 @@ class PropertyForm extends Component
             ->where('country_id', $country->id)
             ->where('name_normalized', GeoNameNormalizer::normalize($this->regionName))
             ->first();
+    }
+
+    protected function afterCitySelected(City $city): void
+    {
+        if (! $this->regionName && $city->region) {
+            $this->regionName = $city->region->name;
+        }
     }
 
     private function propertyModel(): ?Property

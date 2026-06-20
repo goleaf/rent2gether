@@ -23,6 +23,16 @@ Laravel infrastructure tables provide cache, sessions, queues, failed jobs, pass
 
 `SleepingPlace` is the canonical rental unit. The legacy `Bed` model remains only to keep existing feature code and tests working during the transition; do not add new product behavior to `Bed` unless it is explicitly part of a bridge or migration step.
 
+## Seed data contract
+
+`DatabaseSeeder` is the default local dataset entry point. It runs the lightweight geo/catalog/demo foundations and then `BulkMarketplaceSeeder`.
+
+After `DatabaseSeeder` runs, every concrete Eloquent model in `app/Models/*.php` must have at least 1000 rows unless a future ADR explicitly excludes it. One-to-one tables seed one row for each of the first 1000 parent rows; translation tables may seed more because each owner can have `en` and `ru` rows.
+
+`BulkMarketplaceSeeder` must reuse existing parent IDs for users, properties, rooms, sleeping places, bookings, and lookup rows. Do not bulk-create each factory in isolation because many factories have belongs-to defaults that recursively create parent graphs and inflate unrelated counts.
+
+`GeoNamesFullSeeder` is manual only. It can import millions of `cities` rows, so keep it out of `DatabaseSeeder` and run it explicitly only when the local SQLite catalog needs the full offline GeoNames dataset. A database that has run the full import may have far more than 1000 city rows; that is expected.
+
 ## Account settings
 
 `user_settings` is the durable place for account-level preferences:
@@ -219,7 +229,7 @@ Double booking protection rejects overlapping booking/hold ranges for the same s
 
 Turnover settings should be available at the most specific applicable level, normally sleeping place first, then room/property/host defaults. Required fields are `minimum_turnover_minutes`, `cleaning_required_between_guests`, `cleaning_duration_minutes`, `inspection_required_after_checkout`, `same_day_check_in_allowed`, `morning_checkout_evening_checkin_allowed`, `earliest_next_check_in_time`, and `latest_previous_check_out_time`. Same-day turnover validation compares previous checkout datetime plus required turnover/cleaning/inspection time against the requested next check-in datetime. If the required gap does not fit, the boundary date is unavailable or request-only with translated reason keys.
 
-Guest booking-date selection reads `sleeping_places` pricing and limit columns plus `availability_days` rows in `[check_in, check_out)`. Date-specific price rows use `availability_days.price_override`; selected date ranges also honor `min_nights_override` and `max_nights_override` when present. Automatic quote output is transient DTO data from `App\Services\PricingService`; it should be persisted later as `booking_price_lines` only when a booking/request is created. The quote output must include stay days, nights, calendar days, base/subtotal price, discount, deposit, cleaning fee, service fee, total due, free cancellation date, cancellation penalty start date, host payout date, check-in reminder date, and check-out reminder date. Overnight sleeping-place billing uses `nights_count = check_out_date - check_in_date`; `stay_days_count` equals `nights_count` in the current non-hourly mode, while `calendar_days_count` is the inclusive presence display. Example: July 10 to July 13 is 3 nights / 3 payable stay days and 4 calendar presence days. Date selection state must support `check_in_date`, `check_in_time`, `check_out_date`, `check_out_time`, `nights_count`, `stay_days_count`, `calendar_days_count`, `early_check_in_requested`, `late_check_out_requested`, `check_in_time_flexible`, `check_out_time_flexible`, `host_time_approval_required`, `check_in_time_comment`, and `check_out_time_comment`. Views must render those values from the DTO rather than recalculating them inline.
+Guest booking-date selection reads `sleeping_places` pricing and limit columns plus `availability_days` rows in `[check_in, check_out)`. Date-specific price rows use `availability_days.price_override`; selected date ranges also honor `min_nights_override` and `max_nights_override` when present. Automatic quote output is transient DTO data from `App\Services\Pricing\PricingService`; it should be persisted later as `booking_price_lines` only when a booking/request is created. The quote output must include stay days, nights, calendar days, base/subtotal price, discount, deposit, cleaning fee, service fee, total due, free cancellation date, cancellation penalty start date, host payout date, check-in reminder date, and check-out reminder date. Overnight sleeping-place billing uses `nights_count = check_out_date - check_in_date`; `stay_days_count` equals `nights_count` in the current non-hourly mode, while `calendar_days_count` is the inclusive presence display. Example: July 10 to July 13 is 3 nights / 3 payable stay days and 4 calendar presence days. Date selection state must support `check_in_date`, `check_in_time`, `check_out_date`, `check_out_time`, `nights_count`, `stay_days_count`, `calendar_days_count`, `early_check_in_requested`, `late_check_out_requested`, `check_in_time_flexible`, `check_out_time_flexible`, `host_time_approval_required`, `check_in_time_comment`, and `check_out_time_comment`. Views must render those values from the DTO rather than recalculating them inline.
 
 Date validation is a server-side service/action concern before payable quote display, booking-request creation, or booking confirmation. It must reject checkout before check-in, same-day checkout unless a future daily/hourly rental mode allows it, occupied or held sleeping-place dates, host-closed property, room, or sleeping-place dates, unavailable or repair room dates, required cleaning gaps, min/max-stay violations, disabled check-in/check-out weekdays, missing required guest verification, room age-rule conflicts, room gender-policy conflicts, and guest-count over-limit. Validation failures should be returned as translated reason keys.
 
@@ -313,7 +323,7 @@ Geo imports run through:
 - `php artisan geo:seed-geonames --download-only`
 - `php artisan geo:rebuild-search-index`
 
-When `GEONAMES_SEED_ENABLED=true`, `php artisan migrate:fresh --seed` runs the full GeoNames import through `GeoNamesFullSeeder`. Tests set this flag to false.
+Full GeoNames imports run through `GeoNamesFullSeeder` explicitly. Do not wire `GEONAMES_SEED_ENABLED` back into `DatabaseSeeder`; the flag may still support dedicated geo commands, but default project seeding must stay predictable.
 
 Geo autocomplete uses `app()->getLocale()` as the search/display locale. It queries `country_translations.locale` and `city_translations.locale` first, then falls back to canonical names when translated rows are unavailable.
 
@@ -357,4 +367,4 @@ The schema contract test verifies required tables, required marketplace columns,
 - Use WAL mode for local and deployed single-host SQLite after verifying host support and backup behavior.
 - Keep write transactions short and configure a busy timeout before concurrent traffic is introduced.
 - Run critical query plans against representative data, not only tiny seed sets.
-- Keep default seeders small; run geographic imports through dedicated Artisan commands.
+- Keep default seeders bounded and predictable; run full geographic imports through dedicated Artisan commands.

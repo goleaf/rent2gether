@@ -9,7 +9,7 @@ use App\Models\Booking;
 use App\Models\SleepingPlace;
 use App\Models\WaitlistItem;
 use App\Models\WaitlistOffer;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use Carbon\CarbonInterface;
 
 class WaitlistAvailabilityService

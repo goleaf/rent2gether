@@ -14,6 +14,7 @@ class PropertyAccessDetail extends Model
 
     protected $fillable = [
         'property_id',
+        'entry_type',
         'entrance_type',
         'has_private_entrance',
         'has_shared_entrance',
@@ -26,6 +27,7 @@ class PropertyAccessDetail extends Model
         'has_key',
         'has_keycard',
         'has_electronic_lock',
+        'has_smart_lock',
         'has_key_safe',
         'key_safe_location_note',
         'code_visible_after_confirmation',
@@ -36,7 +38,9 @@ class PropertyAccessDetail extends Model
         'key_pickup_method',
         'key_pickup_contact_type',
         'meet_host_required',
+        'host_meeting_required',
         'meet_host_representative_required',
+        'representative_meeting_available',
         'self_check_in_available',
         'self_check_in_available_at_night',
         'check_in_instruction_available',
@@ -46,8 +50,10 @@ class PropertyAccessDetail extends Model
         'emergency_contact_available',
         'what_if_code_fails',
         'what_if_key_does_not_work',
+        'entry_24_7',
         'access_24_7',
         'can_return_at_night',
+        'night_entry_restrictions',
         'has_night_entry_restrictions',
         'night_entry_restriction_text',
         'must_be_quiet_at_night_entry',
@@ -62,6 +68,14 @@ class PropertyAccessDetail extends Model
         'parcels_allowed',
         'parcel_pickup_location',
         'delivery_responsibility_note',
+        'key_pickup_instruction',
+        'key_return_instruction',
+        'check_in_instruction',
+        'night_entry_instruction',
+        'door_code_encrypted',
+        'intercom_code_encrypted',
+        'key_safe_code_encrypted',
+        'show_access_details_after_booking',
     ];
 
     protected function casts(): array
@@ -78,6 +92,7 @@ class PropertyAccessDetail extends Model
             'has_key' => 'boolean',
             'has_keycard' => 'boolean',
             'has_electronic_lock' => 'boolean',
+            'has_smart_lock' => 'boolean',
             'has_key_safe' => 'boolean',
             'code_visible_after_confirmation' => 'boolean',
             'code_visible_after_payment' => 'boolean',
@@ -85,7 +100,9 @@ class PropertyAccessDetail extends Model
             'code_changes_after_guest' => 'boolean',
             'key_sets_count' => 'integer',
             'meet_host_required' => 'boolean',
+            'host_meeting_required' => 'boolean',
             'meet_host_representative_required' => 'boolean',
+            'representative_meeting_available' => 'boolean',
             'self_check_in_available' => 'boolean',
             'self_check_in_available_at_night' => 'boolean',
             'check_in_instruction_available' => 'boolean',
@@ -94,8 +111,10 @@ class PropertyAccessDetail extends Model
             'key_safe_photo_available' => 'boolean',
             'emergency_contact_available' => 'boolean',
             'access_24_7' => 'boolean',
+            'entry_24_7' => 'boolean',
             'can_return_at_night' => 'boolean',
             'has_night_entry_restrictions' => 'boolean',
+            'night_entry_restrictions' => 'boolean',
             'must_be_quiet_at_night_entry' => 'boolean',
             'guest_visitors_allowed' => 'boolean',
             'guest_visitors_need_approval' => 'boolean',
@@ -105,6 +124,7 @@ class PropertyAccessDetail extends Model
             'courier_can_come_to_door' => 'boolean',
             'courier_must_leave_at_entrance' => 'boolean',
             'parcels_allowed' => 'boolean',
+            'show_access_details_after_booking' => 'boolean',
         ];
     }
 

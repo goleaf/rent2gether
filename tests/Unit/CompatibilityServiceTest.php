@@ -10,7 +10,7 @@ use App\Models\GuestPreference;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
-use App\Services\CompatibilityService;
+use App\Services\Compatibility\CompatibilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

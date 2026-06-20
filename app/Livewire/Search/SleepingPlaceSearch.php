@@ -13,13 +13,13 @@ use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\CompatibilityService;
+use App\Services\Compatibility\CompatibilityService;
 use App\Services\Geo\GeoSearchService;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use App\Services\Localization\SupportedContentLocales;
-use App\Services\PricingService;
+use App\Services\Pricing\PricingService;
 use App\Support\Geo\GeoNameNormalizer;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -431,7 +431,7 @@ class SleepingPlaceSearch extends Component
             'results' => $this->resultsForView(),
             'saveSearchCityId' => $this->saveSearchCityId(),
             'cityHasEnoughCharacters' => $this->cityHasEnoughCharacters(),
-        ]);
+        ])->layout('layouts.app', ['title' => __('search.title')]);
     }
 
     /**

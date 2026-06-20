@@ -27,14 +27,17 @@
 
         <div class="flex gap-2 overflow-x-auto pb-1">
             @foreach($this->wizardSteps() as $wizardStep)
-                <button
+                <flux:button
                     type="button"
+                    size="xs"
+                    variant="{{ $step === $wizardStep['number'] ? 'primary' : 'outline' }}"
                     wire:click="$set('step', {{ $wizardStep['number'] }})"
-                    class="shrink-0 rounded-full border px-3 py-1.5 text-xs {{ $step === $wizardStep['number'] ? 'border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200' : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400' }}"
-                    title="{{ $wizardStep['title'] }}"
+                    class="shrink-0"
+                    tooltip="{{ $wizardStep['title'] }}"
+                    aria-current="{{ $step === $wizardStep['number'] ? 'step' : 'false' }}"
                 >
                     {{ $wizardStep['number'] }}
-                </button>
+                </flux:button>
             @endforeach
         </div>
     </flux:card>

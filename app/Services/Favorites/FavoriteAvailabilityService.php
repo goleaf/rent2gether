@@ -5,7 +5,7 @@ namespace App\Services\Favorites;
 use App\Data\Favorites\FavoriteAvailabilityResult;
 use App\Models\Favorite;
 use App\Models\SleepingPlace;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 

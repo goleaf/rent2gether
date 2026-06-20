@@ -3,9 +3,30 @@
 namespace App\Services\Rooms;
 
 use App\Models\Room;
+use App\Models\RoomComfortDetail;
+use App\Models\User;
+use App\Services\Domain\DomainOwnershipService;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class RoomComfortService
 {
+    public function __construct(private readonly DomainOwnershipService $ownership) {}
+
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @throws AuthorizationException
+     */
+    public function save(User $host, Room $room, array $data): RoomComfortDetail
+    {
+        $this->ownership->ensureHostOwnsRoom($host, $room);
+
+        return RoomComfortDetail::query()->updateOrCreate(
+            ['room_id' => $room->id],
+            array_merge($data, ['room_id' => $room->id]),
+        );
+    }
+
     /**
      * @param  array<string, mixed>  $data
      */

@@ -27,13 +27,17 @@
 
         <div class="flex gap-2 overflow-x-auto pb-1">
             @foreach($this->wizardSteps() as $wizardStep)
-                <button
+                <flux:button
                     type="button"
+                    size="xs"
+                    variant="{{ $step === $wizardStep['number'] ? 'primary' : 'outline' }}"
                     wire:click="$set('step', {{ $wizardStep['number'] }})"
-                    class="shrink-0 rounded-full border px-3 py-1.5 text-xs {{ $step === $wizardStep['number'] ? 'border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200' : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400' }}"
+                    class="shrink-0"
+                    tooltip="{{ $wizardStep['title'] }}"
+                    aria-current="{{ $step === $wizardStep['number'] ? 'step' : 'false' }}"
                 >
                     {{ $wizardStep['number'] }}
-                </button>
+                </flux:button>
             @endforeach
         </div>
     </flux:card>
@@ -51,16 +55,18 @@
                 @case(1)
                     <div class="grid gap-3">
                         @foreach($this->rentalUnitTypeOptions() as $value => $label)
-                            <button
+                            <flux:button
                                 type="button"
+                                variant="{{ $rentalUnitType === $value ? 'primary' : 'outline' }}"
                                 wire:click="$set('rentalUnitType', '{{ $value }}')"
-                                class="flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left {{ $rentalUnitType === $value ? 'border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-400/10 dark:text-emerald-100' : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600' }}"
+                                class="h-auto min-h-14 w-full justify-between whitespace-normal px-4 py-3 text-left"
+                                aria-pressed="{{ $rentalUnitType === $value ? 'true' : 'false' }}"
                             >
                                 <span class="font-medium">{{ $label }}</span>
                                 @if($rentalUnitType === $value)
                                     <flux:icon name="check-circle" class="size-5 text-emerald-600" />
                                 @endif
-                            </button>
+                            </flux:button>
                         @endforeach
                     </div>
                     <flux:error name="rentalUnitType" />
@@ -69,16 +75,18 @@
                 @case(2)
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach($this->propertyTypeOptions() as $value => $label)
-                            <button
+                            <flux:button
                                 type="button"
+                                variant="{{ $propertyType === $value ? 'primary' : 'outline' }}"
                                 wire:click="$set('propertyType', '{{ $value }}')"
-                                class="flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left {{ $propertyType === $value ? 'border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-400/10 dark:text-emerald-100' : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600' }}"
+                                class="h-auto min-h-14 w-full justify-between whitespace-normal px-4 py-3 text-left"
+                                aria-pressed="{{ $propertyType === $value ? 'true' : 'false' }}"
                             >
                                 <span class="font-medium">{{ $label }}</span>
                                 @if($propertyType === $value)
                                     <flux:icon name="check-circle" class="size-5 text-emerald-600" />
                                 @endif
-                            </button>
+                            </flux:button>
                         @endforeach
                     </div>
                     <flux:error name="propertyType" />
@@ -86,69 +94,15 @@
 
                 @case(3)
                     <div class="grid gap-4">
-                        <div class="space-y-2">
-                            <flux:autocomplete
-                                type="search"
-                                clearable
-                                wire:model.live.debounce.500ms="countryQuery"
-                                label="{{ __('host.property_wizard.fields.country') }}"
-                                description="{{ __('host.property_wizard.helpers.country') }}"
-                                placeholder="{{ __('host.property_wizard.placeholders.country') }}"
-                                container:class="max-h-80"
-                            >
-                                @foreach($this->countryResults as $result)
-                                    <flux:autocomplete.item
-                                        wire:key="property-country-{{ $result['id'] }}"
-                                        wire:click="selectCountry({{ $result['id'] }})"
-                                    >
-                                        {{ $result['code'] ? $result['name'].' · '.$result['code'] : $result['name'] }}
-                                    </flux:autocomplete.item>
-                                @endforeach
-                            </flux:autocomplete>
-                            <flux:error name="countryId" />
-
-                            @if($countrySearchOpen && strlen($countryQuery) >= 2 && $this->countryResults === [])
-                                <div wire:loading.remove wire:target="countryQuery" class="rounded-lg border border-zinc-200 px-3 py-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-                                    {{ __('host.property_wizard.empty.country') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        <div wire:loading.delay wire:target="countryQuery" class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-                            {{ __('host.property_wizard.loading.country') }}
-                        </div>
-
-                        <div class="space-y-2">
-                            <flux:autocomplete
-                                type="search"
-                                clearable
-                                wire:model.live.debounce.500ms="cityQuery"
-                                label="{{ __('host.property_wizard.fields.city') }}"
-                                description="{{ __('host.property_wizard.helpers.city') }}"
-                                placeholder="{{ __('host.property_wizard.placeholders.city') }}"
-                                container:class="max-h-80"
-                            >
-                                @foreach($this->cityResults as $result)
-                                    <flux:autocomplete.item
-                                        wire:key="property-city-{{ $result['id'] }}"
-                                        wire:click="selectCity({{ $result['id'] }})"
-                                    >
-                                        {{ ($result['region'] ?: $result['country']) ? $result['name'].', '.($result['region'] ?: $result['country']) : $result['name'] }}
-                                    </flux:autocomplete.item>
-                                @endforeach
-                            </flux:autocomplete>
-                            <flux:error name="cityId" />
-
-                            @if($citySearchOpen && strlen($cityQuery) >= 2 && $this->cityResults === [])
-                                <div wire:loading.remove wire:target="cityQuery" class="rounded-lg border border-zinc-200 px-3 py-4 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-                                    {{ __('host.property_wizard.empty.city') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        <div wire:loading.delay wire:target="cityQuery" class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-                            {{ __('host.property_wizard.loading.city') }}
-                        </div>
+                        @include('livewire.geo.partials.country-city-autocomplete', [
+                            'autocompleteKey' => 'property',
+                            'countryLabel' => __('host.property_wizard.fields.country'),
+                            'countryDescription' => __('host.property_wizard.helpers.country'),
+                            'countryPlaceholder' => __('host.property_wizard.placeholders.country'),
+                            'cityLabel' => __('host.property_wizard.fields.city'),
+                            'cityDescription' => $this->cityAutocompleteDisabled ? __('geo.helpers.city_disabled') : __('host.property_wizard.helpers.city'),
+                            'cityPlaceholder' => $this->cityAutocompleteDisabled ? __('geo.placeholders.city_disabled') : __('host.property_wizard.placeholders.city'),
+                        ])
 
                         @if($countryQuery !== '' || $cityQuery !== '')
                             <div class="flex flex-wrap gap-2">

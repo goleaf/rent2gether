@@ -5,7 +5,7 @@ namespace App\Livewire\Extensions;
 use App\Enums\BookingExtensionStatus;
 use App\Models\Booking;
 use App\Models\BookingExtension;
-use App\Services\ExtensionService;
+use App\Services\Bookings\ExtensionService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;

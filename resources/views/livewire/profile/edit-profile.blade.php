@@ -13,13 +13,14 @@
                 <flux:input wire:model.blur="phone" label="{{ __('app.profile.phone') }}" :error="$errors->first('phone')" />
                 <flux:input type="date" wire:model.change="dateOfBirth" label="{{ __('app.profile.date_of_birth') }}" />
                 <flux:select wire:model.change="gender" label="{{ __('app.profile.gender') }}">
-                    <option value="">-</option>
-                    <option value="male">{{ __('app.profile.male') }}</option>
-                    <option value="female">{{ __('app.profile.female') }}</option>
-                    <option value="other">{{ __('app.profile.other') }}</option>
+                    <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
+                    <flux:select.option value="male">{{ __('app.profile.male') }}</flux:select.option>
+                    <flux:select.option value="female">{{ __('app.profile.female') }}</flux:select.option>
+                    <flux:select.option value="other">{{ __('app.profile.other') }}</flux:select.option>
                 </flux:select>
-                <flux:input wire:model.blur="country" label="{{ __('listing.form.country') }}" />
-                <flux:input wire:model.blur="city" label="{{ __('listing.form.city') }}" />
+                <div class="sm:col-span-2">
+                    @include('livewire.geo.partials.country-city-autocomplete', ['autocompleteKey' => 'profile-edit'])
+                </div>
                 <flux:input wire:model.blur="occupation" label="{{ __('app.profile.occupation') }}" />
             </div>
             <flux:textarea wire:model.blur="bio" label="{{ __('app.profile.about_me') }}" rows="3" />
@@ -29,17 +30,17 @@
             <flux:heading size="sm">{{ __('app.profile.lifestyle') }}</flux:heading>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <flux:select wire:model.change="sleepSchedule" label="{{ __('app.profile.sleep_schedule') }}">
-                    <option value="">-</option>
-                    <option value="early_bird">{{ __('app.profile.early_bird') }}</option>
-                    <option value="night_owl">{{ __('app.profile.night_owl') }}</option>
-                    <option value="flexible">{{ __('app.profile.flexible') }}</option>
+                    <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
+                    <flux:select.option value="early_bird">{{ __('app.profile.early_bird') }}</flux:select.option>
+                    <flux:select.option value="night_owl">{{ __('app.profile.night_owl') }}</flux:select.option>
+                    <flux:select.option value="flexible">{{ __('app.profile.flexible') }}</flux:select.option>
                 </flux:select>
                 <flux:select wire:model.change="travelPurpose" label="{{ __('app.profile.travel_purpose') }}">
-                    <option value="">-</option>
-                    <option value="tourism">{{ __('app.profile.tourism') }}</option>
-                    <option value="work">{{ __('app.profile.work') }}</option>
-                    <option value="study">{{ __('app.profile.study') }}</option>
-                    <option value="relocation">{{ __('app.profile.relocation') }}</option>
+                    <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
+                    <flux:select.option value="tourism">{{ __('app.profile.tourism') }}</flux:select.option>
+                    <flux:select.option value="work">{{ __('app.profile.work') }}</flux:select.option>
+                    <flux:select.option value="study">{{ __('app.profile.study') }}</flux:select.option>
+                    <flux:select.option value="relocation">{{ __('app.profile.relocation') }}</flux:select.option>
                 </flux:select>
             </div>
             <div class="flex flex-wrap gap-4">
@@ -59,9 +60,9 @@
                 <flux:field>
                     <flux:label>{{ __('app.profile.experience_started_year') }}</flux:label>
                     <flux:select wire:model.change="hostExperienceStartedYear">
-                        <option value="">{{ __('app.profile.experience_started_year_placeholder') }}</option>
+                        <flux:select.option value="">{{ __('app.profile.experience_started_year_placeholder') }}</flux:select.option>
                         @foreach($this->hostExperienceYearOptions as $year)
-                            <option value="{{ $year }}">{{ $year }}</option>
+                            <flux:select.option value="{{ $year }}">{{ $year }}</flux:select.option>
                         @endforeach
                     </flux:select>
                     <flux:description>

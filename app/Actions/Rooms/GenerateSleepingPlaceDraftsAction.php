@@ -5,10 +5,13 @@ namespace App\Actions\Rooms;
 use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Models\Room;
+use App\Services\Calendar\SleepingPlaceCalendarBootstrapService;
 use App\Services\Localization\SupportedContentLocales;
 
 class GenerateSleepingPlaceDraftsAction
 {
+    public function __construct(private readonly SleepingPlaceCalendarBootstrapService $calendarBootstrap) {}
+
     public function handle(Room $room): int
     {
         $targetCount = max(0, (int) $room->beds_count);
@@ -43,6 +46,7 @@ class GenerateSleepingPlaceDraftsAction
                 ]);
             }
 
+            $this->calendarBootstrap->bootstrap($sleepingPlace);
             $created++;
         }
 

@@ -1,5 +1,3 @@
-<x-layouts.app :title="$bed->title">
-
     <div class="max-w-5xl mx-auto space-y-8">
 
         {{-- Breadcrumb --}}
@@ -262,5 +260,3 @@
         </div>
 
     </div>
-
-</x-layouts.app>

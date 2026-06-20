@@ -18,6 +18,7 @@ Laravel Boost verified the application on 2026-06-18:
 - PHPUnit `12.5.30`
 
 The canonical domain inventory lives in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md). Do not infer the current feature surface from older Laravel starter-kit defaults.
+The canonical file placement map lives in [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md). Read it before creating files.
 
 ## Architectural Contract
 
@@ -26,6 +27,7 @@ The canonical domain inventory lives in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
 - Eloquent models are the only query layer.
 - Livewire class components are the interactive application layer.
 - Flux Pro is the application component system.
+- Web UI is controllerless. Do not create `app/Http/Controllers/`.
 - No Filament, Livewire Volt, Inertia, React/Vue SPA, or admin/staff panel should be introduced.
 - Laravel Boost MCP is the preferred source for app information, docs, schema inspection, browser logs, and URL resolution.
 
@@ -44,7 +46,7 @@ Everything must stay mobile-first, multilingual, fast, friendly, and Livewire-na
 | Single-model scopes | `app/Models/ModelName.php` |
 | Shared model concerns | `app/Models/Concerns/` |
 | Business actions | `app/Actions/` |
-| Domain/application services | `app/Services/` |
+| Domain/application services | `app/Services/<Domain>/` |
 | HTTP validation | `app/Http/Requests/` |
 | Authorization | `app/Policies/` |
 | JSON resources | `app/Http/Resources/` |
@@ -55,6 +57,8 @@ Everything must stay mobile-first, multilingual, fast, friendly, and Livewire-na
 | Blade components | `resources/views/components/` |
 | Livewire Blade views | `resources/views/livewire/` |
 | View composers | `app/Providers/ViewServiceProvider.php` |
+
+Do not create files directly under `app/Services/`; choose the existing domain folder from [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md). Do not create `app/Http/Controllers/`; user-facing routes mount Livewire page components directly.
 
 Create framework files with Artisan where possible, for example `php artisan make:class`, `php artisan make:model`, `php artisan make:request`, and `php artisan make:test --phpunit`.
 
@@ -69,10 +73,18 @@ For Livewire/Blade pages:
 5. Component passes compact scalar state or DTO arrays to Blade.
 6. Blade renders presentation only.
 
+Deleted legacy surfaces must not be recreated:
+
+- `app/Http/Controllers/`
+- `resources/views/auth/`
+- `resources/views/search/`
+
+Use the replacements documented in [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md).
+
 ## Boundaries
 
 - Do not introduce React, Vue, Inertia, or SPA routing.
-- Do not introduce Filament, Livewire Volt, admin panels, or staff tools.
+- Do not introduce Filament, Livewire Volt, admin panels, staff tools, or web controllers.
 - Do not put business logic into Blade, Livewire render methods, route closures, or table render callbacks.
 - Do not add raw SQL strings.
 - Do not add unbounded reads.

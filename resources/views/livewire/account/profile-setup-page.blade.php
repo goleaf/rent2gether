@@ -62,16 +62,13 @@
                     <flux:input wire:model.blur="phone" inputmode="tel" />
                     <flux:error name="phone" />
                 </flux:field>
-                <flux:field>
-                    <flux:label>{{ __('account.fields.country') }}</flux:label>
-                    <flux:input wire:model.blur="country" />
-                    <flux:error name="country" />
-                </flux:field>
-                <flux:field>
-                    <flux:label>{{ __('account.fields.city') }}</flux:label>
-                    <flux:input wire:model.blur="city" />
-                    <flux:error name="city" />
-                </flux:field>
+                <div class="sm:col-span-2">
+                    @include('livewire.geo.partials.country-city-autocomplete', [
+                        'autocompleteKey' => 'profile-setup',
+                        'countryLabel' => __('account.fields.country'),
+                        'cityLabel' => __('account.fields.city'),
+                    ])
+                </div>
                 <flux:field>
                     <flux:label>{{ __('account.fields.languages') }}</flux:label>
                     <flux:input wire:model.blur="languages" placeholder="{{ __('account.fields.languages_placeholder') }}" />

@@ -43,6 +43,7 @@ class SleepingPlacePositionDetail extends Model
         'near_radiator',
         'near_air_conditioner',
         'near_power_socket',
+        'near_socket',
         'near_passage',
         'near_wardrobe',
         'near_desk',
@@ -59,6 +60,9 @@ class SleepingPlacePositionDetail extends Model
         'morning_light',
         'corridor_light_reaches',
         'draft_nearby',
+        'top_bunk',
+        'bottom_bunk',
+        'position_note',
     ];
 
     protected function casts(): array
@@ -92,6 +96,7 @@ class SleepingPlacePositionDetail extends Model
             'near_radiator' => 'boolean',
             'near_air_conditioner' => 'boolean',
             'near_power_socket' => 'boolean',
+            'near_socket' => 'boolean',
             'near_passage' => 'boolean',
             'near_wardrobe' => 'boolean',
             'near_desk' => 'boolean',
@@ -106,6 +111,8 @@ class SleepingPlacePositionDetail extends Model
             'morning_light' => 'boolean',
             'corridor_light_reaches' => 'boolean',
             'draft_nearby' => 'boolean',
+            'top_bunk' => 'boolean',
+            'bottom_bunk' => 'boolean',
         ];
     }
 

@@ -3,23 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Amenity;
-use App\Models\AmenityTranslation;
 use App\Models\AvailabilityDay;
-use App\Models\Bed;
-use App\Models\BedAvailability;
 use App\Models\Booking;
-use App\Models\BookingExtension;
-use App\Models\BookingGuest;
-use App\Models\BookingPriceLine;
-use App\Models\BookingStatusHistory;
-use App\Models\CheckinRecord;
-use App\Models\CheckoutRecord;
 use App\Models\City;
 use App\Models\Complaint;
-use App\Models\ComplaintStatusHistory;
-use App\Models\Conversation;
 use App\Models\Country;
-use App\Models\DepositRecord;
 use App\Models\DiscountRule;
 use App\Models\Favorite;
 use App\Models\GuestPreference;
@@ -28,25 +16,14 @@ use App\Models\MediaItem;
 use App\Models\Message;
 use App\Models\MessageThread;
 use App\Models\Notification;
-use App\Models\PaymentRecord;
-use App\Models\Payout;
 use App\Models\PriceRule;
 use App\Models\Property;
-use App\Models\PropertyTranslation;
-use App\Models\RefundRequest;
-use App\Models\Region;
 use App\Models\Review;
 use App\Models\Room;
-use App\Models\RoomTranslation;
 use App\Models\Rule;
-use App\Models\RuleTranslation;
 use App\Models\SavedSearch;
 use App\Models\SleepingPlace;
-use App\Models\SleepingPlaceTranslation;
 use App\Models\User;
-use App\Models\UserProfile;
-use App\Models\UserSetting;
-use App\Models\WaitlistEntry;
 use App\Models\WaitlistItem;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Model;
@@ -132,54 +109,12 @@ class DemoSeederTest extends TestCase
      */
     private function bulkSeededModels(): array
     {
-        return [
-            Amenity::class,
-            AmenityTranslation::class,
-            AvailabilityDay::class,
-            Bed::class,
-            BedAvailability::class,
-            Booking::class,
-            BookingExtension::class,
-            BookingGuest::class,
-            BookingPriceLine::class,
-            BookingStatusHistory::class,
-            CheckinRecord::class,
-            CheckoutRecord::class,
-            City::class,
-            Complaint::class,
-            ComplaintStatusHistory::class,
-            Conversation::class,
-            Country::class,
-            DepositRecord::class,
-            DiscountRule::class,
-            Favorite::class,
-            GuestPreference::class,
-            HostProfile::class,
-            MediaItem::class,
-            Message::class,
-            MessageThread::class,
-            Notification::class,
-            PaymentRecord::class,
-            Payout::class,
-            PriceRule::class,
-            Property::class,
-            PropertyTranslation::class,
-            RefundRequest::class,
-            Region::class,
-            Review::class,
-            Room::class,
-            RoomTranslation::class,
-            Rule::class,
-            RuleTranslation::class,
-            SavedSearch::class,
-            SleepingPlace::class,
-            SleepingPlaceTranslation::class,
-            User::class,
-            UserProfile::class,
-            UserSetting::class,
-            WaitlistEntry::class,
-            WaitlistItem::class,
-        ];
+        return collect(glob(app_path('Models/*.php')) ?: [])
+            ->map(fn (string $path): string => 'App\\Models\\'.basename($path, '.php'))
+            ->filter(fn (string $modelClass): bool => is_subclass_of($modelClass, Model::class))
+            ->sort()
+            ->values()
+            ->all();
     }
 
     private function assertSeededMediaFilesExist(): void

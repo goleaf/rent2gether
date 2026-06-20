@@ -5,7 +5,7 @@ namespace App\Services\Favorites;
 use App\Models\Favorite;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\Notifications\NotificationService;
 use Illuminate\Support\Number;
 
 class FavoriteChangeNotificationService

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Layout;
 
-use App\Services\LocaleService;
+use App\Services\Localization\LocaleService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 

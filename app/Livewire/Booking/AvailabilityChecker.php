@@ -3,7 +3,7 @@
 namespace App\Livewire\Booking;
 
 use App\Models\SleepingPlace;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;

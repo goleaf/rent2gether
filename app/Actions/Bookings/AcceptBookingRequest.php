@@ -7,7 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Notification;
 use App\Models\User;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Auth\Access\AuthorizationException;

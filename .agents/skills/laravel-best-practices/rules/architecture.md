@@ -145,13 +145,13 @@ Use jobs when the work must survive process crashes or needs retry logic. Use `d
 
 ## Use `Context` for Request-Scoped Data
 
-The `Context` facade passes data through the entire request lifecycle — middleware, controllers, jobs, logs — without passing arguments manually.
+The `Context` facade passes data through the entire request lifecycle — middleware, Livewire actions, jobs, logs — without passing arguments manually.
 
 ```php
 // In middleware
 Context::add('tenant_id', $request->header('X-Tenant-ID'));
 
-// Anywhere later — controllers, jobs, log context
+// Anywhere later — Livewire actions, jobs, log context
 $tenantId = Context::get('tenant_id');
 ```
 

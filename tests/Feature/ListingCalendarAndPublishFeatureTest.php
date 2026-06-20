@@ -24,6 +24,7 @@ use App\Services\Calendar\CalendarRuleService;
 use App\Services\HostListings\Wizard\HostCalendarDraftService;
 use App\Services\HostListings\Wizard\HostListingPublishService;
 use App\Services\HostListings\Wizard\HostListingReadinessService;
+use App\Services\HostListings\Wizard\HostSleepingPlaceDraftService;
 use App\Services\HostListings\Wizard\ListingPublicationCheckService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -115,6 +116,40 @@ class ListingCalendarAndPublishFeatureTest extends TestCase
         $this->assertSame(21, $listing['place']->fresh()->max_nights);
         $this->assertDatabaseHas('sleeping_place_calendar_rules', ['rule_type' => 'check_in_days']);
         $this->assertDatabaseHas('sleeping_place_calendar_rules', ['rule_type' => 'check_out_days']);
+    }
+
+    public function test_sleeping_place_creation_automatically_bootstraps_calendar_per_place(): void
+    {
+        $listing = $this->listing();
+        $room = $listing['room'];
+        app(HostCalendarDraftService::class)->updateSettings($listing['host'], $listing['place'], [
+            'default_price' => 20,
+            'currency' => 'EUR',
+        ]);
+        app(HostCalendarDraftService::class)->openDatesForPlace($listing['host'], $listing['place'], [
+            'start' => now()->addDay()->toDateString(),
+            'end' => now()->addDays(4)->toDateString(),
+        ], ['price' => 20]);
+
+        $place = app(HostSleepingPlaceDraftService::class)->createSleepingPlace($room, [
+            'display_name' => 'Auto calendar place',
+            'place_number' => '1',
+            'base_price_per_night' => 24,
+            'currency' => 'EUR',
+            'min_nights' => 2,
+            'max_nights' => 30,
+        ]);
+        $readiness = app(HostListingReadinessService::class)->checkPublishReadiness($listing['property']->fresh());
+        $blockingKeys = collect($readiness['blocking'])->pluck('check_key')->all();
+
+        $this->assertNotNull($place->fresh()->calendarSettings);
+        $this->assertGreaterThan(0, $place->calendarDays()->where('status', 'available')->count());
+        $this->assertSame(
+            $place->calendarDays()->where('status', 'available')->count(),
+            $place->availabilityDays()->where('status', AvailabilityStatus::Available->value)->count(),
+        );
+        $this->assertNotContains('missing_calendar_settings', $blockingKeys);
+        $this->assertNotContains('missing_available_dates', $blockingKeys);
     }
 
     public function test_calendar_availability_booking_blocks_and_cleaning_gap(): void

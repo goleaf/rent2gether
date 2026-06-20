@@ -31,20 +31,21 @@ The audited local stack on 2026-06-18 is:
 - PHPUnit 12
 
 Keep Blade server-rendered. Do not introduce Volt, Filament, Inertia, React, Vue, or another SPA layer.
+Do not create `app/Http/Controllers/`, controller-backed web routes, `resources/views/auth/`, or `resources/views/search/`.
+Read [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) before creating files; new services belong under `app/Services/<Domain>/`.
 
-## Demo data
+## Seed data
 
-The default seed path is intentionally small and fast. It creates:
+The default seed path is intentionally bounded but no longer tiny. `DatabaseSeeder` runs:
 
-- 2 countries and 5 cities from local demo geo data
-- 3 guest users and 3 host users
-- 3 properties, 6 rooms, and 18 sleeping places
-- translated amenities and rules
-- placeholder media metadata
-- 90 days of sleeping-place availability
-- price rules, discount rules, 10 bookings, messages, reviews, favorites, saved searches, waitlist items, notifications, and complaints
+- `GeoSeeder`
+- `AmenityRuleSeeder`
+- `MarketplaceDemoSeeder`
+- `BulkMarketplaceSeeder`
 
-Use this command to rebuild a local demo database:
+The small demo rows keep readable scenarios. The bulk layer then ensures every Eloquent model in `app/Models/*.php` has at least 1000 rows for development, QA, and agent verification.
+
+Use this command to rebuild a local dataset:
 
 ```bash
 php artisan app:demo-reset
@@ -56,7 +57,13 @@ Use this command when the schema is already current and only demo rows should be
 php artisan app:demo-reset --seed-only
 ```
 
-Large GeoNames imports are controlled by `config/geo.php`. Keep testing and small demo resets protected from accidental full imports, but the local project may opt in to a full `migrate:fresh --seed` GeoNames load.
+Do not add `GeoNamesFullSeeder` back to `DatabaseSeeder`. Full GeoNames imports are manual because they can create millions of city rows:
+
+```bash
+php artisan db:seed --class=Database\\Seeders\\GeoNamesFullSeeder --no-interaction
+```
+
+When adding a model, update `BulkMarketplaceSeeder` and `tests/Feature/DemoSeederTest.php` coverage instead of creating a separate bulk-data path. The full rules live in [BULK_SEEDING.md](BULK_SEEDING.md).
 
 Geo country/city search and display must use the currently selected interface locale. Store multilingual place names in `country_translations` and `city_translations` with a `locale` column, search only the selected locale plus canonical fallback fields, and never add new language-specific columns or branches such as `name_lt`, `name_pl`, or locale-specific conditionals. Existing legacy name columns are fallback/source compatibility only.
 
@@ -73,12 +80,13 @@ Geo country/city search and display must use the currently selected interface lo
 - Keep Livewire public state compact; store IDs and filters rather than full models or large arrays.
 - Put booking, pricing, availability, cancellation, and compatibility logic in testable actions or services.
 - Keep database access out of Blade views.
-- Never use `@php`, `@endphp`, or `@php(...)` in Blade views; prepare view data in controllers, Livewire classes, class-based Blade components, presenters, services, or DTO arrays.
+- Never use `@php`, `@endphp`, or `@php(...)` in Blade views; prepare view data in Livewire classes, class-based Blade components, presenters, services, or DTO arrays.
 - Use Eloquent relationships, scopes, selected columns, eager loading, and pagination.
 - Keep translated public content in indexed translation tables instead of adding one column per language.
 - Keep media metadata in the database and physical files in configured storage.
 - Use policies and server-side validation for every state-changing action.
 - Generate mobile media variants server-side and render primary mobile images on cards; do not load full galleries in search results.
+- Web UI routes mount Livewire class components directly; route model binding is handled in component `mount()` methods.
 
 ## Account flows
 
@@ -137,7 +145,7 @@ Top-level shell pages must stay lightweight: translated title, translated helper
 - Result cards must use selected sleeping-place columns, active property/room/place status, localized title fallback, one primary mobile image, key amenity labels, pricing summaries, and compatibility hints.
 - Search must not load maps, full galleries, charts, or large JavaScript bundles by default.
 - Availability filters use the half-open date range `[check_in, check_out)` through the `SleepingPlace::availableBetween()` contract.
-- Total price shown on cards must come from `App\Services\PricingService`, not from Blade arithmetic.
+- Total price shown on cards must come from `App\Services\Pricing\PricingService`, not from Blade arithmetic.
 
 ### Advanced location search
 
@@ -189,7 +197,7 @@ Top-level shell pages must stay lightweight: translated title, translated helper
 
 ## Availability calendar
 
-- Availability logic lives in `App\Services\AvailabilityService`; Blade and Livewire views must not calculate overlap rules inline.
+- Availability logic lives in `App\Services\Availability\AvailabilityService`; Blade and Livewire views must not calculate overlap rules inline.
 - Every sleeping place has its own separate calendar keyed by `sleeping_place_id + date`.
 - Availability belongs to a sleeping place, but inactive/closed property, inactive/closed room, or inactive/closed sleeping place status makes the place unavailable.
 - Booking overlap uses `[check_in, check_out)`, allowing same-day checkout and next check-in when boundary rules allow it.
@@ -238,7 +246,7 @@ Top-level shell pages must stay lightweight: translated title, translated helper
 
 ## Booking date selection
 
-- Guest date selection uses `App\Livewire\Booking\BookingDateSelector` and `App\Services\PricingService`.
+- Guest date selection uses `App\Livewire\Booking\BookingDateSelector` and `App\Services\Pricing\PricingService`.
 - `BookingDateSelector` stores only `sleepingPlaceId`, check-in/check-out dates, guest count, compact quote data, unavailable dates, and nearby ranges.
 - Date selection fields are:
   - check-in date / `check_in_date`

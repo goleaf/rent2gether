@@ -223,6 +223,11 @@ class Room extends Model
         return $this->hasMany(ListingPublicationCheck::class);
     }
 
+    public function readinessChecks(): HasMany
+    {
+        return $this->hasMany(ListingReadinessCheck::class);
+    }
+
     public function hostCalendarEvents(): HasMany
     {
         return $this->hasMany(HostCalendarEvent::class);
@@ -251,6 +256,11 @@ class Room extends Model
     public function rules(): BelongsToMany
     {
         return $this->belongsToMany(Rule::class, 'room_rule')->withTimestamps();
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(RoomPhoto::class);
     }
 
     public function mediaItems(): MorphMany

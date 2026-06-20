@@ -44,6 +44,17 @@ class SleepingPlaceComfortDetail extends Model
         'has_plaid',
         'has_earplugs',
         'has_sleep_mask',
+        'has_privacy_curtain',
+        'has_personal_lamp',
+        'has_socket',
+        'has_usb_charger',
+        'has_shelf',
+        'has_hook',
+        'has_phone_place',
+        'has_shoe_place',
+        'has_luggage_place',
+        'privacy_level',
+        'noise_level',
     ];
 
     protected function casts(): array
@@ -73,6 +84,15 @@ class SleepingPlaceComfortDetail extends Model
             'has_plaid' => 'boolean',
             'has_earplugs' => 'boolean',
             'has_sleep_mask' => 'boolean',
+            'has_privacy_curtain' => 'boolean',
+            'has_personal_lamp' => 'boolean',
+            'has_socket' => 'boolean',
+            'has_usb_charger' => 'boolean',
+            'has_shelf' => 'boolean',
+            'has_hook' => 'boolean',
+            'has_phone_place' => 'boolean',
+            'has_shoe_place' => 'boolean',
+            'has_luggage_place' => 'boolean',
         ];
     }
 

@@ -24,17 +24,17 @@
     <form wire:submit="submit" class="space-y-4">
         <flux:card class="space-y-4">
             <flux:select wire:model.change="type" label="{{ __('booking.complaint.fields.type') }}" :error="$errors->first('type')">
-                <option value="">{{ __('booking.complaint.select_type') }}</option>
+                <flux:select.option value="">{{ __('booking.complaint.select_type') }}</flux:select.option>
                 @foreach($this->complaintTypes() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
+                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
 
             <flux:select wire:model.change="priority" label="{{ __('booking.complaint.fields.priority') }}" :error="$errors->first('priority')">
-                <option value="low">{{ __('booking.complaint.priority.low') }}</option>
-                <option value="normal">{{ __('booking.complaint.priority.normal') }}</option>
-                <option value="high">{{ __('booking.complaint.priority.high') }}</option>
-                <option value="critical">{{ __('booking.complaint.priority.critical') }}</option>
+                <flux:select.option value="low">{{ __('booking.complaint.priority.low') }}</flux:select.option>
+                <flux:select.option value="normal">{{ __('booking.complaint.priority.normal') }}</flux:select.option>
+                <flux:select.option value="high">{{ __('booking.complaint.priority.high') }}</flux:select.option>
+                <flux:select.option value="critical">{{ __('booking.complaint.priority.critical') }}</flux:select.option>
             </flux:select>
 
             <flux:textarea
@@ -74,13 +74,7 @@
                 </flux:text>
             </div>
 
-            <input
-                type="file"
-                wire:model="media"
-                multiple
-                accept="image/*"
-                class="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:file:bg-zinc-800"
-            >
+            <flux:input type="file" wire:model="media" multiple accept="image/*" />
 
             <div wire:loading wire:target="media" class="text-sm text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.complaint.media_loading') }}

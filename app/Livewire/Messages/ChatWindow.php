@@ -3,7 +3,7 @@
 namespace App\Livewire\Messages;
 
 use App\Models\MessageThread;
-use App\Services\MessageService;
+use App\Services\Messaging\MessageService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;

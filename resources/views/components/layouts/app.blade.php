@@ -114,10 +114,7 @@
                     <flux:menu.item icon="squares-2x2" href="{{ route('host.dashboard', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_dashboard') }}</flux:menu.item>
                     @endif
                     <flux:menu.separator />
-                    <form method="POST" action="{{ route('auth.logout') }}">
-                        @csrf
-                        <flux:menu.item icon="arrow-right-start-on-rectangle" type="submit">{{ __('navigation.logout') }}</flux:menu.item>
-                    </form>
+                    <livewire:auth.logout-button />
                 </flux:menu>
             </flux:dropdown>
             @else
@@ -126,9 +123,7 @@
         </flux:header>
 
         <flux:main container class="!px-4 !py-4 !pb-24 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-8">
-            <div wire:offline class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
-                {{ __('navigation.offline_banner') }}
-            </div>
+            <flux:callout wire:offline class="mb-4" variant="warning" icon="exclamation-triangle" :text="__('navigation.offline_banner')" />
 
             {{ $slot }}
         </flux:main>

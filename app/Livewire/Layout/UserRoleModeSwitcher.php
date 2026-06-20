@@ -3,7 +3,7 @@
 namespace App\Livewire\Layout;
 
 use App\Enums\UserRoleMode;
-use App\Services\UserRoleModeService;
+use App\Services\Users\UserRoleModeService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 

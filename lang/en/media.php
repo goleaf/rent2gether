@@ -22,6 +22,7 @@ return [
         'file_helper' => 'JPG, PNG, or WebP. Up to 4 MB.',
         'uploading' => 'Uploading',
         'preview_alt' => 'Selected photo preview',
+        'remove_file' => 'Remove :name',
         'caption' => ':language caption',
         'warning' => 'Use clear photos that show the real place. We will use smaller images on mobile cards.',
         'primary' => 'Primary',

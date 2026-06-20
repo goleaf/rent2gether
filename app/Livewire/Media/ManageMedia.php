@@ -62,6 +62,14 @@ class ManageMedia extends Component
         $this->resetErrorBag('photo');
     }
 
+    public function removePhoto(): void
+    {
+        $this->photo?->delete();
+        $this->photo = null;
+        $this->statusMessage = null;
+        $this->resetErrorBag('photo');
+    }
+
     public function savePhoto(StoreMediaItemAction $store): void
     {
         $this->validate($this->rules(), attributes: $this->validationAttributes());

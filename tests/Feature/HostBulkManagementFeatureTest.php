@@ -215,7 +215,9 @@ class HostBulkManagementFeatureTest extends TestCase
         $this->assertSame('18.00', $created->first()->base_price_per_night);
         $this->assertSame(3, $created->count());
         $this->assertSame(0, $placeClone->bookings()->count());
-        $this->assertSame(0, $placeClone->calendarDays()->count());
+        $this->assertNotNull($placeClone->fresh()->calendarSettings);
+        $this->assertGreaterThan(0, $placeClone->calendarDays()->count());
+        $this->assertGreaterThan(0, $created->first()->calendarDays()->count());
         $this->assertSame(1, $placeClone->translations()->count());
     }
 

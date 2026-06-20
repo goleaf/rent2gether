@@ -3,7 +3,7 @@
 namespace App\Livewire\Guest\Profile;
 
 use App\Models\User;
-use App\Services\GuestProfileService;
+use App\Services\Users\GuestProfileService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

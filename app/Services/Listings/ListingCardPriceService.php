@@ -6,7 +6,7 @@ use App\Data\Listings\ListingCardContext;
 use App\Data\Listings\ListingCardPriceData;
 use App\Models\SleepingPlace;
 use App\Models\User;
-use App\Services\PricingService;
+use App\Services\Pricing\PricingService;
 
 class ListingCardPriceService
 {

@@ -10,13 +10,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             GeoSeeder::class,
-            GeoNamesFullSeeder::class,
             AmenityRuleSeeder::class,
             MarketplaceDemoSeeder::class,
+            BulkMarketplaceSeeder::class,
         ]);
-
-        if (! (bool) config('geo.geonames.seed_enabled')) {
-            $this->call(BulkMarketplaceSeeder::class);
-        }
     }
 }

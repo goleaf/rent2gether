@@ -3,7 +3,7 @@
 namespace App\Services\SleepingPlaces;
 
 use App\Models\SleepingPlace;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use Carbon\CarbonImmutable;
 
 class SleepingPlaceAvailabilityService

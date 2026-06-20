@@ -3,7 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Models\User;
-use App\Services\UserProfileVisibilityService;
+use App\Services\Users\UserProfileVisibilityService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 

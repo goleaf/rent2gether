@@ -235,9 +235,9 @@ return [
     ],
     'demo_reset' => [
         'production_blocked' => 'Demo reset is disabled in production unless --force is provided.',
-        'fresh' => 'Rebuilding the database and loading lightweight demo data.',
-        'seeding' => 'Loading lightweight demo data.',
-        'complete' => 'Demo data is ready.',
+        'fresh' => 'Rebuilding the database and loading demo plus bulk marketplace data.',
+        'seeding' => 'Loading demo plus bulk marketplace data.',
+        'complete' => 'Demo and bulk marketplace data are ready.',
     ],
     'geo_import' => [
         'source_missing' => 'Geo source file was not found: :source',

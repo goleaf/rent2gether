@@ -9,7 +9,7 @@ use App\Models\Property;
 use App\Models\Review;
 use App\Models\Room;
 use App\Models\User;
-use App\Services\ReviewService;
+use App\Services\Reviews\ReviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

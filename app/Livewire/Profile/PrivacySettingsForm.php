@@ -3,7 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Models\User;
-use App\Services\UserPrivacyService;
+use App\Services\Users\UserPrivacyService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

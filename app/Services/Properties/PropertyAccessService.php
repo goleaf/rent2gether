@@ -81,6 +81,46 @@ class PropertyAccessService
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function buildAddressForGuest(Property $property, bool $hasConfirmedBooking): array
+    {
+        $property->loadMissing('address');
+        $address = $property->address;
+
+        if (! $address) {
+            return [];
+        }
+
+        $public = [
+            'country_id' => $address->country_id,
+            'city_id' => $address->city_id,
+            'district_id' => $address->show_district_before_booking ? $address->district_id : null,
+            'public_location_label' => $address->public_location_label,
+            'approximate_latitude' => $address->approximate_latitude,
+            'approximate_longitude' => $address->approximate_longitude,
+        ];
+
+        if (! $hasConfirmedBooking || ! $address->show_exact_address_after_booking) {
+            if ($address->show_street_before_booking) {
+                $public['street_name'] = $address->street_name;
+            }
+
+            return array_filter($public, fn (mixed $value): bool => $value !== null);
+        }
+
+        return array_filter(array_merge($public, [
+            'street_name' => $address->street_name,
+            'house_number' => $address->house_number,
+            'apartment_number' => $address->apartment_number,
+            'postal_code' => $address->postal_code,
+            'floor' => $address->floor,
+            'latitude' => $address->latitude,
+            'longitude' => $address->longitude,
+        ]), fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
      * @param  array<string, ?string>  $values
      * @return list<array{label:string,value:string}>
      */

@@ -1,4 +1,4 @@
-<div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+<flux:card size="sm">
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
             <div class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $item->user?->name ?: __('waitlist.host.guest') }}</div>
@@ -17,4 +17,4 @@
             <flux:badge size="sm">{{ __('waitlist.host.profile_verified') }}</flux:badge>
         @endif
     </div>
-</div>
+</flux:card>

@@ -6,7 +6,7 @@ use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\WaitlistItem;
 use App\Services\Localization\LocalizedModelContentResolver;
-use App\Services\PricingService;
+use App\Services\Pricing\PricingService;
 use BackedEnum;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;

@@ -65,6 +65,26 @@ class HostPropertyWizardTest extends TestCase
         $this->assertDatabaseCount('properties', 0);
     }
 
+    public function test_city_autocomplete_is_disabled_until_country_is_selected(): void
+    {
+        [$country, , $city] = $this->geo();
+        $otherCountry = Country::factory()->create(['iso2' => 'PL', 'code' => 'PL', 'name' => 'Poland']);
+        City::factory()->for($otherCountry)->create(['name' => 'Vilnius Copy', 'ascii_name' => 'Vilnius Copy']);
+        $host = User::factory()->create(['is_host' => true]);
+
+        $component = Livewire::actingAs($host)
+            ->test(PropertyForm::class)
+            ->set('cityQuery', 'Vi')
+            ->assertSet('cityQuery', '')
+            ->assertSet('cityId', null)
+            ->call('selectCountry', $country->id)
+            ->set('cityQuery', 'Vi');
+
+        $results = $component->instance()->cityResults();
+
+        $this->assertSame([$city->id], collect($results)->pluck('id')->all());
+    }
+
     public function test_translated_content_is_saved(): void
     {
         [$country, $region, $city] = $this->geo();

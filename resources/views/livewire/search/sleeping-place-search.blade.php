@@ -164,7 +164,7 @@
 
     @if($filtersOpen)
         <div class="fixed inset-0 z-40">
-            <button type="button" class="absolute inset-0 bg-zinc-950/50" wire:click="$set('filtersOpen', false)" aria-label="{{ __('search.filters_sheet.close') }}"></button>
+            <flux:button type="button" variant="ghost" class="absolute inset-0 h-auto w-full rounded-none bg-zinc-950/50 p-0 hover:bg-zinc-950/50 dark:hover:bg-zinc-950/50" wire:click="$set('filtersOpen', false)" aria-label="{{ __('search.filters_sheet.close') }}" />
 
             <section class="absolute inset-x-0 bottom-0 max-h-[86vh] overflow-y-auto rounded-t-xl bg-white p-4 shadow-2xl dark:bg-zinc-950 sm:bottom-4 sm:left-auto sm:right-4 sm:top-4 sm:w-full sm:max-w-sm sm:rounded-xl">
                 <div class="mb-4 flex items-center justify-between gap-3">

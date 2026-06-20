@@ -7,7 +7,7 @@ use App\Models\Bed;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\User;
-use App\Services\BookingService;
+use App\Services\Bookings\BookingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

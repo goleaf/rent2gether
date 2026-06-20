@@ -3,7 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Models\User;
-use App\Services\UserRoleModeService;
+use App\Services\Users\UserRoleModeService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

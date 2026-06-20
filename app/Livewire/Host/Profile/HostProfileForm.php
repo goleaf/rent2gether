@@ -3,7 +3,7 @@
 namespace App\Livewire\Host\Profile;
 
 use App\Models\User;
-use App\Services\HostProfileService;
+use App\Services\Users\HostProfileService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;

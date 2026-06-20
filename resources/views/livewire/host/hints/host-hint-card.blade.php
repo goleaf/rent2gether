@@ -1,4 +1,4 @@
-<div class="flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950">
+<flux:card size="sm" class="flex items-start justify-between gap-3 text-sm">
     <div class="min-w-0 space-y-1">
         <div class="flex flex-wrap items-center gap-2">
             <flux:badge
@@ -22,4 +22,4 @@
             :key="'host-dismiss-hint-'.$context.'-'.$hint['id']"
         />
     @endif
-</div>
+</flux:card>

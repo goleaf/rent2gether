@@ -368,6 +368,11 @@ class SleepingPlace extends Model
         return $this->hasMany(ListingPublicationCheck::class);
     }
 
+    public function readinessChecks(): HasMany
+    {
+        return $this->hasMany(ListingReadinessCheck::class);
+    }
+
     public function listingHintSnapshots(): HasMany
     {
         return $this->hasMany(ListingHintSnapshot::class);
@@ -421,6 +426,11 @@ class SleepingPlace extends Model
     public function rules(): BelongsToMany
     {
         return $this->belongsToMany(Rule::class, 'sleeping_place_rule')->withTimestamps();
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(SleepingPlacePhoto::class);
     }
 
     public function mediaItems(): MorphMany

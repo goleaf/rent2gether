@@ -62,13 +62,19 @@ For countries/cities:
 
 Before changing code:
 1. Read AGENTS.md.
-2. Read .agents/skills.
-3. Inspect current code.
-4. Make a short plan.
-5. Implement.
-6. Add tests.
-7. Run tests/build/format.
-8. Update docs.
+2. Read docs/PROJECT_STRUCTURE.md.
+3. Read docs/BULK_SEEDING.md before adding models, factories, migrations, or seeders.
+4. Read .agents/skills.
+5. Inspect current code.
+6. Make a short plan.
+7. Implement.
+8. Add tests.
+9. Run tests/build/format.
+10. Update docs.
+
+Do not create app/Http/Controllers, controller-backed web routes, resources/views/auth, or resources/views/search.
+User-facing pages and actions must use Livewire class components. Domain services must be placed under app/Services/<Domain>/ instead of root app/Services files.
+Default seeding must go through DatabaseSeeder plus BulkMarketplaceSeeder. Do not create parallel bulk seed paths, and do not wire GeoNamesFullSeeder into the default seed flow.
 
 Every new feature must include, when applicable:
 - Migration if data is needed

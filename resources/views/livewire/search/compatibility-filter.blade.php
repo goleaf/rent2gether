@@ -1,4 +1,4 @@
-<div class="space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+<flux:card class="space-y-3">
     <div class="space-y-1">
         <flux:heading size="sm">{{ __('compatibility.filter.title') }}</flux:heading>
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('compatibility.filter.helper') }}</flux:text>
@@ -18,4 +18,4 @@
     <flux:button type="button" variant="primary" class="w-full" icon="adjustments-horizontal" wire:click="apply">
         {{ __('compatibility.actions.apply_filter') }}
     </flux:button>
-</div>
+</flux:card>

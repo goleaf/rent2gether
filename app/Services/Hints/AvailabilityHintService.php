@@ -6,7 +6,7 @@ use App\Data\Hints\GuestHintData;
 use App\Data\Occupants\DateRange;
 use App\Models\Room;
 use App\Models\SleepingPlace;
-use App\Services\AvailabilityService;
+use App\Services\Availability\AvailabilityService;
 use App\Services\Hints\Concerns\BuildsGuestHints;
 
 class AvailabilityHintService

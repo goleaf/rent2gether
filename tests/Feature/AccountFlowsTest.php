@@ -8,8 +8,11 @@ use App\Livewire\Account\ProfileSetupPage;
 use App\Livewire\Account\SecuritySettingsPage;
 use App\Livewire\Auth\ForgotPasswordPage;
 use App\Livewire\Auth\LoginPage;
+use App\Livewire\Auth\LogoutButton;
 use App\Livewire\Auth\RegisterPage;
 use App\Livewire\Profile\EditProfile;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\User;
 use App\Models\UserSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,19 +97,35 @@ class AccountFlowsTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_user_can_logout_from_livewire_action(): void
+    {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(LogoutButton::class)
+            ->call('logout')
+            ->assertRedirect(route('home', ['locale' => 'en']));
+
+        $this->assertGuest();
+    }
+
     public function test_profile_setup_updates_profile_and_avatar_variants(): void
     {
         Storage::fake('public');
 
         $user = User::factory()->create();
+        $country = Country::factory()->create(['iso2' => 'LT', 'code' => 'LT', 'name' => 'Lithuania']);
+        $city = City::factory()->for($country)->create(['name' => 'Vilnius', 'ascii_name' => 'Vilnius']);
         $avatar = UploadedFile::fake()->image('avatar.jpg', 640, 640)->size(256);
 
         Livewire::actingAs($user)
             ->test(ProfileSetupPage::class)
             ->set('displayName', 'Ada Quiet')
             ->set('phone', '+37060000000')
-            ->set('country', 'Lithuania')
-            ->set('city', 'Vilnius')
+            ->set('countryQuery', 'Lithuania')
+            ->set('countryId', $country->id)
+            ->set('cityQuery', 'Vilnius')
+            ->set('cityId', $city->id)
             ->set('languages', 'en, ru')
             ->set('dateOfBirth', '1992-04-12')
             ->set('gender', 'female')
@@ -127,6 +146,8 @@ class AccountFlowsTest extends TestCase
         $profile = $user->fresh()->profile;
 
         $this->assertSame('Ada Quiet', $profile->display_name);
+        $this->assertSame($country->id, $profile->country_id);
+        $this->assertSame($city->id, $profile->city_id);
         $this->assertSame('I like calm stays and clear house rules.', $profile->about);
         $this->assertSame(['en', 'ru'], $profile->languages_json);
         $this->assertTrue($profile->prefers_quiet);
@@ -179,11 +200,20 @@ class AccountFlowsTest extends TestCase
         $user = User::factory()->create([
             'is_host' => false,
         ]);
+        $country = Country::factory()->create(['iso2' => 'LT', 'code' => 'LT', 'name' => 'Lithuania']);
+        $city = City::factory()->for($country)->create(['name' => 'Vilnius', 'ascii_name' => 'Vilnius']);
 
         Livewire::actingAs($user)
             ->test(EditProfile::class)
             ->assertSee(__('app.profile.is_host'))
+            ->assertSee(__('geo.helpers.city_disabled'))
             ->set('name', 'Ada Host')
+            ->set('cityQuery', 'Vi')
+            ->assertSet('cityQuery', '')
+            ->call('selectCountry', $country->id)
+            ->assertSet('countryId', $country->id)
+            ->call('selectCity', $city->id)
+            ->assertSet('cityId', $city->id)
             ->set('isHost', true)
             ->set('hostDescription', 'I host quiet shared stays.')
             ->set('hostExperienceStartedYear', now()->subYears(3)->year)
@@ -195,20 +225,29 @@ class AccountFlowsTest extends TestCase
         $user = $user->fresh();
 
         $this->assertTrue($user->is_host);
+        $this->assertSame('Lithuania', $user->country);
+        $this->assertSame('Vilnius', $user->city);
+        $this->assertDatabaseHas('user_profiles', [
+            'user_id' => $user->id,
+            'country_id' => $country->id,
+            'city_id' => $city->id,
+            'public_city_name' => 'Vilnius',
+        ]);
         $this->assertSame('I host quiet shared stays.', $user->host_description);
         $this->assertSame(now()->subYears(3)->year, $user->host_experience_started_year);
         $this->assertSame(3, $user->host_experience_years);
         $this->assertTrue($user->host_lives_on_site);
     }
 
-    public function test_profile_index_redirects_to_profile_edit_page(): void
+    public function test_profile_index_renders_profile_edit_page(): void
     {
         $user = User::factory()->create();
 
         foreach (['en', 'ru'] as $locale) {
             $this->actingAs($user)
                 ->get(route('profile.index', ['locale' => $locale]))
-                ->assertRedirect(route('profile.edit', ['locale' => $locale]));
+                ->assertOk()
+                ->assertSeeLivewire(EditProfile::class);
 
             $this->actingAs($user)
                 ->get(route('profile.edit', ['locale' => $locale]))

@@ -2,12 +2,19 @@
 
 namespace App\Livewire\Profile;
 
+use App\Livewire\Concerns\HandlesCountryCityAutocomplete;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\UserProfile;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class EditProfile extends Component
 {
+    use HandlesCountryCityAutocomplete;
+
     public string $name = '';
 
     public string $phone = '';
@@ -53,12 +60,15 @@ class EditProfile extends Component
     public function mount(): void
     {
         $user = auth()->user();
+        $user->loadMissing(['profile.country', 'profile.city']);
+
         $this->name = $user->name ?? '';
         $this->phone = $user->phone ?? '';
         $this->dateOfBirth = $user->date_of_birth?->format('Y-m-d');
         $this->gender = $user->gender ?? '';
-        $this->country = $user->country ?? '';
-        $this->city = $user->city ?? '';
+        $this->setCountryCityAutocomplete($user->profile?->country, $user->profile?->city, $user->country ?? '', $user->city ?? '');
+        $this->country = $this->countryQuery;
+        $this->city = $this->cityQuery;
         $this->bio = $user->bio ?? '';
         $this->occupation = $user->occupation ?? '';
         $this->travelPurpose = $user->travel_purpose ?? '';
@@ -86,14 +96,23 @@ class EditProfile extends Component
     public function save(): void
     {
         $attributes = app('translator')->get('account.validation_attributes');
+        $this->countryQuery = $this->countryQuery ?: $this->country;
+        $this->cityQuery = $this->cityQuery ?: $this->city;
+        $this->resolveCountryCityAutocompleteIdsFromQueries();
 
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'dateOfBirth' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'string', 'in:male,female,other'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'city' => ['nullable', 'string', 'max:100'],
+            'countryQuery' => ['nullable', 'string', 'max:120'],
+            'countryId' => [$this->countryQuery !== '' ? 'required' : 'nullable', 'integer', 'exists:countries,id'],
+            'cityQuery' => ['nullable', 'string', 'max:120'],
+            'cityId' => [
+                $this->cityQuery !== '' ? 'required' : 'nullable',
+                'integer',
+                Rule::exists('cities', 'id')->where('country_id', $this->countryId),
+            ],
             'bio' => ['nullable', 'string', 'max:2000'],
             'occupation' => ['nullable', 'string', 'max:100'],
             'isHost' => ['boolean'],
@@ -111,14 +130,18 @@ class EditProfile extends Component
         }
 
         $this->hostExperienceYears = $this->calculateExperienceYears($this->hostExperienceStartedYear);
+        $country = $this->selectedAutocompleteCountry();
+        $city = $this->selectedAutocompleteCity();
+        $countryName = $country?->localizedName();
+        $cityName = $city?->localizedName();
 
         auth()->user()->update([
             'name' => $this->name,
             'phone' => $this->phone ?: null,
             'date_of_birth' => $this->dateOfBirth ?: null,
             'gender' => $this->gender ?: null,
-            'country' => $this->country ?: null,
-            'city' => $this->city ?: null,
+            'country' => $countryName,
+            'city' => $cityName,
             'bio' => $this->bio ?: null,
             'occupation' => $this->occupation ?: null,
             'travel_purpose' => $this->travelPurpose ?: null,
@@ -135,6 +158,18 @@ class EditProfile extends Component
             'host_experience_years' => $this->isHost ? $this->hostExperienceYears : null,
             'host_lives_on_site' => $this->isHost && $this->hostLivesOnSite,
         ]);
+
+        UserProfile::query()->updateOrCreate(
+            ['user_id' => auth()->id()],
+            [
+                'display_name' => $this->name,
+                'country_id' => $country?->id,
+                'city_id' => $city?->id,
+                'public_city_name' => $cityName,
+                'about' => $this->bio ?: null,
+                'occupation' => $this->occupation ?: null,
+            ],
+        );
 
         session()->flash('success', __('notifications.flash.profile_updated'));
     }
@@ -192,5 +227,16 @@ class EditProfile extends Component
     private function minimumExperienceStartYear(): int
     {
         return 1970;
+    }
+
+    protected function afterCountrySelected(Country $country): void
+    {
+        $this->country = $country->localizedName();
+        $this->city = '';
+    }
+
+    protected function afterCitySelected(City $city): void
+    {
+        $this->city = $city->localizedName();
     }
 }

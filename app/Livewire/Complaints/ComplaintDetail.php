@@ -4,7 +4,7 @@ namespace App\Livewire\Complaints;
 
 use App\Models\Complaint;
 use App\Models\User;
-use App\Services\ComplaintService;
+use App\Services\Complaints\ComplaintService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;

@@ -42,14 +42,15 @@
                 @if($cityOptions->isNotEmpty())
                     <div class="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
                         @foreach($cityOptions as $city)
-                            <button
+                            <flux:button
                                 type="button"
-                                class="block w-full px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                variant="ghost"
+                                class="h-auto w-full justify-start whitespace-normal rounded-none px-3 py-2 text-left"
                                 wire:click="selectCity({{ $city->id }})"
                             >
                                 <span class="font-medium text-zinc-900 dark:text-zinc-100">{{ $city->name }}</span>
                                 <span class="text-zinc-500">{{ __('decision.saved.city_population', ['count' => number_format((int) $city->population)]) }}</span>
-                            </button>
+                            </flux:button>
                         @endforeach
                     </div>
                 @elseif(strlen($cityQuery) >= 2 && ! $cityId)

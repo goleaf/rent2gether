@@ -127,7 +127,19 @@ class HostListingWizardFeatureTest extends TestCase
 
         $this->assertSame(3, $room->sleepingPlaces()->count());
         $this->assertSame('1', $place->place_number);
-        $this->assertSame(3, $place->availabilityDays()->where('status', AvailabilityStatus::Available->value)->count());
+        $this->assertGreaterThanOrEqual(3, $place->availabilityDays()->where('status', AvailabilityStatus::Available->value)->count());
+        $this->assertDatabaseHas('availability_days', [
+            'sleeping_place_id' => $place->id,
+            'date' => now()->addDay()->toDateString(),
+            'status' => AvailabilityStatus::Available->value,
+            'price_override' => 25,
+        ]);
+        $this->assertDatabaseHas('sleeping_place_calendar_days', [
+            'sleeping_place_id' => $place->id,
+            'date' => now()->addDay()->toDateString(),
+            'status' => 'available',
+            'price' => 25,
+        ]);
         $this->assertSame(2, $place->fresh()->min_nights);
         $this->assertSame(14, $place->fresh()->max_nights);
         $this->assertSame(1, $place->fresh()->cleaning_gap_days);

@@ -5,7 +5,7 @@ namespace App\Services\HostBulk;
 use App\Enums\MessageThreadType;
 use App\Models\Booking;
 use App\Models\User;
-use App\Services\MessageService;
+use App\Services\Messaging\MessageService;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 

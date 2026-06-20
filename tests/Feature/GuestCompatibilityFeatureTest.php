@@ -10,6 +10,7 @@ use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Livewire\Bookings\CompatibilityCheckBeforeBooking;
+use App\Livewire\Listings\Detail\CompatibilityDetailsSheet;
 use App\Livewire\Listings\Detail\CompatibilitySummarySection;
 use App\Livewire\Profile\GuestCompatibilityPrivacySettings;
 use App\Livewire\Profile\GuestCompatibilityProfileForm;
@@ -309,6 +310,18 @@ class GuestCompatibilityFeatureTest extends TestCase
                 'checkOut' => '2026-07-13',
             ])
             ->assertSee(__('compatibility.title'));
+
+        Livewire::actingAs($guest)
+            ->test(CompatibilityDetailsSheet::class, [
+                'sleepingPlaceId' => $place->id,
+                'checkIn' => '2026-07-10',
+                'checkOut' => '2026-07-13',
+            ])
+            ->assertSee(__('compatibility.actions.open_details'))
+            ->call('show')
+            ->assertSet('open', true)
+            ->assertSee(__('compatibility.details_title'))
+            ->assertSeeHtml('data-flux-modal');
 
         $context = new ListingCardContext(
             userId: $guest->id,

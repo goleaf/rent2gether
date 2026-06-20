@@ -5,10 +5,13 @@ namespace App\Actions\SleepingPlaces;
 use App\Enums\SleepingPlaceStatus;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Calendar\SleepingPlaceCalendarBootstrapService;
 use Illuminate\Support\Facades\DB;
 
 class DuplicateSleepingPlaceAction
 {
+    public function __construct(private readonly SleepingPlaceCalendarBootstrapService $calendarBootstrap) {}
+
     public function handle(SleepingPlace $sleepingPlace, User $host): SleepingPlace
     {
         return DB::transaction(function () use ($sleepingPlace, $host): SleepingPlace {
@@ -35,6 +38,7 @@ class DuplicateSleepingPlaceAction
             }
 
             $copy->rules()->sync($sleepingPlace->getRelation('rules')->pluck('id')->all());
+            $this->calendarBootstrap->bootstrap($copy);
 
             return $copy->refresh();
         });

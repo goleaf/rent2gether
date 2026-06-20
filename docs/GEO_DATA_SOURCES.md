@@ -4,14 +4,14 @@ Normal user search must use offline SQLite data. Do not call external geo APIs w
 
 Geo country/city search follows the selected interface locale. If the interface is Russian, the autocomplete searches Russian `country_translations` / `city_translations` rows and displays Russian names when available. Future languages must use the same `locale` table design; do not add new language-specific columns or code branches.
 
-## Default Demo Geography
+## Default Geography
 
-The default `GeoSeeder` is deliberately lightweight. It loads only 2 countries and 5 cities so local demos, tests, and `php artisan app:demo-reset` stay fast:
+The default `GeoSeeder` is deliberately lightweight. It loads only 2 countries and 5 cities before demo and bulk marketplace seeders run:
 
 - Lithuania: Vilnius, Kaunas, Klaipeda
 - Germany: Berlin, Munich
 
-Full GeoNames datasets are opt-in through `config/geo.php` and local `.env` values. Testing stays protected from accidental large downloads, while local development may enable full imports through `php artisan migrate:fresh --seed`.
+`DatabaseSeeder` then runs catalog/demo seeders and `BulkMarketplaceSeeder`, which may create additional demo countries and cities to satisfy the 1000-row model contract. Full GeoNames datasets are still opt-in and must be run explicitly; default `migrate:fresh --seed` must not download or import the full world catalog.
 
 ## Countries
 
@@ -34,10 +34,10 @@ Full GeoNames seed path:
 ```bash
 php artisan geo:seed-geonames
 php artisan geo:seed-geonames --download-only
-php artisan migrate:fresh --seed
+php artisan db:seed --class=Database\\Seeders\\GeoNamesFullSeeder --no-interaction
 ```
 
-When `GEONAMES_SEED_ENABLED=true`, `DatabaseSeeder` downloads/prepares configured GeoNames files if needed and imports them during `php artisan migrate:fresh --seed`. The current local full mode uses `allCountries` plus `alternateNamesV2` so city and country lookup can search translated names for every language code available in GeoNames.
+The full seed path downloads/prepares configured GeoNames files if needed and imports them through `GeoNamesFullSeeder`. The current local full mode uses `allCountries` plus `alternateNamesV2` so city and country lookup can search translated names for every language code available in GeoNames.
 
 The legacy CSV importer accepts common headers including `iso2`, `code`, `alpha-2`, `iso3`, `alpha-3`, `name`, `name_en`, `name_ru`, `name_native`, `phone_code`, `currency_code`, `timezone_default`, and `status`. New multilingual imports must write language-specific names to `country_translations.locale` rather than adding more columns.
 
@@ -166,4 +166,4 @@ Recommended local paths:
 - `storage/app/geo/geonames/alternateNamesV2.zip`
 - `storage/app/geo/geonames/alternateNamesV2.txt`
 
-Large geo imports must run from Artisan, a seeder, or a queued job, never from a web request. In this project the full import is intentionally opt-in through `GEONAMES_SEED_ENABLED=true` so one local command can rebuild everything while automated tests remain lightweight.
+Large geo imports must run from Artisan, a dedicated seeder, or a queued job, never from a web request. In this project the full import is intentionally explicit: run `GeoNamesFullSeeder` or geo import commands when the full offline catalog is needed, and keep default `DatabaseSeeder` runs bounded for automated tests and normal local resets.

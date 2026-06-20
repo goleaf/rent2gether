@@ -7,8 +7,8 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('app:demo-reset {--seed-only : Seed demo data without rebuilding the schema} {--force : Allow the reset in production}')]
-#[Description('Reset the database to the lightweight demo marketplace dataset')]
+#[Signature('app:demo-reset {--seed-only : Seed demo plus bulk data without rebuilding the schema} {--force : Allow the reset in production}')]
+#[Description('Reset the database to the demo plus bulk marketplace dataset')]
 class ResetDemoData extends Command
 {
     public function handle(): int

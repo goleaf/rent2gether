@@ -3,7 +3,7 @@
 namespace App\Livewire\SleepingPlaces;
 
 use App\Models\SleepingPlace;
-use App\Services\SleepingPlaceHierarchyService;
+use App\Services\SleepingPlaces\SleepingPlaceHierarchyService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;

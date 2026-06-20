@@ -50,7 +50,7 @@
                         <flux:label>{{ __('booking.review.fields.'.$labelKey) }}</flux:label>
                         <flux:select wire:model.change="{{ $property }}" class="w-24">
                             @foreach($ratingOptions as $option)
-                                <option value="{{ $option }}">{{ $option }}</option>
+                                <flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>
                             @endforeach
                         </flux:select>
                     </div>

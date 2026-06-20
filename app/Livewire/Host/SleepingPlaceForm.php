@@ -12,6 +12,7 @@ use App\Livewire\Host\Concerns\BuildsWizardPhotoPreviews;
 use App\Models\MediaItem;
 use App\Models\Room;
 use App\Models\SleepingPlace;
+use App\Services\Calendar\SleepingPlaceCalendarBootstrapService;
 use App\Services\Catalog\AmenityRuleLookupService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
@@ -632,6 +633,7 @@ class SleepingPlaceForm extends Component
             $this->sleepingPlaceId = $sleepingPlace->id;
         }
 
+        app(SleepingPlaceCalendarBootstrapService::class)->bootstrap($sleepingPlace);
         $this->syncTranslations($sleepingPlace);
 
         return $sleepingPlace->refresh();

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Create listing',
+    'title' => 'Host Listing Creation',
     'eyebrow' => 'Host wizard',
     'helper' => 'Create the property, rooms, sleeping places, calendar, and publish from one mobile-friendly flow.',
     'step_counter' => 'Step :current of :total',
@@ -13,6 +13,33 @@ return [
     'publish' => 'Publish',
     'request_review' => 'Send to review',
 
+    'actions' => [
+        'save_draft' => 'Save draft',
+        'continue' => 'Continue',
+        'back' => 'Back',
+        'publish' => 'Publish',
+        'add_room' => 'Add room',
+        'add_sleeping_place' => 'Add sleeping place',
+        'create_multiple_places' => 'Create multiple places',
+    ],
+
+    'messages' => [
+        'draft_saved' => 'Draft saved.',
+        'autosaved' => 'Changes saved.',
+        'not_ready_to_publish' => 'The listing cannot be published yet. Complete the required items first.',
+        'ready_to_publish' => 'Everything is ready to publish.',
+    ],
+
+    'progress' => [
+        'title' => 'Listing progress',
+        'ready_percent' => ':percent% ready',
+    ],
+
+    'autosave' => [
+        'title' => 'Draft autosave',
+        'helper' => 'Small steps are saved so the host can continue later.',
+    ],
+
     'defaults' => [
         'property_title' => 'New property draft',
         'room_title' => 'New room',
@@ -23,6 +50,9 @@ return [
         'property' => 'Property',
         'rooms' => 'Rooms',
         'sleeping_places' => 'Sleeping places',
+        'photos' => 'Photos',
+        'rules' => 'Rules',
+        'readiness' => 'Readiness',
         'calendar' => 'Calendar',
         'publish' => 'Publication',
     ],

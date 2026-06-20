@@ -1,4 +1,8 @@
 <flux:card class="space-y-3">
+    <div class="space-y-1">
+        <flux:heading size="sm">{{ __('listing_wizard.progress.title') }}</flux:heading>
+    </div>
+
     <div class="flex items-center justify-between gap-3">
         <flux:text size="sm" class="font-medium">{{ __('listing_wizard.step_counter', ['current' => $current, 'total' => $total]) }}</flux:text>
         <flux:badge size="sm">{{ $progress['percentage'] }}%</flux:badge>

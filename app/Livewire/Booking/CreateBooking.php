@@ -3,9 +3,9 @@
 namespace App\Livewire\Booking;
 
 use App\Models\Bed;
-use App\Services\BookingPriceCalculator;
-use App\Services\BookingService;
-use App\Services\CompatibilityService;
+use App\Services\Bookings\BookingPriceCalculator;
+use App\Services\Bookings\BookingService;
+use App\Services\Compatibility\CompatibilityService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
