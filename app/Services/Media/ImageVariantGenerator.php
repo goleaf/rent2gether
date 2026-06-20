@@ -4,6 +4,7 @@ namespace App\Services\Media;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class ImageVariantGenerator
 {
@@ -12,14 +13,15 @@ class ImageVariantGenerator
      */
     public function generate(UploadedFile $file, string $directory, string $baseName, string $disk = 'public'): array
     {
-        [$width, $height] = $this->dimensions($file);
-        $mime = $file->getMimeType();
+        $contents = $this->readUpload($file);
+        [$width, $height, $mime] = $this->imageMetadata($contents, $file);
         $size = $file->getSize();
+        $source = $this->sourceImage($contents);
 
-        if (! $this->canUseGd($file)) {
-            $extension = $file->extension() ?: 'jpg';
+        if (! $source) {
+            $extension = $this->extension($file, $mime);
             $path = $directory.'/'.$baseName.'-full.'.$extension;
-            Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
+            $this->put($disk, $path, $contents);
 
             return [
                 'path' => $path,
@@ -37,9 +39,9 @@ class ImageVariantGenerator
         $mobilePath = $directory.'/'.$baseName.'-mobile.jpg';
         $thumbPath = $directory.'/'.$baseName.'-thumb.jpg';
 
-        $this->writeJpegVariant($file, $fullPath, 1600, 84, $disk);
-        $this->writeJpegVariant($file, $mobilePath, 720, 80, $disk);
-        $this->writeJpegVariant($file, $thumbPath, 320, 76, $disk);
+        $this->writeJpegVariant($source, $contents, $mime, $width, $height, $fullPath, 1600, 84, $disk);
+        $this->writeJpegVariant($source, $contents, $mime, $width, $height, $mobilePath, 720, 80, $disk);
+        $this->writeJpegVariant($source, $contents, $mime, $width, $height, $thumbPath, 320, 76, $disk);
 
         return [
             'path' => $fullPath,
@@ -53,80 +55,103 @@ class ImageVariantGenerator
         ];
     }
 
-    private function canUseGd(UploadedFile $file): bool
+    private function readUpload(UploadedFile $file): string
     {
-        return function_exists('imagecreatefromstring')
-            && function_exists('imagejpeg')
-            && is_readable($file->getRealPath());
+        $path = $file->getRealPath();
+
+        if (! is_string($path) || ! is_readable($path)) {
+            throw new RuntimeException('The uploaded image could not be read.');
+        }
+
+        $contents = file_get_contents($path);
+
+        if ($contents === false) {
+            throw new RuntimeException('The uploaded image could not be read.');
+        }
+
+        return $contents;
     }
 
-    private function writeJpegVariant(UploadedFile $file, string $path, int $maxSize, int $quality, string $disk): void
+    /**
+     * @return array{0:int|null,1:int|null,2:string|null}
+     */
+    private function imageMetadata(string $contents, UploadedFile $file): array
     {
-        if ($this->canCopyOriginalJpeg($file, $maxSize)) {
-            Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
+        $size = @getimagesizefromstring($contents);
+
+        if (! is_array($size)) {
+            return [null, null, $file->getMimeType()];
+        }
+
+        return [
+            (int) ($size[0] ?? 0) ?: null,
+            (int) ($size[1] ?? 0) ?: null,
+            (string) ($size['mime'] ?? $file->getMimeType()),
+        ];
+    }
+
+    private function sourceImage(string $contents): mixed
+    {
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagejpeg')) {
+            return false;
+        }
+
+        return @imagecreatefromstring($contents);
+    }
+
+    private function writeJpegVariant(mixed $source, string $originalContents, ?string $mime, ?int $width, ?int $height, string $path, int $maxSize, int $quality, string $disk): void
+    {
+        if ($this->canCopyOriginalJpeg($mime, $width, $height, $maxSize)) {
+            $this->put($disk, $path, $originalContents);
 
             return;
         }
 
-        $source = imagecreatefromstring(file_get_contents($file->getRealPath()));
-
-        if (! $source) {
-            Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
-
-            return;
-        }
-
-        $width = imagesx($source);
-        $height = imagesy($source);
-        $scale = min($maxSize / max(1, $width), $maxSize / max(1, $height), 1);
-        $targetWidth = max(1, (int) round($width * $scale));
-        $targetHeight = max(1, (int) round($height * $scale));
+        $sourceWidth = imagesx($source);
+        $sourceHeight = imagesy($source);
+        $scale = min($maxSize / max(1, $sourceWidth), $maxSize / max(1, $sourceHeight), 1);
+        $targetWidth = max(1, (int) round($sourceWidth * $scale));
+        $targetHeight = max(1, (int) round($sourceHeight * $scale));
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
 
         $white = imagecolorallocate($target, 255, 255, 255);
         imagefill($target, 0, 0, $white);
-        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
 
         ob_start();
-        imagejpeg($target, null, $quality);
+        $written = imagejpeg($target, null, $quality);
         $contents = (string) ob_get_clean();
 
-        imagedestroy($source);
-        imagedestroy($target);
-
-        Storage::disk($disk)->put($path, $contents);
-    }
-
-    private function canCopyOriginalJpeg(UploadedFile $file, int $maxSize): bool
-    {
-        $size = @getimagesize($file->getRealPath());
-
-        if (! is_array($size)) {
-            return false;
+        if (! $written || $contents === '') {
+            throw new RuntimeException('The uploaded image variant could not be generated.');
         }
 
-        $width = (int) ($size[0] ?? 0);
-        $height = (int) ($size[1] ?? 0);
-        $mime = (string) ($size['mime'] ?? $file->getMimeType());
+        $this->put($disk, $path, $contents);
+    }
 
+    private function canCopyOriginalJpeg(?string $mime, ?int $width, ?int $height, int $maxSize): bool
+    {
         return $mime === 'image/jpeg'
-            && $width > 0
-            && $height > 0
+            && (int) $width > 0
+            && (int) $height > 0
             && $width <= $maxSize
             && $height <= $maxSize;
     }
 
-    /**
-     * @return array{0:int|null,1:int|null}
-     */
-    private function dimensions(UploadedFile $file): array
+    private function extension(UploadedFile $file, ?string $mime): string
     {
-        $size = @getimagesize($file->getRealPath());
+        return match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => $file->extension() ?: 'jpg',
+        };
+    }
 
-        if (! is_array($size)) {
-            return [null, null];
+    private function put(string $disk, string $path, string $contents): void
+    {
+        if (Storage::disk($disk)->put($path, $contents) === false) {
+            throw new RuntimeException('The uploaded image could not be stored.');
         }
-
-        return [(int) $size[0], (int) $size[1]];
     }
 }

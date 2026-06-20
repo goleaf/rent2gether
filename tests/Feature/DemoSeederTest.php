@@ -52,6 +52,7 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DemoSeederTest extends TestCase
@@ -96,6 +97,7 @@ class DemoSeederTest extends TestCase
             'collection' => 'sleeping_place',
             'mobile_path' => 'demo-media/sleeping_place/place-1-mobile.webp',
         ]);
+        $this->assertSeededMediaFilesExist();
 
         $this->assertSame(0, Amenity::query()->whereDoesntHave('translations', fn ($query) => $query->where('locale', 'en'))->count());
         $this->assertSame(0, Amenity::query()->whereDoesntHave('translations', fn ($query) => $query->where('locale', 'ru'))->count());
@@ -178,5 +180,58 @@ class DemoSeederTest extends TestCase
             WaitlistEntry::class,
             WaitlistItem::class,
         ];
+    }
+
+    private function assertSeededMediaFilesExist(): void
+    {
+        $missing = [];
+
+        MediaItem::query()
+            ->select([
+                'id',
+                'disk',
+                'path',
+                'thumbnail_path',
+                'thumb_path',
+                'mobile_path',
+                'full_path',
+            ])
+            ->where(function ($query): void {
+                $query->where('path', 'like', 'demo-media/%')
+                    ->orWhere('path', 'like', 'bulk-demo/%');
+            })
+            ->chunkById(200, function ($mediaItems) use (&$missing): void {
+                foreach ($mediaItems as $mediaItem) {
+                    foreach ($this->mediaPaths($mediaItem) as $path) {
+                        if (! Storage::disk($mediaItem->disk ?: 'public')->exists($path)) {
+                            $missing[] = $path;
+                        }
+                    }
+                }
+            });
+
+        $this->assertCount(
+            0,
+            $missing,
+            'Missing seeded media files: '.implode(', ', array_slice($missing, 0, 20)),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function mediaPaths(MediaItem $mediaItem): array
+    {
+        return collect([
+            $mediaItem->path,
+            $mediaItem->thumbnail_path,
+            $mediaItem->thumb_path,
+            $mediaItem->mobile_path,
+            $mediaItem->full_path,
+        ])
+            ->filter(fn ($path): bool => is_string($path) && $path !== '')
+            ->unique()
+            ->values()
+            ->all();
     }
 }

@@ -86,6 +86,7 @@ Large GeoNames imports are not part of the default seeder. Run `geo:import-count
 - Host onboarding and host profile editing are Livewire class components. Completing host onboarding enables host mode and preserves guest capability as `both` when a guest becomes a host.
 - Host profile defaults are listing starting points only: check-in/out time, cancellation policy, deposit setting, and house rules. Payout settings remain a placeholder until payments are ready.
 - Avatar uploads are image-only, size-limited, and stored as mobile-friendly variants on the configured public disk.
+- Seeded demo media must create real files on the public disk for every stored media path; a `media_items` row without a readable seeded file is a broken demo state.
 - Legacy guest search preferences are stored in `guest_preferences`; date-aware co-living compatibility is stored in `guest_compatibility_profiles` and scored by testable services under `App\Services\Compatibility`, not in Blade.
 - Compatibility output must include a 0-100 score, a `great/good/attention/uncomfortable/not_suitable` fit status, positive reasons, warning reasons, and blocking reasons. Reason text must use translation keys.
 

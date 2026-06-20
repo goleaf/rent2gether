@@ -54,7 +54,7 @@
         <flux:card class="space-y-4">
             <flux:heading size="sm">{{ __('app.profile.host_profile') }}</flux:heading>
             <flux:checkbox wire:model.change="isHost" label="{{ __('app.profile.is_host') }}" />
-            @if($isHost)
+            @if($this->isHost)
                 <flux:textarea wire:model.blur="hostDescription" label="{{ __('app.profile.host_description') }}" rows="3" />
                 <flux:input type="number" wire:model.blur="hostExperienceYears" label="{{ __('app.profile.experience_years') }}" min="0" />
                 <flux:checkbox wire:model.change="hostLivesOnSite" label="{{ __('app.profile.lives_on_site') }}" />

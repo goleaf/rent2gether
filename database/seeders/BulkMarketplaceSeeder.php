@@ -56,6 +56,7 @@ use App\Models\UserProfile;
 use App\Models\UserSetting;
 use App\Models\WaitlistEntry;
 use App\Models\WaitlistItem;
+use App\Services\Media\DemoMediaFileService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
@@ -863,6 +864,8 @@ class BulkMarketplaceSeeder extends Seeder
             })
             ->create();
 
+        $this->ensureBulkMediaFiles();
+
         Notification::factory()
             ->count($this->missingFor(Notification::class))
             ->sequence(function (Sequence $sequence) use ($userIds): array {
@@ -878,6 +881,31 @@ class BulkMarketplaceSeeder extends Seeder
                 ];
             })
             ->create();
+    }
+
+    private function ensureBulkMediaFiles(): void
+    {
+        $files = app(DemoMediaFileService::class);
+
+        MediaItem::query()
+            ->select([
+                'id',
+                'disk',
+                'path',
+                'thumbnail_path',
+                'thumb_path',
+                'mobile_path',
+                'full_path',
+                'width',
+                'height',
+                'alt_text',
+                'caption_en',
+                'caption_ru',
+            ])
+            ->where('path', 'like', 'bulk-demo/%')
+            ->chunkById(200, function ($mediaItems) use ($files): void {
+                $files->ensureForMediaItems($mediaItems);
+            });
     }
 
     private function seedAmenityTranslations(): void

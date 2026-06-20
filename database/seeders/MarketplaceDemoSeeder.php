@@ -59,6 +59,7 @@ use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserSetting;
 use App\Models\WaitlistItem;
+use App\Services\Media\DemoMediaFileService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
@@ -126,6 +127,8 @@ class MarketplaceDemoSeeder extends Seeder
 
     private function clearExistingDemoData(): void
     {
+        app(DemoMediaFileService::class)->resetDemoDirectories();
+
         $demoEmails = [
             ...self::DEMO_GUEST_EMAILS,
             ...self::DEMO_HOST_EMAILS,
@@ -1232,7 +1235,7 @@ class MarketplaceDemoSeeder extends Seeder
         $safeSlug = Str::slug($slug);
         $path = 'demo-media/'.$collection.'/'.$safeSlug.'.webp';
 
-        MediaItem::factory()->create([
+        $mediaItem = MediaItem::factory()->create([
             'owner_type' => User::class,
             'owner_id' => $owner->id,
             'mediable_type' => $model::class,
@@ -1257,6 +1260,8 @@ class MarketplaceDemoSeeder extends Seeder
             'is_primary' => $primary,
             'is_cover' => $primary,
         ]);
+
+        app(DemoMediaFileService::class)->ensureForMediaItem($mediaItem, 'Rent2Gether '.$collection);
     }
 
     /**

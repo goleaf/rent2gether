@@ -92,6 +92,8 @@ Sleeping place setup stores the exact rental unit in `sleeping_places`. Host-fac
 
 `media_items` stores image metadata for property, room, sleeping-place, avatar, complaint, check-in, checkout, and review photos. Each item keeps the legacy morph target plus `owner_type` and `owner_id` for compact owner lookups, `collection` for gallery grouping, original filename, mime, size, dimensions, localized captions, sort order, and primary/cover flags. Uploads generate `thumb_path`, `mobile_path`, and `full_path` variants on the public disk. Cards should use the mobile variant from the primary item; full galleries should load only after the user opens a detail/gallery surface.
 
+The public disk must be web-readable through the configured `public/storage` link. Demo and bulk seeders use `App\Services\Media\DemoMediaFileService` so seeded `demo-media/*` and `bulk-demo/*` rows always have physical files for original, thumb, mobile, and full paths. Seeded media rows must not point to missing files.
+
 ## Extended property profile
 
 Extended property data is split across one-to-one detail tables instead of adding every descriptive field to `properties`.
