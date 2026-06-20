@@ -198,6 +198,16 @@ class Room extends Model
         return $this->morphMany(MediaItem::class, 'mediable');
     }
 
+    public function hostHintSnapshots(): HasMany
+    {
+        return $this->hasMany(HostHintSnapshot::class);
+    }
+
+    public function hostHintDismissals(): HasMany
+    {
+        return $this->hasMany(HostHintDismissal::class);
+    }
+
     public function cardMedia(): MorphOne
     {
         return $this->morphOne(MediaItem::class, 'mediable')

@@ -29,6 +29,8 @@ class SleepingPlace extends Model
             $place->listingHintSnapshots()->delete();
             $place->guestHintDismissals()->delete();
             $place->guestHintImpressions()->delete();
+            $place->hostHintSnapshots()->delete();
+            $place->hostHintDismissals()->delete();
         });
     }
 
@@ -262,6 +264,16 @@ class SleepingPlace extends Model
     public function guestHintImpressions(): HasMany
     {
         return $this->hasMany(GuestHintImpression::class);
+    }
+
+    public function hostHintSnapshots(): HasMany
+    {
+        return $this->hasMany(HostHintSnapshot::class);
+    }
+
+    public function hostHintDismissals(): HasMany
+    {
+        return $this->hasMany(HostHintDismissal::class);
     }
 
     public function amenities(): BelongsToMany

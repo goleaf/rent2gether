@@ -149,6 +149,11 @@ class Property extends Model
             $property->host_user_id ??= $property->user_id;
             $property->user_id ??= $property->host_user_id;
         });
+
+        static::deleting(function (Property $property): void {
+            $property->hostHintSnapshots()->delete();
+            $property->hostHintDismissals()->delete();
+        });
     }
 
     public function host(): BelongsTo
@@ -239,6 +244,16 @@ class Property extends Model
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');
+    }
+
+    public function hostHintSnapshots(): HasMany
+    {
+        return $this->hasMany(HostHintSnapshot::class);
+    }
+
+    public function hostHintDismissals(): HasMany
+    {
+        return $this->hasMany(HostHintDismissal::class);
     }
 
     public function cardMedia(): MorphOne

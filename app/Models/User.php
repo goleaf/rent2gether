@@ -231,6 +231,21 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function hostHintSnapshots(): HasMany
+    {
+        return $this->hasMany(HostHintSnapshot::class);
+    }
+
+    public function hostHintDismissals(): HasMany
+    {
+        return $this->hasMany(HostHintDismissal::class);
+    }
+
+    public function hostHintActions(): HasMany
+    {
+        return $this->hasMany(HostHintAction::class);
+    }
+
     public function mediaItems(): MorphMany
     {
         return $this->morphMany(MediaItem::class, 'mediable');
