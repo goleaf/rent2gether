@@ -138,6 +138,7 @@ Flux and Livewire framework assets are separate from the application entry. Do n
 - Amenity and rule lookup rendering should select only ID, slug, category, status, and current/fallback translation names.
 - Public search card amenities should eager-load only the small slug set displayed on cards, not every amenity attached to the listing.
 - Listing-card lists must batch-load favorite IDs, comparison IDs, waitlist IDs, translations, primary media, key amenities, and key rules. Avoid one card query per sleeping place for these flags.
+- Listing-card compatibility must use compact `room_compatibility_profiles` and `sleeping_place_compatibility_profiles`, one cached current user lookup per build, and cached `compatibility_results` for date-aware scores. Do not load full guest profiles, bookings, occupants, galleries, or reviews for a compatibility badge.
 - Use `withCount`, `withExists`, and other Eloquent aggregates before entering loops.
 - Add indexes that match each filter and ordering combination.
 - Record `EXPLAIN QUERY PLAN` findings for guest search, availability overlap, and booking lookup changes once representative search data exists.

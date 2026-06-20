@@ -15,6 +15,7 @@ The SQLite schema audited on 2026-06-19 contains the canonical sleeping-place ma
 - Stay lifecycle: `checkin_records`, `checkout_records`
 - Money records: `payment_records`, `deposit_records`, `refund_requests`
 - Social and trust: `favorites`, `saved_searches`, `waitlist_items`, `message_threads`, `messages`, `reviews`, `complaints`, `notifications`
+- Compatibility: `guest_compatibility_profiles`, `guest_compatibility_visibility_settings`, `room_compatibility_profiles`, `sleeping_place_compatibility_profiles`, `compatibility_results`
 - Legacy bridge tables still present during transition: `beds`, `bed_availabilities`, `conversations`, `waitlist_entries`, `payouts`
 
 Laravel infrastructure tables provide cache, sessions, queues, failed jobs, password resets, and migrations.
@@ -43,6 +44,20 @@ Avatar metadata currently stores the selected medium variant path on `users.avat
 - schedule, allergy, baggage, and transport-distance constraints
 
 `properties.distance_to_transport_meters` is nullable and supports max walking distance checks. Do not call live geo APIs while evaluating compatibility.
+
+## Guest compatibility
+
+The newer guest compatibility module is separate from legacy `guest_preferences`.
+
+`guest_compatibility_profiles` stores practical co-living preferences: smoking, pets, quiet/night schedule, work/study needs, home presence, kitchen and washing needs, social style, cleanliness, shared/private room preference, room people limit, sleeping-place needs, locker/storage, bedding/towel, self check-in, and late or 24/7 entry.
+
+`guest_compatibility_visibility_settings` stores whether the profile can be used for matching and whether safe hints may be shown to hosts or future roommates. Defaults should allow matching but keep detailed preference display private.
+
+`room_compatibility_profiles` and `sleeping_place_compatibility_profiles` store compact synchronized matching data so search cards and detail sections do not inspect full room/property/sleeping-place graphs on first render.
+
+`compatibility_results` caches date-aware score results by user, room, sleeping place, and selected range. It stores translated reason DTO payloads for positive, warning, and blocking reasons. Blocking reasons force `not_suitable`; warning reasons are practical comfort notes and should not block booking unless a booking action explicitly requires confirmation.
+
+Public UI must show only score, fit status, translated safe reasons, and warning counts. It must not expose raw private profile answers, complaint details, messages, private notes, exact workplace/school, phone, email, documents, or full personal profiles.
 
 `host_profiles` stores the public host card and host onboarding defaults:
 
