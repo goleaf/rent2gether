@@ -6,6 +6,7 @@ use App\Actions\Account\StoreAvatarVariants;
 use App\Enums\UserStatus;
 use App\Models\HostProfile;
 use App\Models\UserSetting;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 trait ManagesHostProfileForm
@@ -149,6 +150,13 @@ trait ManagesHostProfileForm
             ['label' => __('host.profile.checklist.default_times'), 'done' => filled($this->defaultCheckInTime) && filled($this->defaultCheckOutTime)],
             ['label' => __('host.profile.checklist.payout_placeholder'), 'done' => false],
         ];
+    }
+
+    public function currentAvatarUrl(): ?string
+    {
+        $avatarPath = auth()->user()->hostProfile?->avatar_path ?: auth()->user()->avatar;
+
+        return $avatarPath ? Storage::disk('public')->url($avatarPath) : null;
     }
 
     /** @return list<string> */

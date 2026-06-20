@@ -582,6 +582,7 @@ The app must support at least:
 
 Every UI string must use translation keys.
 No hard-coded visible text in Blade or Livewire components.
+Never use `@php`, `@endphp`, or `@php(...)` in Blade templates. Prepare values in controllers, Livewire classes, class-based Blade components, presenters, services, or DTO arrays before rendering.
 Support future languages without schema rewrites.
 Use localized routes or locale middleware.
 Store user locale preference.

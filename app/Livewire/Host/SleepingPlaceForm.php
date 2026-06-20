@@ -437,6 +437,17 @@ class SleepingPlaceForm extends Component
             ->layout('layouts.app', ['title' => __('host.sleeping_place_wizard.title')]);
     }
 
+    public function hostHintStep(): string
+    {
+        return match ($this->step) {
+            4 => 'pricing',
+            5 => 'description',
+            6 => 'rules',
+            7 => 'photos',
+            default => 'overview',
+        };
+    }
+
     /**
      * @return array<string, mixed>
      */

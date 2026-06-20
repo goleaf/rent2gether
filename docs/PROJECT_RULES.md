@@ -73,6 +73,7 @@ Geo country/city search and display must use the currently selected interface lo
 - Keep Livewire public state compact; store IDs and filters rather than full models or large arrays.
 - Put booking, pricing, availability, cancellation, and compatibility logic in testable actions or services.
 - Keep database access out of Blade views.
+- Never use `@php`, `@endphp`, or `@php(...)` in Blade views; prepare view data in controllers, Livewire classes, class-based Blade components, presenters, services, or DTO arrays.
 - Use Eloquent relationships, scopes, selected columns, eager loading, and pagination.
 - Keep translated public content in indexed translation tables instead of adding one column per language.
 - Keep media metadata in the database and physical files in configured storage.

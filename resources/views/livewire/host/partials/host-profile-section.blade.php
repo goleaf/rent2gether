@@ -1,13 +1,12 @@
 @switch($section)
     @case('identity')
-        @php($currentAvatarPath = auth()->user()->hostProfile?->avatar_path ?: auth()->user()->avatar)
         <div class="space-y-4">
             <div class="flex items-center gap-4">
                 <div class="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                     @if($avatar && str_starts_with((string) $avatar->getMimeType(), 'image/'))
                         <img src="{{ $avatar->temporaryUrl() }}" alt="{{ __('host.profile.fields.avatar') }}" class="size-full object-cover">
-                    @elseif($currentAvatarPath)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($currentAvatarPath) }}" alt="{{ __('host.profile.fields.avatar') }}" class="size-full object-cover">
+                    @elseif($this->currentAvatarUrl())
+                        <img src="{{ $this->currentAvatarUrl() }}" alt="{{ __('host.profile.fields.avatar') }}" class="size-full object-cover">
                     @else
                         <flux:icon name="user" class="size-8 text-zinc-400" />
                     @endif
