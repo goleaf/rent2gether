@@ -12,6 +12,7 @@ The SQLite schema audited on 2026-06-19 contains the canonical sleeping-place ma
 - Media: `media_items`
 - Availability and price: `availability_days`, `price_rules`, `discount_rules`
 - Booking ledger: `bookings`, `booking_extensions`, `booking_guests`, `booking_price_lines`, `booking_status_histories`
+- Pre-booking intake: `booking_guest_intakes`
 - Stay lifecycle: `checkin_records`, `checkout_records`
 - Money records: `payment_records`, `deposit_records`, `refund_requests`
 - Social and trust: `favorites`, `saved_searches`, `waitlist_items`, `message_threads`, `messages`, `reviews`, `complaints`, `notifications`
@@ -58,6 +59,16 @@ The newer guest compatibility module is separate from legacy `guest_preferences`
 `compatibility_results` caches date-aware score results by user, room, sleeping place, and selected range. It stores translated reason DTO payloads for positive, warning, and blocking reasons. Blocking reasons force `not_suitable`; warning reasons are practical comfort notes and should not block booking unless a booking action explicitly requires confirmation.
 
 Public UI must show only score, fit status, translated safe reasons, and warning counts. It must not expose raw private profile answers, complaint details, messages, private notes, exact workplace/school, phone, email, documents, or full personal profiles.
+
+## Guest intake before booking
+
+`booking_guest_intakes` stores the short pre-booking questionnaire a guest fills before a booking request or instant booking. It belongs to `users`, optional `bookings`, `properties`, `rooms`, and `sleeping_places`.
+
+The table stores trip purpose, safe purpose visibility, arrival/departure timing, early check-in and late checkout requests, baggage, pet and smoking answers, quiet/work/Wi-Fi/socket/late-entry/self-check-in needs, document request flags, special requests, host message, generated host message, rules acceptance, compatibility status, warnings, and blocking reasons.
+
+Medical or treatment purpose is sensitive. Host-facing summaries must show a safe label such as `private trip` by default unless the guest explicitly chooses exact purpose visibility. Document details and private notes should not be rendered in host-facing Blade; use `BookingGuestIntakePrivacyService` and `BookingGuestIntakeSummaryService`.
+
+Draft lookup uses `user_id + status`; booking and host screens use `booking_id`, `property_id`, `room_id`, and `sleeping_place_id`. Need flags such as pets, smoking, quiet, workspace, fast Wi-Fi, registration, work documents, and compatibility status are indexed for host/request workflows.
 
 `host_profiles` stores the public host card and host onboarding defaults:
 

@@ -124,6 +124,8 @@
         </div>
     @endif
 
+    <livewire:bookings.guest-intake.guest-intake-wizard :sleeping-place-id="$sleepingPlaceId" :key="'guest-intake-'.$sleepingPlaceId" />
+
     <livewire:booking.booking-rules-accept :sleeping-place-id="$sleepingPlaceId" :key="'booking-rules-'.$sleepingPlaceId" />
     <flux:error name="rulesAccepted" />
 

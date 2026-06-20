@@ -3,9 +3,11 @@
 namespace App\Livewire\Booking;
 
 use App\Actions\Bookings\BookingSubmit;
+use App\Models\BookingGuestIntake;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceTranslation;
 use App\Models\User;
+use App\Services\BookingGuestIntake\BookingGuestIntakeService;
 use App\Services\AvailabilityService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use App\Services\PricingService;
@@ -190,6 +192,11 @@ class BookingReview extends Component
             return;
         }
 
+        $completedIntake = $this->completedIntake($guest);
+        $guestMessage = $validated['guestMessage']
+            ?: $completedIntake?->host_message
+            ?: $completedIntake?->auto_generated_host_message;
+
         $booking = app(BookingSubmit::class)->handle($guest, $this->place(), [
             'check_in' => $validated['checkIn'],
             'check_out' => $validated['checkOut'],
@@ -197,10 +204,14 @@ class BookingReview extends Component
             'check_out_time' => $validated['checkOutTime'] ?: null,
             'arrival_time' => $validated['arrivalTime'] ?: null,
             'guests_count' => $validated['guestsCount'],
-            'guest_message' => $validated['guestMessage'] ?: null,
+            'guest_message' => $guestMessage ?: null,
             'profile_ready' => $validated['profileReady'],
             'rules_accepted' => $validated['rulesAccepted'],
         ]);
+
+        if ($completedIntake instanceof BookingGuestIntake) {
+            app(BookingGuestIntakeService::class)->attachToBooking($completedIntake, $booking);
+        }
 
         session()->flash('success', __('notifications.flash.booking_created'));
 
@@ -274,6 +285,18 @@ class BookingReview extends Component
         return (string) ($translation instanceof SleepingPlaceTranslation
             ? $translation->title
             : ($place->display_name ?: __('booking.bed')));
+    }
+
+    private function completedIntake(User $guest): ?BookingGuestIntake
+    {
+        return BookingGuestIntake::query()
+            ->select(['id', 'user_id', 'booking_id', 'property_id', 'room_id', 'sleeping_place_id', 'status', 'host_message', 'auto_generated_host_message'])
+            ->forUser($guest)
+            ->where('sleeping_place_id', $this->sleepingPlaceId)
+            ->completed()
+            ->whereNull('booking_id')
+            ->latest('id')
+            ->first();
     }
 
     /**
