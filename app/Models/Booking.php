@@ -583,6 +583,30 @@ class Booking extends Model
     }
 
     /**
+     * Fetches the immutable cancellation policy snapshot copied at booking time.
+     */
+    public function cancellationPolicySnapshot(): HasOne
+    {
+        return $this->hasOne(BookingCancellationPolicySnapshot::class);
+    }
+
+    /**
+     * Lists refund previews calculated before final cancellation.
+     */
+    public function cancellationPreviews(): HasMany
+    {
+        return $this->hasMany(BookingCancellationPreview::class);
+    }
+
+    /**
+     * Lists cancellation records created for this Booking.
+     */
+    public function cancellations(): HasMany
+    {
+        return $this->hasMany(BookingCancellation::class);
+    }
+
+    /**
      * Lists payment receipts issued for this Booking.
      */
     public function paymentReceipts(): HasMany

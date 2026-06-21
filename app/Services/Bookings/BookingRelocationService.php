@@ -147,18 +147,18 @@ class BookingRelocationService
             : null;
 
         $relocation = $this->draftRelocation($booking, $actor, $requestedByType, $data, $newPlace);
+        $failedResults = collect();
 
-        return DB::transaction(function () use ($relocation, $requestedByType): BookingRelocation {
+        $relocation = DB::transaction(function () use ($relocation, $requestedByType, &$failedResults): BookingRelocation {
             $blockingResults = $this->blockingValidationResults($relocation);
             $blockingResults->each(fn (array $result): mixed => $this->validation->createValidationResult($relocation, $result));
 
             if ($blockingResults->isNotEmpty()) {
+                $failedResults = $blockingResults;
                 $relocation->forceFill(['status' => 'failed'])->save();
                 $this->events->record($relocation->refresh(), 'availability_checked', ['blocking' => true]);
 
-                throw ValidationException::withMessages([
-                    'new_sleeping_place_id' => __($blockingResults->first()['message_key']),
-                ]);
+                return $relocation->refresh();
             }
 
             if ($relocation->new_sleeping_place_id) {
@@ -190,6 +190,14 @@ class BookingRelocationService
 
             return $relocation->refresh();
         });
+
+        if ($failedResults->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'new_sleeping_place_id' => __($failedResults->first()['message_key']),
+            ]);
+        }
+
+        return $relocation;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Services\Bookings;
 
 use App\Models\BookingRelocation;
+use App\Models\BookingRelocationPriceLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -86,7 +87,7 @@ class BookingRelocationPriceService
     }
 
     /**
-     * @return Collection<int, \App\Models\BookingRelocationPriceLine>
+     * @return Collection<int, BookingRelocationPriceLine>
      */
     public function buildPriceLines(BookingRelocation $relocation): Collection
     {

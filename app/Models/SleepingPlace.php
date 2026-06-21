@@ -397,6 +397,22 @@ class SleepingPlace extends Model
     }
 
     /**
+     * Lists cancellation policies configured for this Sleeping Place.
+     */
+    public function cancellationPolicies(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceCancellationPolicy::class);
+    }
+
+    /**
+     * Fetches the active cancellation policy used for new Booking snapshots.
+     */
+    public function activeCancellationPolicy(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceCancellationPolicy::class)->where('active', true);
+    }
+
+    /**
      * Lists temporary booking quotes calculated for this Sleeping Place.
      */
     public function bookingQuotes(): HasMany

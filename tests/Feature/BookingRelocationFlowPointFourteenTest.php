@@ -12,7 +12,6 @@ use App\Livewire\Host\Relocations\HostRelocationDetailsSheet;
 use App\Models\Booking;
 use App\Models\BookingCheckOut;
 use App\Models\BookingRelocation;
-use App\Models\BookingRelocationConsent;
 use App\Models\BookingRelocationInventoryTransfer;
 use App\Models\BookingStay;
 use App\Models\HostProfile;
@@ -22,15 +21,13 @@ use App\Models\Room;
 use App\Models\RoomCurrentOccupancySnapshot;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceBookingDateLock;
-use App\Models\SleepingPlaceCalendarBlock;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Services\Availability\SleepingPlaceDateLockService;
 use App\Services\Bookings\BookingRelocationApplyService;
 use App\Services\Bookings\BookingRelocationConsentService;
-use App\Services\Bookings\BookingRelocationGuestResponseService;
-use App\Services\Bookings\BookingRelocationHoldService;
 use App\Services\Bookings\BookingRelocationHostResponseService;
+use App\Services\Bookings\BookingRelocationInventoryService;
 use App\Services\Bookings\BookingRelocationOptionService;
 use App\Services\Bookings\BookingRelocationPaymentService;
 use App\Services\Bookings\BookingRelocationPrivacyService;
@@ -499,7 +496,7 @@ class BookingRelocationFlowPointFourteenTest extends TestCase
         ]);
 
         $transfer = BookingRelocationInventoryTransfer::query()->where('booking_relocation_id', $relocation->id)->firstOrFail();
-        app(\App\Services\Bookings\BookingRelocationInventoryService::class)->markTransferCompleted($transfer);
+        app(BookingRelocationInventoryService::class)->markTransferCompleted($transfer);
 
         $this->assertDatabaseHas('booking_relocation_inventory_transfers', [
             'id' => $transfer->id,

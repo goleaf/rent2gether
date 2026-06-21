@@ -61,6 +61,16 @@ use App\Models\BookingQuoteLine;
 use App\Models\BookingQuoteSuggestion;
 use App\Models\BookingQuoteValidationResult;
 use App\Models\BookingRefund;
+use App\Models\BookingRelocation;
+use App\Models\BookingRelocationConsent;
+use App\Models\BookingRelocationEvent;
+use App\Models\BookingRelocationGuestResponse;
+use App\Models\BookingRelocationHostResponse;
+use App\Models\BookingRelocationInventoryTransfer;
+use App\Models\BookingRelocationOption;
+use App\Models\BookingRelocationPriceLine;
+use App\Models\BookingRelocationStatusLog;
+use App\Models\BookingRelocationValidationResult;
 use App\Models\BookingRequest;
 use App\Models\BookingRequestCompatibilityResult;
 use App\Models\BookingRequestGuestResponse;
@@ -1654,6 +1664,255 @@ class BulkMarketplaceSeeder extends Seeder
                 'event_key' => ['extension_requested', 'availability_checked', 'quote_created', 'extension_applied'][$index % 4],
                 'event_type' => 'system',
                 'user_id' => $this->pick($extensionRows, $index)['guest_user_id'],
+                'occurred_at' => now()->subMinutes($index % 1440),
+                'context_json' => [],
+            ],
+        );
+
+        $sleepingPlaceRows = $this->sleepingPlaceRows();
+        $relocationStart = BookingRelocation::query()->count();
+
+        BookingRelocation::factory()
+            ->count($this->missingFor(BookingRelocation::class))
+            ->sequence(function (Sequence $sequence) use ($bookingRows, $staysByBooking, $sleepingPlaceRows, $relocationStart): array {
+                $booking = $this->pick($bookingRows, $sequence->index);
+                $samePropertyPlaces = array_values(array_filter(
+                    $sleepingPlaceRows,
+                    fn (array $place): bool => $place['property_id'] === $booking['property_id']
+                        && $place['id'] !== $booking['sleeping_place_id'],
+                ));
+                $newPlace = $samePropertyPlaces === []
+                    ? $this->pick($sleepingPlaceRows, $sequence->index + 1)
+                    : $this->pick($samePropertyPlaces, $sequence->index);
+                $stay = $staysByBooking[$booking['id']] ?? null;
+                $checkIn = CarbonImmutable::parse($booking['check_in_date'])->startOfDay();
+                $checkOut = CarbonImmutable::parse($booking['check_out_date'])->startOfDay();
+                $relocationDate = $checkIn->addDay()->lt($checkOut)
+                    ? $checkIn->addDay()
+                    : $checkIn;
+                $remainingNights = max(1, $relocationDate->diffInDays($checkOut));
+                $oldRemainingValue = $remainingNights * (18 + ($sequence->index % 8));
+                $newRemainingValue = $oldRemainingValue + match ($sequence->index % 3) {
+                    0 => 15,
+                    1 => 0,
+                    default => -10,
+                };
+                $priceDifference = $newRemainingValue - $oldRemainingValue;
+                $payer = match (true) {
+                    $priceDifference < 0 => 'refund_to_guest',
+                    $sequence->index % 4 === 1 => 'no_extra_charge',
+                    default => 'guest',
+                };
+
+                return [
+                    'relocation_number' => sprintf('REL-%s-%06d', now()->format('Y'), $relocationStart + $sequence->index + 1),
+                    'original_booking_id' => $booking['id'],
+                    'new_booking_id' => null,
+                    'booking_stay_id' => $stay['id'] ?? null,
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'current_property_id' => $booking['property_id'],
+                    'current_room_id' => $booking['room_id'],
+                    'current_sleeping_place_id' => $booking['sleeping_place_id'],
+                    'new_property_id' => $newPlace['property_id'],
+                    'new_room_id' => $newPlace['room_id'],
+                    'new_sleeping_place_id' => $newPlace['id'],
+                    'requested_by_user_id' => $sequence->index % 2 === 0 ? $booking['guest_user_id'] : $booking['host_user_id'],
+                    'requested_by_type' => $sequence->index % 2 === 0 ? 'guest' : 'host',
+                    'reason' => ['noisy_neighbors', 'uncomfortable_bed', 'breakdown', 'guest_wants_more_comfort', 'complaint_resolution'][$sequence->index % 5],
+                    'status' => ['requested', 'waiting_host_consent', 'waiting_guest_consent', 'approved', 'applied'][$sequence->index % 5],
+                    'relocation_date' => $relocationDate->toDateString(),
+                    'relocation_time' => '14:00',
+                    'check_in_date' => $relocationDate->toDateString(),
+                    'check_out_date' => $checkOut->toDateString(),
+                    'original_check_in_date' => $checkIn->toDateString(),
+                    'original_check_out_date' => $checkOut->toDateString(),
+                    'old_period_check_in_date' => $checkIn->toDateString(),
+                    'old_period_check_out_date' => $relocationDate->toDateString(),
+                    'new_period_check_in_date' => $relocationDate->toDateString(),
+                    'new_period_check_out_date' => $checkOut->toDateString(),
+                    'old_remaining_value_amount' => $oldRemainingValue,
+                    'new_remaining_value_amount' => $newRemainingValue,
+                    'price_difference_amount' => $priceDifference,
+                    'additional_payment_amount' => $payer === 'guest' ? max(0, $priceDifference) : 0,
+                    'refund_amount' => $payer === 'refund_to_guest' ? abs(min(0, $priceDifference)) : 0,
+                    'additional_deposit_amount' => $sequence->index % 6 === 0 ? 20 : 0,
+                    'cleaning_fee_difference_amount' => 0,
+                    'service_fee_difference_amount' => $payer === 'guest' ? round(max(0, $priceDifference) * 0.05, 2) : 0,
+                    'host_payout_difference_amount' => $priceDifference,
+                    'currency' => 'EUR',
+                    'price_difference_payer' => $payer,
+                    'requires_guest_consent' => true,
+                    'requires_host_consent' => $sequence->index % 2 === 0,
+                    'guest_consented_at' => $sequence->index % 5 >= 3 ? now()->subHours(2) : null,
+                    'host_consented_at' => $sequence->index % 5 >= 3 ? now()->subHours(2) : null,
+                    'requires_payment' => $payer === 'guest' && $priceDifference > 0,
+                    'payment_status' => $payer === 'guest' && $priceDifference > 0 ? 'waiting_payment' : 'not_required',
+                    'requires_refund' => $payer === 'refund_to_guest',
+                    'refund_status' => $payer === 'refund_to_guest' ? 'pending' : null,
+                    'guest_comment' => 'booking_relocations.demo.guest_comment',
+                    'host_comment' => 'booking_relocations.demo.host_comment',
+                    'support_comment' => 'booking_relocations.demo.future_support_comment',
+                    'hold_dates' => $sequence->index % 5 !== 4,
+                    'hold_expires_at' => now()->addMinutes(30),
+                    'expires_at' => now()->addDay(),
+                    'approved_at' => $sequence->index % 5 >= 3 ? now()->subHours(2) : null,
+                    'applied_at' => $sequence->index % 5 === 4 ? now()->subHour() : null,
+                ];
+            })
+            ->create();
+
+        $relocationRows = $this->bookingRelocationRows();
+
+        $this->seedFactoryRows(
+            BookingRelocationOption::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'sleeping_place_id' => $this->pick($relocationRows, $index)['new_sleeping_place_id'],
+                'property_id' => $this->pick($relocationRows, $index)['new_property_id'],
+                'room_id' => $this->pick($relocationRows, $index)['new_room_id'],
+                'price_difference_amount' => $this->pick($relocationRows, $index)['price_difference_amount'],
+                'additional_payment_amount' => $this->pick($relocationRows, $index)['additional_payment_amount'],
+                'refund_amount' => $this->pick($relocationRows, $index)['refund_amount'],
+                'additional_deposit_amount' => $this->pick($relocationRows, $index)['additional_deposit_amount'],
+                'currency' => $this->pick($relocationRows, $index)['currency'],
+                'availability_status' => 'available',
+                'compatibility_status' => ['good', 'medium', 'warning'][$index % 3],
+                'pricing_status' => 'calculated',
+                'room_privacy_level' => ['shared', 'quieter', 'more_private'][$index % 3],
+                'comfort_score' => 70 + ($index % 20),
+                'match_score' => 75 + ($index % 20),
+                'host_note' => 'booking_relocations.demo.option_note',
+                'guest_selected' => $index % 4 === 0,
+                'selected_at' => $index % 4 === 0 ? now()->subHour() : null,
+                'expires_at' => now()->addDay(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationPriceLine::class,
+            function (int $index) use ($relocationRows): array {
+                $relocation = $this->pick($relocationRows, $index);
+                $lineType = ['old_remaining_value', 'new_remaining_value', 'price_difference', 'additional_payment', 'refund'][$index % 5];
+                $amount = match ($lineType) {
+                    'old_remaining_value' => $relocation['old_remaining_value_amount'],
+                    'new_remaining_value' => $relocation['new_remaining_value_amount'],
+                    'additional_payment' => $relocation['additional_payment_amount'],
+                    'refund' => -1 * $relocation['refund_amount'],
+                    default => $relocation['price_difference_amount'],
+                };
+
+                return [
+                    'booking_relocation_id' => $relocation['id'],
+                    'line_type' => $lineType,
+                    'label_key' => 'booking_relocations.lines.'.$lineType,
+                    'date' => in_array($lineType, ['old_remaining_value', 'new_remaining_value'], true) ? $relocation['relocation_date'] : null,
+                    'quantity' => 1,
+                    'unit_amount' => $amount,
+                    'amount' => $amount,
+                    'currency' => $relocation['currency'],
+                    'is_discount' => false,
+                    'is_fee' => false,
+                    'is_deposit' => false,
+                    'is_refundable' => $lineType === 'refund',
+                    'is_payable_now' => $lineType === 'additional_payment',
+                    'sort_order' => $index % 20,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationValidationResult::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'validation_key' => ['host_consent_required', 'guest_consent_required', 'payment_required', 'old_place_needs_inspection'][$index % 4],
+                'severity' => $index % 3 === 0 ? 'warning' : 'info',
+                'message_key' => 'booking_relocations.validation.'.(['host_consent_required', 'guest_consent_required', 'payment_required', 'old_place_needs_inspection'][$index % 4]),
+                'message_params_json' => [],
+                'blocking' => false,
+                'visible_to_guest' => true,
+                'visible_to_host' => true,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationConsent::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($relocationRows, $index)['guest_user_id'] : $this->pick($relocationRows, $index)['host_user_id'],
+                'consent_type' => ['guest_accepts_new_place', 'guest_accepts_price_difference', 'host_accepts_relocation', 'host_accepts_old_place_block'][$index % 4],
+                'status' => $index % 5 === 0 ? 'accepted' : 'pending',
+                'message' => 'booking_relocations.demo.consent_message',
+                'responded_at' => $index % 5 === 0 ? now()->subHour() : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationHostResponse::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'host_user_id' => $this->pick($relocationRows, $index)['host_user_id'],
+                'response_type' => ['approve', 'ask_question', 'offer_alternative', 'propose_no_extra_charge'][$index % 4],
+                'message' => 'booking_relocations.demo.host_response',
+                'alternative_sleeping_place_id' => $index % 4 === 2 ? $this->pick($relocationRows, $index)['new_sleeping_place_id'] : null,
+                'alternative_room_id' => $index % 4 === 2 ? $this->pick($relocationRows, $index)['new_room_id'] : null,
+                'proposed_relocation_date' => $index % 4 === 1 ? $this->pick($relocationRows, $index)['relocation_date'] : null,
+                'proposed_relocation_time' => $index % 4 === 1 ? '15:00' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationGuestResponse::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'guest_user_id' => $this->pick($relocationRows, $index)['guest_user_id'],
+                'response_type' => ['accept', 'select_option', 'accept_price_difference', 'send_message'][$index % 4],
+                'message' => 'booking_relocations.demo.guest_response',
+                'accepted_sleeping_place_id' => $index % 4 === 0 ? $this->pick($relocationRows, $index)['new_sleeping_place_id'] : null,
+                'accepted_relocation_date' => $index % 4 === 0 ? $this->pick($relocationRows, $index)['relocation_date'] : null,
+                'accepted_relocation_time' => $index % 4 === 0 ? '14:00' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationInventoryTransfer::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'booking_id' => $this->pick($relocationRows, $index)['original_booking_id'],
+                'item_name_snapshot' => ['Old key', 'New key', 'Locker', 'Bedding'][$index % 4],
+                'transfer_type' => ['return_old_key', 'issue_new_key', 'assign_new_locker', 'move_bedding'][$index % 4],
+                'status' => $index % 4 === 0 ? 'completed' : 'pending',
+                'from_sleeping_place_id' => $this->pick($relocationRows, $index)['current_sleeping_place_id'],
+                'to_sleeping_place_id' => $this->pick($relocationRows, $index)['new_sleeping_place_id'],
+                'from_room_id' => $this->pick($relocationRows, $index)['current_room_id'],
+                'to_room_id' => $this->pick($relocationRows, $index)['new_room_id'],
+                'note' => 'booking_relocations.demo.inventory_transfer_note',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationStatusLog::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'original_booking_id' => $this->pick($relocationRows, $index)['original_booking_id'],
+                'new_booking_id' => $this->pick($relocationRows, $index)['new_booking_id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($relocationRows, $index)['guest_user_id'] : $this->pick($relocationRows, $index)['host_user_id'],
+                'old_status' => null,
+                'new_status' => $this->pick($relocationRows, $index)['status'],
+                'reason_key' => 'booking_relocations.events.relocation_requested',
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRelocationEvent::class,
+            fn (int $index): array => [
+                'booking_relocation_id' => $this->pick($relocationRows, $index)['id'],
+                'original_booking_id' => $this->pick($relocationRows, $index)['original_booking_id'],
+                'new_booking_id' => $this->pick($relocationRows, $index)['new_booking_id'],
+                'event_key' => ['relocation_requested', 'options_found', 'price_difference_calculated', 'relocation_applied'][$index % 4],
+                'event_type' => 'system',
+                'user_id' => $this->pick($relocationRows, $index)['guest_user_id'],
                 'occurred_at' => now()->subMinutes($index % 1440),
                 'context_json' => [],
             ],
@@ -3678,6 +3937,62 @@ class BulkMarketplaceSeeder extends Seeder
                 'new_check_out_date' => $extension->new_check_out_date?->toDateString() ?: now()->addDay()->toDateString(),
                 'additional_nights_count' => max(1, (int) $extension->additional_nights_count),
                 'currency' => $extension->currency ?: 'EUR',
+            ])
+            ->all();
+    }
+
+    /**
+     * @return list<array{id:int,original_booking_id:int,new_booking_id:int|null,guest_user_id:int,host_user_id:int,current_property_id:int,current_room_id:int,current_sleeping_place_id:int,new_property_id:int,new_room_id:int,new_sleeping_place_id:int,relocation_date:string,status:string,old_remaining_value_amount:string,new_remaining_value_amount:string,price_difference_amount:string,additional_payment_amount:string,refund_amount:string,additional_deposit_amount:string,currency:string}>
+     */
+    private function bookingRelocationRows(): array
+    {
+        return BookingRelocation::query()
+            ->select([
+                'id',
+                'original_booking_id',
+                'new_booking_id',
+                'guest_user_id',
+                'host_user_id',
+                'current_property_id',
+                'current_room_id',
+                'current_sleeping_place_id',
+                'new_property_id',
+                'new_room_id',
+                'new_sleeping_place_id',
+                'relocation_date',
+                'status',
+                'old_remaining_value_amount',
+                'new_remaining_value_amount',
+                'price_difference_amount',
+                'additional_payment_amount',
+                'refund_amount',
+                'additional_deposit_amount',
+                'currency',
+            ])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingRelocation $relocation): array => [
+                'id' => $relocation->id,
+                'original_booking_id' => $relocation->original_booking_id,
+                'new_booking_id' => $relocation->new_booking_id,
+                'guest_user_id' => $relocation->guest_user_id,
+                'host_user_id' => $relocation->host_user_id,
+                'current_property_id' => $relocation->current_property_id,
+                'current_room_id' => $relocation->current_room_id,
+                'current_sleeping_place_id' => $relocation->current_sleeping_place_id,
+                'new_property_id' => $relocation->new_property_id ?: $relocation->current_property_id,
+                'new_room_id' => $relocation->new_room_id ?: $relocation->current_room_id,
+                'new_sleeping_place_id' => $relocation->new_sleeping_place_id ?: $relocation->current_sleeping_place_id,
+                'relocation_date' => $relocation->relocation_date?->toDateString() ?: now()->toDateString(),
+                'status' => (string) $relocation->status,
+                'old_remaining_value_amount' => (string) $relocation->old_remaining_value_amount,
+                'new_remaining_value_amount' => (string) $relocation->new_remaining_value_amount,
+                'price_difference_amount' => (string) $relocation->price_difference_amount,
+                'additional_payment_amount' => (string) $relocation->additional_payment_amount,
+                'refund_amount' => (string) $relocation->refund_amount,
+                'additional_deposit_amount' => (string) $relocation->additional_deposit_amount,
+                'currency' => $relocation->currency ?: 'EUR',
             ])
             ->all();
     }
