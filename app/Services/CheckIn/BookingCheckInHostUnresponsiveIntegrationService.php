@@ -6,8 +6,8 @@ use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingCheckIn;
 use App\Models\BookingCheckInProblem;
-use App\Services\Bookings\HostUnresponsiveService;
 use App\Services\Bookings\BookingStatusService;
+use App\Services\Bookings\HostUnresponsiveService;
 
 class BookingCheckInHostUnresponsiveIntegrationService
 {

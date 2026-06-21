@@ -4,6 +4,7 @@ namespace App\Services\Media;
 
 use App\Models\MediaItem;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class DemoMediaFileService
 {
@@ -119,10 +120,14 @@ class DemoMediaFileService
             return;
         }
 
-        Storage::disk($disk)->put(
+        $written = Storage::disk($disk)->put(
             $path,
             $this->imageContents($path, $label, max(1, min(1600, $width)), max(1, min(1200, $height))),
         );
+
+        if ($written === false || ! Storage::disk($disk)->exists($path)) {
+            throw new RuntimeException(sprintf('Unable to write demo media file [%s] to disk [%s].', $path, $disk));
+        }
     }
 
     private function imageContents(string $path, string $label, int $width, int $height): string

@@ -55,6 +55,7 @@ use App\Models\BookingGroupLink;
 use App\Models\BookingGuest;
 use App\Models\BookingGuestIntake;
 use App\Models\BookingHostResponse;
+use App\Models\BookingHostUnresponsiveCase;
 use App\Models\BookingLifecycleEvent;
 use App\Models\BookingNoShow;
 use App\Models\BookingNoShowContactAttempt;
@@ -146,6 +147,15 @@ use App\Models\HostListingSuggestion;
 use App\Models\HostListingWizardSession;
 use App\Models\HostProfile;
 use App\Models\HostRepresentative;
+use App\Models\HostUnresponsiveContactAttempt;
+use App\Models\HostUnresponsiveEvent;
+use App\Models\HostUnresponsiveGuestAction;
+use App\Models\HostUnresponsiveHostResponse;
+use App\Models\HostUnresponsiveMedia;
+use App\Models\HostUnresponsivePolicy;
+use App\Models\HostUnresponsivePolicySnapshot;
+use App\Models\HostUnresponsiveRepresentativeResponse;
+use App\Models\HostUnresponsiveStatusLog;
 use App\Models\ListingCreationDraft;
 use App\Models\ListingHintSnapshot;
 use App\Models\ListingPublicationCheck;
@@ -2363,6 +2373,7 @@ class BulkMarketplaceSeeder extends Seeder
     {
         $bookingRows = $this->bookingRows();
         $bookingIds = array_column($bookingRows, 'id');
+        $sleepingPlaceRows = $this->sleepingPlaceRows();
         $sleepingPlaceIds = $this->ids(SleepingPlace::class);
 
         $this->seedFactoryRows(
@@ -2616,6 +2627,284 @@ class BulkMarketplaceSeeder extends Seeder
                 'source_type' => 'bulk_demo_seed',
                 'source_id' => $index + 1,
                 'user_id' => $index % 2 === 0 ? $this->pick($noShowRows, $index)['guest_user_id'] : $this->pick($noShowRows, $index)['host_user_id'],
+                'occurred_at' => now()->subMinutes($index % 1440),
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedMissingOwnedRows(
+            HostUnresponsivePolicy::class,
+            'sleeping_place_id',
+            $sleepingPlaceIds,
+            fn (int $sleepingPlaceId, int $index): HostUnresponsivePolicy => HostUnresponsivePolicy::factory()->create([
+                'sleeping_place_id' => $sleepingPlaceId,
+                'property_id' => $this->pick($sleepingPlaceRows, $index)['property_id'],
+                'pre_check_in_response_minutes' => [120, 180, 240, 360][$index % 4],
+                'check_in_response_minutes' => [30, 45, 60, 90][$index % 4],
+                'guest_waiting_outside_response_minutes' => [10, 15, 20, 30][$index % 4],
+                'night_entry_response_minutes' => [10, 15, 20][$index % 3],
+                'urgent_response_minutes' => [5, 10, 15][$index % 3],
+                'notify_representative_if_available' => true,
+                'auto_show_instructions_if_allowed' => true,
+                'auto_block_no_show_while_active' => true,
+                'allow_guest_cancellation_after_deadline' => true,
+                'allow_guest_relocation_after_deadline' => $index % 5 !== 0,
+                'guest_friendly_refund_if_confirmed' => true,
+                'active' => true,
+            ]),
+        );
+
+        $this->seedMissingOwnedRows(
+            HostUnresponsivePolicySnapshot::class,
+            'booking_id',
+            $bookingIds,
+            fn (int $bookingId, int $index): HostUnresponsivePolicySnapshot => HostUnresponsivePolicySnapshot::factory()->create([
+                'booking_id' => $bookingId,
+                'sleeping_place_id' => $this->pick($bookingRows, $index)['sleeping_place_id'],
+                'property_id' => $this->pick($bookingRows, $index)['property_id'],
+                'pre_check_in_response_minutes' => [120, 180, 240, 360][$index % 4],
+                'check_in_response_minutes' => [30, 45, 60, 90][$index % 4],
+                'guest_waiting_outside_response_minutes' => [10, 15, 20, 30][$index % 4],
+                'night_entry_response_minutes' => [10, 15, 20][$index % 3],
+                'urgent_response_minutes' => [5, 10, 15][$index % 3],
+                'notify_representative_if_available' => true,
+                'auto_show_instructions_if_allowed' => true,
+                'auto_block_no_show_while_active' => true,
+                'allow_guest_cancellation_after_deadline' => true,
+                'allow_guest_relocation_after_deadline' => $index % 5 !== 0,
+                'guest_friendly_refund_if_confirmed' => true,
+                'policy_snapshot_json' => ['source' => 'bulk_demo_seed', 'booking_id' => $bookingId],
+            ]),
+        );
+
+        $hostRepresentativeRows = HostRepresentative::query()
+            ->select(['id', 'host_user_id', 'representative_user_id', 'name', 'phone', 'email'])
+            ->where('active', true)
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (HostRepresentative $representative): array => [
+                'id' => $representative->id,
+                'host_user_id' => $representative->host_user_id,
+                'representative_user_id' => $representative->representative_user_id,
+                'name' => $representative->name,
+                'contact' => $representative->phone ?: $representative->email,
+            ])
+            ->all();
+        $representativesByHostId = collect($hostRepresentativeRows)->keyBy('host_user_id')->all();
+        $representativesById = collect($hostRepresentativeRows)->keyBy('id')->all();
+
+        $this->seedFactoryRows(
+            BookingHostUnresponsiveCase::class,
+            function (int $index) use ($checkInRows, $bookingsById, $representativesByHostId): array {
+                $checkIn = $this->pick($checkInRows, $index);
+                $booking = $bookingsById[$checkIn['booking_id']] ?? $this->pick(array_values($bookingsById), $index);
+                $representative = $representativesByHostId[$checkIn['host_user_id']] ?? null;
+                $deadlineMinutes = [30, 45, 60, 90][$index % 4];
+                $startedAt = CarbonImmutable::parse($booking['check_in_date'])->setTime(18, 0)->addMinutes($index % 25);
+                $deadlineAt = $startedAt->addMinutes($deadlineMinutes);
+                $status = ['reported', 'waiting_host_response', 'guest_waiting', 'host_responded', 'access_resolved', 'unresolved'][$index % 6];
+                $decisionKey = match ($status) {
+                    'host_responded' => 'host_responded',
+                    'access_resolved' => 'access_resolved',
+                    'unresolved' => 'confirmed_host_unresponsive',
+                    default => null,
+                };
+
+                return [
+                    'case_number' => sprintf('HU-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $checkIn['booking_id'],
+                    'booking_check_in_id' => $checkIn['id'],
+                    'booking_stay_id' => null,
+                    'guest_user_id' => $checkIn['guest_user_id'],
+                    'host_user_id' => $checkIn['host_user_id'],
+                    'host_representative_id' => $representative['id'] ?? null,
+                    'property_id' => $checkIn['property_id'],
+                    'room_id' => $checkIn['room_id'],
+                    'sleeping_place_id' => $checkIn['sleeping_place_id'],
+                    'case_type' => ['check_in_no_response', 'access_problem_no_response', 'night_entry_no_response', 'self_check_in_failed'][$index % 4],
+                    'reason_key' => ['host_not_answering_messages', 'door_code_not_working', 'guest_waiting_outside', 'instruction_missing'][$index % 4],
+                    'status' => $status,
+                    'check_in_date' => $booking['check_in_date'],
+                    'planned_check_in_time' => '18:00',
+                    'check_in_window' => '18:00-22:00',
+                    'actual_guest_arrival_at' => $index % 4 === 0 ? $startedAt : null,
+                    'guest_marked_arrived' => $index % 4 === 0,
+                    'guest_waiting_outside' => $index % 3 === 0,
+                    'guest_at_address' => $index % 2 === 0,
+                    'guest_feels_unsafe' => $index % 9 === 0,
+                    'instruction_was_available' => $index % 5 !== 0,
+                    'exact_address_was_shown' => $index % 5 !== 0,
+                    'door_code_was_shown' => $index % 4 === 1,
+                    'intercom_code_was_shown' => $index % 4 === 2,
+                    'key_safe_code_was_shown' => $index % 4 === 3,
+                    'host_contact_was_shown' => true,
+                    'representative_contact_was_shown' => $representative !== null,
+                    'host_contact_attempts_count' => 1 + ($index % 3),
+                    'representative_contact_attempts_count' => $representative === null ? 0 : 1,
+                    'last_host_contact_attempt_at' => $startedAt,
+                    'last_representative_contact_attempt_at' => $representative === null ? null : $startedAt->addMinutes(2),
+                    'host_last_response_at' => in_array($status, ['host_responded', 'access_resolved'], true) ? $startedAt->addMinutes(10) : null,
+                    'representative_last_response_at' => $status === 'access_resolved' && $representative !== null ? $startedAt->addMinutes(12) : null,
+                    'response_deadline_minutes' => $deadlineMinutes,
+                    'response_deadline_at' => $deadlineAt,
+                    'response_deadline_expired_at' => $status === 'unresolved' ? $deadlineAt : null,
+                    'guest_wants_help' => true,
+                    'guest_wants_cancellation' => $status === 'unresolved',
+                    'guest_wants_refund' => $status === 'unresolved',
+                    'guest_wants_relocation' => $index % 6 === 5,
+                    'host_response' => $status === 'host_responded' ? 'host_unresponsive.demo.host_response' : null,
+                    'representative_response' => $status === 'access_resolved' ? 'host_unresponsive.demo.representative_response' : null,
+                    'guest_comment' => 'host_unresponsive.demo.guest_comment',
+                    'host_comment' => $status === 'host_responded' ? 'host_unresponsive.demo.host_comment' : null,
+                    'decision_key' => $decisionKey,
+                    'decision_at' => $decisionKey === null ? null : $deadlineAt,
+                    'decided_by_user_id' => $decisionKey === null ? null : $checkIn['host_user_id'],
+                    'refund_status' => $status === 'unresolved' ? 'review_started' : null,
+                    'refund_amount' => $status === 'unresolved' ? 80 + ($index % 40) : 0,
+                    'compensation_amount_future' => 0,
+                    'currency' => 'EUR',
+                    'future_support_review_required' => $index % 11 === 0,
+                    'future_support_comment' => $index % 11 === 0 ? 'host_unresponsive.demo.future_review' : null,
+                    'resolved_at' => in_array($status, ['access_resolved', 'resolved'], true) ? $deadlineAt : null,
+                    'closed_at' => null,
+                ];
+            },
+        );
+
+        $hostUnresponsiveRows = BookingHostUnresponsiveCase::query()
+            ->select(['id', 'booking_id', 'booking_check_in_id', 'guest_user_id', 'host_user_id', 'host_representative_id', 'status', 'reason_key', 'case_type'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(function (BookingHostUnresponsiveCase $case) use ($representativesById): array {
+                $representative = $case->host_representative_id ? ($representativesById[$case->host_representative_id] ?? null) : null;
+
+                return [
+                    'id' => $case->id,
+                    'booking_id' => $case->booking_id,
+                    'booking_check_in_id' => $case->booking_check_in_id,
+                    'guest_user_id' => $case->guest_user_id,
+                    'host_user_id' => $case->host_user_id,
+                    'host_representative_id' => $case->host_representative_id,
+                    'representative_user_id' => $representative['representative_user_id'] ?? null,
+                    'representative_name' => $representative['name'] ?? null,
+                    'representative_contact' => $representative['contact'] ?? null,
+                    'status' => $case->status,
+                    'reason_key' => $case->reason_key,
+                    'case_type' => $case->case_type,
+                ];
+            })
+            ->all();
+
+        $this->seedFactoryRows(
+            HostUnresponsiveContactAttempt::class,
+            function (int $index) use ($hostUnresponsiveRows): array {
+                $case = $this->pick($hostUnresponsiveRows, $index);
+                $targetsRepresentative = $case['host_representative_id'] !== null && $index % 3 === 1;
+
+                return [
+                    'host_unresponsive_case_id' => $case['id'],
+                    'booking_id' => $case['booking_id'],
+                    'target_user_id' => $targetsRepresentative ? $case['representative_user_id'] : $case['host_user_id'],
+                    'target_type' => $targetsRepresentative ? 'host_representative' : 'host',
+                    'target_name_snapshot' => $targetsRepresentative ? $case['representative_name'] : null,
+                    'target_contact_snapshot' => $targetsRepresentative ? $case['representative_contact'] : null,
+                    'contact_channel' => ['in_app', 'message_thread', 'email'][$index % 3],
+                    'attempt_type' => ['urgent_check_in_alert', 'access_problem_alert', 'guest_waiting_alert', 'final_warning'][$index % 4],
+                    'status' => ['sent', 'sent', 'responded', 'expired'][$index % 4],
+                    'message_key' => 'host_unresponsive.messages.urgent_host_alert_sent',
+                    'message_text' => null,
+                    'attempted_at' => now()->subMinutes($index % 180),
+                    'response_received_at' => $index % 4 === 2 ? now()->subMinutes($index % 120) : null,
+                    'response_summary' => $index % 4 === 2 ? 'host_unresponsive.demo.response_summary' : null,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            HostUnresponsiveGuestAction::class,
+            fn (int $index): array => [
+                'host_unresponsive_case_id' => $this->pick($hostUnresponsiveRows, $index)['id'],
+                'booking_id' => $this->pick($hostUnresponsiveRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($hostUnresponsiveRows, $index)['guest_user_id'],
+                'action_type' => ['reported_host_not_answering', 'marked_at_address', 'marked_waiting_outside', 'requested_cancellation', 'requested_relocation'][$index % 5],
+                'message' => 'host_unresponsive.demo.guest_action',
+                'guest_location_note' => $index % 3 === 0 ? 'host_unresponsive.demo.location_note' : null,
+                'new_waiting_until' => $index % 5 === 4 ? now()->addMinutes(30) : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            HostUnresponsiveHostResponse::class,
+            fn (int $index): array => [
+                'host_unresponsive_case_id' => $this->pick($hostUnresponsiveRows, $index)['id'],
+                'booking_id' => $this->pick($hostUnresponsiveRows, $index)['booking_id'],
+                'host_user_id' => $this->pick($hostUnresponsiveRows, $index)['host_user_id'],
+                'response_type' => ['i_am_available', 'instruction_sent', 'access_details_sent', 'deny_unresponsive', 'send_message'][$index % 5],
+                'message' => 'host_unresponsive.demo.host_response',
+                'instruction_resent' => $index % 5 === 1,
+                'access_details_provided' => $index % 5 === 2,
+                'new_arrival_time_proposed' => $index % 5 === 0 ? '19:00' : null,
+                'representative_assigned' => $this->pick($hostUnresponsiveRows, $index)['host_representative_id'] !== null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            HostUnresponsiveRepresentativeResponse::class,
+            fn (int $index): array => [
+                'host_unresponsive_case_id' => $this->pick($hostUnresponsiveRows, $index)['id'],
+                'booking_id' => $this->pick($hostUnresponsiveRows, $index)['booking_id'],
+                'host_representative_id' => $this->pick($hostUnresponsiveRows, $index)['host_representative_id'],
+                'representative_user_id' => $this->pick($hostUnresponsiveRows, $index)['representative_user_id'],
+                'response_type' => ['i_can_help', 'i_am_on_the_way', 'access_helped', 'guest_checked_in', 'cannot_help'][$index % 5],
+                'message' => 'host_unresponsive.demo.representative_response',
+                'will_meet_guest' => $index % 5 <= 1,
+                'estimated_arrival_time' => $index % 5 === 1 ? '18:30' : null,
+                'access_help_provided' => $index % 5 === 2,
+                'keys_handed_over' => $index % 5 === 3,
+                'guest_checked_in' => $index % 5 === 3,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            HostUnresponsiveMedia::class,
+            fn (int $index): array => [
+                'host_unresponsive_case_id' => $this->pick($hostUnresponsiveRows, $index)['id'],
+                'booking_id' => $this->pick($hostUnresponsiveRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $index % 2 === 0 ? $this->pick($hostUnresponsiveRows, $index)['guest_user_id'] : $this->pick($hostUnresponsiveRows, $index)['host_user_id'],
+                'media_type' => ['photo', 'screenshot'][$index % 2],
+                'media_role' => ['guest_waiting_evidence', 'message_screenshot', 'door_code_problem_evidence', 'host_response_evidence'][$index % 4],
+                'path' => 'demo/host-unresponsive/evidence-'.$index.'.jpg',
+                'thumbnail_path' => 'demo/host-unresponsive/evidence-'.$index.'-thumb.jpg',
+                'caption' => 'host_unresponsive.demo.media_caption',
+                'visibility' => ['guest_and_host', 'guest_only', 'host_only', 'future_support_only'][$index % 4],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            HostUnresponsiveStatusLog::class,
+            fn (int $index): array => [
+                'host_unresponsive_case_id' => $this->pick($hostUnresponsiveRows, $index)['id'],
+                'booking_id' => $this->pick($hostUnresponsiveRows, $index)['booking_id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($hostUnresponsiveRows, $index)['guest_user_id'] : $this->pick($hostUnresponsiveRows, $index)['host_user_id'],
+                'old_status' => null,
+                'new_status' => $this->pick($hostUnresponsiveRows, $index)['status'],
+                'reason_key' => $this->pick($hostUnresponsiveRows, $index)['reason_key'],
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            HostUnresponsiveEvent::class,
+            fn (int $index): array => [
+                'host_unresponsive_case_id' => $this->pick($hostUnresponsiveRows, $index)['id'],
+                'booking_id' => $this->pick($hostUnresponsiveRows, $index)['booking_id'],
+                'event_key' => ['host_unresponsive_reported', 'host_contact_attempted', 'representative_contact_attempted', 'access_resolved', 'host_unresponsive_confirmed'][$index % 5],
+                'event_type' => 'system',
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $index % 2 === 0 ? $this->pick($hostUnresponsiveRows, $index)['guest_user_id'] : $this->pick($hostUnresponsiveRows, $index)['host_user_id'],
                 'occurred_at' => now()->subMinutes($index % 1440),
                 'context_json' => [],
             ],
@@ -3660,23 +3949,25 @@ class BulkMarketplaceSeeder extends Seeder
     {
         $files = app(DemoMediaFileService::class);
 
-        MediaItem::query()
-            ->select([
-                'id',
-                'disk',
-                'path',
-                'thumbnail_path',
-                'thumb_path',
-                'mobile_path',
-                'full_path',
-                'width',
-                'height',
-                'alt_text',
-            ])
-            ->where('path', 'like', 'bulk-demo/%')
-            ->chunkById(200, function ($mediaItems) use ($files): void {
-                $files->ensureForMediaItems($mediaItems);
-            });
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            MediaItem::query()
+                ->select([
+                    'id',
+                    'disk',
+                    'path',
+                    'thumbnail_path',
+                    'thumb_path',
+                    'mobile_path',
+                    'full_path',
+                    'width',
+                    'height',
+                    'alt_text',
+                ])
+                ->where('path', 'like', 'bulk-demo/%')
+                ->chunkById(200, function ($mediaItems) use ($files): void {
+                    $files->ensureForMediaItems($mediaItems);
+                });
+        }
     }
 
     private function seedMediaTranslations(iterable $mediaItems): void
