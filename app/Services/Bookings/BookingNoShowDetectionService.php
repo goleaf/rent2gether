@@ -55,6 +55,10 @@ class BookingNoShowDetectionService
             return false;
         }
 
+        if ($this->hasActiveHostUnresponsiveCase($noShow->booking)) {
+            return false;
+        }
+
         if ($noShow->guest_response_type === 'accept_no_show' || $noShow->guest_warned_cancellation) {
             return true;
         }
@@ -88,6 +92,13 @@ class BookingNoShowDetectionService
             BookingStatus::CheckedIn->value,
             BookingStatus::StayInProgress->value,
         ], true);
+    }
+
+    private function hasActiveHostUnresponsiveCase(Booking $booking): bool
+    {
+        return $booking->hostUnresponsiveCases()
+            ->whereNotIn('status', ['resolved', 'closed', 'cancelled', 'converted_to_no_show'])
+            ->exists();
     }
 
     private function statusValue(Booking $booking): string

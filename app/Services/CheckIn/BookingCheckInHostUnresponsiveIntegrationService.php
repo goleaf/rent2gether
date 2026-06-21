@@ -6,20 +6,18 @@ use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingCheckIn;
 use App\Models\BookingCheckInProblem;
+use App\Services\Bookings\HostUnresponsiveService;
 use App\Services\Bookings\BookingStatusService;
 
 class BookingCheckInHostUnresponsiveIntegrationService
 {
     public function createCaseFromCheckInProblem(BookingCheckInProblem $problem): mixed
     {
-        $problem->forceFill([
-            'source_created_host_unresponsive_case_id' => $problem->id,
-            'status' => 'host_notified',
-        ])->save();
+        $case = app(HostUnresponsiveService::class)->createFromCheckInProblem($problem);
 
         $this->markBookingHostUnresponsive($problem->checkIn()->firstOrFail());
 
-        return $problem->id;
+        return $case;
     }
 
     public function markBookingHostUnresponsive(BookingCheckIn $checkIn): Booking
