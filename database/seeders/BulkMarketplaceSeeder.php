@@ -34,6 +34,12 @@ use App\Models\BookingQuote;
 use App\Models\BookingQuoteLine;
 use App\Models\BookingQuoteSuggestion;
 use App\Models\BookingQuoteValidationResult;
+use App\Models\BookingRequest;
+use App\Models\BookingRequestCompatibilityResult;
+use App\Models\BookingRequestGuestResponse;
+use App\Models\BookingRequestHostResponse;
+use App\Models\BookingRequestStatusLog;
+use App\Models\BookingRequestWarning;
 use App\Models\BookingReviewRequest;
 use App\Models\BookingStatusHistory;
 use App\Models\BookingTimelineDate;
@@ -180,6 +186,7 @@ class BulkMarketplaceSeeder extends Seeder
         $this->seedCompatibilityRecords();
         $this->seedAvailabilityAndPricing();
         $this->seedBookingQuotes();
+        $this->seedBookingRequests();
         $this->seedBookings();
         $this->seedBookingChildren();
         $this->seedBookingLifecycleRecords();
@@ -1166,6 +1173,183 @@ class BulkMarketplaceSeeder extends Seeder
                 ];
             })
             ->create();
+    }
+
+    private function seedBookingRequests(): void
+    {
+        $quoteRows = BookingQuote::query()
+            ->select([
+                'id',
+                'user_id',
+                'host_user_id',
+                'property_id',
+                'room_id',
+                'sleeping_place_id',
+                'check_in_date',
+                'check_in_time',
+                'check_out_date',
+                'check_out_time',
+                'nights_count',
+                'chargeable_days_count',
+                'calendar_presence_days_count',
+                'guests_count',
+                'total_payable',
+                'deposit_amount',
+                'cleaning_fee_amount',
+                'service_fee_amount',
+                'currency',
+            ])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingQuote $quote): array => $quote->toArray())
+            ->all();
+        $requestStart = BookingRequest::query()->count();
+
+        $this->seedFactoryRows(
+            BookingRequest::class,
+            function (int $index) use ($quoteRows, $requestStart): array {
+                $quote = $this->pick($quoteRows, $index);
+                $requestType = match ($index % 6) {
+                    1 => BookingRequest::TYPE_STAY_REQUEST,
+                    2 => BookingRequest::TYPE_PRELIMINARY_INQUIRY,
+                    3 => BookingRequest::TYPE_LONG_TERM_REQUEST,
+                    4 => BookingRequest::TYPE_SAME_DAY_URGENT,
+                    5 => BookingRequest::TYPE_REQUEST_ONLY,
+                    default => BookingRequest::TYPE_HOST_APPROVAL,
+                };
+
+                return [
+                    'request_number' => sprintf('BR-%s-%06d', now()->format('Y'), $requestStart + $index + 1),
+                    'booking_quote_id' => $requestType === BookingRequest::TYPE_PRELIMINARY_INQUIRY ? null : $quote['id'],
+                    'guest_user_id' => $quote['user_id'],
+                    'host_user_id' => $quote['host_user_id'],
+                    'property_id' => $quote['property_id'],
+                    'room_id' => $quote['room_id'],
+                    'sleeping_place_id' => $quote['sleeping_place_id'],
+                    'request_type' => $requestType,
+                    'status' => match ($index % 7) {
+                        1 => BookingRequest::STATUS_WAITING_GUEST_RESPONSE,
+                        2 => BookingRequest::STATUS_APPROVED,
+                        3 => BookingRequest::STATUS_REJECTED,
+                        4 => BookingRequest::STATUS_EXPIRED,
+                        5 => BookingRequest::STATUS_WITHDRAWN_BY_GUEST,
+                        6 => BookingRequest::STATUS_CONVERTED_TO_BOOKING,
+                        default => BookingRequest::STATUS_WAITING_HOST_RESPONSE,
+                    },
+                    'hold_dates' => $requestType !== BookingRequest::TYPE_PRELIMINARY_INQUIRY && $index % 3 === 0,
+                    'hold_expires_at' => now()->addHours(12 + ($index % 12)),
+                    'expires_at' => now()->addHours(24 + ($index % 48)),
+                    'check_in_date' => $quote['check_in_date'],
+                    'check_in_time' => $quote['check_in_time'] ?: '15:00',
+                    'check_out_date' => $quote['check_out_date'],
+                    'check_out_time' => $quote['check_out_time'] ?: '11:00',
+                    'nights_count' => $quote['nights_count'],
+                    'chargeable_days_count' => $quote['chargeable_days_count'],
+                    'calendar_presence_days_count' => $quote['calendar_presence_days_count'],
+                    'guests_count' => $quote['guests_count'],
+                    'trip_purpose' => ['work', 'study', 'travel', 'relocation'][$index % 4],
+                    'planned_arrival_time' => $index % 5 === 0 ? '23:30' : '18:00',
+                    'planned_departure_time' => $index % 6 === 0 ? '05:30' : '11:00',
+                    'guest_message' => 'booking_requests.demo.guest_message',
+                    'has_baggage' => $index % 2 === 0,
+                    'needs_luggage_storage' => $index % 3 === 0,
+                    'needs_early_check_in' => $index % 7 === 0,
+                    'needs_late_checkout' => $index % 8 === 0,
+                    'needs_residence_registration' => $index % 9 === 0,
+                    'needs_reporting_documents' => $index % 10 === 0,
+                    'guest_agreed_to_rules' => true,
+                    'guest_agreed_to_cancellation_policy' => true,
+                    'guest_agreed_to_deposit_policy' => true,
+                    'guest_profile_snapshot_json' => [
+                        'public_name' => 'Demo guest',
+                        'identity_verified' => $index % 2 === 0,
+                    ],
+                    'guest_rating_snapshot_json' => [
+                        'completed_stays_count' => $index % 12,
+                        'reviews_count' => $index % 8,
+                    ],
+                    'compatibility_snapshot_json' => [],
+                    'price_snapshot_json' => [
+                        'quote_id' => $quote['id'],
+                        'total_payable' => $quote['total_payable'],
+                    ],
+                    'warnings_snapshot_json' => [],
+                    'total_amount' => $quote['total_payable'],
+                    'deposit_amount' => $quote['deposit_amount'],
+                    'cleaning_fee_amount' => $quote['cleaning_fee_amount'],
+                    'service_fee_amount' => $quote['service_fee_amount'],
+                    'currency' => $quote['currency'] ?: 'EUR',
+                ];
+            },
+        );
+
+        $requestRows = BookingRequest::query()
+            ->select(['id', 'guest_user_id', 'host_user_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingRequest $request): array => $request->toArray())
+            ->all();
+
+        $this->seedFactoryRows(
+            BookingRequestWarning::class,
+            fn (int $index): array => [
+                'booking_request_id' => $this->pick($requestRows, $index)['id'],
+                'warning_key' => ['late_night_arrival', 'no_reviews', 'early_check_in_requested', 'too_many_guests'][$index % 4],
+                'severity' => $index % 4 === 3 ? 'blocking' : 'warning',
+                'message_key' => 'booking_requests.warnings.'.(['late_night_arrival', 'no_reviews', 'early_check_in_requested', 'too_many_guests'][$index % 4]),
+                'message_params_json' => [],
+                'blocking' => $index % 4 === 3,
+                'visible_to_host' => true,
+                'visible_to_guest' => false,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRequestCompatibilityResult::class,
+            fn (int $index): array => [
+                'booking_request_id' => $this->pick($requestRows, $index)['id'],
+                'compatibility_key' => ['guest_count', 'room_format', 'smoking_policy', 'pet_policy'][$index % 4],
+                'status' => $index % 5 === 0 ? 'warning' : 'good',
+                'severity' => $index % 5 === 0 ? 'warning' : 'info',
+                'message_key' => 'booking_requests.compatibility.'.(['guest_count', 'room_format', 'smoking_policy', 'pet_policy'][$index % 4]),
+                'message_params_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRequestHostResponse::class,
+            fn (int $index): array => [
+                'booking_request_id' => $this->pick($requestRows, $index)['id'],
+                'host_user_id' => $this->pick($requestRows, $index)['host_user_id'],
+                'response_type' => ['approve', 'ask_question', 'propose_time_change', 'reject'][$index % 4],
+                'message' => 'booking_requests.demo.host_response',
+                'rejection_reason' => $index % 4 === 3 ? 'other' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRequestGuestResponse::class,
+            fn (int $index): array => [
+                'booking_request_id' => $this->pick($requestRows, $index)['id'],
+                'guest_user_id' => $this->pick($requestRows, $index)['guest_user_id'],
+                'response_type' => ['answer_question', 'accept_proposal', 'reject_proposal', 'send_message'][$index % 4],
+                'message' => 'booking_requests.demo.guest_response',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRequestStatusLog::class,
+            fn (int $index): array => [
+                'booking_request_id' => $this->pick($requestRows, $index)['id'],
+                'user_id' => $this->pick($requestRows, $index)['guest_user_id'],
+                'old_status' => null,
+                'new_status' => BookingRequest::STATUS_WAITING_HOST_RESPONSE,
+                'reason_key' => 'booking_requests.demo.seeded',
+                'context_json' => [],
+            ],
+        );
     }
 
     private function seedBookingChildren(): void
