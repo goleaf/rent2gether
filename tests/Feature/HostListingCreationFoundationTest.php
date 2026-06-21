@@ -328,16 +328,22 @@ class HostListingCreationFoundationTest extends TestCase
 
         $this->assertTrue($readiness->contains(fn (ListingReadinessCheck $check) => $check->check_key === 'sleeping_place_photo' && $check->status === 'missing'));
         $this->assertTrue($readiness->contains(fn (ListingReadinessCheck $check) => $check->check_key === 'house_rules' && $check->status === 'missing'));
+        $this->assertTrue($readiness->contains(fn (ListingReadinessCheck $check) => $check->check_key === 'kitchen_rules' && $check->status === 'missing'));
+        $this->assertTrue($readiness->contains(fn (ListingReadinessCheck $check) => $check->check_key === 'bathroom_rules' && $check->status === 'missing'));
         $this->assertTrue($readiness->contains(fn (ListingReadinessCheck $check) => $check->check_key === 'sleeping_place_price' && $check->status === 'completed'));
         $this->assertFalse(app(ListingPublicationService::class)->canPublish($listing['place']));
 
         $suggestions = app(ListingSuggestionService::class)->generateForSleepingPlace($listing['place']);
 
         $this->assertTrue($suggestions->contains(fn (HostListingSuggestion $suggestion) => $suggestion->suggestion_key === 'add_sleeping_place_photo'));
+        $this->assertTrue($suggestions->contains(fn (HostListingSuggestion $suggestion) => $suggestion->suggestion_key === 'missing_kitchen_rules'));
+        $this->assertTrue($suggestions->contains(fn (HostListingSuggestion $suggestion) => $suggestion->suggestion_key === 'missing_bathroom_rules'));
 
         app(PropertyCreationService::class)->saveRules($listing['host'], $listing['property'], [
             ['rule_key' => 'smoking', 'allowed' => false],
             ['rule_key' => 'quiet_hours', 'allowed' => true],
+            ['rule_key' => 'cooking', 'allowed' => true],
+            ['rule_key' => 'bathroom_at_night', 'allowed' => false],
         ]);
         app(ListingPhotoService::class)->addSleepingPlacePhoto($listing['host'], $listing['place'], [
             'path' => 'places/ready.jpg',
@@ -357,6 +363,36 @@ class HostListingCreationFoundationTest extends TestCase
         $this->assertSame('published', $published->publication_status);
         $this->assertSame('published', $published->property->fresh()->publication_status);
         $this->assertSame('published', $published->room->fresh()->publication_status);
+    }
+
+    public function test_publication_requires_pricing_policy_timing_and_deposit_readiness(): void
+    {
+        $listing = $this->createReadyListing();
+        $listing['place']->forceFill([
+            'cancellation_policy' => null,
+            'deposit_amount' => null,
+        ])->save();
+        $listing['place']->calendarSettings()->delete();
+
+        $readiness = app(ListingReadinessService::class)->checkSleepingPlace($listing['place']->fresh());
+
+        foreach (['check_in_time', 'check_out_time', 'cancellation_policy', 'deposit_policy'] as $key) {
+            $this->assertTrue(
+                $readiness->contains(fn (ListingReadinessCheck $check): bool => $check->check_key === $key && $check->status === 'missing' && $check->required),
+                "{$key} should be a missing required readiness check.",
+            );
+        }
+
+        $suggestions = app(ListingSuggestionService::class)->generateForSleepingPlace($listing['place']->fresh());
+
+        foreach (['missing_check_in_time', 'missing_check_out_time', 'missing_cancellation_policy', 'missing_deposit_policy'] as $key) {
+            $this->assertTrue(
+                $suggestions->contains(fn (HostListingSuggestion $suggestion): bool => $suggestion->suggestion_key === $key),
+                "{$key} suggestion should be generated.",
+            );
+        }
+
+        $this->assertFalse(app(ListingPublicationService::class)->canPublish($listing['place']->fresh()));
     }
 
     public function test_listing_wizard_livewire_components_render_translated_mobile_sections(): void
@@ -463,6 +499,7 @@ class HostListingCreationFoundationTest extends TestCase
             'base_price' => 22,
             'base_price_per_night' => 22,
             'currency' => 'EUR',
+            'cancellation_policy' => 'flexible',
             'publication_status' => 'draft',
         ]);
 
@@ -477,6 +514,7 @@ class HostListingCreationFoundationTest extends TestCase
             'entry_type' => 'shared_entrance',
             'check_in_instruction' => 'Access after booking.',
             'key_pickup_instruction' => 'Meet host.',
+            'key_return_instruction' => 'Leave keys with the host.',
         ]);
         RoomComfortDetail::factory()->for($room)->create(['has_window' => true, 'has_desk' => true]);
         SleepingPlacePhysicalDetail::factory()->for($place)->create(['place_type' => 'single_bed']);
@@ -486,6 +524,13 @@ class HostListingCreationFoundationTest extends TestCase
         PropertyAmenity::factory()->for($property)->create(['amenity_key' => 'wifi', 'available' => true]);
         PropertyPhoto::factory()->for($property)->for($host, 'uploadedBy')->create(['path' => 'properties/foundation.jpg']);
         RoomPhoto::factory()->for($room)->for($host, 'uploadedBy')->create(['path' => 'rooms/foundation.jpg']);
+        $place->calendarSettings()->create([
+            'default_status' => 'available',
+            'default_price' => 22,
+            'currency' => 'EUR',
+            'check_in_time_from' => '15:00',
+            'check_out_time_until' => '11:00',
+        ]);
 
         if ($withSleepingPlacePhoto) {
             SleepingPlacePhoto::factory()->for($place)->for($host, 'uploadedBy')->create(['path' => 'places/foundation.jpg']);
@@ -494,6 +539,8 @@ class HostListingCreationFoundationTest extends TestCase
         if ($withRules) {
             PropertyRule::factory()->for($property)->create(['rule_key' => 'smoking', 'allowed' => false]);
             PropertyRule::factory()->for($property)->create(['rule_key' => 'quiet_hours', 'allowed' => true]);
+            PropertyRule::factory()->for($property)->create(['rule_key' => 'cooking', 'allowed' => true]);
+            PropertyRule::factory()->for($property)->create(['rule_key' => 'bathroom_at_night', 'allowed' => false]);
         }
 
         return [

@@ -35,6 +35,34 @@ return [
         'title' => 'New booking request',
         'body' => ':guest wants to book :place. Review the dates when you have a moment.',
     ],
+    'booking_request_new' => [
+        'title' => 'New booking request',
+        'body' => 'Request :reference is waiting for your response.',
+    ],
+    'booking_request_approved' => [
+        'title' => 'Request approved',
+        'body' => 'Request :reference was approved. Review the next step before the deadline.',
+    ],
+    'booking_request_rejected' => [
+        'title' => 'Request declined',
+        'body' => 'Request :reference was declined. You can choose other dates or another place.',
+    ],
+    'booking_request_question' => [
+        'title' => 'The host asked a question',
+        'body' => 'The host replied to request :reference. You can answer from the request page.',
+    ],
+    'booking_request_guest_responded' => [
+        'title' => 'Guest responded',
+        'body' => 'The guest answered request :reference.',
+    ],
+    'booking_request_expired' => [
+        'title' => 'Request expired',
+        'body' => 'Request :reference expired. The dates are no longer held.',
+    ],
+    'booking_request_withdrawn' => [
+        'title' => 'Request withdrawn',
+        'body' => 'The guest withdrew request :reference.',
+    ],
     'booking_requested' => [
         'title' => 'Booking request sent',
         'body' => 'The host can now review your request.',

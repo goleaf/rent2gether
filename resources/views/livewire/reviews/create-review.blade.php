@@ -97,13 +97,22 @@
             </flux:card>
 
             <flux:card class="space-y-3">
-                <flux:field>
-                    <flux:label>{{ __('booking.review.fields.photos') }}</flux:label>
-                    <flux:input type="file" wire:model="photos" accept="image/*" multiple />
-                    <flux:description>{{ __('booking.review.photos_helper') }}</flux:description>
-                    <flux:error name="photos" />
-                    <flux:error name="photos.*" />
-                </flux:field>
+                <flux:file-upload
+                    wire:model="photos"
+                    multiple
+                    :label="__('booking.review.fields.photos')"
+                    :description="__('booking.review.photos_helper')"
+                    :error="$errors->first('photos')"
+                >
+                    <flux:file-upload.dropzone
+                        :heading="__('booking.review.fields.photos')"
+                        :text="__('booking.review.photos_helper')"
+                        with-progress
+                        inline
+                    />
+                </flux:file-upload>
+
+                <flux:error name="photos.*" />
 
                 <flux:text wire:loading wire:target="photos" size="sm" class="text-zinc-500">
                     {{ __('booking.review.uploading') }}

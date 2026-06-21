@@ -293,11 +293,27 @@ class User extends Authenticatable
     }
 
     /**
+     * Lists booking requests sent by this guest.
+     */
+    public function bookingRequests(): HasMany
+    {
+        return $this->hasMany(BookingRequest::class, 'guest_user_id');
+    }
+
+    /**
      * Lists related Booking records for this User.
      */
     public function hostedBookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'host_user_id');
+    }
+
+    /**
+     * Lists booking requests waiting on this host.
+     */
+    public function hostedBookingRequests(): HasMany
+    {
+        return $this->hasMany(BookingRequest::class, 'host_user_id');
     }
 
     /**

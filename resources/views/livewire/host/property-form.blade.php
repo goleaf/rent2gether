@@ -279,14 +279,23 @@
                         @endif
 
                         @foreach($this->wizardPhotoFields() as $photoField)
-                            <flux:field>
-                                <flux:label>{{ __('host.property_wizard.photos.'.$photoField['slot']) }}</flux:label>
-                                <flux:input type="file" accept="image/*" wire:model="{{ $photoField['field'] }}" />
-                                <flux:description>{{ __('host.property_wizard.helpers.photo') }}</flux:description>
+                            <div class="space-y-2">
+                                <flux:file-upload
+                                    wire:model="{{ $photoField['field'] }}"
+                                    :label="__('host.property_wizard.photos.'.$photoField['slot'])"
+                                    :description="__('host.property_wizard.helpers.photo')"
+                                    :error="$errors->first($photoField['field'])"
+                                >
+                                    <flux:file-upload.dropzone
+                                        :heading="__('host.property_wizard.photos.'.$photoField['slot'])"
+                                        :text="__('host.property_wizard.helpers.photo')"
+                                        with-progress
+                                        inline
+                                    />
+                                </flux:file-upload>
                                 <flux:text wire:loading wire:target="{{ $photoField['field'] }}" size="sm" class="text-zinc-500 dark:text-zinc-400">
                                     {{ __('media.manager.uploading') }}
                                 </flux:text>
-                                <flux:error name="{{ $photoField['field'] }}" />
 
                                 @if($photoField['preview'])
                                     <div class="mt-2 flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-700 dark:bg-zinc-900">
@@ -294,7 +303,7 @@
                                         <span class="text-sm text-zinc-600 dark:text-zinc-300">{{ $photoField['preview']['label'] }}</span>
                                     </div>
                                 @endif
-                            </flux:field>
+                            </div>
                         @endforeach
                     </div>
                     @break

@@ -38,14 +38,24 @@
                         <flux:icon name="user" class="size-8 text-zinc-400" />
                     @endif
                 </div>
-                <flux:field class="flex-1">
-                    <flux:input type="file" wire:model="avatar" accept="image/*" />
-                    <flux:description>{{ __('account.profile_setup.photo_helper') }}</flux:description>
+                <div class="flex-1 space-y-2">
+                    <flux:file-upload
+                        wire:model="avatar"
+                        :label="__('account.profile_setup.photo')"
+                        :description="__('account.profile_setup.photo_helper')"
+                        :error="$errors->first('avatar')"
+                    >
+                        <flux:file-upload.dropzone
+                            :heading="__('account.profile_setup.photo')"
+                            :text="__('account.profile_setup.photo_helper')"
+                            with-progress
+                            inline
+                        />
+                    </flux:file-upload>
                     <flux:text wire:loading wire:target="avatar" size="sm" class="text-zinc-500 dark:text-zinc-400">
                         {{ __('media.manager.uploading') }}
                     </flux:text>
-                    <flux:error name="avatar" />
-                </flux:field>
+                </div>
             </div>
         </flux:card>
 

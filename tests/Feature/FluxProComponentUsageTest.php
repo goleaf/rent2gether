@@ -97,6 +97,29 @@ class FluxProComponentUsageTest extends TestCase
         $this->assertStringNotContainsString('type="file"', $view);
     }
 
+    public function test_livewire_upload_surfaces_use_flux_pro_file_upload_components(): void
+    {
+        $views = [
+            resource_path('views/livewire/account/profile-setup-page.blade.php'),
+            resource_path('views/livewire/checkin/problem-report.blade.php'),
+            resource_path('views/livewire/complaints/create-complaint.blade.php'),
+            resource_path('views/livewire/host/partials/host-profile-section.blade.php'),
+            resource_path('views/livewire/host/property-form.blade.php'),
+            resource_path('views/livewire/host/room-form.blade.php'),
+            resource_path('views/livewire/host/sleeping-place-form.blade.php'),
+            resource_path('views/livewire/messages/chat-window.blade.php'),
+            resource_path('views/livewire/reviews/create-review.blade.php'),
+        ];
+
+        foreach ($views as $viewPath) {
+            $view = File::get($viewPath);
+
+            $this->assertStringContainsString('<flux:file-upload', $view, $viewPath);
+            $this->assertStringContainsString('<flux:file-upload.dropzone', $view, $viewPath);
+            $this->assertStringNotContainsString('type="file"', $view, $viewPath);
+        }
+    }
+
     public function test_frontend_assets_use_scss_and_flux_pro_styles(): void
     {
         $this->assertFileExists(resource_path('css/app.scss'));

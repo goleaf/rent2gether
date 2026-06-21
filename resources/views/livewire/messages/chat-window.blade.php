@@ -88,13 +88,23 @@
             </flux:field>
 
             <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
-                <flux:field>
-                    <flux:label>{{ __('messages.thread.fields.attachments') }}</flux:label>
-                    <flux:input type="file" multiple wire:model="uploads" accept="image/jpeg,image/png,image/webp,application/pdf" />
-                    <flux:description>{{ __('messages.thread.attachments_helper') }}</flux:description>
-                    <flux:error name="uploads" />
+                <div class="space-y-2">
+                    <flux:file-upload
+                        wire:model="uploads"
+                        multiple
+                        :label="__('messages.thread.fields.attachments')"
+                        :description="__('messages.thread.attachments_helper')"
+                        :error="$errors->first('uploads')"
+                    >
+                        <flux:file-upload.dropzone
+                            :heading="__('messages.thread.fields.attachments')"
+                            :text="__('messages.thread.attachments_helper')"
+                            with-progress
+                            inline
+                        />
+                    </flux:file-upload>
                     <flux:error name="uploads.*" />
-                </flux:field>
+                </div>
 
                 <div class="flex items-end">
                     <flux:checkbox wire:model.change="important" label="{{ __('messages.thread.fields.important') }}" />

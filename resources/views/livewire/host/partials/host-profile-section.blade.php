@@ -12,15 +12,24 @@
                     @endif
                 </div>
 
-                <flux:field class="flex-1">
-                    <flux:label>{{ __('host.profile.fields.avatar') }}</flux:label>
-                    <flux:input type="file" wire:model="avatar" accept="image/*" />
-                    <flux:description>{{ __('host.profile.helpers.avatar') }}</flux:description>
+                <div class="flex-1 space-y-2">
+                    <flux:file-upload
+                        wire:model="avatar"
+                        :label="__('host.profile.fields.avatar')"
+                        :description="__('host.profile.helpers.avatar')"
+                        :error="$errors->first('avatar')"
+                    >
+                        <flux:file-upload.dropzone
+                            :heading="__('host.profile.fields.avatar')"
+                            :text="__('host.profile.helpers.avatar')"
+                            with-progress
+                            inline
+                        />
+                    </flux:file-upload>
                     <flux:text wire:loading wire:target="avatar" size="sm" class="text-zinc-500 dark:text-zinc-400">
                         {{ __('media.manager.uploading') }}
                     </flux:text>
-                    <flux:error name="avatar" />
-                </flux:field>
+                </div>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">

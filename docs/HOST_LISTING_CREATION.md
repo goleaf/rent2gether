@@ -16,3 +16,5 @@ When a host creates, duplicates, copies, or bulk-creates a `SleepingPlace`, the 
 The wizard stores incomplete work in `listing_creation_drafts`. Draft data is compact JSON state, not a large Livewire public payload. Hosts can leave the flow and continue later.
 
 Publishing is blocked by required readiness checks. The platform does not need an admin, support, staff, manager, cleaner, or finance panel for this flow.
+
+Readiness is evaluated for the `SleepingPlace` before publication. Required blockers include the container property and room basics, public photos, price, access instructions, check-in and check-out times, cancellation policy, deposit policy, kitchen rules, bathroom rules, and an emergency contact. Host suggestions use the same gaps as friendly next actions so the mobile wizard can show what remains without exposing internal statuses to guests.

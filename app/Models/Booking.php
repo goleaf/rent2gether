@@ -260,11 +260,51 @@ class Booking extends Model
     }
 
     /**
+     * Fetches the immutable price snapshot copied from the accepted Quote.
+     */
+    public function priceSnapshot(): HasOne
+    {
+        return $this->hasOne(BookingPriceSnapshot::class);
+    }
+
+    /**
+     * Fetches the Booking Request that was converted into this Booking.
+     */
+    public function bookingRequest(): HasOne
+    {
+        return $this->hasOne(BookingRequest::class);
+    }
+
+    /**
+     * Lists promo code redemptions finalized through this Booking.
+     */
+    public function promoCodeRedemptions(): HasMany
+    {
+        return $this->hasMany(PromoCodeRedemption::class);
+    }
+
+    /**
      * Lists related Booking Status History records for this Booking.
      */
     public function statusHistories(): HasMany
     {
         return $this->hasMany(BookingStatusHistory::class);
+    }
+
+    /**
+     * Lists active and historical sleeping-place date locks created for this Booking.
+     */
+    public function sleepingPlaceDateLocks(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceBookingDateLock::class);
+    }
+
+    /**
+     * Lists reminder and deadline timeline dates copied from a Quote or built for this Booking.
+     */
+    public function timelineDates(): HasMany
+    {
+        return $this->hasMany(BookingTimelineDate::class);
     }
 
     /**

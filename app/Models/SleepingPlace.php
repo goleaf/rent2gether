@@ -357,6 +357,14 @@ class SleepingPlace extends Model
     }
 
     /**
+     * Fetches the single Sleeping Place Turnover Rule record used by same-day and cleaning gap checks.
+     */
+    public function turnoverRules(): HasOne
+    {
+        return $this->hasOne(SleepingPlaceTurnoverRule::class);
+    }
+
+    /**
      * Lists related Sleeping Place Calendar Day records for this Sleeping Place.
      */
     public function calendarDays(): HasMany
@@ -370,6 +378,78 @@ class SleepingPlace extends Model
     public function calendarRules(): HasMany
     {
         return $this->hasMany(SleepingPlaceCalendarRule::class);
+    }
+
+    /**
+     * Lists period blocks that affect this Sleeping Place calendar.
+     */
+    public function calendarBlocks(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceCalendarBlock::class);
+    }
+
+    /**
+     * Lists date locks that protect this Sleeping Place from double booking.
+     */
+    public function bookingDateLocks(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceBookingDateLock::class);
+    }
+
+    /**
+     * Lists temporary booking quotes calculated for this Sleeping Place.
+     */
+    public function bookingQuotes(): HasMany
+    {
+        return $this->hasMany(BookingQuote::class);
+    }
+
+    /**
+     * Lists booking requests submitted for this Sleeping Place.
+     */
+    public function bookingRequests(): HasMany
+    {
+        return $this->hasMany(BookingRequest::class);
+    }
+
+    /**
+     * Fetches the active pricing settings used by the quote engine for this Sleeping Place.
+     */
+    public function pricingSettings(): HasOne
+    {
+        return $this->hasOne(SleepingPlacePricingSetting::class)->where('active', true);
+    }
+
+    /**
+     * Lists manually configured date prices for this Sleeping Place.
+     */
+    public function datePrices(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceDatePrice::class);
+    }
+
+    /**
+     * Lists modern pricing discount rules used by the quote engine.
+     */
+    public function pricingDiscountRules(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceDiscountRule::class);
+    }
+
+    /**
+     * Lists promo codes scoped directly to this Sleeping Place.
+     */
+    public function promoCodes(): HasMany
+    {
+        return $this->hasMany(PromoCode::class);
+    }
+
+    /**
+     * Lists audit entries for Sleeping Place availability status changes.
+     */
+    public function availabilityStatusLogs(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceAvailabilityStatusLog::class);
     }
 
     /**

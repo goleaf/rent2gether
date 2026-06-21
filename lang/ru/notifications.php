@@ -35,6 +35,34 @@ return [
         'title' => 'Новый запрос бронирования',
         'body' => ':guest хочет забронировать :place. Проверьте даты, когда будет удобно.',
     ],
+    'booking_request_new' => [
+        'title' => 'Новый запрос бронирования',
+        'body' => 'Запрос :reference ожидает вашего ответа.',
+    ],
+    'booking_request_approved' => [
+        'title' => 'Запрос одобрен',
+        'body' => 'Запрос :reference одобрен. Проверьте следующий шаг до окончания срока.',
+    ],
+    'booking_request_rejected' => [
+        'title' => 'Запрос отклонен',
+        'body' => 'Запрос :reference отклонен. Можно выбрать другие даты или другое место.',
+    ],
+    'booking_request_question' => [
+        'title' => 'Хозяин задал вопрос',
+        'body' => 'Хозяин ответил на запрос :reference. Вы можете ответить на странице запроса.',
+    ],
+    'booking_request_guest_responded' => [
+        'title' => 'Гость ответил',
+        'body' => 'Гость ответил на запрос :reference.',
+    ],
+    'booking_request_expired' => [
+        'title' => 'Запрос истек',
+        'body' => 'Запрос :reference истек. Даты больше не удерживаются.',
+    ],
+    'booking_request_withdrawn' => [
+        'title' => 'Запрос отозван',
+        'body' => 'Гость отозвал запрос :reference.',
+    ],
     'booking_requested' => [
         'title' => 'Запрос отправлен',
         'body' => 'Теперь хозяин может проверить ваш запрос.',

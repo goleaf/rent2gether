@@ -24,10 +24,20 @@
             />
 
             <div class="space-y-2">
-                <flux:input type="file" wire:model="photos" multiple accept="image/*" label="{{ __('booking.problem_report.photos') }}" />
-                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                    {{ __('booking.problem_report.photos_helper') }}
-                </flux:text>
+                <flux:file-upload
+                    wire:model="photos"
+                    multiple
+                    :label="__('booking.problem_report.photos')"
+                    :description="__('booking.problem_report.photos_helper')"
+                    :error="$errors->first('photos')"
+                >
+                    <flux:file-upload.dropzone
+                        :heading="__('booking.problem_report.photos')"
+                        :text="__('booking.problem_report.photos_helper')"
+                        with-progress
+                        inline
+                    />
+                </flux:file-upload>
                 <div wire:loading wire:target="photos" class="text-sm text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.problem_report.photos_loading') }}
                 </div>

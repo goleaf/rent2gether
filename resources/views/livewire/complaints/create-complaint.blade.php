@@ -74,7 +74,20 @@
                 </flux:text>
             </div>
 
-            <flux:input type="file" wire:model="media" multiple accept="image/*" />
+            <flux:file-upload
+                wire:model="media"
+                multiple
+                :label="__('booking.complaint.fields.media')"
+                :description="__('booking.complaint.media_helper')"
+                :error="$errors->first('media')"
+            >
+                <flux:file-upload.dropzone
+                    :heading="__('booking.complaint.fields.media')"
+                    :text="__('booking.complaint.media_helper')"
+                    with-progress
+                    inline
+                />
+            </flux:file-upload>
 
             <div wire:loading wire:target="media" class="text-sm text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.complaint.media_loading') }}

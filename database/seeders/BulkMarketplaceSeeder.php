@@ -29,8 +29,14 @@ use App\Models\BookingForgottenItem;
 use App\Models\BookingGuest;
 use App\Models\BookingGuestIntake;
 use App\Models\BookingPriceLine;
+use App\Models\BookingPriceSnapshot;
+use App\Models\BookingQuote;
+use App\Models\BookingQuoteLine;
+use App\Models\BookingQuoteSuggestion;
+use App\Models\BookingQuoteValidationResult;
 use App\Models\BookingReviewRequest;
 use App\Models\BookingStatusHistory;
+use App\Models\BookingTimelineDate;
 use App\Models\CheckinRecord;
 use App\Models\CheckoutRecord;
 use App\Models\City;
@@ -87,6 +93,8 @@ use App\Models\Notification;
 use App\Models\PaymentRecord;
 use App\Models\Payout;
 use App\Models\PriceRule;
+use App\Models\PromoCode;
+use App\Models\PromoCodeRedemption;
 use App\Models\Property;
 use App\Models\PropertyAccessDetail;
 use App\Models\PropertyAddress;
@@ -114,6 +122,9 @@ use App\Models\RuleTranslation;
 use App\Models\SavedSearch;
 use App\Models\SavedSearchResult;
 use App\Models\SleepingPlace;
+use App\Models\SleepingPlaceAvailabilityStatusLog;
+use App\Models\SleepingPlaceBookingDateLock;
+use App\Models\SleepingPlaceCalendarBlock;
 use App\Models\SleepingPlaceCalendarDay;
 use App\Models\SleepingPlaceCalendarRule;
 use App\Models\SleepingPlaceCalendarSetting;
@@ -121,12 +132,16 @@ use App\Models\SleepingPlaceComfortDetail;
 use App\Models\SleepingPlaceCompatibilityProfile;
 use App\Models\SleepingPlaceConditionDetail;
 use App\Models\SleepingPlaceCreationBatch;
+use App\Models\SleepingPlaceDatePrice;
+use App\Models\SleepingPlaceDiscountRule;
 use App\Models\SleepingPlacePhoto;
 use App\Models\SleepingPlacePhysicalDetail;
 use App\Models\SleepingPlacePositionDetail;
+use App\Models\SleepingPlacePricingSetting;
 use App\Models\SleepingPlaceStorageDetail;
 use App\Models\SleepingPlaceTemplate;
 use App\Models\SleepingPlaceTranslation;
+use App\Models\SleepingPlaceTurnoverRule;
 use App\Models\User;
 use App\Models\UserActivitySummary;
 use App\Models\UserDocument;
@@ -164,6 +179,7 @@ class BulkMarketplaceSeeder extends Seeder
         $this->seedListingTranslations();
         $this->seedCompatibilityRecords();
         $this->seedAvailabilityAndPricing();
+        $this->seedBookingQuotes();
         $this->seedBookings();
         $this->seedBookingChildren();
         $this->seedBookingLifecycleRecords();
@@ -687,7 +703,7 @@ class BulkMarketplaceSeeder extends Seeder
             ],
         );
 
-        foreach ([SleepingPlacePhysicalDetail::class, SleepingPlaceComfortDetail::class, SleepingPlaceStorageDetail::class, SleepingPlacePositionDetail::class, SleepingPlaceConditionDetail::class, SleepingPlaceCompatibilityProfile::class, SleepingPlaceCalendarSetting::class] as $modelClass) {
+        foreach ([SleepingPlacePhysicalDetail::class, SleepingPlaceComfortDetail::class, SleepingPlaceStorageDetail::class, SleepingPlacePositionDetail::class, SleepingPlaceConditionDetail::class, SleepingPlaceCompatibilityProfile::class, SleepingPlaceCalendarSetting::class, SleepingPlaceTurnoverRule::class] as $modelClass) {
             $this->seedMissingOwnedRows(
                 $modelClass,
                 'sleeping_place_id',
@@ -697,6 +713,61 @@ class BulkMarketplaceSeeder extends Seeder
         }
 
         $this->seedSleepingPlaceCalendarDays($sleepingPlaceIds);
+
+        $this->seedFactoryRows(
+            SleepingPlaceCalendarBlock::class,
+            function (int $index) use ($sleepingPlaceRows, $userIds): array {
+                $sleepingPlace = $this->pick($sleepingPlaceRows, $index);
+                $startsAt = CarbonImmutable::now()->addDays(300 + $index)->startOfDay();
+
+                return [
+                    'sleeping_place_id' => $sleepingPlace['id'],
+                    'room_id' => $sleepingPlace['room_id'],
+                    'property_id' => $sleepingPlace['property_id'],
+                    'source_type' => 'bulk_demo_seed',
+                    'source_id' => $index + 1,
+                    'block_type' => match ($index % 3) {
+                        0 => 'closed_by_host',
+                        1 => 'cleaning',
+                        default => 'repair',
+                    },
+                    'status' => 'released',
+                    'starts_at' => $startsAt,
+                    'ends_at' => $startsAt->addDay(),
+                    'check_in_date' => $startsAt->toDateString(),
+                    'check_out_date' => $startsAt->addDay()->toDateString(),
+                    'reason_key' => 'bulk_demo_seed',
+                    'visible_to_guest' => false,
+                    'created_by_user_id' => $this->pick($userIds, $index),
+                    'released_at' => now(),
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            SleepingPlaceBookingDateLock::class,
+            fn (int $index): array => [
+                'sleeping_place_id' => $this->pick($sleepingPlaceRows, $index)['id'],
+                'date' => CarbonImmutable::now()->addDays(360 + $index)->toDateString(),
+                'lock_type' => 'booked',
+                'status' => 'released',
+                'released_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            SleepingPlaceAvailabilityStatusLog::class,
+            fn (int $index): array => [
+                'sleeping_place_id' => $this->pick($sleepingPlaceRows, $index)['id'],
+                'date' => CarbonImmutable::now()->addDays(420 + $index)->toDateString(),
+                'old_status' => 'available',
+                'new_status' => 'closed_by_host',
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $this->pick($userIds, $index),
+                'note' => 'Bulk demo availability status log.',
+            ],
+        );
 
         $this->seedFactoryRows(
             SleepingPlaceCalendarRule::class,
@@ -879,6 +950,192 @@ class BulkMarketplaceSeeder extends Seeder
                 'sleeping_place_id' => $this->pick($sleepingPlaceRows, $sequence->index)['id'],
             ])
             ->create();
+
+        $sleepingPlaceIds = array_map(fn (array $row): int => (int) $row['id'], $sleepingPlaceRows);
+
+        $this->seedMissingOwnedRows(
+            SleepingPlacePricingSetting::class,
+            'sleeping_place_id',
+            $sleepingPlaceIds,
+            fn (int $sleepingPlaceId, int $index): SleepingPlacePricingSetting => SleepingPlacePricingSetting::factory()->create([
+                'sleeping_place_id' => $sleepingPlaceId,
+                'base_nightly_price' => 20 + ($index % 30),
+                'weekend_price' => 25 + ($index % 30),
+                'cleaning_fee' => 10,
+                'deposit_required' => true,
+                'deposit_amount' => 50,
+                'guest_service_fee_type' => SleepingPlacePricingSetting::FEE_PERCENT,
+                'guest_service_fee_value' => 5,
+            ]),
+        );
+
+        $this->seedFactoryRows(
+            SleepingPlaceDatePrice::class,
+            function (int $index) use ($sleepingPlaceRows): array {
+                $sleepingPlace = $this->pick($sleepingPlaceRows, $index);
+
+                return [
+                    'sleeping_place_id' => $sleepingPlace['id'],
+                    'date' => CarbonImmutable::now()->addDays(270 + $index)->toDateString(),
+                    'price' => 28 + ($index % 20),
+                    'currency' => 'EUR',
+                    'price_type' => $index % 2 === 0 ? SleepingPlaceDatePrice::TYPE_MANUAL_OVERRIDE : SleepingPlaceDatePrice::TYPE_SEASONAL,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            SleepingPlaceDiscountRule::class,
+            fn (int $index): array => [
+                'sleeping_place_id' => $this->pick($sleepingPlaceRows, $index)['id'],
+                'discount_type' => $index % 3 === 0 ? SleepingPlaceDiscountRule::TYPE_MONTHLY : SleepingPlaceDiscountRule::TYPE_WEEKLY,
+                'name' => sprintf('Bulk pricing discount %04d', $index + 1),
+                'value_type' => SleepingPlaceDiscountRule::VALUE_PERCENT,
+                'value' => $index % 3 === 0 ? 25 : 10,
+                'min_nights' => $index % 3 === 0 ? 30 : 7,
+                'priority' => $index % 3 === 0 ? 20 : 10,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            PromoCode::class,
+            function (int $index) use ($sleepingPlaceRows): array {
+                $sleepingPlace = $this->pick($sleepingPlaceRows, $index);
+
+                return [
+                    'code' => sprintf('BULK%06d', $index + 1),
+                    'name' => sprintf('Bulk promo %04d', $index + 1),
+                    'value_type' => PromoCode::VALUE_PERCENT,
+                    'value' => 10,
+                    'currency' => 'EUR',
+                    'sleeping_place_id' => $sleepingPlace['id'],
+                    'property_id' => $sleepingPlace['property_id'],
+                    'active' => true,
+                ];
+            },
+        );
+    }
+
+    private function seedBookingQuotes(): void
+    {
+        $userIds = $this->ids(User::class);
+        $sleepingPlaceRows = $this->sleepingPlaceRows();
+        $quoteStart = BookingQuote::query()->count();
+
+        $this->seedFactoryRows(
+            BookingQuote::class,
+            function (int $index) use ($userIds, $sleepingPlaceRows, $quoteStart): array {
+                $sleepingPlace = $this->pick($sleepingPlaceRows, $index);
+                $checkIn = CarbonImmutable::now()->addDays(180 + ($index % 90))->startOfDay();
+                $nights = 1 + ($index % 7);
+                $checkOut = $checkIn->addDays($nights);
+                $accommodation = 18 + ($nights * 12);
+                $cleaningFee = 5;
+                $deposit = 30;
+                $serviceFee = round($accommodation * 0.05, 2);
+
+                return [
+                    'quote_number' => sprintf('QT-%s-%06d', $checkIn->format('Y'), $quoteStart + $index + 1),
+                    'user_id' => $this->pick($userIds, $index),
+                    'sleeping_place_id' => $sleepingPlace['id'],
+                    'room_id' => $sleepingPlace['room_id'],
+                    'property_id' => $sleepingPlace['property_id'],
+                    'host_user_id' => $this->pick($userIds, $index + 1),
+                    'check_in_date' => $checkIn->toDateString(),
+                    'check_in_time' => '15:00',
+                    'check_out_date' => $checkOut->toDateString(),
+                    'check_out_time' => '11:00',
+                    'nights_count' => $nights,
+                    'chargeable_days_count' => $nights,
+                    'calendar_presence_days_count' => $nights + 1,
+                    'guests_count' => 1,
+                    'included_guests_count' => 1,
+                    'extra_guests_count' => 0,
+                    'availability_status' => 'available',
+                    'validation_status' => 'valid',
+                    'pricing_status' => 'calculated',
+                    'accommodation_amount' => $accommodation,
+                    'cleaning_fee_amount' => $cleaningFee,
+                    'service_fee_amount' => $serviceFee,
+                    'deposit_amount' => $deposit,
+                    'total_without_deposit' => $accommodation + $cleaningFee + $serviceFee,
+                    'total_payable' => $accommodation + $cleaningFee + $serviceFee + $deposit,
+                    'host_payout_preview_amount' => $accommodation + $cleaningFee,
+                    'refundable_amount' => $deposit,
+                    'non_refundable_amount' => $accommodation + $cleaningFee + $serviceFee,
+                    'currency' => 'EUR',
+                    'payment_deadline_at' => now()->addMinutes(20),
+                    'expires_at' => now()->addMinutes(20),
+                    'status' => BookingQuote::STATUS_VALID,
+                ];
+            },
+        );
+
+        $quoteIds = $this->ids(BookingQuote::class);
+
+        $this->seedFactoryRows(
+            BookingQuoteLine::class,
+            fn (int $index): array => [
+                'booking_quote_id' => $this->pick($quoteIds, $index),
+                'line_type' => $index % 5 === 0 ? 'deposit' : 'night',
+                'label_key' => $index % 5 === 0 ? 'booking_quotes.lines.deposit' : 'booking_quotes.lines.night',
+                'date' => CarbonImmutable::now()->addDays(180 + ($index % 90))->toDateString(),
+                'quantity' => 1,
+                'unit_amount' => $index % 5 === 0 ? 30 : 20,
+                'amount' => $index % 5 === 0 ? 30 : 20,
+                'currency' => 'EUR',
+                'is_deposit' => $index % 5 === 0,
+                'is_refundable' => $index % 5 === 0,
+                'sort_order' => $index % 10,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingQuoteValidationResult::class,
+            fn (int $index): array => [
+                'booking_quote_id' => $this->pick($quoteIds, $index),
+                'validation_key' => 'host_confirmation_required',
+                'severity' => 'info',
+                'message_key' => 'booking_dates.validation.host_confirmation_required',
+                'message_params_json' => [],
+                'blocking' => false,
+                'visible_to_guest' => true,
+                'visible_to_host' => false,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingTimelineDate::class,
+            fn (int $index): array => [
+                'booking_quote_id' => $this->pick($quoteIds, $index),
+                'event_key' => 'payment_deadline',
+                'scheduled_at' => now()->addMinutes(20 + ($index % 60)),
+                'status' => 'pending',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingQuoteSuggestion::class,
+            function (int $index) use ($quoteIds, $sleepingPlaceRows): array {
+                $sleepingPlace = $this->pick($sleepingPlaceRows, $index);
+                $checkIn = CarbonImmutable::now()->addDays(210 + ($index % 90));
+
+                return [
+                    'booking_quote_id' => $this->pick($quoteIds, $index),
+                    'suggestion_type' => 'nearest_dates',
+                    'sleeping_place_id' => $sleepingPlace['id'],
+                    'room_id' => $sleepingPlace['room_id'],
+                    'property_id' => $sleepingPlace['property_id'],
+                    'check_in_date' => $checkIn->toDateString(),
+                    'check_out_date' => $checkIn->addDays(3)->toDateString(),
+                    'nights_count' => 3,
+                    'price_preview_amount' => 68,
+                    'currency' => 'EUR',
+                    'message_key' => 'booking_quotes.suggestions.nearest_dates',
+                    'sort_order' => $index % 10,
+                ];
+            },
+        );
     }
 
     private function seedBookings(): void
@@ -930,6 +1187,34 @@ class BulkMarketplaceSeeder extends Seeder
                 'booking_id' => $this->pick($bookingRows, $sequence->index)['id'],
             ])
             ->create();
+
+        $bookingIds = array_map(fn (array $row): int => (int) $row['id'], $bookingRows);
+        $quoteIds = $this->ids(BookingQuote::class);
+
+        $this->seedMissingOwnedRows(
+            BookingPriceSnapshot::class,
+            'booking_id',
+            $bookingIds,
+            fn (int $bookingId, int $index): BookingPriceSnapshot => BookingPriceSnapshot::factory()->create([
+                'booking_id' => $bookingId,
+                'booking_quote_id' => $this->pick($quoteIds, $index),
+            ]),
+        );
+
+        $promoCodeIds = $this->ids(PromoCode::class);
+
+        $this->seedFactoryRows(
+            PromoCodeRedemption::class,
+            fn (int $index): array => [
+                'promo_code_id' => $this->pick($promoCodeIds, $index),
+                'user_id' => $this->pick($userIds, $index),
+                'booking_quote_id' => $this->pick($quoteIds, $index),
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'discount_amount' => 5,
+                'currency' => 'EUR',
+                'redeemed_at' => now()->subDays($index % 30),
+            ],
+        );
 
         BookingStatusHistory::factory()
             ->count($this->missingFor(BookingStatusHistory::class))
