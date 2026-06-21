@@ -105,6 +105,14 @@ class BookingPayment extends Model
     }
 
     /**
+     * Links this payment to a relocation price difference when applicable.
+     */
+    public function bookingRelocation(): BelongsTo
+    {
+        return $this->belongsTo(BookingRelocation::class);
+    }
+
+    /**
      * Links this payment to the guest who pays it.
      */
     public function guest(): BelongsTo

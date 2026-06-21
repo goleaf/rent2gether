@@ -146,6 +146,14 @@ class BookingStay extends Model
         return $this->hasMany(BookingExtension::class);
     }
 
+    /**
+     * Lists relocation records that were created from this active stay.
+     */
+    public function relocations(): HasMany
+    {
+        return $this->hasMany(BookingRelocation::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', self::activeStatuses());

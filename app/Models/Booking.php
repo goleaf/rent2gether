@@ -455,6 +455,22 @@ class Booking extends Model
     }
 
     /**
+     * Lists relocation requests that start from this original Booking.
+     */
+    public function relocations(): HasMany
+    {
+        return $this->hasMany(BookingRelocation::class, 'original_booking_id');
+    }
+
+    /**
+     * Lists new booking segments created after relocating from this Booking.
+     */
+    public function relocationSegments(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'relocation_from_booking_id');
+    }
+
+    /**
      * Lists requirement records that can block lifecycle progress.
      */
     public function requirements(): HasMany

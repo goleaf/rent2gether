@@ -73,4 +73,12 @@ class SleepingPlaceBookingDateLock extends Model
     {
         return $this->belongsTo(BookingExtension::class);
     }
+
+    /**
+     * Links this date lock to its Booking Relocation when a relocation is holding dates.
+     */
+    public function bookingRelocation(): BelongsTo
+    {
+        return $this->belongsTo(BookingRelocation::class);
+    }
 }

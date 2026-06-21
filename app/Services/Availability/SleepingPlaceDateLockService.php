@@ -4,6 +4,7 @@ namespace App\Services\Availability;
 
 use App\Models\Booking;
 use App\Models\BookingExtension;
+use App\Models\BookingRelocation;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceBookingDateLock;
 use Carbon\CarbonImmutable;
@@ -107,6 +108,22 @@ class SleepingPlaceDateLockService
      */
     public function createLocksForRelocation(Model $relocation): Collection
     {
+        if ($relocation instanceof BookingRelocation) {
+            $place = SleepingPlace::query()->find($relocation->new_sleeping_place_id);
+
+            if (! $place instanceof SleepingPlace) {
+                throw ValidationException::withMessages([
+                    'new_sleeping_place_id' => __('availability.messages.missing_sleeping_place'),
+                ]);
+            }
+
+            return $this->createLockRows($place, $this->date($relocation->check_in_date ?? $relocation->new_period_check_in_date), $this->date($relocation->check_out_date ?? $relocation->new_period_check_out_date), [
+                'booking_relocation_id' => $relocation->id,
+                'lock_type' => 'relocation_pending',
+                'expires_at' => $relocation->hold_expires_at,
+            ]);
+        }
+
         return $this->createLocksForGenericHold($relocation, 'booking_relocation_id', 'relocation_pending');
     }
 
