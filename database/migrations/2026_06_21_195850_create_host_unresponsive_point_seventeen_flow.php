@@ -136,6 +136,7 @@ return new class extends Migration
             $table->index('status', 'host_unresponsive_cases_status_idx');
             $table->index('response_deadline_at', 'host_unresponsive_cases_deadline_idx');
             $table->index('decision_key', 'host_unresponsive_cases_decision_idx');
+            $table->index('decided_by_user_id', 'host_unresponsive_cases_decided_by_idx');
             $table->index('booking_cancellation_id', 'host_unresponsive_cases_cancellation_idx');
             $table->index('booking_relocation_id', 'host_unresponsive_cases_relocation_idx');
             $table->index('booking_refund_id', 'host_unresponsive_cases_refund_idx');
@@ -206,6 +207,7 @@ return new class extends Migration
             $table->index('booking_id', 'host_unresponsive_host_responses_booking_idx');
             $table->index('host_user_id', 'host_unresponsive_host_responses_host_idx');
             $table->index('response_type', 'host_unresponsive_host_responses_type_idx');
+            $table->index('alternative_sleeping_place_id', 'host_unresponsive_host_responses_place_idx');
             $table->index('created_at', 'host_unresponsive_host_responses_created_idx');
         });
 
