@@ -219,4 +219,12 @@ class BookingCancellation extends Model
     {
         return $this->hasMany(BookingCancellationAlternative::class);
     }
+
+    /**
+     * Lists listing mismatch reports that created or reference this cancellation.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
 }

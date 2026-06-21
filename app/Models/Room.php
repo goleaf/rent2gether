@@ -245,6 +245,14 @@ class Room extends Model
     }
 
     /**
+     * Lists listing mismatch reports tied to this room.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
+
+    /**
      * Lists related Booking Guest Intake records for this Room.
      */
     public function bookingGuestIntakes(): HasMany

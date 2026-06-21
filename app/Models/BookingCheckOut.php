@@ -311,4 +311,12 @@ class BookingCheckOut extends Model
     {
         return $this->hasMany(HostInspectionTask::class);
     }
+
+    /**
+     * Lists listing mismatch reports discovered around checkout.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
 }

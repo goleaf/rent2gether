@@ -258,4 +258,12 @@ class BookingCheckIn extends Model
     {
         return $this->hasMany(BookingHostUnresponsiveCase::class);
     }
+
+    /**
+     * Lists listing mismatch reports found while the guest is checking in.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
 }

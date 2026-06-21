@@ -306,6 +306,14 @@ class Property extends Model
     }
 
     /**
+     * Lists listing mismatch reports tied to this property.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
+
+    /**
      * Lists related Booking Guest Intake records for this Property.
      */
     public function bookingGuestIntakes(): HasMany

@@ -6,6 +6,7 @@ use Database\Factories\BookingRefundFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BookingRefund extends Model
 {
@@ -116,5 +117,13 @@ class BookingRefund extends Model
     public function sleepingPlace(): BelongsTo
     {
         return $this->belongsTo(SleepingPlace::class);
+    }
+
+    /**
+     * Lists listing mismatch reports that created or reference this refund.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
     }
 }

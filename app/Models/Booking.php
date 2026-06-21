@@ -639,6 +639,14 @@ class Booking extends Model
     }
 
     /**
+     * Lists listing mismatch reports tied to this exact Booking snapshot.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
+
+    /**
      * Lists payment receipts issued for this Booking.
      */
     public function paymentReceipts(): HasMany

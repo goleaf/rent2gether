@@ -154,6 +154,14 @@ class BookingStay extends Model
         return $this->hasMany(BookingRelocation::class);
     }
 
+    /**
+     * Lists listing mismatch reports discovered during this stay.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', self::activeStatuses());

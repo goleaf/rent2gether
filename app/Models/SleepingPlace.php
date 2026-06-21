@@ -445,6 +445,14 @@ class SleepingPlace extends Model
     }
 
     /**
+     * Lists listing mismatch reports tied to this exact sleeping place.
+     */
+    public function listingMismatchReports(): HasMany
+    {
+        return $this->hasMany(BookingListingMismatchReport::class);
+    }
+
+    /**
      * Lists temporary booking quotes calculated for this Sleeping Place.
      */
     public function bookingQuotes(): HasMany
