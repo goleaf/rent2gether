@@ -242,4 +242,20 @@ class BookingCheckIn extends Model
     {
         return $this->hasMany(BookingCheckInStatusLog::class);
     }
+
+    /**
+     * Lists no-show cases attached to this check-in attempt.
+     */
+    public function noShows(): HasMany
+    {
+        return $this->hasMany(BookingNoShow::class);
+    }
+
+    /**
+     * Lists host-unresponsive cases attached to this check-in attempt.
+     */
+    public function hostUnresponsiveCases(): HasMany
+    {
+        return $this->hasMany(BookingHostUnresponsiveCase::class);
+    }
 }

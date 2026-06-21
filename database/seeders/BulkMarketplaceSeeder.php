@@ -16,6 +16,13 @@ use App\Models\AvailabilityDay;
 use App\Models\Bed;
 use App\Models\BedAvailability;
 use App\Models\Booking;
+use App\Models\BookingCancellation;
+use App\Models\BookingCancellationAlternative;
+use App\Models\BookingCancellationEvent;
+use App\Models\BookingCancellationPolicySnapshot;
+use App\Models\BookingCancellationPreview;
+use App\Models\BookingCancellationRefundLine;
+use App\Models\BookingCancellationStatusLog;
 use App\Models\BookingCheckIn;
 use App\Models\BookingCheckInAccessDisclosure;
 use App\Models\BookingCheckInAlert;
@@ -49,6 +56,14 @@ use App\Models\BookingGuest;
 use App\Models\BookingGuestIntake;
 use App\Models\BookingHostResponse;
 use App\Models\BookingLifecycleEvent;
+use App\Models\BookingNoShow;
+use App\Models\BookingNoShowContactAttempt;
+use App\Models\BookingNoShowEvent;
+use App\Models\BookingNoShowGuestResponse;
+use App\Models\BookingNoShowMedia;
+use App\Models\BookingNoShowPolicy;
+use App\Models\BookingNoShowPolicySnapshot;
+use App\Models\BookingNoShowStatusLog;
 use App\Models\BookingPayment;
 use App\Models\BookingPaymentAllocation;
 use App\Models\BookingPaymentAttempt;
@@ -181,6 +196,8 @@ use App\Models\SleepingPlaceCalendarBlock;
 use App\Models\SleepingPlaceCalendarDay;
 use App\Models\SleepingPlaceCalendarRule;
 use App\Models\SleepingPlaceCalendarSetting;
+use App\Models\SleepingPlaceCancellationPolicy;
+use App\Models\SleepingPlaceCancellationPolicyRule;
 use App\Models\SleepingPlaceComfortDetail;
 use App\Models\SleepingPlaceCompatibilityProfile;
 use App\Models\SleepingPlaceConditionDetail;
@@ -1918,6 +1935,285 @@ class BulkMarketplaceSeeder extends Seeder
             ],
         );
 
+        $this->seedFactoryRows(
+            SleepingPlaceCancellationPolicy::class,
+            fn (int $index): array => [
+                'sleeping_place_id' => $this->pick($sleepingPlaceRows, $index)['id'],
+                'policy_type' => ['flexible', 'moderate', 'strict', 'non_refundable'][$index % 4],
+                'title' => 'cancellations.policy_types.'.(['flexible', 'moderate', 'strict', 'non_refundable'][$index % 4]),
+                'description' => 'cancellations.demo.policy_description',
+                'free_cancellation_until_hours_before_check_in' => [24, 120, 168, 0][$index % 4],
+                'penalty_starts_hours_before_check_in' => [24, 120, 168, 0][$index % 4],
+                'first_night_non_refundable' => $index % 4 === 2,
+                'cleaning_fee_refundable_before_check_in' => true,
+                'service_fee_refundable' => $index % 4 === 0,
+                'deposit_always_refundable_before_check_in' => true,
+                'active' => true,
+            ],
+        );
+
+        $cancellationPolicyRows = SleepingPlaceCancellationPolicy::query()
+            ->select(['id', 'sleeping_place_id', 'policy_type'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (SleepingPlaceCancellationPolicy $policy): array => [
+                'id' => $policy->id,
+                'sleeping_place_id' => $policy->sleeping_place_id,
+                'policy_type' => $policy->policy_type,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            SleepingPlaceCancellationPolicyRule::class,
+            fn (int $index): array => [
+                'sleeping_place_cancellation_policy_id' => $this->pick($cancellationPolicyRows, $index)['id'],
+                'rule_key' => ['free_before_deadline', 'partial_after_deadline', 'deposit_refund', 'cleaning_fee_refund'][$index % 4],
+                'applies_when' => ['before_free_cancellation_deadline', 'after_free_cancellation_deadline', 'guest_cancels', 'guest_cancels'][$index % 4],
+                'refund_percent' => [100, 50, 100, 100][$index % 4],
+                'fixed_penalty_amount' => null,
+                'currency' => 'EUR',
+                'description' => 'cancellations.demo.policy_rule',
+                'sort_order' => $index % 40,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCancellationPolicySnapshot::class,
+            function (int $index) use ($bookingRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $policyType = ['flexible', 'moderate', 'strict', 'non_refundable'][$index % 4];
+                $checkIn = CarbonImmutable::parse($booking['check_in_date'])->startOfDay();
+
+                return [
+                    'booking_id' => $booking['id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'policy_type' => $policyType,
+                    'title_snapshot' => 'cancellations.policy_types.'.$policyType,
+                    'description_snapshot' => 'cancellations.demo.snapshot_description',
+                    'rules_snapshot_json' => ['policy_type' => $policyType, 'source' => 'bulk_demo_seed'],
+                    'free_cancellation_until' => $policyType === 'non_refundable' ? null : $checkIn->subHours([24, 120, 168, 0][$index % 4]),
+                    'cancellation_penalty_starts_at' => $policyType === 'non_refundable' ? null : $checkIn->subHours([24, 120, 168, 0][$index % 4]),
+                    'first_night_non_refundable' => $policyType === 'strict',
+                    'cleaning_fee_refundable_before_check_in' => true,
+                    'service_fee_refundable' => $policyType === 'flexible',
+                    'deposit_always_refundable_before_check_in' => true,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            BookingCancellationPreview::class,
+            function (int $index) use ($bookingRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $accommodation = 100 + ($index % 30);
+                $cleaning = 10;
+                $service = 6;
+                $deposit = 50;
+                $totalRefund = $index % 4 === 3 ? $deposit + $cleaning : $accommodation + $cleaning + $service + $deposit;
+
+                return [
+                    'preview_number' => sprintf('CANPRE-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $booking['id'],
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'requested_by_user_id' => $index % 3 === 0 ? $booking['host_user_id'] : $booking['guest_user_id'],
+                    'requested_by_type' => $index % 3 === 0 ? 'host' : 'guest',
+                    'cancellation_type' => ['guest_fault', 'host_fault', 'housing_problem', 'non_refundable'][$index % 4],
+                    'reason_key' => ['changed_plans', 'maintenance', 'housing_problem', 'other'][$index % 4],
+                    'comment' => 'cancellations.demo.preview_comment',
+                    'check_in_date' => $booking['check_in_date'],
+                    'check_out_date' => $booking['check_out_date'],
+                    'cancelled_at_preview' => now()->subMinutes($index % 120),
+                    'hours_before_check_in' => 72,
+                    'nights_before_check_in' => 3,
+                    'nights_used' => 0,
+                    'nights_unused' => max(1, CarbonImmutable::parse($booking['check_in_date'])->diffInDays(CarbonImmutable::parse($booking['check_out_date']))),
+                    'accommodation_amount' => $accommodation,
+                    'cleaning_fee_amount' => $cleaning,
+                    'service_fee_amount' => $service,
+                    'deposit_amount' => $deposit,
+                    'tax_amount' => 0,
+                    'city_fee_amount' => 0,
+                    'accommodation_refund_amount' => $index % 4 === 3 ? 0 : $accommodation,
+                    'cleaning_fee_refund_amount' => $cleaning,
+                    'service_fee_refund_amount' => $index % 4 === 3 ? 0 : $service,
+                    'deposit_refund_amount' => $deposit,
+                    'tax_refund_amount' => 0,
+                    'city_fee_refund_amount' => 0,
+                    'penalty_amount' => ($accommodation + $cleaning + $service + $deposit) - $totalRefund,
+                    'host_payout_adjustment_amount' => -1 * ($index % 4 === 3 ? 0 : $accommodation),
+                    'total_refund_amount' => $totalRefund,
+                    'total_non_refundable_amount' => ($accommodation + $cleaning + $service + $deposit) - $totalRefund,
+                    'currency' => 'EUR',
+                    'policy_snapshot_json' => ['policy_type' => ['flexible', 'moderate', 'strict', 'non_refundable'][$index % 4]],
+                    'refund_breakdown_json' => [],
+                    'expires_at' => now()->addMinutes(30),
+                    'status' => $index % 5 === 0 ? 'converted_to_cancellation' : 'calculated',
+                ];
+            },
+        );
+
+        $cancellationPreviewRows = BookingCancellationPreview::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'requested_by_user_id', 'requested_by_type', 'cancellation_type', 'reason_key', 'check_in_date', 'check_out_date', 'total_refund_amount', 'total_non_refundable_amount', 'currency'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingCancellationPreview $preview): array => [
+                'id' => $preview->id,
+                'booking_id' => $preview->booking_id,
+                'guest_user_id' => $preview->guest_user_id,
+                'host_user_id' => $preview->host_user_id,
+                'property_id' => $preview->property_id,
+                'room_id' => $preview->room_id,
+                'sleeping_place_id' => $preview->sleeping_place_id,
+                'requested_by_user_id' => $preview->requested_by_user_id,
+                'requested_by_type' => $preview->requested_by_type,
+                'cancellation_type' => $preview->cancellation_type,
+                'reason_key' => $preview->reason_key,
+                'check_in_date' => $preview->check_in_date?->toDateString(),
+                'check_out_date' => $preview->check_out_date?->toDateString(),
+                'total_refund_amount' => (float) $preview->total_refund_amount,
+                'total_non_refundable_amount' => (float) $preview->total_non_refundable_amount,
+                'currency' => $preview->currency,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            BookingCancellation::class,
+            fn (int $index): array => [
+                'cancellation_number' => sprintf('CAN-%s-%06d', now()->format('Y'), $index + 1),
+                'booking_id' => $this->pick($cancellationPreviewRows, $index)['booking_id'],
+                'booking_cancellation_preview_id' => $this->pick($cancellationPreviewRows, $index)['id'],
+                'guest_user_id' => $this->pick($cancellationPreviewRows, $index)['guest_user_id'],
+                'host_user_id' => $this->pick($cancellationPreviewRows, $index)['host_user_id'],
+                'property_id' => $this->pick($cancellationPreviewRows, $index)['property_id'],
+                'room_id' => $this->pick($cancellationPreviewRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($cancellationPreviewRows, $index)['sleeping_place_id'],
+                'cancelled_by_user_id' => $this->pick($cancellationPreviewRows, $index)['requested_by_user_id'],
+                'cancelled_by_type' => $this->pick($cancellationPreviewRows, $index)['requested_by_type'],
+                'cancellation_type' => $this->pick($cancellationPreviewRows, $index)['cancellation_type'],
+                'reason_key' => $this->pick($cancellationPreviewRows, $index)['reason_key'],
+                'comment' => 'cancellations.demo.cancellation_comment',
+                'status' => ['booking_cancelled', 'refund_pending', 'calendar_released', 'closed'][$index % 4],
+                'check_in_date' => $this->pick($cancellationPreviewRows, $index)['check_in_date'],
+                'check_out_date' => $this->pick($cancellationPreviewRows, $index)['check_out_date'],
+                'cancelled_at' => now()->subMinutes($index % 1440),
+                'hours_before_check_in' => 72,
+                'nights_before_check_in' => 3,
+                'nights_used' => $index % 6 === 0 ? 1 : 0,
+                'nights_unused' => 2,
+                'policy_snapshot_id' => null,
+                'accommodation_amount' => 100 + ($index % 30),
+                'cleaning_fee_amount' => 10,
+                'service_fee_amount' => 6,
+                'deposit_amount' => 50,
+                'tax_amount' => 0,
+                'city_fee_amount' => 0,
+                'accommodation_refund_amount' => $this->pick($cancellationPreviewRows, $index)['total_refund_amount'] > 60 ? 100 + ($index % 30) : 0,
+                'cleaning_fee_refund_amount' => 10,
+                'service_fee_refund_amount' => $this->pick($cancellationPreviewRows, $index)['total_refund_amount'] > 60 ? 6 : 0,
+                'deposit_refund_amount' => 50,
+                'tax_refund_amount' => 0,
+                'city_fee_refund_amount' => 0,
+                'penalty_amount' => $this->pick($cancellationPreviewRows, $index)['total_non_refundable_amount'],
+                'host_payout_adjustment_amount' => -1 * (100 + ($index % 30)),
+                'total_refund_amount' => $this->pick($cancellationPreviewRows, $index)['total_refund_amount'],
+                'total_non_refundable_amount' => $this->pick($cancellationPreviewRows, $index)['total_non_refundable_amount'],
+                'currency' => $this->pick($cancellationPreviewRows, $index)['currency'],
+                'refund_status' => $this->pick($cancellationPreviewRows, $index)['total_refund_amount'] > 0 ? 'pending' : 'not_required',
+                'calendar_release_status' => $index % 6 === 0 ? 'kept_blocked' : 'released',
+                'dates_released_at' => $index % 6 === 0 ? null : now()->subMinutes($index % 120),
+                'requires_host_response' => false,
+                'requires_dispute' => in_array($this->pick($cancellationPreviewRows, $index)['reason_key'], ['housing_problem', 'host_unresponsive', 'listing_mismatch'], true),
+                'completed_at' => $index % 4 === 3 ? now()->subHour() : null,
+                'closed_at' => $index % 4 === 3 ? now() : null,
+            ],
+        );
+
+        $cancellationRows = BookingCancellation::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'reason_key', 'status', 'currency', 'total_refund_amount', 'total_non_refundable_amount'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingCancellation $cancellation): array => [
+                'id' => $cancellation->id,
+                'booking_id' => $cancellation->booking_id,
+                'guest_user_id' => $cancellation->guest_user_id,
+                'host_user_id' => $cancellation->host_user_id,
+                'property_id' => $cancellation->property_id,
+                'room_id' => $cancellation->room_id,
+                'sleeping_place_id' => $cancellation->sleeping_place_id,
+                'reason_key' => $cancellation->reason_key,
+                'status' => $cancellation->status,
+                'currency' => $cancellation->currency,
+                'total_refund_amount' => (float) $cancellation->total_refund_amount,
+                'total_non_refundable_amount' => (float) $cancellation->total_non_refundable_amount,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            BookingCancellationRefundLine::class,
+            fn (int $index): array => [
+                'booking_cancellation_id' => $this->pick($cancellationRows, $index)['id'],
+                'line_type' => ['accommodation', 'cleaning_fee', 'service_fee', 'deposit', 'penalty'][$index % 5],
+                'label_key' => 'cancellations.refund_line_types.'.(['accommodation', 'cleaning_fee', 'service_fee', 'deposit', 'penalty'][$index % 5]),
+                'amount' => [100, 10, 6, 50, $this->pick($cancellationRows, $index)['total_non_refundable_amount']][$index % 5],
+                'currency' => $this->pick($cancellationRows, $index)['currency'],
+                'refundable' => $index % 5 !== 4,
+                'refund_amount' => $index % 5 === 4 ? 0 : [100, 10, 6, 50, 0][$index % 5],
+                'non_refundable_amount' => $index % 5 === 4 ? $this->pick($cancellationRows, $index)['total_non_refundable_amount'] : 0,
+                'reason_key' => $this->pick($cancellationRows, $index)['reason_key'],
+                'sort_order' => $index % 50,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCancellationStatusLog::class,
+            fn (int $index): array => [
+                'booking_cancellation_id' => $this->pick($cancellationRows, $index)['id'],
+                'booking_id' => $this->pick($cancellationRows, $index)['booking_id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($cancellationRows, $index)['guest_user_id'] : $this->pick($cancellationRows, $index)['host_user_id'],
+                'old_status' => null,
+                'new_status' => $this->pick($cancellationRows, $index)['status'],
+                'reason_key' => $this->pick($cancellationRows, $index)['reason_key'],
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCancellationEvent::class,
+            fn (int $index): array => [
+                'booking_cancellation_id' => $this->pick($cancellationRows, $index)['id'],
+                'booking_id' => $this->pick($cancellationRows, $index)['booking_id'],
+                'event_key' => ['cancellation_preview_created', 'cancellation_confirmed', 'booking_cancelled', 'refund_created', 'calendar_locks_released'][$index % 5],
+                'event_type' => 'system',
+                'user_id' => $index % 2 === 0 ? $this->pick($cancellationRows, $index)['guest_user_id'] : $this->pick($cancellationRows, $index)['host_user_id'],
+                'occurred_at' => now()->subMinutes($index % 1440),
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCancellationAlternative::class,
+            fn (int $index): array => [
+                'booking_cancellation_id' => $this->pick($cancellationRows, $index)['id'],
+                'sleeping_place_id' => $this->pick($sleepingPlaceRows, $index + 1)['id'],
+                'property_id' => $this->pick($sleepingPlaceRows, $index + 1)['property_id'],
+                'room_id' => $this->pick($sleepingPlaceRows, $index + 1)['room_id'],
+                'suggestion_type' => ['same_host_place', 'same_property_place', 'similar_price_place', 'saved_search'][$index % 4],
+                'check_in_date' => CarbonImmutable::now()->addDays(7 + ($index % 30))->toDateString(),
+                'check_out_date' => CarbonImmutable::now()->addDays(10 + ($index % 30))->toDateString(),
+                'price_preview_amount' => 80 + ($index % 40),
+                'currency' => 'EUR',
+                'message_key' => 'cancellations.messages.alternatives_available',
+                'sort_order' => $index % 30,
+            ],
+        );
+
         PaymentRecord::factory()
             ->count($this->missingFor(PaymentRecord::class))
             ->sequence(fn (Sequence $sequence): array => [
@@ -2067,6 +2363,7 @@ class BulkMarketplaceSeeder extends Seeder
     {
         $bookingRows = $this->bookingRows();
         $bookingIds = array_column($bookingRows, 'id');
+        $sleepingPlaceIds = $this->ids(SleepingPlace::class);
 
         $this->seedFactoryRows(
             BookingGuestIntake::class,
@@ -2131,6 +2428,198 @@ class BulkMarketplaceSeeder extends Seeder
 
         $checkInRows = $this->bookingCheckInRows();
         $checkOutRows = $this->bookingCheckOutRows();
+        $bookingsById = collect($bookingRows)->keyBy('id')->all();
+
+        $this->seedMissingOwnedRows(
+            BookingNoShowPolicy::class,
+            'sleeping_place_id',
+            $sleepingPlaceIds,
+            fn (int $sleepingPlaceId, int $index): BookingNoShowPolicy => BookingNoShowPolicy::factory()->create([
+                'sleeping_place_id' => $sleepingPlaceId,
+                'waiting_period_minutes' => [60, 120, 180, 240][$index % 4],
+                'same_day_waiting_period_minutes' => 60,
+                'night_arrival_waiting_period_minutes' => 240,
+                'hold_first_night_on_no_show' => true,
+                'release_remaining_nights_after_no_show' => true,
+                'refund_deposit_on_no_show' => true,
+                'refund_cleaning_fee_on_no_show' => $index % 3 !== 0,
+                'refund_service_fee_on_no_show' => $index % 5 === 0,
+                'host_payout_rule' => ['policy_based', 'first_night', 'none', 'full_first_day'][$index % 4],
+                'guest_penalty_rule' => ['policy_based', 'first_night', 'none', 'custom'][$index % 4],
+                'active' => true,
+            ]),
+        );
+
+        $this->seedMissingOwnedRows(
+            BookingNoShowPolicySnapshot::class,
+            'booking_id',
+            $bookingIds,
+            fn (int $bookingId, int $index): BookingNoShowPolicySnapshot => BookingNoShowPolicySnapshot::factory()->create([
+                'booking_id' => $bookingId,
+                'sleeping_place_id' => $this->pick($bookingRows, $index)['sleeping_place_id'],
+                'waiting_period_minutes' => [60, 120, 180, 240][$index % 4],
+                'same_day_waiting_period_minutes' => 60,
+                'night_arrival_waiting_period_minutes' => 240,
+                'hold_first_night_on_no_show' => true,
+                'release_remaining_nights_after_no_show' => true,
+                'refund_deposit_on_no_show' => true,
+                'refund_cleaning_fee_on_no_show' => $index % 3 !== 0,
+                'refund_service_fee_on_no_show' => $index % 5 === 0,
+                'host_payout_rule' => ['policy_based', 'first_night', 'none', 'full_first_day'][$index % 4],
+                'guest_penalty_rule' => ['policy_based', 'first_night', 'none', 'custom'][$index % 4],
+                'policy_snapshot_json' => ['source' => 'bulk_demo_seed', 'booking_id' => $bookingId],
+            ]),
+        );
+
+        $this->seedFactoryRows(
+            BookingNoShow::class,
+            function (int $index) use ($checkInRows, $bookingsById): array {
+                $checkIn = $this->pick($checkInRows, $index);
+                $booking = $bookingsById[$checkIn['booking_id']] ?? $this->pick(array_values($bookingsById), $index);
+                $waitingMinutes = [60, 120, 180, 240][$index % 4];
+                $startedAt = CarbonImmutable::parse($booking['check_in_date'])->setTime(18, 0);
+                $waitingUntil = $startedAt->addMinutes($waitingMinutes);
+                $refund = $index % 4 === 2 ? 0 : 50 + ($index % 30);
+                $penalty = $index % 4 === 2 ? 80 : 20 + ($index % 20);
+
+                return [
+                    'no_show_number' => sprintf('NS-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $checkIn['booking_id'],
+                    'booking_check_in_id' => $checkIn['id'],
+                    'guest_user_id' => $checkIn['guest_user_id'],
+                    'host_user_id' => $checkIn['host_user_id'],
+                    'property_id' => $checkIn['property_id'],
+                    'room_id' => $checkIn['room_id'],
+                    'sleeping_place_id' => $checkIn['sleeping_place_id'],
+                    'status' => ['watching', 'host_reported', 'waiting_period_active', 'confirmed_no_show', 'dispute_opened'][$index % 5],
+                    'reason_key' => ['guest_did_not_arrive', 'host_reported_guest_absent', 'guest_not_answering', 'guest_no_response_after_waiting_period'][$index % 4],
+                    'check_in_date' => $booking['check_in_date'],
+                    'planned_check_in_time' => '18:00',
+                    'check_in_window' => '18:00-22:00',
+                    'no_show_started_at' => $startedAt,
+                    'host_reported_at' => $index % 5 === 0 ? null : $startedAt->addMinutes(30),
+                    'guest_contacted_at' => $startedAt->addMinutes(35),
+                    'guest_last_response_at' => $index % 5 === 2 ? $startedAt->addMinutes(45) : null,
+                    'waiting_period_minutes' => $waitingMinutes,
+                    'waiting_until' => $waitingUntil,
+                    'waiting_expired_at' => $index % 5 === 3 ? $waitingUntil : null,
+                    'guest_not_answering' => $index % 5 !== 2,
+                    'guest_warned_late_arrival' => $index % 5 === 2,
+                    'guest_warned_cancellation' => false,
+                    'guest_claimed_arrived' => false,
+                    'host_marked_no_show' => $index % 5 !== 0,
+                    'guest_response_type' => $index % 5 === 2 ? 'i_am_late' : null,
+                    'guest_response_message' => $index % 5 === 2 ? 'no_show.demo.guest_late_message' : null,
+                    'host_comment' => 'no_show.demo.host_comment',
+                    'guest_comment' => null,
+                    'decision_key' => $index % 5 === 3 ? 'confirmed_no_show' : ($index % 5 === 4 ? 'dispute_opened' : null),
+                    'decision_at' => $index % 5 >= 3 ? $waitingUntil->addMinutes(10) : null,
+                    'decided_by_user_id' => $index % 5 === 3 ? $checkIn['host_user_id'] : null,
+                    'refund_or_penalty_status' => $index % 5 === 3 ? 'calculated' : ($index % 5 === 4 ? 'disputed' : 'not_calculated'),
+                    'refund_amount' => $index % 5 >= 3 ? $refund : 0,
+                    'penalty_amount' => $index % 5 >= 3 ? $penalty : 0,
+                    'deposit_refund_amount' => $index % 5 >= 3 ? 50 : 0,
+                    'cleaning_fee_refund_amount' => $index % 5 >= 3 ? 10 : 0,
+                    'service_fee_refund_amount' => $index % 5 >= 3 && $index % 5 === 0 ? 6 : 0,
+                    'host_payout_amount' => $index % 5 === 3 ? $penalty : 0,
+                    'currency' => 'EUR',
+                    'calendar_release_status' => $index % 5 === 3 ? 'released_remaining_dates' : 'not_released',
+                    'dates_released_at' => $index % 5 === 3 ? $waitingUntil->addMinutes(15) : null,
+                    'future_support_review_required' => $index % 5 === 4,
+                    'future_support_comment' => $index % 5 === 4 ? 'no_show.demo.future_review' : null,
+                    'completed_at' => $index % 5 === 3 ? $waitingUntil->addMinutes(20) : null,
+                    'closed_at' => null,
+                ];
+            },
+        );
+
+        $noShowRows = BookingNoShow::query()
+            ->select(['id', 'booking_id', 'booking_check_in_id', 'guest_user_id', 'host_user_id', 'status', 'reason_key'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingNoShow $noShow): array => [
+                'id' => $noShow->id,
+                'booking_id' => $noShow->booking_id,
+                'booking_check_in_id' => $noShow->booking_check_in_id,
+                'guest_user_id' => $noShow->guest_user_id,
+                'host_user_id' => $noShow->host_user_id,
+                'status' => $noShow->status,
+                'reason_key' => $noShow->reason_key,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            BookingNoShowContactAttempt::class,
+            fn (int $index): array => [
+                'booking_no_show_id' => $this->pick($noShowRows, $index)['id'],
+                'booking_id' => $this->pick($noShowRows, $index)['booking_id'],
+                'attempted_by_user_id' => $index % 3 === 0 ? $this->pick($noShowRows, $index)['host_user_id'] : null,
+                'contact_channel' => ['in_app', 'email', 'message_thread'][$index % 3],
+                'attempt_type' => ['automatic_reminder', 'guest_check_request', 'final_warning', 'host_message'][$index % 4],
+                'status' => ['sent', 'sent', 'responded', 'expired'][$index % 4],
+                'message_key' => 'no_show.messages.guest_response_required',
+                'message_text' => null,
+                'attempted_at' => now()->subMinutes($index % 180),
+                'response_received_at' => $index % 4 === 2 ? now()->subMinutes($index % 120) : null,
+                'response_summary' => $index % 4 === 2 ? 'no_show.demo.response_summary' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingNoShowGuestResponse::class,
+            fn (int $index): array => [
+                'booking_no_show_id' => $this->pick($noShowRows, $index)['id'],
+                'booking_id' => $this->pick($noShowRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($noShowRows, $index)['guest_user_id'],
+                'response_type' => ['i_am_late', 'i_arrived', 'i_want_to_cancel', 'dispute_no_show'][$index % 4],
+                'message' => 'no_show.demo.guest_response',
+                'new_arrival_time' => $index % 4 === 0 ? '23:30' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingNoShowMedia::class,
+            fn (int $index): array => [
+                'booking_no_show_id' => $this->pick($noShowRows, $index)['id'],
+                'booking_id' => $this->pick($noShowRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $index % 2 === 0 ? $this->pick($noShowRows, $index)['guest_user_id'] : $this->pick($noShowRows, $index)['host_user_id'],
+                'media_type' => 'photo',
+                'media_role' => ['guest_arrival_evidence', 'host_absence_evidence', 'message_evidence', 'access_problem_evidence'][$index % 4],
+                'path' => 'demo/no-show/evidence-'.$index.'.jpg',
+                'thumbnail_path' => 'demo/no-show/evidence-'.$index.'-thumb.jpg',
+                'caption' => 'no_show.demo.media_caption',
+                'visibility' => ['guest_and_host', 'guest_only', 'host_only', 'future_support_only'][$index % 4],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingNoShowStatusLog::class,
+            fn (int $index): array => [
+                'booking_no_show_id' => $this->pick($noShowRows, $index)['id'],
+                'booking_id' => $this->pick($noShowRows, $index)['booking_id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($noShowRows, $index)['guest_user_id'] : $this->pick($noShowRows, $index)['host_user_id'],
+                'old_status' => null,
+                'new_status' => $this->pick($noShowRows, $index)['status'],
+                'reason_key' => $this->pick($noShowRows, $index)['reason_key'],
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingNoShowEvent::class,
+            fn (int $index): array => [
+                'booking_no_show_id' => $this->pick($noShowRows, $index)['id'],
+                'booking_id' => $this->pick($noShowRows, $index)['booking_id'],
+                'event_key' => ['no_show_watch_started', 'host_reported_no_show', 'guest_contact_attempted', 'no_show_confirmed', 'calendar_released'][$index % 5],
+                'event_type' => 'system',
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $index % 2 === 0 ? $this->pick($noShowRows, $index)['guest_user_id'] : $this->pick($noShowRows, $index)['host_user_id'],
+                'occurred_at' => now()->subMinutes($index % 1440),
+                'context_json' => [],
+            ],
+        );
 
         $this->seedMissingOwnedRows(
             BookingCheckInInstruction::class,

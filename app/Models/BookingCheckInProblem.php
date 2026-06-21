@@ -105,4 +105,12 @@ class BookingCheckInProblem extends Model
     {
         return $this->belongsTo(SleepingPlace::class);
     }
+
+    /**
+     * Links this problem to the host-unresponsive case created from it when present.
+     */
+    public function hostUnresponsiveCase(): BelongsTo
+    {
+        return $this->belongsTo(BookingHostUnresponsiveCase::class, 'source_created_host_unresponsive_case_id');
+    }
 }

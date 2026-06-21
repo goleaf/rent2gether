@@ -117,6 +117,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('booking_id', 'booking_cancel_previews_booking_idx');
+            $table->index('guest_user_id', 'booking_cancel_previews_guest_idx');
+            $table->index('host_user_id', 'booking_cancel_previews_host_idx');
+            $table->index('property_id', 'booking_cancel_previews_property_idx');
+            $table->index('room_id', 'booking_cancel_previews_room_idx');
+            $table->index('sleeping_place_id', 'booking_cancel_previews_place_idx');
             $table->index('requested_by_user_id', 'booking_cancel_previews_user_idx');
             $table->index('requested_by_type', 'booking_cancel_previews_by_type_idx');
             $table->index('cancellation_type', 'booking_cancel_previews_type_idx');
@@ -184,8 +189,12 @@ return new class extends Migration
             $table->index('booking_cancellation_preview_id', 'booking_cancellations_preview_idx');
             $table->index(['guest_user_id', 'status'], 'booking_cancellations_guest_status_idx');
             $table->index(['host_user_id', 'status'], 'booking_cancellations_host_status_idx');
+            $table->index('property_id', 'booking_cancellations_property_idx');
+            $table->index('room_id', 'booking_cancellations_room_idx');
             $table->index(['sleeping_place_id', 'status'], 'booking_cancellations_place_status_idx');
             $table->index('cancelled_by_user_id', 'booking_cancellations_cancelled_user_idx');
+            $table->index('policy_snapshot_id', 'booking_cancellations_policy_snapshot_idx');
+            $table->index('booking_refund_id', 'booking_cancellations_refund_idx');
             $table->index('cancelled_by_type', 'booking_cancellations_by_type_idx');
             $table->index('cancellation_type', 'booking_cancellations_type_idx');
             $table->index('reason_key', 'booking_cancellations_reason_idx');
@@ -251,6 +260,7 @@ return new class extends Migration
             $table->index('event_key', 'booking_cancel_events_key_idx');
             $table->index('event_type', 'booking_cancel_events_type_idx');
             $table->index(['source_type', 'source_id'], 'booking_cancel_events_source_idx');
+            $table->index('user_id', 'booking_cancel_events_user_idx');
             $table->index('occurred_at', 'booking_cancel_events_occurred_idx');
         });
 
@@ -271,6 +281,8 @@ return new class extends Migration
 
             $table->index('booking_cancellation_id', 'booking_cancel_alts_cancellation_idx');
             $table->index('sleeping_place_id', 'booking_cancel_alts_place_idx');
+            $table->index('property_id', 'booking_cancel_alts_property_idx');
+            $table->index('room_id', 'booking_cancel_alts_room_idx');
             $table->index('suggestion_type', 'booking_cancel_alts_type_idx');
             $table->index('sort_order', 'booking_cancel_alts_sort_idx');
         });

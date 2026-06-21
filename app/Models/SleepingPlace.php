@@ -413,6 +413,38 @@ class SleepingPlace extends Model
     }
 
     /**
+     * Lists no-show policies configured for this Sleeping Place.
+     */
+    public function noShowPolicies(): HasMany
+    {
+        return $this->hasMany(BookingNoShowPolicy::class);
+    }
+
+    /**
+     * Fetches the active no-show policy used for new Booking snapshots.
+     */
+    public function activeNoShowPolicy(): HasOne
+    {
+        return $this->hasOne(BookingNoShowPolicy::class)->where('active', true);
+    }
+
+    /**
+     * Lists host-unresponsive policies configured for this Sleeping Place.
+     */
+    public function hostUnresponsivePolicies(): HasMany
+    {
+        return $this->hasMany(HostUnresponsivePolicy::class);
+    }
+
+    /**
+     * Fetches the active host-unresponsive policy used for new Booking snapshots.
+     */
+    public function activeHostUnresponsivePolicy(): HasOne
+    {
+        return $this->hasOne(HostUnresponsivePolicy::class)->where('active', true);
+    }
+
+    /**
      * Lists temporary booking quotes calculated for this Sleeping Place.
      */
     public function bookingQuotes(): HasMany

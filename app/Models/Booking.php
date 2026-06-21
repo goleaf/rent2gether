@@ -607,6 +607,38 @@ class Booking extends Model
     }
 
     /**
+     * Fetches the immutable no-show policy snapshot copied at booking time.
+     */
+    public function noShowPolicySnapshot(): HasOne
+    {
+        return $this->hasOne(BookingNoShowPolicySnapshot::class);
+    }
+
+    /**
+     * Lists no-show verification cases created for this Booking.
+     */
+    public function noShows(): HasMany
+    {
+        return $this->hasMany(BookingNoShow::class);
+    }
+
+    /**
+     * Fetches the immutable host-unresponsive policy snapshot copied at booking time.
+     */
+    public function hostUnresponsivePolicySnapshot(): HasOne
+    {
+        return $this->hasOne(HostUnresponsivePolicySnapshot::class);
+    }
+
+    /**
+     * Lists host-unresponsive access cases created for this Booking.
+     */
+    public function hostUnresponsiveCases(): HasMany
+    {
+        return $this->hasMany(BookingHostUnresponsiveCase::class);
+    }
+
+    /**
      * Lists payment receipts issued for this Booking.
      */
     public function paymentReceipts(): HasMany

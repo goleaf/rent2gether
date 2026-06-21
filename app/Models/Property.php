@@ -605,6 +605,22 @@ class Property extends Model
     }
 
     /**
+     * Lists host-unresponsive policy fallbacks configured for this Property.
+     */
+    public function hostUnresponsivePolicies(): HasMany
+    {
+        return $this->hasMany(HostUnresponsivePolicy::class);
+    }
+
+    /**
+     * Fetches the active host-unresponsive policy fallback for new Booking snapshots.
+     */
+    public function activeHostUnresponsivePolicy(): HasOne
+    {
+        return $this->hasOne(HostUnresponsivePolicy::class)->where('active', true);
+    }
+
+    /**
      * Fetches the current occupancy snapshot for this Property.
      */
     public function currentOccupancySnapshot(): HasOne

@@ -6,6 +6,7 @@ use Database\Factories\HostRepresentativeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HostRepresentative extends Model
 {
@@ -56,5 +57,13 @@ class HostRepresentative extends Model
     public function representativeUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'representative_user_id');
+    }
+
+    /**
+     * Lists host-unresponsive cases where this contact was copied as the representative.
+     */
+    public function hostUnresponsiveCases(): HasMany
+    {
+        return $this->hasMany(BookingHostUnresponsiveCase::class);
     }
 }
