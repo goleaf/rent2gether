@@ -21,6 +21,9 @@ class Booking extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'booking_number',
+        'booking_quote_id',
+        'booking_request_id',
         'reference',
         'bed_id',
         'guest_id',
@@ -30,7 +33,16 @@ class Booking extends Model
         'property_id',
         'room_id',
         'sleeping_place_id',
+        'group_booking_id',
+        'parent_booking_id',
+        'extension_from_booking_id',
+        'relocation_from_booking_id',
         'booking_type',
+        'approval_type',
+        'payment_type',
+        'deposit_mode',
+        'guest_group_type',
+        'source_type',
         'check_in',
         'check_out',
         'check_in_date',
@@ -41,10 +53,16 @@ class Booking extends Model
         'guests_count',
         'nights',
         'nights_count',
+        'chargeable_days_count',
         'calendar_days_count',
+        'calendar_presence_days_count',
+        'included_guests_count',
+        'extra_guests_count',
         'price_per_night',
+        'nightly_price_snapshot',
         'subtotal',
         'subtotal_amount',
+        'accommodation_amount',
         'discount_amount',
         'cleaning_fee',
         'cleaning_fee_amount',
@@ -56,6 +74,9 @@ class Booking extends Model
         'city_fee_amount',
         'total',
         'total_amount',
+        'total_without_deposit',
+        'total_payable',
+        'host_payout_amount',
         'refundable_amount',
         'non_refundable_amount',
         'currency',
@@ -63,37 +84,63 @@ class Booking extends Model
         'payment_status',
         'payment_method',
         'payment_paid_at',
+        'paid_at',
         'payment_deadline_at',
         'availability_hold_expires_at',
         'requires_document_check',
         'requires_phone_check',
         'requires_identity_check',
+        'requires_phone_verification',
+        'requires_identity_verification',
+        'requires_document_verification',
+        'verification_status',
+        'phone_verified_at',
+        'identity_verified_at',
+        'documents_verified_at',
         'cancellation_policy',
         'refund_amount',
         'refund_status',
+        'rejection_reason',
+        'rejected_by_user_id',
+        'rejected_at',
         'cancel_reason',
         'cancelled_by',
+        'cancelled_by_user_id',
+        'cancelled_by_type',
         'cancelled_at',
         'cancellation_reason',
+        'cancellation_policy_snapshot_id',
         'cancellation_terms',
         'guest_message',
         'rules_accepted_at',
         'host_reply',
         'host_response',
         'check_in_instructions',
+        'check_in_instruction_available',
         'guest_checked_in_at',
         'guest_checked_out_at',
         'host_confirmed_checkin_at',
         'host_confirmed_checkout_at',
+        'guest_check_in_confirmed_at',
+        'host_check_in_confirmed_at',
+        'guest_check_out_confirmed_at',
+        'host_check_out_confirmed_at',
         'checked_in_at',
         'checked_out_at',
+        'stay_started_at',
+        'stay_ended_at',
         'free_cancel_before',
         'deposit_released_at',
         'has_dispute',
         'has_complaint',
+        'has_open_maintenance',
+        'has_deposit_issue',
         'guest_review_left',
         'host_review_left',
+        'guest_review_left_at',
+        'host_review_left_at',
         'review_deadline_at',
+        'closed_at',
     ];
 
     /**
@@ -113,9 +160,19 @@ class Booking extends Model
             'check_in_time' => 'datetime:H:i',
             'check_out_time' => 'datetime:H:i',
             'arrival_time' => 'datetime:H:i',
+            'nights' => 'integer',
+            'nights_count' => 'integer',
+            'chargeable_days_count' => 'integer',
+            'calendar_days_count' => 'integer',
+            'calendar_presence_days_count' => 'integer',
+            'guests_count' => 'integer',
+            'included_guests_count' => 'integer',
+            'extra_guests_count' => 'integer',
+            'nightly_price_snapshot' => 'array',
             'price_per_night' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'subtotal_amount' => 'decimal:2',
+            'accommodation_amount' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'cleaning_fee' => 'decimal:2',
             'cleaning_fee_amount' => 'decimal:2',
@@ -127,30 +184,53 @@ class Booking extends Model
             'city_fee_amount' => 'decimal:2',
             'total' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'total_without_deposit' => 'decimal:2',
+            'total_payable' => 'decimal:2',
+            'host_payout_amount' => 'decimal:2',
             'refundable_amount' => 'decimal:2',
             'non_refundable_amount' => 'decimal:2',
             'refund_amount' => 'decimal:2',
             'requires_document_check' => 'boolean',
             'requires_phone_check' => 'boolean',
             'requires_identity_check' => 'boolean',
+            'requires_phone_verification' => 'boolean',
+            'requires_identity_verification' => 'boolean',
+            'requires_document_verification' => 'boolean',
+            'check_in_instruction_available' => 'boolean',
             'has_dispute' => 'boolean',
             'has_complaint' => 'boolean',
+            'has_open_maintenance' => 'boolean',
+            'has_deposit_issue' => 'boolean',
             'guest_review_left' => 'boolean',
             'host_review_left' => 'boolean',
             'review_deadline_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'identity_verified_at' => 'datetime',
+            'documents_verified_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'guest_checked_in_at' => 'datetime',
             'guest_checked_out_at' => 'datetime',
             'host_confirmed_checkin_at' => 'datetime',
             'host_confirmed_checkout_at' => 'datetime',
+            'guest_check_in_confirmed_at' => 'datetime',
+            'host_check_in_confirmed_at' => 'datetime',
+            'guest_check_out_confirmed_at' => 'datetime',
+            'host_check_out_confirmed_at' => 'datetime',
             'checked_in_at' => 'datetime',
             'checked_out_at' => 'datetime',
+            'stay_started_at' => 'datetime',
+            'stay_ended_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'paid_at' => 'datetime',
             'free_cancel_before' => 'datetime',
             'deposit_released_at' => 'datetime',
             'payment_paid_at' => 'datetime',
             'payment_deadline_at' => 'datetime',
             'availability_hold_expires_at' => 'datetime',
             'rules_accepted_at' => 'datetime',
+            'guest_review_left_at' => 'datetime',
+            'host_review_left_at' => 'datetime',
+            'closed_at' => 'datetime',
         ];
     }
 
@@ -176,8 +256,12 @@ class Booking extends Model
             $booking->check_out ??= $booking->check_out_date;
             $booking->nights_count = $booking->nights_count ?: $booking->nights;
             $booking->nights = $booking->nights ?: $booking->nights_count;
+            $booking->chargeable_days_count = $booking->chargeable_days_count ?: $booking->nights_count;
+            $booking->calendar_presence_days_count = $booking->calendar_presence_days_count ?: $booking->calendar_days_count;
+            $booking->calendar_days_count = $booking->calendar_days_count ?: $booking->calendar_presence_days_count;
             $booking->subtotal_amount = $booking->subtotal_amount ?: $booking->subtotal;
             $booking->subtotal = $booking->subtotal ?: $booking->subtotal_amount;
+            $booking->accommodation_amount = $booking->accommodation_amount ?: $booking->subtotal_amount;
             $booking->cleaning_fee_amount = $booking->cleaning_fee_amount ?: $booking->cleaning_fee;
             $booking->cleaning_fee = $booking->cleaning_fee ?: $booking->cleaning_fee_amount;
             $booking->deposit_amount = $booking->deposit_amount ?: $booking->deposit;
@@ -186,12 +270,31 @@ class Booking extends Model
             $booking->service_fee = $booking->service_fee ?: $booking->service_fee_amount;
             $booking->total_amount = $booking->total_amount ?: $booking->total;
             $booking->total = $booking->total ?: $booking->total_amount;
+            $booking->total_payable = $booking->total_payable ?: $booking->total_amount;
+            $booking->total_without_deposit = $booking->total_without_deposit ?: max(0, (float) $booking->total_payable - (float) $booking->deposit_amount);
+            $booking->paid_at ??= $booking->payment_paid_at;
+            $booking->payment_paid_at ??= $booking->paid_at;
+            $booking->requires_phone_verification = $booking->requires_phone_verification ?: $booking->requires_phone_check;
+            $booking->requires_identity_verification = $booking->requires_identity_verification ?: $booking->requires_identity_check;
+            $booking->requires_document_verification = $booking->requires_document_verification ?: $booking->requires_document_check;
+            $booking->requires_phone_check = $booking->requires_phone_check ?: $booking->requires_phone_verification;
+            $booking->requires_identity_check = $booking->requires_identity_check ?: $booking->requires_identity_verification;
+            $booking->requires_document_check = $booking->requires_document_check ?: $booking->requires_document_verification;
             $booking->host_response ??= $booking->host_reply;
             $booking->host_reply ??= $booking->host_response;
+            $booking->rejection_reason ??= $booking->cancel_reason;
             $booking->cancellation_reason ??= $booking->cancel_reason;
             $booking->cancel_reason ??= $booking->cancellation_reason;
             $booking->checked_in_at ??= $booking->guest_checked_in_at;
             $booking->checked_out_at ??= $booking->guest_checked_out_at;
+            $booking->guest_check_in_confirmed_at ??= $booking->guest_checked_in_at;
+            $booking->guest_check_out_confirmed_at ??= $booking->guest_checked_out_at;
+            $booking->host_check_in_confirmed_at ??= $booking->host_confirmed_checkin_at;
+            $booking->host_check_out_confirmed_at ??= $booking->host_confirmed_checkout_at;
+            $booking->guest_checked_in_at ??= $booking->guest_check_in_confirmed_at;
+            $booking->guest_checked_out_at ??= $booking->guest_check_out_confirmed_at;
+            $booking->host_confirmed_checkin_at ??= $booking->host_check_in_confirmed_at;
+            $booking->host_confirmed_checkout_at ??= $booking->host_check_out_confirmed_at;
         });
     }
 
@@ -244,6 +347,14 @@ class Booking extends Model
     }
 
     /**
+     * Links this Booking to the source Quote used to create it.
+     */
+    public function bookingQuote(): BelongsTo
+    {
+        return $this->belongsTo(BookingQuote::class);
+    }
+
+    /**
      * Lists related Booking Guest records for this Booking.
      */
     public function bookingGuests(): HasMany
@@ -273,6 +384,78 @@ class Booking extends Model
     public function bookingRequest(): HasOne
     {
         return $this->hasOne(BookingRequest::class);
+    }
+
+    /**
+     * Links this Booking to the Booking Request that approved it in the core flow.
+     */
+    public function sourceBookingRequest(): BelongsTo
+    {
+        return $this->belongsTo(BookingRequest::class, 'booking_request_id');
+    }
+
+    /**
+     * Links this Booking to its parent Booking for grouped child records.
+     */
+    public function parentBooking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class, 'parent_booking_id');
+    }
+
+    /**
+     * Links this Booking to the Booking it extends.
+     */
+    public function extensionFromBooking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class, 'extension_from_booking_id');
+    }
+
+    /**
+     * Links this Booking to the Booking it relocated from.
+     */
+    public function relocationFromBooking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class, 'relocation_from_booking_id');
+    }
+
+    /**
+     * Lists requirement records that can block lifecycle progress.
+     */
+    public function requirements(): HasMany
+    {
+        return $this->hasMany(BookingRequirement::class);
+    }
+
+    /**
+     * Lists host responses made directly on the Booking lifecycle.
+     */
+    public function hostResponses(): HasMany
+    {
+        return $this->hasMany(BookingHostResponse::class);
+    }
+
+    /**
+     * Lists compact status log rows for the core Booking lifecycle.
+     */
+    public function statusLogs(): HasMany
+    {
+        return $this->hasMany(BookingStatusLog::class);
+    }
+
+    /**
+     * Lists lifecycle events recorded for timeline and audit views.
+     */
+    public function lifecycleEvents(): HasMany
+    {
+        return $this->hasMany(BookingLifecycleEvent::class);
+    }
+
+    /**
+     * Lists group links that connect this Booking to sibling sleeping-place bookings.
+     */
+    public function groupLinks(): HasMany
+    {
+        return $this->hasMany(BookingGroupLink::class);
     }
 
     /**

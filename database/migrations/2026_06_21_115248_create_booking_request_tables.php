@@ -117,6 +117,8 @@ return new class extends Migration
             $table->index('booking_request_id', 'br_host_responses_request_index');
             $table->index('host_user_id', 'br_host_responses_host_index');
             $table->index('response_type', 'br_host_responses_type_index');
+            $table->index('alternative_sleeping_place_id', 'br_host_responses_alt_place_index');
+            $table->index('alternative_room_id', 'br_host_responses_alt_room_index');
         });
 
         Schema::create('booking_request_guest_responses', function (Blueprint $table): void {
@@ -135,6 +137,7 @@ return new class extends Migration
             $table->index('booking_request_id', 'br_guest_responses_request_index');
             $table->index('guest_user_id', 'br_guest_responses_guest_index');
             $table->index('response_type', 'br_guest_responses_type_index');
+            $table->index('accepted_alternative_sleeping_place_id', 'br_guest_responses_alt_place_index');
         });
 
         Schema::create('booking_request_status_logs', function (Blueprint $table): void {

@@ -333,3 +333,8 @@ Third pass checks:
 - No simple upload field is intentionally left as `flux:input type="file"` in the audited Livewire workflow views. Future file uploads should use the File Upload reference first and only fall back to simple `flux:input type="file"` when the project explicitly accepts a native upload surface.
 - Some nested statistic tiles, sticky action regions, image placeholders, and legacy detail-page surfaces intentionally remain custom Tailwind markup to avoid Flux cards inside Flux cards or changing page structure without visual acceptance tests.
 - No real-browser mobile visual regression pass was run in this migration. The static Flux guard, focused Livewire/feature tests, and Vite build passed.
+
+Booking request pass:
+- Added class-based Livewire request components under `resources/views/livewire/bookings/requests` and `resources/views/livewire/host/booking-requests`.
+- The generated `resources/views/components/**/⚡*.blade.php` files from the default Livewire generator were removed immediately because this project allows class components only.
+- New request views use Flux form controls and cards instead of native form controls or tables.

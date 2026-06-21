@@ -26,8 +26,11 @@ use App\Models\BookingCheckOutIssueReport;
 use App\Models\BookingDepositDecision;
 use App\Models\BookingExtension;
 use App\Models\BookingForgottenItem;
+use App\Models\BookingGroupLink;
 use App\Models\BookingGuest;
 use App\Models\BookingGuestIntake;
+use App\Models\BookingHostResponse;
+use App\Models\BookingLifecycleEvent;
 use App\Models\BookingPriceLine;
 use App\Models\BookingPriceSnapshot;
 use App\Models\BookingQuote;
@@ -41,6 +44,8 @@ use App\Models\BookingRequestHostResponse;
 use App\Models\BookingRequestStatusLog;
 use App\Models\BookingRequestWarning;
 use App\Models\BookingReviewRequest;
+use App\Models\BookingRequirement;
+use App\Models\BookingStatusLog;
 use App\Models\BookingStatusHistory;
 use App\Models\BookingTimelineDate;
 use App\Models\CheckinRecord;
@@ -1408,6 +1413,55 @@ class BulkMarketplaceSeeder extends Seeder
             ])
             ->create();
 
+        $this->seedFactoryRows(
+            BookingRequirement::class,
+            fn (int $index): array => [
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'requirement_key' => ['rules_acceptance', 'payment', 'host_confirmation', 'phone_verification'][$index % 4],
+                'status' => $index % 3 === 0 ? BookingRequirement::STATUS_COMPLETED : BookingRequirement::STATUS_PENDING,
+                'required' => true,
+                'completed_at' => $index % 3 === 0 ? now()->subDays($index % 30) : null,
+                'message_key' => 'bookings.requirements.'.(['rules_acceptance', 'payment', 'host_confirmation', 'phone_verification'][$index % 4]),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingHostResponse::class,
+            fn (int $index): array => [
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'host_user_id' => $this->pick($bookingRows, $index)['host_user_id'],
+                'response_type' => [BookingHostResponse::TYPE_APPROVED, BookingHostResponse::TYPE_ASK_GUEST_QUESTION, BookingHostResponse::TYPE_PROPOSE_TIME_CHANGE, BookingHostResponse::TYPE_REJECTED][$index % 4],
+                'message' => 'bookings.demo.host_response',
+                'rejection_reason' => $index % 4 === 3 ? 'other' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingStatusLog::class,
+            fn (int $index): array => [
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'user_id' => $this->pick($userIds, $index),
+                'old_status' => null,
+                'new_status' => ['created', 'waiting_payment', 'confirmed', 'ready_for_check_in'][$index % 4],
+                'reason_key' => 'bookings.lifecycle_events.transitioned',
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingGroupLink::class,
+            fn (int $index): array => [
+                'group_booking_number' => sprintf('BG-%s-%06d', now()->format('Y'), intdiv($index, 3) + 1),
+                'main_booking_id' => $this->pick($bookingRows, intdiv($index, 3) * 3)['id'],
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'guest_user_id' => $this->pick($bookingRows, $index)['guest_user_id'],
+                'host_user_id' => $this->pick($bookingRows, $index)['host_user_id'],
+                'property_id' => $this->pick($bookingRows, $index)['property_id'],
+                'room_id' => $this->pick($bookingRows, $index)['room_id'],
+                'status' => $index % 7 === 0 ? 'completed' : 'active',
+            ],
+        );
+
         BookingExtension::factory()
             ->count($this->missingFor(BookingExtension::class))
             ->sequence(fn (Sequence $sequence): array => [
@@ -1480,6 +1534,20 @@ class BulkMarketplaceSeeder extends Seeder
                 'reviewer_user_id' => $this->pick($bookingRows, $index)['guest_user_id'],
                 'reviewee_user_id' => $this->pick($bookingRows, $index)['host_user_id'],
                 'reviewer_role' => $index % 2 === 0 ? 'guest' : 'host',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingLifecycleEvent::class,
+            fn (int $index): array => [
+                'booking_id' => $this->pick($bookingIds, $index),
+                'event_key' => ['created', 'payment_started', 'confirmed', 'ready_for_check_in', 'guest_checked_in', 'guest_checked_out'][$index % 6],
+                'event_type' => ['system', 'payment', 'host_action', 'guest_action'][$index % 4],
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $this->pick($bookingRows, $index)['guest_user_id'],
+                'occurred_at' => now()->subHours($index % 72),
+                'context_json' => [],
             ],
         );
 

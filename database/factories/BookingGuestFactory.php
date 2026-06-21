@@ -17,6 +17,12 @@ class BookingGuestFactory extends Factory
         return [
             'booking_id' => Booking::factory(),
             'user_id' => User::factory(),
+            'guest_name' => $this->faker->name(),
+            'guest_email' => $this->faker->safeEmail(),
+            'guest_phone' => $this->faker->phoneNumber(),
+            'guest_type' => 'main_guest',
+            'verification_status' => 'not_required',
+            'is_main_guest' => true,
             'full_name' => $this->faker->name(),
             'age' => $this->faker->numberBetween(18, 65),
             'document_type' => null,

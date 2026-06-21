@@ -15,11 +15,27 @@ class BookingGuest extends Model
     protected $fillable = [
         'booking_id',
         'user_id',
+        'guest_name',
+        'guest_email',
+        'guest_phone',
+        'guest_type',
+        'verification_status',
+        'is_main_guest',
         'full_name',
         'age',
         'document_type',
         'document_last_four',
     ];
+
+    /**
+     * Defines how Laravel converts stored Booking Guest attributes into PHP values.
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_main_guest' => 'boolean',
+        ];
+    }
 
     /**
      * Links this Booking Guest to the Booking record used by its booking relation.
