@@ -27,7 +27,11 @@ class HostBookingApprovalPanel extends Component
 
     public function approve(BookingHostApprovalService $approval): void
     {
-        $booking = Booking::query()->findOrFail($this->bookingId);
+        $booking = Booking::query()
+            ->select(['id', 'host_user_id', 'guest_user_id', 'sleeping_place_id', 'status', 'payment_status', 'total_payable', 'currency'])
+            ->with('host:id,name,email')
+            ->findOrFail($this->bookingId);
+
         $approval->approve(auth()->user() ?: $booking->host, $booking, $this->message ?: null);
     }
 
@@ -37,7 +41,11 @@ class HostBookingApprovalPanel extends Component
             'rejectionReason' => ['required', 'string', 'max:500'],
         ]);
 
-        $booking = Booking::query()->findOrFail($this->bookingId);
+        $booking = Booking::query()
+            ->select(['id', 'host_user_id', 'guest_user_id', 'sleeping_place_id', 'status', 'payment_status', 'total_payable', 'currency'])
+            ->with('host:id,name,email')
+            ->findOrFail($this->bookingId);
+
         $approval->reject(auth()->user() ?: $booking->host, $booking, $this->rejectionReason);
     }
 

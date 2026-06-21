@@ -9,6 +9,7 @@ use App\Models\CheckinRecord;
 use App\Models\User;
 use App\Services\HostCalendar\HostCalendarSnapshotService;
 use App\Services\HostOccupants\HostCurrentStaySnapshotService;
+use App\Services\Stays\BookingStayService;
 use Illuminate\Validation\ValidationException;
 
 class BookingCheckInConfirmationService
@@ -72,6 +73,7 @@ class BookingCheckInConfirmationService
         ])->save();
 
         $this->markBookingCheckedIn($checkIn->refresh());
+        app(BookingStayService::class)->createFromCheckIn($checkIn->refresh());
         $this->updateCurrentOccupants($checkIn->refresh());
         $this->updateHostCalendar($checkIn->refresh());
 

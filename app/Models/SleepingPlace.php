@@ -476,6 +476,11 @@ class SleepingPlace extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function bookingExtensions(): HasMany
+    {
+        return $this->hasMany(BookingExtension::class);
+    }
+
     /**
      * Lists related Booking Guest Intake records for this Sleeping Place.
      */
@@ -903,5 +908,13 @@ class SleepingPlace extends Model
                             ->orWhere('status', AvailabilityStatus::CheckInOnly->value);
                     });
             });
+    }
+
+    /**
+     * Lists active and historical stay records tied to this Sleeping Place.
+     */
+    public function bookingStays(): HasMany
+    {
+        return $this->hasMany(BookingStay::class);
     }
 }

@@ -41,7 +41,10 @@ class BookingCreatePage extends Component
             return;
         }
 
-        $quote = BookingQuote::query()->with('guest')->findOrFail($this->quoteId);
+        $quote = BookingQuote::query()
+            ->select(['id', 'user_id'])
+            ->with('guest:id,name,email')
+            ->findOrFail($this->quoteId);
         $booking = $creation->createInstantBooking($quote->guest, $quote, [
             'guest_agreed_to_rules' => true,
         ]);

@@ -13,6 +13,10 @@ class BookingCheckInService
 {
     public function __construct(
         private readonly BookingCheckInChecklistService $checklist,
+        private readonly BookingCheckInInstructionService $instructions,
+        private readonly BookingCheckInStepService $steps,
+        private readonly BookingCheckInStatusService $statuses,
+        private readonly BookingCheckInNotificationService $notifications,
     ) {}
 
     public function createForBooking(Booking $booking): BookingCheckIn
@@ -30,13 +34,17 @@ class BookingCheckInService
                 'check_in_date' => $this->dateString($booking->check_in_date),
                 'planned_check_in_time' => $this->timeString($booking->arrival_time ?: $booking->check_in_time),
                 'planned_check_in_window' => $this->timeString($booking->check_in_time),
+                'check_in_window' => $this->timeString($booking->check_in_time),
+                'instructions_available_at' => now(),
                 'status' => $booking->checked_in_at ? 'checked_in' : 'instructions_available',
             ],
         );
 
         $this->checklist->createDefaultChecklist($checkIn);
+        $this->steps->createDefaultSteps($checkIn);
+        $this->instructions->createInstructionSnapshot($booking);
 
-        return $checkIn->refresh();
+        return $checkIn->refresh()->load(['instruction', 'steps']);
     }
 
     public function getForGuest(User $guest, Booking $booking): BookingCheckIn
@@ -57,10 +65,10 @@ class BookingCheckInService
     {
         $this->ensureGuestOwnsCheckIn($guest, $checkIn);
 
-        $checkIn->forceFill([
-            'actual_arrival_at' => $checkIn->actual_arrival_at ?: now(),
-            'status' => 'guest_arrived',
-        ])->save();
+        $checkIn = $this->statuses->transition($checkIn, 'guest_arrived', $guest, [
+            'reason_key' => 'check_in.events.guest_arrived',
+        ]);
+        $this->steps->markStepCompleted($checkIn, 'guest_arrived', $guest);
 
         app(BookingCheckInAlertService::class)->createAlert(
             $checkIn->refresh(),
@@ -68,6 +76,56 @@ class BookingCheckInService
             'low',
             ['guest' => $checkIn->guest?->name],
         );
+        $this->notifications->notifyHostGuestArrived($checkIn->refresh());
+
+        return $checkIn->refresh();
+    }
+
+    public function markGuestOnTheWay(User $guest, BookingCheckIn $checkIn): BookingCheckIn
+    {
+        $this->ensureGuestOwnsCheckIn($guest, $checkIn);
+
+        $checkIn = $this->statuses->transition($checkIn, 'guest_on_the_way', $guest, [
+            'reason_key' => 'check_in.events.guest_on_the_way',
+        ]);
+        $this->steps->markStepCompleted($checkIn, 'guest_on_the_way', $guest);
+
+        return $checkIn->refresh();
+    }
+
+    public function confirmByGuest(User $guest, BookingCheckIn $checkIn): BookingCheckIn
+    {
+        $this->ensureGuestOwnsCheckIn($guest, $checkIn);
+
+        $checkIn = $this->statuses->transition($checkIn, 'guest_confirmed', $guest, [
+            'reason_key' => 'check_in.events.guest_confirmed',
+        ]);
+        $this->steps->markStepCompleted($checkIn, 'guest_confirmed', $guest);
+        $this->statuses->syncBookingStatus($checkIn->refresh());
+        $this->notifications->notifyHostGuestConfirmed($checkIn->refresh());
+
+        return $checkIn->refresh();
+    }
+
+    public function confirmByHost(User $host, BookingCheckIn $checkIn): BookingCheckIn
+    {
+        $this->ensureHostOwnsCheckIn($host, $checkIn);
+
+        $checkIn = $this->statuses->transition($checkIn, 'host_confirmed', $host, [
+            'reason_key' => 'check_in.events.host_confirmed',
+        ]);
+        $this->steps->markStepCompleted($checkIn, 'host_confirmed', $host);
+        $this->notifications->notifyGuestHostConfirmed($checkIn->refresh());
+
+        return $this->completeCheckIn($checkIn->refresh());
+    }
+
+    public function completeCheckIn(BookingCheckIn $checkIn): BookingCheckIn
+    {
+        $checkIn = $this->statuses->transition($checkIn, 'checked_in', null, [
+            'reason_key' => 'check_in.events.checked_in',
+        ]);
+        $this->statuses->syncBookingStatus($checkIn);
 
         return $checkIn->refresh();
     }
@@ -133,6 +191,15 @@ class BookingCheckInService
         if ((int) $checkIn->guest_user_id !== (int) $guest->id) {
             throw ValidationException::withMessages([
                 'booking' => __('check_in.validation.not_your_booking'),
+            ]);
+        }
+    }
+
+    private function ensureHostOwnsCheckIn(User $host, BookingCheckIn $checkIn): void
+    {
+        if ((int) $checkIn->host_user_id !== (int) $host->id) {
+            throw ValidationException::withMessages([
+                'booking' => __('check_in.validation.not_host_booking'),
             ]);
         }
     }

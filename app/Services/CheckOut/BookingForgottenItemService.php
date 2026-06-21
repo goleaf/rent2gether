@@ -21,16 +21,22 @@ class BookingForgottenItemService
             'booking_id' => $checkOut->booking_id,
             'guest_user_id' => $checkOut->guest_user_id,
             'host_user_id' => $checkOut->host_user_id,
+            'property_id' => $checkOut->property_id,
+            'room_id' => $checkOut->room_id,
+            'sleeping_place_id' => $checkOut->sleeping_place_id,
             'item_name' => $data['item_name'] ?? null,
             'description' => $data['description'] ?? null,
+            'photo_path' => $data['photo_path'] ?? null,
             'photo_paths_json' => $data['photo_paths'] ?? [],
             'storage_location' => $data['storage_location'] ?? null,
+            'return_method' => $data['return_method'] ?? null,
             'status' => 'found',
             'keep_until' => $data['keep_until'] ?? null,
         ]);
 
         $checkOut->forceFill([
             'has_forgotten_items' => true,
+            'has_lost_items' => true,
             'status' => 'problem_reported',
             'problem_status' => 'forgotten_items',
         ])->save();
@@ -53,6 +59,31 @@ class BookingForgottenItemService
         $item->forceFill([
             'status' => 'picked_up',
             'picked_up_at' => now(),
+        ])->save();
+
+        return $item->refresh();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function markReturnArranged(BookingForgottenItem $item, array $data): BookingForgottenItem
+    {
+        $item->forceFill([
+            'status' => 'return_arranged',
+            'return_method' => $data['return_method'] ?? $item->return_method,
+            'storage_location' => $data['storage_location'] ?? $item->storage_location,
+        ])->save();
+
+        return $item->refresh();
+    }
+
+    public function markReturned(BookingForgottenItem $item): BookingForgottenItem
+    {
+        $item->forceFill([
+            'status' => 'returned',
+            'returned_at' => now(),
+            'picked_up_at' => $item->picked_up_at ?: now(),
         ])->save();
 
         return $item->refresh();

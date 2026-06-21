@@ -45,7 +45,9 @@ class BookingSummaryStep extends Component
         if ($this->bookingId) {
             $summary = $this->bookingSummary($this->loadBooking($this->bookingId));
         } elseif ($this->quoteId) {
-            $quote = BookingQuote::query()->findOrFail($this->quoteId);
+            $quote = BookingQuote::query()
+                ->select(['id', 'quote_number', 'check_in_date', 'check_out_date', 'nights_count', 'total_payable', 'deposit_amount', 'currency'])
+                ->findOrFail($this->quoteId);
             $summary = [
                 'booking_number' => $quote->quote_number,
                 'dates' => $quote->check_in_date?->translatedFormat('d M').' - '.$quote->check_out_date?->translatedFormat('d M'),

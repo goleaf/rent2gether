@@ -29,12 +29,19 @@ return [
 
     'fields' => [
         'public_alias' => 'Псевдоним',
+        'occupant' => 'Жилец',
+        'room' => 'Комната',
+        'sleeping_place' => 'Спальное место',
         'age_range' => 'Возрастной диапазон',
+        'city' => 'Город',
         'gender_for_room_policy' => 'Пол, если важен для формата комнаты',
         'languages' => 'Языки общения',
         'stay_purpose' => 'Цель проживания',
+        'checkout_date' => 'Дата выезда',
         'guest_type' => 'Тип гостя',
         'sleep_schedule' => 'График сна',
+        'smoking_status' => 'Курение',
+        'sociability_level' => 'Общительность',
         'wake_schedule' => 'График подъёма',
         'home_presence_level' => 'Как часто бываете дома',
         'smoking_location' => 'Где курите',
@@ -43,6 +50,44 @@ return [
         'cleanliness_level' => 'Отношение к чистоте',
         'participates_in_cleaning' => 'Участвует в уборке',
         'respects_personal_space' => 'Уважает личное пространство',
+    ],
+
+    'occupant_types' => [
+        'main_guest' => 'Основной гость',
+        'second_guest' => 'Второй гость',
+        'group_member' => 'Участник группы',
+        'child_future' => 'Ребёнок',
+    ],
+
+    'purposes' => [
+        'tourist' => 'Турист',
+        'student' => 'Студент',
+        'work' => 'Работает',
+        'business_trip' => 'Командировка',
+        'medical' => 'Лечение',
+        'relocation' => 'Переезд',
+        'housing_search' => 'Поиск жилья',
+        'long_term_resident' => 'Долгосрочный жилец',
+        'short_term_guest' => 'Краткосрочный гость',
+        'other' => 'Другое',
+    ],
+
+    'sleep_schedules' => [
+        'wakes_up_early' => 'Рано встаёт',
+        'sleeps_late' => 'Поздно ложится',
+        'works_at_night' => 'Работает ночью',
+        'often_at_home' => 'Часто дома',
+        'rarely_at_home' => 'Редко дома',
+    ],
+
+    'smoking_statuses' => [
+        'smokes' => 'Курит',
+        'does_not_smoke' => 'Не курит',
+    ],
+
+    'sociability' => [
+        'social' => 'Общительный',
+        'prefers_quiet' => 'Предпочитает тишину',
     ],
 
     'profile' => [
@@ -127,6 +172,11 @@ return [
     'messages' => [
         'profile_saved' => 'Профиль совместного проживания сохранён.',
         'privacy_saved' => 'Настройки приватности сохранены.',
+        'roommates_summary_private' => 'Мы показываем только безопасную краткую информацию о текущих соседях.',
+        'no_current_roommates' => 'Сейчас в комнате нет других жильцов.',
+        'current_roommates_count' => 'Сейчас в комнате: :count жильцов.',
+        'roommate' => 'Сосед',
+        'private_roommate' => 'Сосед с приватным профилем',
     ],
 
     'warnings' => [

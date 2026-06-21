@@ -522,4 +522,20 @@ class Room extends Model
     {
         return $query->where('is_for_long_stay', true);
     }
+
+    /**
+     * Lists active and historical stay records tied to this Room.
+     */
+    public function bookingStays(): HasMany
+    {
+        return $this->hasMany(BookingStay::class);
+    }
+
+    /**
+     * Fetches the current occupancy snapshot for this Room.
+     */
+    public function currentOccupancySnapshot(): HasOne
+    {
+        return $this->hasOne(RoomCurrentOccupancySnapshot::class);
+    }
 }

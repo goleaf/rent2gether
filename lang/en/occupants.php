@@ -29,12 +29,19 @@ return [
 
     'fields' => [
         'public_alias' => 'Public alias',
+        'occupant' => 'Resident',
+        'room' => 'Room',
+        'sleeping_place' => 'Sleeping place',
         'age_range' => 'Age range',
+        'city' => 'City',
         'gender_for_room_policy' => 'Gender, when relevant to room format',
         'languages' => 'Languages',
         'stay_purpose' => 'Stay purpose',
+        'checkout_date' => 'Checkout date',
         'guest_type' => 'Guest type',
         'sleep_schedule' => 'Sleep schedule',
+        'smoking_status' => 'Smoking',
+        'sociability_level' => 'Social style',
         'wake_schedule' => 'Wake schedule',
         'home_presence_level' => 'Time spent at home',
         'smoking_location' => 'Smoking location',
@@ -43,6 +50,44 @@ return [
         'cleanliness_level' => 'Cleanliness style',
         'participates_in_cleaning' => 'Helps with cleaning',
         'respects_personal_space' => 'Respects personal space',
+    ],
+
+    'occupant_types' => [
+        'main_guest' => 'Main guest',
+        'second_guest' => 'Second guest',
+        'group_member' => 'Group member',
+        'child_future' => 'Child',
+    ],
+
+    'purposes' => [
+        'tourist' => 'Tourist',
+        'student' => 'Student',
+        'work' => 'Working',
+        'business_trip' => 'Business trip',
+        'medical' => 'Medical stay',
+        'relocation' => 'Relocation',
+        'housing_search' => 'Looking for housing',
+        'long_term_resident' => 'Long-term resident',
+        'short_term_guest' => 'Short-term guest',
+        'other' => 'Other',
+    ],
+
+    'sleep_schedules' => [
+        'wakes_up_early' => 'Wakes up early',
+        'sleeps_late' => 'Sleeps late',
+        'works_at_night' => 'Works at night',
+        'often_at_home' => 'Often at home',
+        'rarely_at_home' => 'Rarely at home',
+    ],
+
+    'smoking_statuses' => [
+        'smokes' => 'Smokes',
+        'does_not_smoke' => 'Does not smoke',
+    ],
+
+    'sociability' => [
+        'social' => 'Social',
+        'prefers_quiet' => 'Prefers quiet',
     ],
 
     'profile' => [
@@ -127,6 +172,11 @@ return [
     'messages' => [
         'profile_saved' => 'Co-living profile saved.',
         'privacy_saved' => 'Privacy settings saved.',
+        'roommates_summary_private' => 'We show only safe, partial information about current roommates.',
+        'no_current_roommates' => 'There are no other current residents in this room.',
+        'current_roommates_count' => 'Current residents in this room: :count.',
+        'roommate' => 'Roommate',
+        'private_roommate' => 'Private roommate',
     ],
 
     'warnings' => [

@@ -23,6 +23,26 @@ class HostTodayCheckInsPanel extends Component
     public function render(): View
     {
         $bookings = Booking::query()
+            ->select([
+                'id',
+                'booking_number',
+                'reference',
+                'guest_user_id',
+                'host_user_id',
+                'property_id',
+                'room_id',
+                'sleeping_place_id',
+                'status',
+                'payment_status',
+                'check_in_date',
+                'check_out_date',
+                'nights_count',
+                'chargeable_days_count',
+                'calendar_presence_days_count',
+                'guests_count',
+                'total_payable',
+                'currency',
+            ])
             ->where('host_user_id', $this->hostUserId ?: 0)
             ->whereDate('check_in_date', today())
             ->with(['guest:id,name', 'sleepingPlace:id,display_name,title'])

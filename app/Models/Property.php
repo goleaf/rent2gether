@@ -595,4 +595,20 @@ class Property extends Model
         return (int) $this->host_user_id === (int) $user->id
             || (int) $this->user_id === (int) $user->id;
     }
+
+    /**
+     * Lists active and historical stay records tied to this Property.
+     */
+    public function bookingStays(): HasMany
+    {
+        return $this->hasMany(BookingStay::class);
+    }
+
+    /**
+     * Fetches the current occupancy snapshot for this Property.
+     */
+    public function currentOccupancySnapshot(): HasOne
+    {
+        return $this->hasOne(PropertyCurrentOccupancySnapshot::class);
+    }
 }

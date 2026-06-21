@@ -3,7 +3,7 @@
 
     <flux:textarea wire:model.blur="guestMessage" rows="4" />
 
-    <flux:button variant="primary" icon="save" wire:click="saveMessage" wire:loading.attr="disabled">
+    <flux:button variant="primary" icon="check" wire:click="saveMessage" wire:loading.attr="disabled">
         {{ __('bookings.actions.save_message') }}
     </flux:button>
 </flux:card>

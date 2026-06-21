@@ -16,7 +16,9 @@ class BookingGuestMessageStep extends Component
 
     public function mount(int|Booking $bookingId): void
     {
-        $booking = $bookingId instanceof Booking ? $bookingId : Booking::query()->findOrFail($bookingId);
+        $booking = $bookingId instanceof Booking
+            ? $bookingId
+            : Booking::query()->select(['id', 'guest_message'])->findOrFail($bookingId);
         $this->bookingId = $booking->id;
         $this->guestMessage = (string) $booking->guest_message;
     }
@@ -27,9 +29,7 @@ class BookingGuestMessageStep extends Component
             'guestMessage' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        Booking::query()
-            ->whereKey($this->bookingId)
-            ->update(['guest_message' => $this->guestMessage]);
+        Booking::query()->whereKey($this->bookingId)->update(['guest_message' => $this->guestMessage]);
     }
 
     public function render(): View

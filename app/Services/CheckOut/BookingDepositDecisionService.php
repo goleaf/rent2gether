@@ -80,6 +80,8 @@ class BookingDepositDecisionService
 
         $checkOut->forceFill([
             'needs_deposit_deduction' => true,
+            'deposit_review_required' => true,
+            'deposit_deduction_requested' => true,
             'deposit_deduction_amount' => $deduction,
             'deposit_deduction_reason' => $reason,
             'status' => 'deposit_deduction_requested',

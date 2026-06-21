@@ -10,7 +10,7 @@
                 </h2>
             </div>
 
-            <flux:badge color="{{ $status === 'checked_in' ? 'emerald' : ($status === 'check_in_problem' || $status === 'waiting_for_resolution' ? 'amber' : 'zinc') }}">
+            <flux:badge color="{{ $status === 'checked_in' ? 'emerald' : ($status === 'check_in_problem' || $status === 'problem_reported' || $status === 'host_unresponsive' || $status === 'waiting_for_resolution' ? 'amber' : 'zinc') }}">
                 {{ __('check_in.statuses.' . $status) }}
             </flux:badge>
         </div>
@@ -54,6 +54,22 @@
             </div>
         @endisset
 
+        @if ($steps->isNotEmpty())
+            <div class="space-y-2">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.steps') }}</p>
+                <div class="space-y-2">
+                    @foreach ($steps as $step)
+                        <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
+                            <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __('check_in.step_keys.' . $step->step_key) }}</span>
+                            <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}">
+                                {{ __('check_in.item_statuses.' . $step->status) }}
+                            </flux:badge>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         @if ($items->isNotEmpty())
             <div class="space-y-2">
                 <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.checklist') }}</p>
@@ -79,6 +95,41 @@
                         <p>{{ $report->description ?: __('check_in.empty.no_problem_description') }}</p>
                     </div>
                 @endforeach
+            </div>
+        @endif
+
+        @if ($problems->isNotEmpty())
+            <div class="space-y-2">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.problems') }}</p>
+                @foreach ($problems as $problem)
+                    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                        <p class="font-medium">{{ __('check_in.problem_types.' . $problem->problem_type) }}</p>
+                        <p>{{ $problem->description ?: __('check_in.empty.no_problem_description') }}</p>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        @if ($media->isNotEmpty())
+            <div class="space-y-2">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.media') }}</p>
+                @foreach ($media as $item)
+                    <div class="rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
+                        <p class="font-medium text-zinc-950 dark:text-white">{{ __('check_in.media_roles.' . $item->media_role) }}</p>
+                        <p class="text-zinc-600 dark:text-zinc-300">{{ $item->caption ?: __('check_in.empty.no_media_caption') }}</p>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        @if ($variant === 'guest_arrival_buttons')
+            <div class="grid grid-cols-1 gap-2">
+                <flux:button type="button" variant="filled" class="w-full" wire:click="markOnTheWay" wire:loading.attr="disabled">
+                    {{ __('check_in.actions.i_am_on_the_way') }}
+                </flux:button>
+                <flux:button type="button" variant="primary" class="w-full" wire:click="markArrived" wire:loading.attr="disabled">
+                    {{ __('check_in.actions.i_arrived') }}
+                </flux:button>
             </div>
         @endif
 
@@ -123,6 +174,21 @@
             <flux:button type="button" variant="danger" class="w-full">
                 {{ __('check_in.actions.problem') }}
             </flux:button>
+        @endif
+
+        @if ($variant === 'media_uploader')
+            <form wire:submit="record" class="space-y-3">
+                <flux:select wire:model.change="mediaRole" :label="__('check_in.fields.media_role')">
+                    @foreach (array_keys(__('check_in.media_roles')) as $mediaRole)
+                        <flux:select.option value="{{ $mediaRole }}">{{ __('check_in.media_roles.' . $mediaRole) }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:input wire:model.blur="path" :label="__('check_in.fields.media_path')" />
+                <flux:textarea wire:model.blur="caption" :label="__('check_in.fields.media_caption')" />
+                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
+                    {{ __('check_in.actions.upload_media') }}
+                </flux:button>
+            </form>
         @endif
     </flux:card>
 </div>

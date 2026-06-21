@@ -23,7 +23,10 @@ class BookingPaymentStep extends Component
 
     public function markPaid(BookingPaymentStateService $payments): void
     {
-        $booking = Booking::query()->findOrFail($this->bookingId);
+        $booking = Booking::query()
+            ->select(['id', 'status', 'payment_status', 'approval_type', 'payment_method', 'paid_at', 'payment_paid_at'])
+            ->findOrFail($this->bookingId);
+
         $payments->markPaid($booking, ['payment_method' => 'manual_mvp']);
     }
 

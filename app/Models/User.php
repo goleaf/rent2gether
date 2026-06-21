@@ -710,4 +710,20 @@ class User extends Authenticatable
     {
         return $this->favorites()->where('sleeping_place_id', $sleepingPlace->id)->exists();
     }
+
+    /**
+     * Lists stay records where this User is the guest.
+     */
+    public function guestBookingStays(): HasMany
+    {
+        return $this->hasMany(BookingStay::class, 'guest_user_id');
+    }
+
+    /**
+     * Lists stay records where this User is the host.
+     */
+    public function hostedBookingStays(): HasMany
+    {
+        return $this->hasMany(BookingStay::class, 'host_user_id');
+    }
 }

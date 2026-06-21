@@ -4,6 +4,7 @@ namespace App\Services\CheckIn;
 
 use App\Models\BookingCheckIn;
 use App\Models\BookingCheckInAlert;
+use App\Models\BookingCheckInProblem;
 use App\Models\BookingCheckInProblemReport;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -18,7 +19,7 @@ class BookingCheckInProblemService
      *
      * @throws ValidationException
      */
-    public function reportProblem(User $guest, BookingCheckIn $checkIn, array $data): BookingCheckInProblemReport
+    public function reportProblem(User $guest, BookingCheckIn $checkIn, array $data): BookingCheckInProblem|BookingCheckInProblemReport
     {
         if ((int) $checkIn->guest_user_id !== (int) $guest->id) {
             throw ValidationException::withMessages([
@@ -32,6 +33,10 @@ class BookingCheckInProblemService
             'description' => ['nullable', 'string', 'max:2000'],
             'photo_paths' => ['nullable', 'array', 'max:8'],
             'photo_paths.*' => ['string', 'max:255'],
+            'guest_wants_help' => ['nullable', 'boolean'],
+            'guest_wants_relocation' => ['nullable', 'boolean'],
+            'guest_wants_cancellation' => ['nullable', 'boolean'],
+            'guest_wants_refund' => ['nullable', 'boolean'],
         ], [], __('check_in.validation.attributes'))->validate();
 
         $report = BookingCheckInProblemReport::query()->create([
@@ -46,15 +51,59 @@ class BookingCheckInProblemService
             'status' => 'open',
         ]);
 
-        $checkIn->forceFill([
-            'has_problem' => true,
-            'problem_status' => 'open',
-            'status' => 'check_in_problem',
-        ])->save();
-
         $this->notifyHost($report);
 
-        return $report->refresh();
+        if (! $this->shouldUsePointTenProblem($validated)) {
+            $checkIn->forceFill([
+                'has_problem' => true,
+                'problem_status' => 'open',
+                'status' => 'check_in_problem',
+            ])->save();
+
+            return $report->refresh();
+        }
+
+        $problem = BookingCheckInProblem::query()->create([
+            'booking_check_in_id' => $checkIn->id,
+            'booking_id' => $checkIn->booking_id,
+            'guest_user_id' => $checkIn->guest_user_id,
+            'host_user_id' => $checkIn->host_user_id,
+            'property_id' => $checkIn->property_id,
+            'room_id' => $checkIn->room_id,
+            'sleeping_place_id' => $checkIn->sleeping_place_id,
+            'problem_type' => $validated['problem_type'],
+            'severity' => $validated['severity'] ?? 'medium',
+            'status' => 'reported',
+            'description' => $validated['description'] ?? null,
+            'guest_wants_help' => (bool) ($validated['guest_wants_help'] ?? true),
+            'guest_wants_relocation' => (bool) ($validated['guest_wants_relocation'] ?? false),
+            'guest_wants_cancellation' => (bool) ($validated['guest_wants_cancellation'] ?? false),
+            'guest_wants_refund' => (bool) ($validated['guest_wants_refund'] ?? false),
+        ]);
+
+        $checkIn->forceFill([
+            'has_problem' => true,
+            'problem_status' => 'reported',
+            'problem_reported_at' => now(),
+            'problem_summary' => $problem->description,
+            'status' => 'problem_reported',
+        ])->save();
+
+        if ($problem->problem_type === 'host_not_answering') {
+            app(BookingCheckInHostUnresponsiveIntegrationService::class)->createCaseFromCheckInProblem($problem);
+        }
+
+        if ($problem->problem_type === 'listing_mismatch') {
+            $problem->forceFill(['source_created_mismatch_report_id' => $problem->id])->save();
+        }
+
+        if ($problem->problem_type === 'unsafe_situation') {
+            app(BookingCheckInComplaintIntegrationService::class)->createCaseFromCheckInProblem($problem);
+        }
+
+        $this->notifyHost($problem->refresh());
+
+        return $problem->refresh();
     }
 
     /**
@@ -75,7 +124,7 @@ class BookingCheckInProblemService
         return $report->refresh();
     }
 
-    public function notifyHost(BookingCheckInProblemReport $report): void
+    public function notifyHost(BookingCheckInProblem|BookingCheckInProblemReport $report): void
     {
         app(BookingCheckInAlertService::class)->createAlert(
             $report->checkIn,
@@ -83,9 +132,13 @@ class BookingCheckInProblemService
             $report->severity,
             ['problem_type' => $report->problem_type],
         );
+
+        if ($report instanceof BookingCheckInProblem) {
+            app(BookingCheckInNotificationService::class)->notifyCheckInProblem($report);
+        }
     }
 
-    public function markResolved(User $host, BookingCheckInProblemReport $report): BookingCheckInProblemReport
+    public function markResolved(User $host, BookingCheckInProblem|BookingCheckInProblemReport $report): BookingCheckInProblem|BookingCheckInProblemReport
     {
         if ((int) $report->host_user_id !== (int) $host->id) {
             throw new AuthorizationException(__('check_in.validation.not_host_booking'));
@@ -99,7 +152,10 @@ class BookingCheckInProblemService
         $checkIn = $report->checkIn;
         $hasOpen = $checkIn->problemReports()
             ->whereNotIn('status', ['resolved', 'closed'])
-            ->exists();
+            ->exists()
+            || $checkIn->problems()
+                ->whereNotIn('status', ['resolved', 'closed'])
+                ->exists();
 
         if (! $hasOpen) {
             $checkIn->forceFill([
@@ -115,6 +171,27 @@ class BookingCheckInProblemService
         return $report->refresh();
     }
 
+    public function startRelocation(BookingCheckInProblem $problem): mixed
+    {
+        return app(BookingCheckInRelocationIntegrationService::class)->startRelocationFromCheckInProblem($problem);
+    }
+
+    public function startCancellation(BookingCheckInProblem $problem): mixed
+    {
+        $problem->forceFill(['status' => 'cancellation_started'])->save();
+
+        return $problem->id;
+    }
+
+    public function createComplaintIfNeeded(BookingCheckInProblem $problem): mixed
+    {
+        if (! in_array($problem->problem_type, ['unsafe_situation', 'listing_mismatch'], true)) {
+            return null;
+        }
+
+        return app(BookingCheckInComplaintIntegrationService::class)->createCaseFromCheckInProblem($problem);
+    }
+
     public function escalateIfNeeded(BookingCheckInProblemReport $report): BookingCheckInAlert
     {
         return app(BookingCheckInAlertService::class)->createAlert(
@@ -126,13 +203,41 @@ class BookingCheckInProblemService
     }
 
     /**
-     * @return Collection<int, BookingCheckInProblemReport>
+     * @return Collection<int, BookingCheckInProblem|BookingCheckInProblemReport>
      */
     public function openSevereProblems(BookingCheckIn $checkIn): Collection
     {
-        return $checkIn->problemReports()
+        $legacy = $checkIn->problemReports()
             ->whereIn('severity', ['high', 'critical'])
             ->whereNotIn('status', ['resolved', 'closed'])
             ->get();
+
+        return $legacy
+            ->merge($checkIn->problems()
+                ->whereIn('severity', ['high', 'urgent', 'emergency'])
+                ->whereNotIn('status', ['resolved', 'closed'])
+                ->get());
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function shouldUsePointTenProblem(array $validated): bool
+    {
+        if (array_key_exists('guest_wants_help', $validated)
+            || array_key_exists('guest_wants_relocation', $validated)
+            || array_key_exists('guest_wants_cancellation', $validated)
+            || array_key_exists('guest_wants_refund', $validated)) {
+            return true;
+        }
+
+        return in_array($validated['problem_type'], [
+            'host_not_answering',
+            'representative_not_answering',
+            'listing_mismatch',
+            'unsafe_situation',
+            'wrong_sleeping_place',
+            'sleeping_place_occupied',
+        ], true);
     }
 }

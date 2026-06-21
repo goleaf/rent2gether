@@ -66,7 +66,7 @@ trait LoadsBookingCheckIn
     {
         if ($this->checkInId) {
             return BookingCheckIn::query()
-                ->with(['booking', 'guest:id,name', 'host:id,name', 'room:id,title,room_number', 'sleepingPlace:id,display_name,place_number', 'checklistItems', 'problemReports', 'alerts'])
+                ->with(['booking', 'guest:id,name', 'host:id,name', 'room:id,title,room_number', 'sleepingPlace:id,display_name,place_number', 'checklistItems', 'problemReports', 'alerts', 'instruction', 'steps', 'media', 'problems'])
                 ->find($this->checkInId);
         }
 
@@ -79,7 +79,7 @@ trait LoadsBookingCheckIn
         $checkIn = app(BookingCheckInService::class)->createForBooking($booking);
         $this->checkInId = $checkIn->id;
 
-        return $checkIn->load(['booking', 'guest:id,name', 'host:id,name', 'room:id,title,room_number', 'sleepingPlace:id,display_name,place_number', 'checklistItems', 'problemReports', 'alerts']);
+        return $checkIn->load(['booking', 'guest:id,name', 'host:id,name', 'room:id,title,room_number', 'sleepingPlace:id,display_name,place_number', 'checklistItems', 'problemReports', 'alerts', 'instruction', 'steps', 'media', 'problems']);
     }
 
     protected function refreshCheckInState(): void
@@ -105,7 +105,10 @@ trait LoadsBookingCheckIn
             'checkIn' => $checkIn,
             'status' => $checkIn?->status ?? $this->status,
             'items' => $checkIn?->checklistItems ?? collect(),
+            'steps' => $checkIn?->steps ?? collect(),
+            'media' => $checkIn?->media ?? collect(),
             'reports' => $checkIn?->problemReports ?? collect(),
+            'problems' => $checkIn?->problems ?? collect(),
             'alerts' => $checkIn?->alerts ?? collect(),
         ];
     }

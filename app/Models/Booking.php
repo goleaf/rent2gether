@@ -246,56 +246,92 @@ class Booking extends Model
         });
 
         static::saving(function (Booking $booking): void {
-            $booking->guest_user_id ??= $booking->guest_id;
-            $booking->guest_id ??= $booking->guest_user_id;
-            $booking->host_user_id ??= $booking->host_id;
-            $booking->host_id ??= $booking->host_user_id;
-            $booking->check_in_date ??= $booking->check_in;
-            $booking->check_out_date ??= $booking->check_out;
-            $booking->check_in ??= $booking->check_in_date;
-            $booking->check_out ??= $booking->check_out_date;
-            $booking->nights_count = $booking->nights_count ?: $booking->nights;
-            $booking->nights = $booking->nights ?: $booking->nights_count;
-            $booking->chargeable_days_count = $booking->chargeable_days_count ?: $booking->nights_count;
-            $booking->calendar_presence_days_count = $booking->calendar_presence_days_count ?: $booking->calendar_days_count;
-            $booking->calendar_days_count = $booking->calendar_days_count ?: $booking->calendar_presence_days_count;
-            $booking->subtotal_amount = $booking->subtotal_amount ?: $booking->subtotal;
-            $booking->subtotal = $booking->subtotal ?: $booking->subtotal_amount;
-            $booking->accommodation_amount = $booking->accommodation_amount ?: $booking->subtotal_amount;
-            $booking->cleaning_fee_amount = $booking->cleaning_fee_amount ?: $booking->cleaning_fee;
-            $booking->cleaning_fee = $booking->cleaning_fee ?: $booking->cleaning_fee_amount;
-            $booking->deposit_amount = $booking->deposit_amount ?: $booking->deposit;
-            $booking->deposit = $booking->deposit ?: $booking->deposit_amount;
-            $booking->service_fee_amount = $booking->service_fee_amount ?: $booking->service_fee;
-            $booking->service_fee = $booking->service_fee ?: $booking->service_fee_amount;
-            $booking->total_amount = $booking->total_amount ?: $booking->total;
-            $booking->total = $booking->total ?: $booking->total_amount;
-            $booking->total_payable = $booking->total_payable ?: $booking->total_amount;
-            $booking->total_without_deposit = $booking->total_without_deposit ?: max(0, (float) $booking->total_payable - (float) $booking->deposit_amount);
-            $booking->paid_at ??= $booking->payment_paid_at;
-            $booking->payment_paid_at ??= $booking->paid_at;
-            $booking->requires_phone_verification = $booking->requires_phone_verification ?: $booking->requires_phone_check;
-            $booking->requires_identity_verification = $booking->requires_identity_verification ?: $booking->requires_identity_check;
-            $booking->requires_document_verification = $booking->requires_document_verification ?: $booking->requires_document_check;
-            $booking->requires_phone_check = $booking->requires_phone_check ?: $booking->requires_phone_verification;
-            $booking->requires_identity_check = $booking->requires_identity_check ?: $booking->requires_identity_verification;
-            $booking->requires_document_check = $booking->requires_document_check ?: $booking->requires_document_verification;
-            $booking->host_response ??= $booking->host_reply;
-            $booking->host_reply ??= $booking->host_response;
-            $booking->rejection_reason ??= $booking->cancel_reason;
-            $booking->cancellation_reason ??= $booking->cancel_reason;
-            $booking->cancel_reason ??= $booking->cancellation_reason;
-            $booking->checked_in_at ??= $booking->guest_checked_in_at;
-            $booking->checked_out_at ??= $booking->guest_checked_out_at;
-            $booking->guest_check_in_confirmed_at ??= $booking->guest_checked_in_at;
-            $booking->guest_check_out_confirmed_at ??= $booking->guest_checked_out_at;
-            $booking->host_check_in_confirmed_at ??= $booking->host_confirmed_checkin_at;
-            $booking->host_check_out_confirmed_at ??= $booking->host_confirmed_checkout_at;
-            $booking->guest_checked_in_at ??= $booking->guest_check_in_confirmed_at;
-            $booking->guest_checked_out_at ??= $booking->guest_check_out_confirmed_at;
-            $booking->host_confirmed_checkin_at ??= $booking->host_check_in_confirmed_at;
-            $booking->host_confirmed_checkout_at ??= $booking->host_check_out_confirmed_at;
+            $booking->syncAliasPair('guest_user_id', 'guest_id');
+            $booking->syncAliasPair('host_user_id', 'host_id');
+            $booking->syncAliasPair('check_in_date', 'check_in');
+            $booking->syncAliasPair('check_out_date', 'check_out');
+            $booking->syncCountAliasPair('nights_count', 'nights');
+            $booking->fillMissingCountFrom('chargeable_days_count', 'nights_count');
+            $booking->syncCountAliasPair('calendar_presence_days_count', 'calendar_days_count');
+            $booking->syncAliasPair('subtotal_amount', 'subtotal');
+            $booking->fillMissingFrom('accommodation_amount', 'subtotal_amount');
+            $booking->syncAliasPair('cleaning_fee_amount', 'cleaning_fee');
+            $booking->syncAliasPair('deposit_amount', 'deposit');
+            $booking->syncAliasPair('service_fee_amount', 'service_fee');
+            $booking->syncAliasPair('total_amount', 'total');
+            $booking->fillMissingFrom('total_payable', 'total_amount');
+            $booking->fillMissingTotalWithoutDeposit();
+            $booking->syncAliasPair('paid_at', 'payment_paid_at');
+            $booking->syncAliasPair('requires_phone_verification', 'requires_phone_check');
+            $booking->syncAliasPair('requires_identity_verification', 'requires_identity_check');
+            $booking->syncAliasPair('requires_document_verification', 'requires_document_check');
+            $booking->syncAliasPair('host_response', 'host_reply');
+            $booking->fillMissingFrom('rejection_reason', 'cancel_reason');
+            $booking->syncAliasPair('cancellation_reason', 'cancel_reason');
+            $booking->syncAliasPair('checked_in_at', 'guest_checked_in_at');
+            $booking->syncAliasPair('checked_out_at', 'guest_checked_out_at');
+            $booking->syncAliasPair('guest_check_in_confirmed_at', 'guest_checked_in_at');
+            $booking->syncAliasPair('guest_check_out_confirmed_at', 'guest_checked_out_at');
+            $booking->syncAliasPair('host_check_in_confirmed_at', 'host_confirmed_checkin_at');
+            $booking->syncAliasPair('host_check_out_confirmed_at', 'host_confirmed_checkout_at');
         });
+    }
+
+    private function syncAliasPair(string $primary, string $alias): void
+    {
+        $this->fillMissingFrom($primary, $alias);
+        $this->fillMissingFrom($alias, $primary);
+    }
+
+    private function syncCountAliasPair(string $primary, string $alias): void
+    {
+        $this->fillMissingCountFrom($primary, $alias);
+        $this->fillMissingCountFrom($alias, $primary);
+    }
+
+    private function fillMissingFrom(string $target, string $source): void
+    {
+        $attributes = $this->getAttributes();
+
+        if (! array_key_exists($source, $attributes) || $attributes[$source] === null) {
+            return;
+        }
+
+        if (! array_key_exists($target, $attributes) || $attributes[$target] === null) {
+            $this->setAttribute($target, $attributes[$source]);
+        }
+    }
+
+    private function fillMissingCountFrom(string $target, string $source): void
+    {
+        $attributes = $this->getAttributes();
+
+        if (! array_key_exists($source, $attributes) || $attributes[$source] === null || (int) $attributes[$source] <= 0) {
+            return;
+        }
+
+        if (! array_key_exists($target, $attributes) || $attributes[$target] === null || (int) $attributes[$target] <= 0) {
+            $this->setAttribute($target, $attributes[$source]);
+        }
+    }
+
+    private function fillMissingTotalWithoutDeposit(): void
+    {
+        $attributes = $this->getAttributes();
+
+        if (array_key_exists('total_without_deposit', $attributes) && $attributes['total_without_deposit'] !== null) {
+            return;
+        }
+
+        if (! array_key_exists('total_payable', $attributes) || $attributes['total_payable'] === null) {
+            return;
+        }
+
+        $deposit = array_key_exists('deposit_amount', $attributes) && $attributes['deposit_amount'] !== null
+            ? (float) $attributes['deposit_amount']
+            : 0.0;
+
+        $this->setAttribute('total_without_deposit', max(0, (float) $attributes['total_payable'] - $deposit));
     }
 
     /**
@@ -507,6 +543,38 @@ class Booking extends Model
     }
 
     /**
+     * Lists internal payment records created by the booking payment module.
+     */
+    public function bookingPayments(): HasMany
+    {
+        return $this->hasMany(BookingPayment::class);
+    }
+
+    /**
+     * Lists payment deadlines attached to this Booking.
+     */
+    public function bookingPaymentDeadlines(): HasMany
+    {
+        return $this->hasMany(BookingPaymentDeadline::class);
+    }
+
+    /**
+     * Lists refund records created for this Booking.
+     */
+    public function bookingRefunds(): HasMany
+    {
+        return $this->hasMany(BookingRefund::class);
+    }
+
+    /**
+     * Lists payment receipts issued for this Booking.
+     */
+    public function paymentReceipts(): HasMany
+    {
+        return $this->hasMany(PaymentReceipt::class);
+    }
+
+    /**
      * Lists related Deposit Record records for this Booking.
      */
     public function depositRecords(): HasMany
@@ -623,6 +691,22 @@ class Booking extends Model
     public function bookingCheckIn(): HasOne
     {
         return $this->checkIn();
+    }
+
+    /**
+     * Fetches the active residence record created after successful check-in.
+     */
+    public function stay(): HasOne
+    {
+        return $this->hasOne(BookingStay::class);
+    }
+
+    /**
+     * Fetches the active residence record using the module-specific relation name.
+     */
+    public function bookingStay(): HasOne
+    {
+        return $this->stay();
     }
 
     /**

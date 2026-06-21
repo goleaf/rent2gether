@@ -17,36 +17,65 @@ use App\Models\Bed;
 use App\Models\BedAvailability;
 use App\Models\Booking;
 use App\Models\BookingCheckIn;
+use App\Models\BookingCheckInAccessDisclosure;
 use App\Models\BookingCheckInAlert;
 use App\Models\BookingCheckInChecklistItem;
+use App\Models\BookingCheckInInstruction;
+use App\Models\BookingCheckInMedia;
+use App\Models\BookingCheckInProblem;
 use App\Models\BookingCheckInProblemReport;
+use App\Models\BookingCheckInStatusLog;
+use App\Models\BookingCheckInStep;
 use App\Models\BookingCheckOut;
 use App\Models\BookingCheckOutChecklistItem;
+use App\Models\BookingCheckOutEvent;
+use App\Models\BookingCheckOutInventoryCheck;
+use App\Models\BookingCheckOutIssue;
 use App\Models\BookingCheckOutIssueReport;
+use App\Models\BookingCheckOutMedia;
+use App\Models\BookingCheckOutStatusLog;
+use App\Models\BookingCheckOutStep;
 use App\Models\BookingDepositDecision;
 use App\Models\BookingExtension;
+use App\Models\BookingExtensionEvent;
+use App\Models\BookingExtensionGuestResponse;
+use App\Models\BookingExtensionHostResponse;
+use App\Models\BookingExtensionLine;
+use App\Models\BookingExtensionStatusLog;
+use App\Models\BookingExtensionValidationResult;
 use App\Models\BookingForgottenItem;
 use App\Models\BookingGroupLink;
 use App\Models\BookingGuest;
 use App\Models\BookingGuestIntake;
 use App\Models\BookingHostResponse;
 use App\Models\BookingLifecycleEvent;
+use App\Models\BookingPayment;
+use App\Models\BookingPaymentAllocation;
+use App\Models\BookingPaymentAttempt;
+use App\Models\BookingPaymentDeadline;
+use App\Models\BookingPaymentStatusLog;
 use App\Models\BookingPriceLine;
 use App\Models\BookingPriceSnapshot;
 use App\Models\BookingQuote;
 use App\Models\BookingQuoteLine;
 use App\Models\BookingQuoteSuggestion;
 use App\Models\BookingQuoteValidationResult;
+use App\Models\BookingRefund;
 use App\Models\BookingRequest;
 use App\Models\BookingRequestCompatibilityResult;
 use App\Models\BookingRequestGuestResponse;
 use App\Models\BookingRequestHostResponse;
 use App\Models\BookingRequestStatusLog;
 use App\Models\BookingRequestWarning;
-use App\Models\BookingReviewRequest;
 use App\Models\BookingRequirement;
-use App\Models\BookingStatusLog;
+use App\Models\BookingReviewRequest;
 use App\Models\BookingStatusHistory;
+use App\Models\BookingStatusLog;
+use App\Models\BookingStay;
+use App\Models\BookingStayEvent;
+use App\Models\BookingStayNote;
+use App\Models\BookingStayOccupant;
+use App\Models\BookingStayStatusLog;
 use App\Models\BookingTimelineDate;
 use App\Models\CheckinRecord;
 use App\Models\CheckoutRecord;
@@ -101,6 +130,7 @@ use App\Models\MediaItemTranslation;
 use App\Models\Message;
 use App\Models\MessageThread;
 use App\Models\Notification;
+use App\Models\PaymentReceipt;
 use App\Models\PaymentRecord;
 use App\Models\Payout;
 use App\Models\PriceRule;
@@ -111,6 +141,7 @@ use App\Models\PropertyAccessDetail;
 use App\Models\PropertyAddress;
 use App\Models\PropertyAmenity;
 use App\Models\PropertyConditionDetail;
+use App\Models\PropertyCurrentOccupancySnapshot;
 use App\Models\PropertyLocationDetail;
 use App\Models\PropertyPhoto;
 use App\Models\PropertyRule;
@@ -123,6 +154,7 @@ use App\Models\RoomAccessDetail;
 use App\Models\RoomComfortDetail;
 use App\Models\RoomCompatibilityProfile;
 use App\Models\RoomConditionDetail;
+use App\Models\RoomCurrentOccupancySnapshot;
 use App\Models\RoomLayoutDetail;
 use App\Models\RoomOccupantSnapshot;
 use App\Models\RoomPhoto;
@@ -153,6 +185,7 @@ use App\Models\SleepingPlaceStorageDetail;
 use App\Models\SleepingPlaceTemplate;
 use App\Models\SleepingPlaceTranslation;
 use App\Models\SleepingPlaceTurnoverRule;
+use App\Models\StayVisibilityPreference;
 use App\Models\User;
 use App\Models\UserActivitySummary;
 use App\Models\UserDocument;
@@ -195,6 +228,7 @@ class BulkMarketplaceSeeder extends Seeder
         $this->seedBookings();
         $this->seedBookingChildren();
         $this->seedBookingLifecycleRecords();
+        $this->seedBookingStayRecords();
         $this->seedLegacyAvailabilityAndWaitlists();
         $this->seedMessaging();
         $this->seedSocialRecords();
@@ -1462,12 +1496,168 @@ class BulkMarketplaceSeeder extends Seeder
             ],
         );
 
+        $bookingStayRows = $this->bookingStayRows();
+        $staysByBooking = collect($bookingStayRows)->keyBy('booking_id')->all();
+        $extensionStart = BookingExtension::query()->count();
+
         BookingExtension::factory()
             ->count($this->missingFor(BookingExtension::class))
-            ->sequence(fn (Sequence $sequence): array => [
-                'booking_id' => $this->pick($bookingRows, $sequence->index)['id'],
-            ])
+            ->sequence(function (Sequence $sequence) use ($bookingRows, $staysByBooking, $extensionStart): array {
+                $booking = $this->pick($bookingRows, $sequence->index);
+                $stay = $staysByBooking[$booking['id']] ?? null;
+                $current = CarbonImmutable::parse($booking['check_out_date'])->startOfDay();
+                $extraNights = 1 + ($sequence->index % 5);
+                $new = $current->addDays($extraNights);
+                $accommodation = $extraNights * (20 + ($sequence->index % 12));
+                $serviceFee = round($accommodation * 0.05, 2);
+
+                return [
+                    'extension_number' => sprintf('EXT-%s-%06d', now()->format('Y'), $extensionStart + $sequence->index + 1),
+                    'booking_id' => $booking['id'],
+                    'booking_stay_id' => $stay['id'] ?? null,
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'current_checkout_date' => $current->toDateString(),
+                    'requested_new_checkout_date' => $new->toDateString(),
+                    'current_check_out_date' => $current->toDateString(),
+                    'current_check_out_time' => '11:00',
+                    'new_check_out_date' => $new->toDateString(),
+                    'new_check_out_time' => '11:00',
+                    'additional_nights' => $extraNights,
+                    'additional_nights_count' => $extraNights,
+                    'additional_chargeable_days_count' => $extraNights,
+                    'additional_calendar_presence_days_count' => $extraNights + 1,
+                    'original_check_out' => $current->toDateString(),
+                    'new_check_out' => $new->toDateString(),
+                    'extra_nights' => $extraNights,
+                    'extra_amount' => $accommodation,
+                    'additional_amount' => $accommodation,
+                    'accommodation_amount' => $accommodation,
+                    'service_fee_amount' => $serviceFee,
+                    'total_extra' => $accommodation + $serviceFee,
+                    'total_payable' => $accommodation + $serviceFee,
+                    'host_payout_amount' => $accommodation,
+                    'non_refundable_amount' => $accommodation + $serviceFee,
+                    'currency' => 'EUR',
+                    'status' => ['waiting_host_confirmation', 'approved_waiting_payment', 'paid', 'applied'][$sequence->index % 4],
+                    'payment_status' => $sequence->index % 4 >= 2 ? 'paid' : 'waiting_payment',
+                    'requires_host_confirmation' => $sequence->index % 2 === 0,
+                    'requires_host_approval' => $sequence->index % 2 === 0,
+                    'requires_payment' => true,
+                    'payment_required' => true,
+                    'hold_dates' => $sequence->index % 4 !== 3,
+                    'payment_deadline_at' => now()->addMinutes(30),
+                    'hold_expires_at' => now()->addMinutes(30),
+                    'expires_at' => now()->addHours(24),
+                    'approved_at' => $sequence->index % 4 >= 1 ? now()->subHours(3) : null,
+                    'paid_at' => $sequence->index % 4 >= 2 ? now()->subHours(2) : null,
+                    'applied_at' => $sequence->index % 4 === 3 ? now()->subHour() : null,
+                ];
+            })
             ->create();
+
+        $extensionRows = $this->bookingExtensionRows();
+
+        $this->seedFactoryRows(
+            BookingExtensionLine::class,
+            function (int $index) use ($extensionRows): array {
+                $extension = $this->pick($extensionRows, $index);
+                $lineType = ['extension_night', 'service_fee', 'extension_discount', 'additional_deposit'][$index % 4];
+                $amount = match ($lineType) {
+                    'extension_discount' => -5,
+                    'service_fee' => 4,
+                    'additional_deposit' => 25,
+                    default => 20 + ($index % 15),
+                };
+
+                return [
+                    'booking_extension_id' => $extension['id'],
+                    'line_type' => $lineType,
+                    'label_key' => 'booking_extensions.lines.'.$lineType,
+                    'date' => $lineType === 'extension_night'
+                        ? CarbonImmutable::parse($extension['current_check_out_date'])->addDays($index % max(1, $extension['additional_nights_count']))->toDateString()
+                        : null,
+                    'quantity' => 1,
+                    'unit_amount' => $amount,
+                    'amount' => $amount,
+                    'currency' => $extension['currency'],
+                    'is_discount' => $lineType === 'extension_discount',
+                    'is_fee' => $lineType === 'service_fee',
+                    'is_deposit' => $lineType === 'additional_deposit',
+                    'is_refundable' => $lineType === 'additional_deposit',
+                    'is_payable_now' => true,
+                    'sort_order' => $index % 20,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            BookingExtensionValidationResult::class,
+            fn (int $index): array => [
+                'booking_extension_id' => $this->pick($extensionRows, $index)['id'],
+                'validation_key' => ['host_confirmation_required', 'payment_required', 'same_day_extension_requires_confirmation', 'guest_not_allowed'][$index % 4],
+                'severity' => $index % 4 === 3 ? 'warning' : 'info',
+                'message_key' => 'booking_extensions.validation.'.(['host_confirmation_required', 'payment_required', 'same_day_extension_requires_confirmation', 'guest_not_allowed'][$index % 4]),
+                'message_params_json' => [],
+                'blocking' => false,
+                'visible_to_guest' => true,
+                'visible_to_host' => true,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingExtensionHostResponse::class,
+            fn (int $index): array => [
+                'booking_extension_id' => $this->pick($extensionRows, $index)['id'],
+                'host_user_id' => $this->pick($extensionRows, $index)['host_user_id'],
+                'response_type' => ['approve', 'ask_question', 'propose_new_checkout', 'reject'][$index % 4],
+                'message' => 'booking_extensions.demo.host_response',
+                'proposed_new_check_out_date' => $index % 4 === 2
+                    ? CarbonImmutable::parse($this->pick($extensionRows, $index)['new_check_out_date'])->addDay()->toDateString()
+                    : null,
+                'rejection_reason' => $index % 4 === 3 ? 'other' : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingExtensionGuestResponse::class,
+            fn (int $index): array => [
+                'booking_extension_id' => $this->pick($extensionRows, $index)['id'],
+                'guest_user_id' => $this->pick($extensionRows, $index)['guest_user_id'],
+                'response_type' => ['accept_host_proposal', 'answer_question', 'send_message', 'cancel_request'][$index % 4],
+                'message' => 'booking_extensions.demo.guest_response',
+                'accepted_new_check_out_date' => $index % 4 === 0 ? $this->pick($extensionRows, $index)['new_check_out_date'] : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingExtensionStatusLog::class,
+            fn (int $index): array => [
+                'booking_extension_id' => $this->pick($extensionRows, $index)['id'],
+                'booking_id' => $this->pick($extensionRows, $index)['booking_id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($extensionRows, $index)['guest_user_id'] : $this->pick($extensionRows, $index)['host_user_id'],
+                'old_status' => null,
+                'new_status' => $this->pick($extensionRows, $index)['status'],
+                'reason_key' => 'booking_extensions.events.extension_requested',
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingExtensionEvent::class,
+            fn (int $index): array => [
+                'booking_extension_id' => $this->pick($extensionRows, $index)['id'],
+                'booking_id' => $this->pick($extensionRows, $index)['booking_id'],
+                'event_key' => ['extension_requested', 'availability_checked', 'quote_created', 'extension_applied'][$index % 4],
+                'event_type' => 'system',
+                'user_id' => $this->pick($extensionRows, $index)['guest_user_id'],
+                'occurred_at' => now()->subMinutes($index % 1440),
+                'context_json' => [],
+            ],
+        );
 
         PaymentRecord::factory()
             ->count($this->missingFor(PaymentRecord::class))
@@ -1476,6 +1666,115 @@ class BulkMarketplaceSeeder extends Seeder
                 'payer_user_id' => $this->pick($userIds, $sequence->index),
             ])
             ->create();
+
+        $this->seedFactoryRows(
+            BookingPayment::class,
+            fn (int $index): array => $this->bookingState($this->pick($bookingRows, $index), [
+                'payment_number' => sprintf('PAY-%s-%06d', now()->format('Y'), $index + 1),
+                'booking_quote_id' => null,
+                'booking_request_id' => null,
+                'booking_extension_id' => null,
+                'booking_relocation_id' => null,
+                'payment_type' => $index % 5 === 0 ? 'partial_payment' : 'full_payment',
+                'payment_purpose' => 'booking_payment',
+                'payment_method' => 'internal_test',
+                'status' => $index % 5 === 0 ? 'partially_paid' : 'paid',
+                'amount' => 126,
+                'currency' => 'EUR',
+                'required_now_amount' => $index % 5 === 0 ? 90 : 126,
+                'remaining_amount' => $index % 5 === 0 ? 36 : 0,
+                'remaining_due_at' => $index % 5 === 0 ? now()->addDays(10) : null,
+                'payment_deadline_at' => now()->addMinutes(30),
+                'paid_at' => $index % 5 === 0 ? null : now()->subDays($index % 14),
+            ]),
+        );
+
+        $bookingPaymentRows = $this->bookingPaymentRows();
+
+        $this->seedFactoryRows(
+            BookingPaymentAttempt::class,
+            fn (int $index): array => [
+                'booking_payment_id' => $this->pick($bookingPaymentRows, $index)['id'],
+                'booking_id' => $this->pick($bookingPaymentRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($bookingPaymentRows, $index)['guest_user_id'],
+                'attempt_number' => 1,
+                'status' => $index % 6 === 0 ? 'failed' : 'succeeded',
+                'payment_method' => 'internal_test',
+                'amount' => $this->pick($bookingPaymentRows, $index)['required_now_amount'],
+                'currency' => $this->pick($bookingPaymentRows, $index)['currency'],
+                'started_at' => now()->subHours($index % 48),
+                'succeeded_at' => $index % 6 === 0 ? null : now()->subHours($index % 48),
+                'failed_at' => $index % 6 === 0 ? now()->subHours($index % 48) : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingPaymentAllocation::class,
+            fn (int $index): array => [
+                'booking_payment_id' => $this->pick($bookingPaymentRows, $index)['id'],
+                'booking_id' => $this->pick($bookingPaymentRows, $index)['booking_id'],
+                'allocation_type' => ['accommodation', 'cleaning_fee', 'guest_service_fee', 'deposit'][$index % 4],
+                'amount' => [60, 10, 6, 50][$index % 4],
+                'currency' => $this->pick($bookingPaymentRows, $index)['currency'],
+                'refundable' => $index % 4 === 3,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingPaymentDeadline::class,
+            fn (int $index): array => [
+                'booking_payment_id' => $this->pick($bookingPaymentRows, $index)['id'],
+                'booking_id' => $this->pick($bookingPaymentRows, $index)['booking_id'],
+                'deadline_type' => $index % 5 === 0 ? 'remaining_balance' : 'initial_payment',
+                'due_at' => now()->addMinutes(30 + ($index % 60)),
+                'status' => $index % 5 === 0 ? 'pending' : 'completed',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingPaymentStatusLog::class,
+            fn (int $index): array => [
+                'booking_payment_id' => $this->pick($bookingPaymentRows, $index)['id'],
+                'booking_id' => $this->pick($bookingPaymentRows, $index)['booking_id'],
+                'user_id' => $this->pick($bookingPaymentRows, $index)['guest_user_id'],
+                'old_status' => 'waiting_payment',
+                'new_status' => $this->pick($bookingPaymentRows, $index)['status'],
+                'event_key' => 'payment_seeded',
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingRefund::class,
+            fn (int $index): array => $this->bookingState($this->pick($bookingRows, $index), [
+                'refund_number' => sprintf('REF-%s-%06d', now()->format('Y'), $index + 1),
+                'booking_payment_id' => $this->pick($bookingPaymentRows, $index)['id'],
+                'refund_type' => ['partial_refund', 'deposit_refund', 'cleaning_fee_refund'][$index % 3],
+                'status' => $index % 4 === 0 ? 'completed' : 'pending',
+                'amount' => [20, 50, 10][$index % 3],
+                'currency' => 'EUR',
+                'reason_key' => ['partial_adjustment', 'deposit_return', 'guest_cancelled'][$index % 3],
+                'requested_at' => now()->subDays($index % 30),
+                'completed_at' => $index % 4 === 0 ? now()->subDays($index % 20) : null,
+            ]),
+        );
+
+        $this->seedFactoryRows(
+            PaymentReceipt::class,
+            fn (int $index): array => [
+                'booking_id' => $this->pick($bookingPaymentRows, $index)['booking_id'],
+                'booking_payment_id' => $this->pick($bookingPaymentRows, $index)['id'],
+                'guest_user_id' => $this->pick($bookingPaymentRows, $index)['guest_user_id'],
+                'receipt_number' => sprintf('RCT-%s-%06d', now()->format('Y'), $index + 1),
+                'status' => $index % 5 === 0 ? 'draft' : 'issued',
+                'issued_at' => $index % 5 === 0 ? null : now()->subDays($index % 14),
+                'receipt_data_json' => [
+                    'payment_number' => $this->pick($bookingPaymentRows, $index)['payment_number'],
+                    'amount' => $this->pick($bookingPaymentRows, $index)['amount'],
+                    'currency' => $this->pick($bookingPaymentRows, $index)['currency'],
+                ],
+            ],
+        );
 
         DepositRecord::factory()
             ->count($this->missingFor(DepositRecord::class))
@@ -1574,6 +1873,21 @@ class BulkMarketplaceSeeder extends Seeder
         $checkInRows = $this->bookingCheckInRows();
         $checkOutRows = $this->bookingCheckOutRows();
 
+        $this->seedMissingOwnedRows(
+            BookingCheckInInstruction::class,
+            'booking_check_in_id',
+            array_column($checkInRows, 'id'),
+            fn (int $checkInId, int $index): BookingCheckInInstruction => BookingCheckInInstruction::factory()->create([
+                'booking_check_in_id' => $checkInId,
+                'booking_id' => $this->pick($checkInRows, $index)['booking_id'],
+                'property_id' => $this->pick($checkInRows, $index)['property_id'],
+                'room_id' => $this->pick($checkInRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($checkInRows, $index)['sleeping_place_id'],
+                'visible_from' => now()->subDay(),
+                'visible_until' => now()->addDays(7),
+            ]),
+        );
+
         $this->seedFactoryRows(
             BookingCheckInChecklistItem::class,
             fn (int $index): array => [
@@ -1594,6 +1908,66 @@ class BulkMarketplaceSeeder extends Seeder
         );
 
         $this->seedFactoryRows(
+            BookingCheckInAccessDisclosure::class,
+            fn (int $index): array => [
+                'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                'booking_id' => $this->pick($checkInRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($checkInRows, $index)['guest_user_id'],
+                'disclosure_type' => ['exact_address', 'host_contact', 'door_code'][$index % 3],
+                'shown_by_user_id' => $this->pick($checkInRows, $index)['guest_user_id'],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckInStep::class,
+            fn (int $index): array => [
+                'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                'step_key' => ['show_instruction', 'guest_arrived', 'guest_confirmed', 'host_confirmed'][$index % 4],
+                'status' => $index % 3 === 0 ? 'completed' : 'pending',
+                'completed_by_user_id' => $index % 3 === 0 ? $this->pick($checkInRows, $index)['guest_user_id'] : null,
+                'completed_at' => $index % 3 === 0 ? now()->subHours($index % 24) : null,
+                'sort_order' => ($index % 14) + 1,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckInMedia::class,
+            fn (int $index): array => [
+                'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                'booking_id' => $this->pick($checkInRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $index % 2 === 0 ? $this->pick($checkInRows, $index)['guest_user_id'] : $this->pick($checkInRows, $index)['host_user_id'],
+                'media_role' => ['before_check_in_sleeping_place', 'before_check_in_room', 'existing_damage'][$index % 3],
+                'path' => sprintf('bulk-demo/check-in-%04d.jpg', $index + 1),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckInProblem::class,
+            fn (int $index): array => [
+                'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                'booking_id' => $this->pick($checkInRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($checkInRows, $index)['guest_user_id'],
+                'host_user_id' => $this->pick($checkInRows, $index)['host_user_id'],
+                'property_id' => $this->pick($checkInRows, $index)['property_id'],
+                'room_id' => $this->pick($checkInRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($checkInRows, $index)['sleeping_place_id'],
+                'problem_type' => ['cannot_find_address', 'host_not_answering', 'listing_mismatch', 'other'][$index % 4],
+                'severity' => ['low', 'medium', 'high', 'urgent'][$index % 4],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckInStatusLog::class,
+            fn (int $index): array => [
+                'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                'booking_id' => $this->pick($checkInRows, $index)['booking_id'],
+                'user_id' => $this->pick($checkInRows, $index)['guest_user_id'],
+                'old_status' => $index % 2 === 0 ? 'scheduled' : null,
+                'new_status' => ['instructions_available', 'guest_arrived', 'guest_confirmed', 'checked_in'][$index % 4],
+            ],
+        );
+
+        $this->seedFactoryRows(
             BookingCheckOutChecklistItem::class,
             fn (int $index): array => [
                 'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
@@ -1603,8 +1977,67 @@ class BulkMarketplaceSeeder extends Seeder
         );
 
         $this->seedFactoryRows(
+            BookingCheckOutStep::class,
+            fn (int $index): array => [
+                'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                'step_key' => ['guest_confirm_checkout', 'keys_returned', 'inventory_checked', 'review_requested'][$index % 4],
+                'status' => $index % 3 === 0 ? 'completed' : 'pending',
+                'completed_by_user_id' => $index % 3 === 0 ? $this->pick($checkOutRows, $index)['host_user_id'] : null,
+                'completed_at' => $index % 3 === 0 ? now()->subHours($index % 48) : null,
+                'required' => $index % 5 !== 0,
+                'sort_order' => ($index % 17) + 1,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckOutMedia::class,
+            fn (int $index): array => [
+                'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                'booking_id' => $this->pick($checkOutRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $index % 2 === 0 ? $this->pick($checkOutRows, $index)['guest_user_id'] : $this->pick($checkOutRows, $index)['host_user_id'],
+                'media_role' => ['after_checkout_sleeping_place', 'after_checkout_room', 'damage_evidence', 'forgotten_item_photo'][$index % 4],
+                'path' => sprintf('bulk-demo/check-out-%04d.jpg', $index + 1),
+                'visibility' => ['guest_and_host', 'host_only', 'guest_only', 'internal'][$index % 4],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckOutInventoryCheck::class,
+            fn (int $index): array => [
+                'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                'booking_id' => $this->pick($checkOutRows, $index)['booking_id'],
+                'item_name_snapshot' => ['key', 'access_card', 'locker', 'bedding', 'towel'][$index % 5],
+                'returned' => $index % 6 !== 0,
+                'lost' => $index % 11 === 0,
+                'damaged' => $index % 13 === 0,
+                'needs_replacement' => $index % 11 === 0 || $index % 13 === 0,
+                'deduction_requested' => $index % 11 === 0,
+                'deduction_amount' => $index % 11 === 0 ? 15 : null,
+                'currency' => 'EUR',
+            ],
+        );
+
+        $this->seedFactoryRows(
             BookingCheckOutIssueReport::class,
             fn (int $index): array => $this->bookingCheckOutState($this->pick($checkOutRows, $index)),
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckOutIssue::class,
+            fn (int $index): array => [
+                'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                'booking_id' => $this->pick($checkOutRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($checkOutRows, $index)['guest_user_id'],
+                'host_user_id' => $this->pick($checkOutRows, $index)['host_user_id'],
+                'property_id' => $this->pick($checkOutRows, $index)['property_id'],
+                'room_id' => $this->pick($checkOutRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($checkOutRows, $index)['sleeping_place_id'],
+                'issue_type' => ['damage', 'extra_dirt', 'lost_key', 'forgotten_items'][$index % 4],
+                'severity' => ['low', 'medium', 'high', 'urgent'][$index % 4],
+                'status' => ['reported', 'waiting_guest_response', 'resolved', 'deposit_deduction_requested'][$index % 4],
+                'amount_requested' => $index % 4 === 3 ? 20 : null,
+                'currency' => 'EUR',
+            ],
         );
 
         $this->seedFactoryRows(
@@ -1615,8 +2048,199 @@ class BulkMarketplaceSeeder extends Seeder
         $this->seedFactoryRows(
             BookingForgottenItem::class,
             fn (int $index): array => $this->bookingCheckOutState($this->pick($checkOutRows, $index), [
+                'property_id' => $this->pick($checkOutRows, $index)['property_id'],
+                'room_id' => $this->pick($checkOutRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($checkOutRows, $index)['sleeping_place_id'],
                 'item_name' => sprintf('Bulk forgotten item %04d', $index + 1),
+                'return_method' => ['pickup', 'shipping', 'host_keeps_until_contact'][$index % 3],
             ]),
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckOutStatusLog::class,
+            fn (int $index): array => [
+                'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                'booking_id' => $this->pick($checkOutRows, $index)['booking_id'],
+                'user_id' => $this->pick($checkOutRows, $index)['host_user_id'],
+                'old_status' => $index % 2 === 0 ? 'scheduled' : null,
+                'new_status' => ['guest_checked_out', 'waiting_inspection', 'completed', 'closed'][$index % 4],
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingCheckOutEvent::class,
+            fn (int $index): array => [
+                'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                'booking_id' => $this->pick($checkOutRows, $index)['booking_id'],
+                'event_key' => ['guest_confirmed_checkout', 'inspection_started', 'cleaning_created', 'review_requested'][$index % 4],
+                'event_type' => ['system', 'guest_action', 'host_action'][$index % 3],
+                'user_id' => $this->pick($checkOutRows, $index)['host_user_id'],
+                'occurred_at' => now()->subHours($index % 72),
+                'context_json' => [],
+            ],
+        );
+    }
+
+    private function seedBookingStayRecords(): void
+    {
+        $bookingRows = $this->bookingRows();
+        $bookingIds = array_column($bookingRows, 'id');
+        $stayStart = BookingStay::query()->count();
+
+        $this->seedMissingOwnedRows(
+            BookingStay::class,
+            'booking_id',
+            $bookingIds,
+            fn (int $bookingId, int $index): BookingStay => BookingStay::factory()->create($this->bookingState($this->pick($bookingRows, $index), [
+                'stay_number' => sprintf('STAY-%s-%06d', now()->format('Y'), $stayStart + $index + 1),
+                'booking_id' => $bookingId,
+                'status' => ['active', 'checkout_soon', 'extension_requested', 'problem_reported'][$index % 4],
+                'check_in_date' => $this->pick($bookingRows, $index)['check_in_date'],
+                'check_in_time' => '15:00',
+                'actual_check_in_at' => CarbonImmutable::parse($this->pick($bookingRows, $index)['check_in_date'])->setTime(18, 0),
+                'planned_check_out_date' => $this->pick($bookingRows, $index)['check_out_date'],
+                'planned_check_out_time' => '10:00',
+                'nights_count' => max(1, CarbonImmutable::parse($this->pick($bookingRows, $index)['check_in_date'])->diffInDays(CarbonImmutable::parse($this->pick($bookingRows, $index)['check_out_date']))),
+                'calendar_presence_days_count' => max(2, CarbonImmutable::parse($this->pick($bookingRows, $index)['check_in_date'])->diffInDays(CarbonImmutable::parse($this->pick($bookingRows, $index)['check_out_date'])) + 1),
+                'nights_passed' => min($index % 5, 3),
+                'nights_remaining' => max(0, CarbonImmutable::now()->diffInDays(CarbonImmutable::parse($this->pick($bookingRows, $index)['check_out_date']), false)),
+                'payment_status' => 'paid',
+                'checkout_soon' => $index % 4 === 1,
+                'extension_requested' => $index % 4 === 2,
+                'has_open_complaint' => $index % 12 === 0,
+                'has_open_maintenance' => $index % 15 === 0,
+                'has_payment_problem' => false,
+                'started_at' => CarbonImmutable::parse($this->pick($bookingRows, $index)['check_in_date'])->setTime(18, 0),
+            ])),
+        );
+
+        $stayRows = $this->bookingStayRows();
+
+        $this->seedFactoryRows(
+            BookingStayOccupant::class,
+            fn (int $index): array => [
+                'booking_stay_id' => $this->pick($stayRows, $index)['id'],
+                'booking_id' => $this->pick($stayRows, $index)['booking_id'],
+                'user_id' => $this->pick($stayRows, $index)['guest_user_id'],
+                'occupant_name' => sprintf('Demo resident %04d', $index + 1),
+                'occupant_type' => 'main_guest',
+                'is_main_guest' => true,
+                'age_range' => ['18-24', '25-34', '35-44'][$index % 3],
+                'public_gender_visible' => false,
+                'city_name' => $index % 2 === 0 ? 'Demo city' : null,
+                'country_name' => 'Demo country',
+                'languages_json' => ['en', 'ru'],
+                'stay_purpose' => ['tourist', 'student', 'work', 'long_term_resident'][$index % 4],
+                'sleep_schedule' => ['wakes_up_early', 'sleeps_late', 'works_at_night', null][$index % 4],
+                'smoking_status' => $index % 5 === 0 ? 'smokes' : 'does_not_smoke',
+                'sociability_level' => $index % 3 === 0 ? 'social' : 'prefers_quiet',
+                'public_visibility' => $index % 7 === 0 ? 'hidden' : 'roommates_only',
+            ],
+        );
+
+        $this->seedMissingOwnedRows(
+            StayVisibilityPreference::class,
+            'booking_stay_id',
+            array_column($stayRows, 'id'),
+            fn (int $stayId, int $index): StayVisibilityPreference => StayVisibilityPreference::factory()->create([
+                'booking_stay_id' => $stayId,
+                'user_id' => $this->pick($stayRows, $index)['guest_user_id'],
+                'show_public_name' => $index % 7 !== 0,
+                'show_sleep_schedule' => $index % 3 === 0,
+                'show_smoking_status' => $index % 4 === 0,
+                'show_sociability_level' => $index % 2 === 0,
+            ]),
+        );
+
+        $roomRows = $this->roomRows();
+        $propertyRows = $this->propertyRows();
+        $propertyById = collect($propertyRows)->keyBy('id')->all();
+
+        $this->seedMissingOwnedRows(
+            RoomCurrentOccupancySnapshot::class,
+            'room_id',
+            array_column($roomRows, 'id'),
+            fn (int $roomId, int $index): RoomCurrentOccupancySnapshot => RoomCurrentOccupancySnapshot::factory()->create([
+                'room_id' => $roomId,
+                'property_id' => $this->pick($roomRows, $index)['property_id'],
+                'host_user_id' => $propertyById[$this->pick($roomRows, $index)['property_id']]['host_user_id'] ?: $propertyById[$this->pick($roomRows, $index)['property_id']]['user_id'],
+                'current_occupants_count' => ($index % 4) + 1,
+                'current_bookings_count' => ($index % 3) + 1,
+                'occupied_sleeping_places_count' => ($index % 3) + 1,
+                'free_sleeping_places_count' => max(0, 4 - (($index % 3) + 1)),
+                'students_count' => $index % 2,
+                'workers_count' => ($index + 1) % 2,
+                'tourists_count' => $index % 3 === 0 ? 1 : 0,
+                'late_sleep_count' => $index % 4 === 0 ? 1 : 0,
+                'non_smokers_count' => 1,
+                'quiet_preferring_count' => $index % 2,
+                'checkout_today_count' => $index % 9 === 0 ? 1 : 0,
+                'checkin_today_count' => $index % 10 === 0 ? 1 : 0,
+                'has_open_complaints' => $index % 12 === 0,
+                'has_open_maintenance' => $index % 15 === 0,
+                'last_recalculated_at' => now()->subMinutes($index % 60),
+            ]),
+        );
+
+        $this->seedMissingOwnedRows(
+            PropertyCurrentOccupancySnapshot::class,
+            'property_id',
+            array_column($propertyRows, 'id'),
+            fn (int $propertyId, int $index): PropertyCurrentOccupancySnapshot => PropertyCurrentOccupancySnapshot::factory()->create([
+                'property_id' => $propertyId,
+                'host_user_id' => $this->pick($propertyRows, $index)['host_user_id'] ?: $this->pick($propertyRows, $index)['user_id'],
+                'current_occupants_count' => ($index % 8) + 1,
+                'current_bookings_count' => ($index % 6) + 1,
+                'occupied_rooms_count' => ($index % 3) + 1,
+                'occupied_sleeping_places_count' => ($index % 8) + 1,
+                'free_sleeping_places_count' => max(0, 12 - (($index % 8) + 1)),
+                'checkout_today_count' => $index % 9 === 0 ? 1 : 0,
+                'checkin_today_count' => $index % 10 === 0 ? 1 : 0,
+                'has_open_complaints' => $index % 12 === 0,
+                'has_open_maintenance' => $index % 15 === 0,
+                'last_recalculated_at' => now()->subMinutes($index % 60),
+            ]),
+        );
+
+        $this->seedFactoryRows(
+            BookingStayStatusLog::class,
+            fn (int $index): array => [
+                'booking_stay_id' => $this->pick($stayRows, $index)['id'],
+                'booking_id' => $this->pick($stayRows, $index)['booking_id'],
+                'user_id' => $this->pick($stayRows, $index)['host_user_id'],
+                'old_status' => $index % 2 === 0 ? 'pending_check_in_confirmation' : null,
+                'new_status' => $this->pick($stayRows, $index)['status'],
+                'reason_key' => 'stays.events.bulk_seeded',
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingStayNote::class,
+            fn (int $index): array => [
+                'booking_stay_id' => $this->pick($stayRows, $index)['id'],
+                'booking_id' => $this->pick($stayRows, $index)['booking_id'],
+                'user_id' => $this->pick($stayRows, $index)['host_user_id'],
+                'note_type' => ['host_note', 'guest_note', 'neighbor_note', 'problem_note'][$index % 4],
+                'visibility' => ['host_only', 'guest_and_host', 'host_only', 'internal'][$index % 4],
+                'note' => sprintf('Demo stay note %04d', $index + 1),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingStayEvent::class,
+            fn (int $index): array => [
+                'booking_stay_id' => $this->pick($stayRows, $index)['id'],
+                'booking_id' => $this->pick($stayRows, $index)['booking_id'],
+                'event_key' => ['stay_started', 'guest_present', 'checkout_soon', 'maintenance_reported'][$index % 4],
+                'event_type' => ['system', 'guest_action', 'host_action'][$index % 3],
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $this->pick($stayRows, $index)['guest_user_id'],
+                'occurred_at' => now()->subHours($index % 72),
+                'context_json' => [],
+            ],
         );
     }
 
@@ -2912,6 +3536,46 @@ class BulkMarketplaceSeeder extends Seeder
     }
 
     /**
+     * @return list<array{id:int,booking_id:int,guest_user_id:int,host_user_id:int,property_id:int,room_id:int,sleeping_place_id:int,payment_number:string,status:string,amount:string,required_now_amount:string,currency:string}>
+     */
+    private function bookingPaymentRows(): array
+    {
+        return BookingPayment::query()
+            ->select([
+                'id',
+                'booking_id',
+                'guest_user_id',
+                'host_user_id',
+                'property_id',
+                'room_id',
+                'sleeping_place_id',
+                'payment_number',
+                'status',
+                'amount',
+                'required_now_amount',
+                'currency',
+            ])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingPayment $payment): array => [
+                'id' => $payment->id,
+                'booking_id' => $payment->booking_id,
+                'guest_user_id' => $payment->guest_user_id,
+                'host_user_id' => $payment->host_user_id,
+                'property_id' => $payment->property_id,
+                'room_id' => $payment->room_id,
+                'sleeping_place_id' => $payment->sleeping_place_id,
+                'payment_number' => $payment->payment_number,
+                'status' => $payment->status,
+                'amount' => $payment->amount,
+                'required_now_amount' => $payment->required_now_amount,
+                'currency' => $payment->currency,
+            ])
+            ->all();
+    }
+
+    /**
      * @return list<array{id:int,booking_id:int,property_id:int,room_id:int,sleeping_place_id:int,guest_user_id:int,host_user_id:int}>
      */
     private function bookingCheckInRows(): array
@@ -2951,6 +3615,69 @@ class BulkMarketplaceSeeder extends Seeder
                 'sleeping_place_id' => $checkOut->sleeping_place_id,
                 'guest_user_id' => $checkOut->guest_user_id,
                 'host_user_id' => $checkOut->host_user_id,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return list<array{id:int,booking_id:int,guest_user_id:int,host_user_id:int,property_id:int,room_id:int,sleeping_place_id:int,status:string}>
+     */
+    private function bookingStayRows(): array
+    {
+        return BookingStay::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'status'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingStay $stay): array => [
+                'id' => $stay->id,
+                'booking_id' => $stay->booking_id,
+                'guest_user_id' => $stay->guest_user_id,
+                'host_user_id' => $stay->host_user_id,
+                'property_id' => $stay->property_id,
+                'room_id' => $stay->room_id,
+                'sleeping_place_id' => $stay->sleeping_place_id,
+                'status' => $stay->status,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return list<array{id:int,booking_id:int,guest_user_id:int,host_user_id:int,property_id:int,room_id:int,sleeping_place_id:int,status:string,current_check_out_date:string,new_check_out_date:string,additional_nights_count:int,currency:string}>
+     */
+    private function bookingExtensionRows(): array
+    {
+        return BookingExtension::query()
+            ->select([
+                'id',
+                'booking_id',
+                'guest_user_id',
+                'host_user_id',
+                'property_id',
+                'room_id',
+                'sleeping_place_id',
+                'status',
+                'current_check_out_date',
+                'new_check_out_date',
+                'additional_nights_count',
+                'currency',
+            ])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingExtension $extension): array => [
+                'id' => $extension->id,
+                'booking_id' => $extension->booking_id,
+                'guest_user_id' => $extension->guest_user_id,
+                'host_user_id' => $extension->host_user_id,
+                'property_id' => $extension->property_id,
+                'room_id' => $extension->room_id,
+                'sleeping_place_id' => $extension->sleeping_place_id,
+                'status' => $extension->status instanceof \BackedEnum ? $extension->status->value : (string) $extension->status,
+                'current_check_out_date' => $extension->current_check_out_date?->toDateString() ?: now()->toDateString(),
+                'new_check_out_date' => $extension->new_check_out_date?->toDateString() ?: now()->addDay()->toDateString(),
+                'additional_nights_count' => max(1, (int) $extension->additional_nights_count),
+                'currency' => $extension->currency ?: 'EUR',
             ])
             ->all();
     }
