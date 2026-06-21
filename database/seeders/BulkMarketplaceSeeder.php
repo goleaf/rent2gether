@@ -57,6 +57,16 @@ use App\Models\BookingGuestIntake;
 use App\Models\BookingHostResponse;
 use App\Models\BookingHostUnresponsiveCase;
 use App\Models\BookingLifecycleEvent;
+use App\Models\BookingListingMismatchCompensationLine;
+use App\Models\BookingListingMismatchEvent;
+use App\Models\BookingListingMismatchGuestResponse;
+use App\Models\BookingListingMismatchHostResponse;
+use App\Models\BookingListingMismatchItem;
+use App\Models\BookingListingMismatchMedia;
+use App\Models\BookingListingMismatchReport;
+use App\Models\BookingListingMismatchResolutionOption;
+use App\Models\BookingListingMismatchStatusLog;
+use App\Models\BookingListingMismatchWarning;
 use App\Models\BookingNoShow;
 use App\Models\BookingNoShowContactAttempt;
 use App\Models\BookingNoShowEvent;
@@ -2905,6 +2915,243 @@ class BulkMarketplaceSeeder extends Seeder
                 'source_type' => 'bulk_demo_seed',
                 'source_id' => $index + 1,
                 'user_id' => $index % 2 === 0 ? $this->pick($hostUnresponsiveRows, $index)['guest_user_id'] : $this->pick($hostUnresponsiveRows, $index)['host_user_id'],
+                'occurred_at' => now()->subMinutes($index % 1440),
+                'context_json' => [],
+            ],
+        );
+
+        $checkInsByBookingId = collect($checkInRows)->keyBy('booking_id')->all();
+        $checkOutsByBookingId = collect($checkOutRows)->keyBy('booking_id')->all();
+
+        $this->seedFactoryRows(
+            BookingListingMismatchReport::class,
+            function (int $index) use ($bookingRows, $checkInsByBookingId, $checkOutsByBookingId): array {
+                $booking = $this->pick($bookingRows, $index);
+                $checkIn = $checkInsByBookingId[$booking['id']] ?? null;
+                $checkOut = $checkOutsByBookingId[$booking['id']] ?? null;
+                $type = ['missing_locker', 'missing_wifi', 'dirty_room', 'wrong_bunk_level', 'photos_mismatch', 'mold'][$index % 6];
+                $severity = ['low', 'medium', 'high', 'urgent', 'unsafe'][$index % 5];
+                $status = ['reported', 'waiting_host_response', 'host_responded', 'confirmed', 'resolution_offered', 'dispute_opened'][$index % 6];
+                $reportedAt = CarbonImmutable::parse($booking['check_in_date'])->setTime(19, 0)->addMinutes($index % 90);
+                $resolutionType = in_array($status, ['resolution_offered', 'confirmed'], true)
+                    ? ['fix_problem', 'cleaning', 'partial_refund', 'relocation'][$index % 4]
+                    : null;
+
+                return [
+                    'mismatch_number' => sprintf('MM-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $booking['id'],
+                    'booking_stay_id' => null,
+                    'booking_check_in_id' => $checkIn['id'] ?? null,
+                    'booking_check_out_id' => $index % 7 === 0 ? ($checkOut['id'] ?? null) : null,
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'source_type' => ['guest_report', 'check_in_problem', 'stay_problem', 'cancellation', 'complaint'][$index % 5],
+                    'source_id' => $index + 1,
+                    'mismatch_type' => $type,
+                    'severity' => $severity,
+                    'status' => $status,
+                    'reported_at' => $reportedAt,
+                    'discovered_at' => $reportedAt->subMinutes(20),
+                    'guest_description' => 'listing_mismatch.demo.guest_description',
+                    'host_response' => in_array($status, ['host_responded', 'resolution_offered'], true) ? 'listing_mismatch.demo.host_response' : null,
+                    'what_was_promised' => 'listing_mismatch.demo.promised_'.$type,
+                    'what_was_actual' => 'listing_mismatch.demo.actual_'.$type,
+                    'guest_wants_to_stay' => $severity !== 'unsafe',
+                    'guest_wants_fix' => ! in_array($severity, ['urgent', 'unsafe'], true),
+                    'guest_wants_relocation' => in_array($severity, ['high', 'urgent', 'unsafe'], true),
+                    'guest_wants_cancellation' => $severity === 'unsafe',
+                    'guest_wants_refund' => in_array($severity, ['high', 'urgent', 'unsafe'], true),
+                    'guest_wants_compensation' => $severity !== 'low',
+                    'host_accepts_problem' => in_array($status, ['confirmed', 'resolution_offered'], true) ? true : null,
+                    'host_offered_fix' => $resolutionType === 'fix_problem',
+                    'host_offered_relocation' => $resolutionType === 'relocation',
+                    'host_offered_refund' => $resolutionType === 'partial_refund',
+                    'host_offered_compensation' => $status === 'resolution_offered',
+                    'host_denied_problem' => $status === 'dispute_opened',
+                    'resolution_type' => $resolutionType,
+                    'resolution_status' => $resolutionType === null ? 'not_started' : 'offered',
+                    'compensation_amount' => $status === 'resolution_offered' ? 10 + ($index % 40) : 0,
+                    'refund_amount' => in_array($severity, ['high', 'urgent', 'unsafe'], true) ? 20 + ($index % 80) : 0,
+                    'price_difference_amount' => $resolutionType === 'relocation' ? 15 + ($index % 30) : 0,
+                    'currency' => 'EUR',
+                    'snapshot_compared' => true,
+                    'auto_match_confidence' => in_array($type, ['missing_locker', 'missing_wifi', 'wrong_bunk_level'], true) ? 0.85 : 0.45,
+                    'future_review_required' => $status === 'dispute_opened' || $severity === 'unsafe',
+                    'future_review_comment' => $status === 'dispute_opened' ? 'listing_mismatch.demo.future_review' : null,
+                    'resolved_at' => $status === 'confirmed' ? $reportedAt->addHours(2) : null,
+                    'closed_at' => null,
+                ];
+            },
+        );
+
+        $mismatchRows = BookingListingMismatchReport::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'mismatch_type', 'severity', 'status', 'resolution_type'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingListingMismatchReport $report): array => [
+                'id' => $report->id,
+                'booking_id' => $report->booking_id,
+                'guest_user_id' => $report->guest_user_id,
+                'host_user_id' => $report->host_user_id,
+                'property_id' => $report->property_id,
+                'room_id' => $report->room_id,
+                'sleeping_place_id' => $report->sleeping_place_id,
+                'mismatch_type' => $report->mismatch_type,
+                'severity' => $report->severity,
+                'status' => $report->status,
+                'resolution_type' => $report->resolution_type,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            BookingListingMismatchItem::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'item_key' => ['has_wifi', 'has_locker', 'has_bedding', 'bed_type', 'bunk_level', 'photo_accuracy'][$index % 6],
+                'item_type' => ['property_amenity', 'sleeping_place_feature', 'cleanliness', 'photo', 'safety'][$index % 5],
+                'promised_value' => 'listed',
+                'actual_value' => $index % 4 === 0 ? 'missing' : 'different',
+                'snapshot_source_type' => 'booking_listing_snapshot',
+                'snapshot_source_id' => $this->pick($mismatchRows, $index)['booking_id'],
+                'is_confirmed' => $index % 5 === 0 ? false : ($index % 3 === 0 ? true : null),
+                'confidence_score' => $index % 3 === 0 ? 0.85 : 0.45,
+                'severity' => $this->pick($mismatchRows, $index)['severity'],
+                'guest_note' => 'listing_mismatch.demo.item_guest_note',
+                'host_note' => $index % 4 === 0 ? 'listing_mismatch.demo.item_host_note' : null,
+            ],
+        );
+
+        $mismatchItemIds = $this->ids(BookingListingMismatchItem::class);
+
+        $this->seedFactoryRows(
+            BookingListingMismatchMedia::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'booking_id' => $this->pick($mismatchRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $index % 2 === 0 ? $this->pick($mismatchRows, $index)['guest_user_id'] : $this->pick($mismatchRows, $index)['host_user_id'],
+                'media_type' => ['photo', 'screenshot'][$index % 2],
+                'media_role' => ['guest_real_photo', 'missing_amenity_evidence', 'dirty_place_evidence', 'host_fix_evidence'][$index % 4],
+                'path' => 'demo/listing-mismatch/evidence-'.$index.'.jpg',
+                'thumbnail_path' => 'demo/listing-mismatch/evidence-'.$index.'-thumb.jpg',
+                'caption' => 'listing_mismatch.demo.media_caption',
+                'visibility' => ['guest_and_host', 'guest_only', 'host_only', 'future_review_only'][$index % 4],
+                'related_mismatch_item_id' => $index % 3 === 0 ? $this->pick($mismatchItemIds, $index) : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchHostResponse::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'host_user_id' => $this->pick($mismatchRows, $index)['host_user_id'],
+                'response_type' => ['accept', 'deny', 'ask_for_more_evidence', 'offer_fix', 'offer_cleaning', 'offer_relocation', 'offer_refund', 'offer_compensation'][$index % 8],
+                'message' => 'listing_mismatch.demo.host_response',
+                'accepts_problem' => $index % 8 === 1 ? false : ($index % 3 === 0 ? true : null),
+                'proposed_resolution_type' => ['fix_problem', 'cleaning', 'relocation', 'partial_refund', 'compensation'][$index % 5],
+                'offered_compensation_amount' => $index % 8 === 7 ? 15 + ($index % 40) : null,
+                'offered_refund_amount' => $index % 8 === 6 ? 20 + ($index % 60) : null,
+                'currency' => 'EUR',
+                'alternative_sleeping_place_id' => $index % 8 === 5 ? $this->pick($mismatchRows, $index)['sleeping_place_id'] : null,
+                'maintenance_request_id' => $index % 8 === 4 ? $this->pick($mismatchRows, $index)['id'] : null,
+                'cleaning_task_id' => $index % 8 === 4 ? $this->pick($mismatchRows, $index)['id'] : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchGuestResponse::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'guest_user_id' => $this->pick($mismatchRows, $index)['guest_user_id'],
+                'response_type' => ['accept_resolution', 'reject_resolution', 'provide_more_evidence', 'request_relocation', 'request_cancellation', 'request_refund', 'request_compensation', 'open_dispute'][$index % 8],
+                'message' => 'listing_mismatch.demo.guest_response',
+                'accepted_resolution_type' => $index % 8 === 0 ? ['fix_problem', 'cleaning', 'relocation', 'partial_refund'][$index % 4] : null,
+                'accepted_compensation_amount' => $index % 8 === 0 ? 10 + ($index % 30) : null,
+                'accepted_refund_amount' => $index % 8 === 0 ? 15 + ($index % 50) : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchResolutionOption::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'resolution_type' => ['fix_problem', 'cleaning', 'repair', 'partial_refund', 'relocation', 'cancellation', 'compensation'][$index % 7],
+                'status' => ['offered', 'accepted', 'in_progress', 'completed', 'rejected'][$index % 5],
+                'description' => 'listing_mismatch.demo.resolution_description',
+                'amount' => $index % 7 >= 3 ? 10 + ($index % 90) : null,
+                'currency' => 'EUR',
+                'sleeping_place_id' => $index % 7 === 4 ? $this->pick($mismatchRows, $index)['sleeping_place_id'] : null,
+                'cleaning_task_id' => $index % 7 === 1 ? $this->pick($mismatchRows, $index)['id'] : null,
+                'maintenance_request_id' => $index % 7 === 2 ? $this->pick($mismatchRows, $index)['id'] : null,
+                'offered_by_user_id' => $this->pick($mismatchRows, $index)['host_user_id'],
+                'accepted_by_user_id' => $index % 5 === 1 ? $this->pick($mismatchRows, $index)['guest_user_id'] : null,
+                'offered_at' => now()->subHours($index % 72),
+                'accepted_at' => $index % 5 === 1 ? now()->subHours($index % 48) : null,
+                'rejected_at' => $index % 5 === 4 ? now()->subHours($index % 48) : null,
+                'completed_at' => $index % 5 === 3 ? now()->subHours($index % 24) : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchCompensationLine::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'line_type' => ['partial_refund', 'cleaning_fee_refund', 'price_difference_refund', 'inconvenience_compensation'][$index % 4],
+                'label_key' => 'listing_mismatch.compensation_lines.'.(['partial_refund', 'cleaning_fee_refund', 'price_difference_refund', 'inconvenience_compensation'][$index % 4]),
+                'amount' => 5 + ($index % 75),
+                'currency' => 'EUR',
+                'calculation_type' => ['fixed', 'percent_of_booking', 'unused_nights'][$index % 3],
+                'percent' => $index % 3 === 1 ? 10 + ($index % 25) : null,
+                'nights_count' => $index % 3 === 2 ? 1 + ($index % 5) : null,
+                'refundable' => true,
+                'payable_to_guest' => true,
+                'deduct_from_host_payout' => $index % 2 === 0,
+                'reason_key' => $this->pick($mismatchRows, $index)['mismatch_type'],
+                'sort_order' => ($index % 20) + 1,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchWarning::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'warning_key' => ['claimed_missing_amenity_was_listed', 'claimed_feature_was_not_listed', 'photo_evidence_missing', 'mismatch_may_require_relocation', 'unsafe_claim_requires_urgent_action'][$index % 5],
+                'severity' => $index % 5 === 4 ? 'urgent' : 'warning',
+                'message_key' => 'listing_mismatch.warning_keys.'.(['claimed_missing_amenity_was_listed', 'claimed_feature_was_not_listed', 'photo_evidence_missing', 'mismatch_may_require_relocation', 'unsafe_claim_requires_urgent_action'][$index % 5]),
+                'message_params_json' => [],
+                'visible_to_guest' => true,
+                'visible_to_host' => true,
+                'blocking' => $index % 5 === 4,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchStatusLog::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'booking_id' => $this->pick($mismatchRows, $index)['booking_id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($mismatchRows, $index)['guest_user_id'] : $this->pick($mismatchRows, $index)['host_user_id'],
+                'old_status' => null,
+                'new_status' => $this->pick($mismatchRows, $index)['status'],
+                'reason_key' => $this->pick($mismatchRows, $index)['mismatch_type'],
+                'note' => 'listing_mismatch.demo.status_note',
+                'context_json' => [],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            BookingListingMismatchEvent::class,
+            fn (int $index): array => [
+                'booking_listing_mismatch_report_id' => $this->pick($mismatchRows, $index)['id'],
+                'booking_id' => $this->pick($mismatchRows, $index)['booking_id'],
+                'event_key' => ['mismatch_reported', 'snapshot_compared', 'host_notified', 'host_responded', 'resolution_offered', 'mismatch_confirmed', 'dispute_opened'][$index % 7],
+                'event_type' => 'system',
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $index % 2 === 0 ? $this->pick($mismatchRows, $index)['guest_user_id'] : $this->pick($mismatchRows, $index)['host_user_id'],
                 'occurred_at' => now()->subMinutes($index % 1440),
                 'context_json' => [],
             ],
