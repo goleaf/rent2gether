@@ -167,6 +167,14 @@ class InspectionTask extends Model
     }
 
     /**
+     * Lists inventory checks performed during this inspection.
+     */
+    public function inventoryChecks(): HasMany
+    {
+        return $this->hasMany(InventoryCheck::class);
+    }
+
+    /**
      * Lists status transitions for this inspection.
      */
     public function statusLogs(): HasMany

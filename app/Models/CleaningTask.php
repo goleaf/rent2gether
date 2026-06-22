@@ -248,6 +248,14 @@ class CleaningTask extends Model
     }
 
     /**
+     * Lists inventory checks performed during this cleaning task.
+     */
+    public function inventoryChecks(): HasMany
+    {
+        return $this->hasMany(InventoryCheck::class);
+    }
+
+    /**
      * Lists status transitions for this cleaning task.
      */
     public function statusLogs(): HasMany

@@ -613,6 +613,22 @@ class Property extends Model
     }
 
     /**
+     * Lists inventory items attached to this Property.
+     */
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
+    /**
+     * Lists inventory checks scoped to this Property.
+     */
+    public function inventoryChecks(): HasMany
+    {
+        return $this->hasMany(InventoryCheck::class);
+    }
+
+    /**
      * Lists host-unresponsive policy fallbacks configured for this Property.
      */
     public function hostUnresponsivePolicies(): HasMany

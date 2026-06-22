@@ -1,0 +1,18 @@
+<section>
+    <flux:card class="space-y-3">
+        <flux:heading size="base">{{ __('inventory.guest.issued_items') }}</flux:heading>
+        @forelse ($assignments as $assignment)
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <flux:text class="truncate">{{ $assignment->inventoryItem?->name }}</flux:text>
+                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
+                        {{ $assignment->expected_return ? __('inventory.guest.return_before_checkout') : __('inventory.assignment_types.'.$assignment->assignment_type) }}
+                    </flux:text>
+                </div>
+                <flux:badge color="zinc">{{ __('inventory.assignment_statuses.'.$assignment->status) }}</flux:badge>
+            </div>
+        @empty
+            <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('inventory.guest.no_items') }}</flux:text>
+        @endforelse
+    </flux:card>
+</section>

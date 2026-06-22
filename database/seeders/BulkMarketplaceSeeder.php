@@ -56,6 +56,7 @@ use App\Models\BookingGuest;
 use App\Models\BookingGuestIntake;
 use App\Models\BookingHostResponse;
 use App\Models\BookingHostUnresponsiveCase;
+use App\Models\BookingInventoryAssignment;
 use App\Models\BookingLifecycleEvent;
 use App\Models\BookingListingMismatchCompensationLine;
 use App\Models\BookingListingMismatchEvent;
@@ -193,6 +194,19 @@ use App\Models\InspectionStatusLog;
 use App\Models\InspectionTask;
 use App\Models\InspectionTaskItem;
 use App\Models\InspectionTaskMedia;
+use App\Models\InventoryCategory;
+use App\Models\InventoryCheck;
+use App\Models\InventoryCheckItem;
+use App\Models\InventoryConsumableUsage;
+use App\Models\InventoryEvent;
+use App\Models\InventoryIssue;
+use App\Models\InventoryIssueMedia;
+use App\Models\InventoryItem;
+use App\Models\InventoryItemUnit;
+use App\Models\InventoryMovement;
+use App\Models\InventoryReplacement;
+use App\Models\InventoryStatusLog;
+use App\Models\InventoryStockAlert;
 use App\Models\ListingCreationDraft;
 use App\Models\ListingHintSnapshot;
 use App\Models\ListingPublicationCheck;
@@ -274,6 +288,7 @@ use App\Models\UserVerification;
 use App\Models\WaitlistEntry;
 use App\Models\WaitlistItem;
 use App\Models\WaitlistOffer;
+use App\Services\Inventory\InventoryCategoryService;
 use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\DemoMediaFileService;
 use Carbon\CarbonImmutable;
@@ -309,6 +324,7 @@ class BulkMarketplaceSeeder extends Seeder
         $this->seedSocialRecords();
         $this->seedDecisionAndQueueRecords();
         $this->seedHostOperationalRecords();
+        $this->seedInventoryRecords();
         $this->seedListingWorkflowRecords();
         $this->seedMediaAndNotifications();
     }
@@ -4555,6 +4571,423 @@ class BulkMarketplaceSeeder extends Seeder
             fn (int $index): array => [
                 'user_id' => $this->pick($hintRows, $index)['user_id'],
                 'host_hint_snapshot_id' => $this->pick($hintRows, $index)['id'],
+            ],
+        );
+    }
+
+    private function seedInventoryRecords(): void
+    {
+        app(InventoryCategoryService::class)->seedDefaultCategories();
+
+        $userIds = $this->ids(User::class);
+        $bookingRows = $this->bookingRows();
+        $checkInRows = $this->bookingCheckInRows();
+        $checkOutRows = $this->bookingCheckOutRows();
+        $stayRows = $this->bookingStayRows();
+        $relocationRows = $this->bookingRelocationRows();
+        $cleaningTaskRows = CleaningTask::query()
+            ->select(['id', 'booking_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (CleaningTask $task): array => [
+                'id' => $task->id,
+                'booking_id' => $task->booking_id,
+                'host_user_id' => $task->host_user_id,
+                'property_id' => $task->property_id,
+                'room_id' => $task->room_id,
+                'sleeping_place_id' => $task->sleeping_place_id,
+            ])
+            ->all();
+        $inspectionRows = InspectionTask::query()
+            ->select(['id', 'booking_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (InspectionTask $task): array => [
+                'id' => $task->id,
+                'booking_id' => $task->booking_id,
+                'host_user_id' => $task->host_user_id,
+                'property_id' => $task->property_id,
+                'room_id' => $task->room_id,
+                'sleeping_place_id' => $task->sleeping_place_id,
+            ])
+            ->all();
+        $complaintRows = ComplaintCase::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (ComplaintCase $case): array => [
+                'id' => $case->id,
+                'booking_id' => $case->booking_id,
+                'guest_user_id' => $case->guest_user_id,
+                'host_user_id' => $case->host_user_id,
+                'property_id' => $case->property_id,
+                'room_id' => $case->room_id,
+                'sleeping_place_id' => $case->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            InventoryCategory::class,
+            fn (int $index): array => [
+                'category_key' => sprintf('bulk_inventory_category_%04d', $index + 1),
+                'name_translation_key' => sprintf('inventory.categories.bulk_inventory_category_%04d', $index + 1),
+                'description_translation_key' => sprintf('inventory.category_descriptions.bulk_inventory_category_%04d', $index + 1),
+                'sort_order' => $index % 200,
+                'active' => true,
+            ],
+        );
+
+        $categoryIds = $this->ids(InventoryCategory::class);
+
+        $this->seedFactoryRows(
+            InventoryItem::class,
+            function (int $index) use ($bookingRows, $categoryIds): array {
+                $booking = $this->pick($bookingRows, $index);
+                $type = ['key', 'access_card', 'bedding_set', 'towel', 'lamp', 'locker', 'router', 'soap'][$index % 8];
+
+                return [
+                    'inventory_number' => sprintf('INV-%s-%06d', now()->format('Y'), $index + 1),
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'inventory_category_id' => $this->pick($categoryIds, $index),
+                    'item_type' => $type,
+                    'inventory_scope' => in_array($type, ['key', 'access_card'], true) ? 'access' : 'sleeping_place',
+                    'name' => sprintf('Bulk inventory item %04d', $index + 1),
+                    'status' => $index % 17 === 0 ? 'missing' : 'available',
+                    'condition_status' => $index % 19 === 0 ? 'worn' : 'good',
+                    'quantity' => in_array($type, ['soap'], true) ? 4 : 1,
+                    'unit' => 'pcs',
+                    'is_returnable' => in_array($type, ['key', 'access_card', 'towel'], true),
+                    'is_consumable' => $type === 'soap',
+                    'is_fixed_asset' => in_array($type, ['lamp', 'locker', 'router'], true),
+                    'is_guest_visible' => true,
+                    'is_required_for_readiness' => in_array($type, ['key', 'bedding_set', 'towel', 'lamp'], true),
+                    'is_promised_in_listing' => in_array($type, ['bedding_set', 'towel', 'lamp', 'locker'], true),
+                    'current_location_type' => $index % 17 === 0 ? 'unknown' : 'sleeping_place',
+                    'estimated_replacement_cost_amount' => 15 + ($index % 40),
+                    'deposit_deduction_default_amount' => 10 + ($index % 20),
+                    'currency' => 'EUR',
+                ];
+            },
+        );
+
+        $itemRows = InventoryItem::query()
+            ->select(['id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'item_type'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (InventoryItem $item): array => [
+                'id' => $item->id,
+                'host_user_id' => $item->host_user_id,
+                'property_id' => $item->property_id,
+                'room_id' => $item->room_id,
+                'sleeping_place_id' => $item->sleeping_place_id,
+                'item_type' => $item->item_type,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            InventoryItemUnit::class,
+            fn (int $index): array => [
+                'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                'unit_number' => sprintf('UNIT-%04d', $index + 1),
+                'unit_label' => sprintf('Unit %04d', $index + 1),
+                'status' => $index % 9 === 0 ? 'issued_to_guest' : 'available',
+                'condition_status' => 'good',
+                'current_location_type' => $index % 9 === 0 ? 'guest' : 'sleeping_place',
+                'assigned_booking_id' => $index % 9 === 0 ? $this->pick($bookingRows, $index)['id'] : null,
+                'assigned_guest_user_id' => $index % 9 === 0 ? $this->pick($bookingRows, $index)['guest_user_id'] : null,
+            ],
+        );
+
+        $unitRows = InventoryItemUnit::query()
+            ->select(['id', 'inventory_item_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (InventoryItemUnit $unit): array => ['id' => $unit->id, 'inventory_item_id' => $unit->inventory_item_id])
+            ->all();
+
+        $this->seedFactoryRows(
+            BookingInventoryAssignment::class,
+            function (int $index) use ($bookingRows, $stayRows, $checkInRows, $checkOutRows, $relocationRows, $itemRows, $unitRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $item = $this->pick($itemRows, $index);
+
+                return [
+                    'assignment_number' => sprintf('INVA-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $booking['id'],
+                    'booking_stay_id' => $this->pick($stayRows, $index)['id'],
+                    'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                    'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                    'booking_relocation_id' => $index % 7 === 0 ? $this->pick($relocationRows, $index)['id'] : null,
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'inventory_item_id' => $item['id'],
+                    'inventory_item_unit_id' => $this->pick($unitRows, $index)['id'],
+                    'assignment_type' => $index % 7 === 0 ? 'issued_after_relocation' : 'issued_at_check_in',
+                    'status' => $index % 8 === 0 ? 'returned' : 'issued',
+                    'issued_at' => CarbonImmutable::now()->subDays($index % 30),
+                    'issued_by_user_id' => $booking['host_user_id'],
+                    'issued_by_type' => 'host',
+                    'expected_return' => in_array($item['item_type'], ['key', 'access_card', 'towel'], true),
+                    'expected_return_at' => $booking['check_out_date'],
+                    'condition_at_issue' => 'good',
+                    'quantity' => 1,
+                ];
+            },
+        );
+
+        $assignmentRows = BookingInventoryAssignment::query()
+            ->select(['id', 'booking_id', 'inventory_item_id', 'inventory_item_unit_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (BookingInventoryAssignment $assignment): array => [
+                'id' => $assignment->id,
+                'booking_id' => $assignment->booking_id,
+                'inventory_item_id' => $assignment->inventory_item_id,
+                'inventory_item_unit_id' => $assignment->inventory_item_unit_id,
+                'guest_user_id' => $assignment->guest_user_id,
+                'host_user_id' => $assignment->host_user_id,
+                'property_id' => $assignment->property_id,
+                'room_id' => $assignment->room_id,
+                'sleeping_place_id' => $assignment->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            InventoryMovement::class,
+            fn (int $index): array => [
+                'movement_number' => sprintf('INVM-%s-%06d', now()->format('Y'), $index + 1),
+                'inventory_item_id' => $this->pick($assignmentRows, $index)['inventory_item_id'],
+                'inventory_item_unit_id' => $this->pick($assignmentRows, $index)['inventory_item_unit_id'],
+                'booking_id' => $this->pick($assignmentRows, $index)['booking_id'],
+                'booking_inventory_assignment_id' => $this->pick($assignmentRows, $index)['id'],
+                'from_location_type' => 'sleeping_place',
+                'to_location_type' => $index % 8 === 0 ? 'storage' : 'guest',
+                'movement_type' => $index % 8 === 0 ? 'returned_by_guest' : 'issued_to_guest',
+                'quantity' => 1,
+                'moved_by_user_id' => $this->pick($assignmentRows, $index)['host_user_id'],
+                'moved_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryCheck::class,
+            function (int $index) use ($bookingRows, $checkInRows, $checkOutRows, $cleaningTaskRows, $inspectionRows): array {
+                $booking = $this->pick($bookingRows, $index);
+
+                return [
+                    'inventory_check_number' => sprintf('INVC-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $booking['id'],
+                    'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                    'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                    'cleaning_task_id' => $this->pick($cleaningTaskRows, $index)['id'],
+                    'inspection_task_id' => $this->pick($inspectionRows, $index)['id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'check_type' => ['check_out_return', 'cleaning_check', 'inspection_check', 'manual'][$index % 4],
+                    'status' => $index % 5 === 0 ? 'completed_with_issues' : 'completed',
+                    'items_expected_count' => 3,
+                    'items_checked_count' => 3,
+                    'items_missing_count' => $index % 5 === 0 ? 1 : 0,
+                    'items_damaged_count' => $index % 7 === 0 ? 1 : 0,
+                    'issues_found' => $index % 5 === 0,
+                ];
+            },
+        );
+
+        $checkRows = InventoryCheck::query()
+            ->select(['id', 'booking_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (InventoryCheck $check): array => [
+                'id' => $check->id,
+                'booking_id' => $check->booking_id,
+                'host_user_id' => $check->host_user_id,
+                'property_id' => $check->property_id,
+                'room_id' => $check->room_id,
+                'sleeping_place_id' => $check->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            InventoryCheckItem::class,
+            fn (int $index): array => [
+                'inventory_check_id' => $this->pick($checkRows, $index)['id'],
+                'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                'inventory_item_unit_id' => $this->pick($unitRows, $index)['id'],
+                'expected_present' => true,
+                'is_present' => $index % 5 !== 0,
+                'expected_return' => $index % 3 === 0,
+                'is_returned' => $index % 8 === 0,
+                'expected_condition_status' => 'good',
+                'actual_condition_status' => $index % 7 === 0 ? 'damaged' : 'good',
+                'missing' => $index % 5 === 0,
+                'damaged' => $index % 7 === 0,
+                'needs_repair' => $index % 7 === 0,
+                'needs_replacement' => $index % 11 === 0,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryIssue::class,
+            function (int $index) use ($bookingRows, $checkInRows, $checkOutRows, $cleaningTaskRows, $inspectionRows, $complaintRows, $itemRows, $unitRows): array {
+                $booking = $this->pick($bookingRows, $index);
+
+                return [
+                    'inventory_issue_number' => sprintf('INVI-%s-%06d', now()->format('Y'), $index + 1),
+                    'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                    'inventory_item_unit_id' => $this->pick($unitRows, $index)['id'],
+                    'booking_id' => $booking['id'],
+                    'booking_check_in_id' => $this->pick($checkInRows, $index)['id'],
+                    'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                    'cleaning_task_id' => $this->pick($cleaningTaskRows, $index)['id'],
+                    'inspection_task_id' => $this->pick($inspectionRows, $index)['id'],
+                    'complaint_case_id' => $this->pick($complaintRows, $index)['id'],
+                    'reported_by_user_id' => $booking['host_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'issue_type' => ['missing', 'damaged', 'not_returned', 'needs_repair'][$index % 4],
+                    'severity' => $index % 6 === 0 ? 'high' : 'medium',
+                    'status' => $index % 6 === 0 ? 'waiting_guest_response' : 'reported',
+                    'quantity_affected' => 1,
+                    'replacement_cost_amount' => 20 + ($index % 40),
+                    'deduction_suggested_amount' => 10 + ($index % 20),
+                    'currency' => 'EUR',
+                    'guest_responsibility_status' => $index % 6 === 0 ? 'possibly_guest_fault' : 'unknown',
+                ];
+            },
+        );
+
+        $issueRows = InventoryIssue::query()
+            ->select(['id', 'inventory_item_id', 'inventory_item_unit_id', 'booking_id', 'host_user_id', 'guest_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (InventoryIssue $issue): array => [
+                'id' => $issue->id,
+                'inventory_item_id' => $issue->inventory_item_id,
+                'inventory_item_unit_id' => $issue->inventory_item_unit_id,
+                'booking_id' => $issue->booking_id,
+                'host_user_id' => $issue->host_user_id,
+                'guest_user_id' => $issue->guest_user_id,
+                'property_id' => $issue->property_id,
+                'room_id' => $issue->room_id,
+                'sleeping_place_id' => $issue->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            InventoryIssueMedia::class,
+            fn (int $index): array => [
+                'inventory_issue_id' => $this->pick($issueRows, $index)['id'],
+                'booking_id' => $this->pick($issueRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $this->pick($issueRows, $index)['host_user_id'],
+                'media_type' => 'photo',
+                'media_role' => ['issue_evidence', 'checkout_evidence', 'repair_evidence'][$index % 3],
+                'path' => sprintf('bulk-demo/inventory-issues/%04d.jpg', $index + 1),
+                'visibility' => $index % 9 === 0 ? 'host_only' : 'guest_and_host',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryReplacement::class,
+            fn (int $index): array => [
+                'replacement_number' => sprintf('INVR-%s-%06d', now()->format('Y'), $index + 1),
+                'old_inventory_item_id' => $this->pick($issueRows, $index)['inventory_item_id'],
+                'old_inventory_item_unit_id' => $this->pick($issueRows, $index)['inventory_item_unit_id'],
+                'inventory_issue_id' => $this->pick($issueRows, $index)['id'],
+                'host_user_id' => $this->pick($issueRows, $index)['host_user_id'],
+                'property_id' => $this->pick($issueRows, $index)['property_id'],
+                'room_id' => $this->pick($issueRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($issueRows, $index)['sleeping_place_id'],
+                'replacement_reason' => ['damaged', 'lost', 'maintenance', 'manual'][$index % 4],
+                'status' => $index % 5 === 0 ? 'completed' : 'planned',
+                'replacement_cost_amount' => 20 + ($index % 40),
+                'currency' => 'EUR',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryConsumableUsage::class,
+            fn (int $index): array => [
+                'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                'host_user_id' => $this->pick($itemRows, $index)['host_user_id'],
+                'property_id' => $this->pick($itemRows, $index)['property_id'],
+                'room_id' => $this->pick($itemRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($itemRows, $index)['sleeping_place_id'],
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'cleaning_task_id' => $this->pick($cleaningTaskRows, $index)['id'],
+                'usage_type' => ['cleaning', 'guest_provided', 'replacement', 'manual'][$index % 4],
+                'quantity_used' => 1 + ($index % 3),
+                'unit' => 'pcs',
+                'used_by_user_id' => $this->pick($userIds, $index),
+                'used_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryStockAlert::class,
+            fn (int $index): array => [
+                'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                'host_user_id' => $this->pick($itemRows, $index)['host_user_id'],
+                'property_id' => $this->pick($itemRows, $index)['property_id'],
+                'room_id' => $this->pick($itemRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($itemRows, $index)['sleeping_place_id'],
+                'alert_type' => ['low_stock', 'replacement_needed', 'washing_needed', 'repair_needed'][$index % 4],
+                'status' => $index % 5 === 0 ? 'resolved' : 'active',
+                'threshold_quantity' => 2,
+                'current_quantity' => $index % 5 === 0 ? 0 : 1,
+                'message_key' => 'inventory.messages.required_for_readiness_missing',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryStatusLog::class,
+            fn (int $index): array => [
+                'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                'inventory_item_unit_id' => $this->pick($unitRows, $index)['id'],
+                'inventory_issue_id' => $this->pick($issueRows, $index)['id'],
+                'booking_inventory_assignment_id' => $this->pick($assignmentRows, $index)['id'],
+                'user_id' => $this->pick($assignmentRows, $index)['host_user_id'],
+                'old_status' => $index % 2 === 0 ? 'available' : null,
+                'new_status' => $index % 2 === 0 ? 'issued_to_guest' : 'available',
+                'reason_key' => 'bulk_demo_seed',
+                'context_json' => ['seed' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InventoryEvent::class,
+            fn (int $index): array => [
+                'inventory_item_id' => $this->pick($itemRows, $index)['id'],
+                'inventory_item_unit_id' => $this->pick($unitRows, $index)['id'],
+                'booking_inventory_assignment_id' => $this->pick($assignmentRows, $index)['id'],
+                'inventory_issue_id' => $this->pick($issueRows, $index)['id'],
+                'booking_id' => $this->pick($bookingRows, $index)['id'],
+                'event_key' => ['inventory_created', 'item_issued_to_guest', 'issue_created', 'item_moved'][$index % 4],
+                'event_type' => 'system',
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $this->pick($assignmentRows, $index)['host_user_id'],
+                'occurred_at' => now(),
+                'context_json' => ['seed' => true],
             ],
         );
     }

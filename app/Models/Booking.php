@@ -886,6 +886,30 @@ class Booking extends Model
     }
 
     /**
+     * Lists inventory items issued or expected back for this Booking.
+     */
+    public function inventoryAssignments(): HasMany
+    {
+        return $this->hasMany(BookingInventoryAssignment::class);
+    }
+
+    /**
+     * Lists inventory checks performed during this Booking lifecycle.
+     */
+    public function inventoryChecks(): HasMany
+    {
+        return $this->hasMany(InventoryCheck::class);
+    }
+
+    /**
+     * Lists inventory issues tied to this Booking.
+     */
+    public function inventoryIssues(): HasMany
+    {
+        return $this->hasMany(InventoryIssue::class);
+    }
+
+    /**
      * Returns the guest-to-place review written for this Booking.
      */
     public function guestReview(): ?Review

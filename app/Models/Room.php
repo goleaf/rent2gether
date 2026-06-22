@@ -540,6 +540,22 @@ class Room extends Model
     }
 
     /**
+     * Lists inventory items attached to this Room.
+     */
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
+    /**
+     * Lists inventory checks scoped to this Room.
+     */
+    public function inventoryChecks(): HasMany
+    {
+        return $this->hasMany(InventoryCheck::class);
+    }
+
+    /**
      * Fetches the current occupancy snapshot for this Room.
      */
     public function currentOccupancySnapshot(): HasOne

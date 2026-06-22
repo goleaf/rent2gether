@@ -989,4 +989,20 @@ class SleepingPlace extends Model
     {
         return $this->hasMany(BookingStay::class);
     }
+
+    /**
+     * Lists inventory items attached to this Sleeping Place.
+     */
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
+    /**
+     * Lists inventory checks scoped to this Sleeping Place.
+     */
+    public function inventoryChecks(): HasMany
+    {
+        return $this->hasMany(InventoryCheck::class);
+    }
 }
