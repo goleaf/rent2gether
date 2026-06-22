@@ -1,14 +1,14 @@
-<div class="min-h-screen space-y-4 bg-zinc-50 dark:bg-zinc-900">
-    <section class="mx-auto max-w-7xl px-4 pt-4">
+<x-ui.page>
+    <x-ui.section>
         <div class="space-y-2">
             <flux:heading size="xl" level="1">{{ __('search.title') }}</flux:heading>
             <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ __('search.helper') }}</flux:text>
         </div>
-    </section>
+    </x-ui.section>
 
     {{-- Search bar --}}
-    <div class="sticky top-0 z-10 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-4">
+    <flux:card class="sticky top-0 z-10 p-0">
+        <div class="p-4">
             <div class="flex flex-wrap gap-3 items-end">
 
                 <flux:field class="flex-1 min-w-40">
@@ -41,13 +41,13 @@
 
             </div>
         </div>
-    </div>
+    </flux:card>
 
-    <div class="max-w-7xl mx-auto px-4 py-6 flex gap-6">
+    <div class="flex gap-6">
 
         {{-- Sidebar filters --}}
         <aside class="hidden lg:block w-56 shrink-0">
-            <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-5 sticky top-28">
+            <flux:card class="sticky top-28 space-y-5">
 
                 <flux:heading size="sm">{{ __('search.filters') }}</flux:heading>
 
@@ -87,7 +87,7 @@
                         {{ __('search.clear_all') }}
                     </flux:button>
                 @endif
-            </div>
+            </flux:card>
         </aside>
 
         {{-- Results --}}
@@ -128,4 +128,4 @@
 
         </main>
     </div>
-</div>
+</x-ui.page>

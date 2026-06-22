@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:heading size="xl" level="1">{{ __('preferences.edit.heading') }}</flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('preferences.edit.helper') }}</flux:text>
@@ -38,4 +38,4 @@
             </flux:button>
         </div>
     </form>
-</div>
+</x-ui.page>

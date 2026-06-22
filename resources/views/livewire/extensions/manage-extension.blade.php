@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-2xl space-y-5 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('booking.extension.host_eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('booking.extension.manage_title') }}</flux:heading>
@@ -94,4 +94,4 @@
             </flux:callout>
         @endif
     </flux:card>
-</div>
+</x-ui.page>

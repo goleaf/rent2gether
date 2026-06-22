@@ -102,9 +102,12 @@ class ChatWindow extends Component
                 'created_at',
             ])
             ->with(['sender:id,name'])
-            ->orderBy('created_at')
+            ->latest('created_at')
+            ->latest('id')
             ->limit(100)
-            ->get();
+            ->get()
+            ->reverse()
+            ->values();
     }
 
     #[Computed]

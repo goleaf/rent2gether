@@ -1,4 +1,4 @@
-<section class="mx-auto w-full max-w-md space-y-4 p-4">
+<x-ui.section class="space-y-4 p-4">
     <div class="space-y-1">
         <flux:heading size="lg">{{ __('complaints.host_title') }}</flux:heading>
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-300">{{ __('complaints.messages.other_party_notified') }}</flux:text>
@@ -9,4 +9,4 @@
         <flux:button type="button" variant="ghost">{{ __('complaints.actions.offer_relocation') }}</flux:button>
         <flux:button type="button" variant="ghost">{{ __('complaints.actions.offer_refund') }}</flux:button>
     </div>
-</section>
+</x-ui.section>

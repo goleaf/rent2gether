@@ -1,4 +1,4 @@
-<div class="mx-auto flex min-h-[calc(100vh-7rem)] max-w-3xl flex-col px-4 py-4 pb-24 sm:px-6">
+<x-ui.page class="space-y-0 flex min-h-[calc(100vh-7rem)] flex-col">
     <section class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="flex min-w-0 items-start gap-3">
@@ -104,7 +104,7 @@
         <form wire:submit="send" class="space-y-3">
             <flux:field>
                 <flux:label>{{ __('messages.thread.fields.body') }}</flux:label>
-                <flux:textarea rows="3" wire:model.blur="body" placeholder="{{ __('messages.thread.placeholders.body') }}" />
+                <flux:textarea rows="3" wire:model="body" placeholder="{{ __('messages.thread.placeholders.body') }}" />
                 <flux:error name="body" />
             </flux:field>
 
@@ -138,4 +138,4 @@
             </flux:button>
         </form>
     </section>
-</div>
+</x-ui.page>

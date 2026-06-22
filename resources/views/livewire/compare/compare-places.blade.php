@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-6xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('decision.compare.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('decision.compare.title') }}</flux:heading>
@@ -132,4 +132,4 @@
             </div>
         </flux:card>
     @endif
-</div>
+</x-ui.page>

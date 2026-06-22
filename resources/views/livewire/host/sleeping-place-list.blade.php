@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-4xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('host.sleeping_places.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('host.sleeping_places.heading', ['room' => $this->room->title]) }}</flux:heading>
@@ -167,4 +167,4 @@
     <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $this->room->property_id]) }}" variant="ghost" wire:navigate>
         {{ __('host.sleeping_places.actions.back_to_rooms') }}
     </flux:button>
-</div>
+</x-ui.page>

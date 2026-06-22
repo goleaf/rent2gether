@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-4 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page class="space-y-4">
     <header class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
@@ -73,4 +73,4 @@
             </div>
         @endforelse
     </section>
-</div>
+</x-ui.page>

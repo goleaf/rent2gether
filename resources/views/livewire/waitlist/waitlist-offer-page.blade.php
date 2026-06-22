@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="{{ $offer->status === 'active' ? 'green' : 'zinc' }}">{{ __('waitlist.offer_available') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ $title }}</flux:heading>
@@ -44,4 +44,4 @@
             {{ __('waitlist.decline_offer') }}
         </flux:button>
     </div>
-</div>
+</x-ui.page>

@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('host.manage_booking.title') }} #{{ $booking->id }}</flux:heading>
 
     @if(session('success'))
@@ -62,9 +62,9 @@
             </flux:button>
         @endif
 
-        <flux:button href="{{ route('complaints.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost">
+        <x-ui.report-problem-button href="{{ route('complaints.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate>
             {{ __('booking.trips.actions.report_problem') }}
-        </flux:button>
+        </x-ui.report-problem-button>
 
         <flux:button href="{{ route('host.bookings.index', ['locale' => app()->getLocale()]) }}" variant="ghost">
             {{ __('app.actions.back') }}
@@ -93,4 +93,4 @@
             </div>
         </flux:modal>
     @endif
-</div>
+</x-ui.page>

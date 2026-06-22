@@ -1,4 +1,4 @@
-<div class="mx-auto w-full max-w-4xl space-y-4 px-4 py-4">
+<x-ui.page class="space-y-4">
     <flux:card class="space-y-4">
         <div class="space-y-1">
             <flux:heading size="lg">{{ __('bookings.host.title') }}</flux:heading>
@@ -29,4 +29,4 @@
             {{ __('bookings.actions.load_more') }}
         </flux:button>
     @endif
-</div>
+</x-ui.page>

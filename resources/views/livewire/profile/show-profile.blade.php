@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <div class="flex items-center gap-4">
         <div class="size-20 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
             @if($this->profileVisibility['avatar_path'])
@@ -87,4 +87,4 @@
             <flux:text class="text-zinc-500">{{ __('app.profile.reviews_hidden') }}</flux:text>
         </flux:card>
     @endif
-</div>
+</x-ui.page>

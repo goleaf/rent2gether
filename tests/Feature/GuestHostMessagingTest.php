@@ -89,6 +89,66 @@ class GuestHostMessagingTest extends TestCase
         $this->assertNotNull($message->fresh()->read_at);
     }
 
+    public function test_sent_message_remains_visible_after_reopening_busy_thread(): void
+    {
+        [$guest, $host, $property, $room, $sleepingPlace] = $this->createMessagingContext();
+        $thread = $this->thread($guest, $host, MessageThreadType::PreBooking, null, $property, $sleepingPlace);
+        $conversation = app(MessageService::class)->getOrCreateConversation($guest, $host, $thread->booking_id);
+
+        foreach (range(1, 101) as $index) {
+            $sentAt = now()->subMinutes(200 - $index);
+            $sender = $index % 2 === 0 ? $guest : $host;
+            $recipient = $index % 2 === 0 ? $host : $guest;
+
+            Message::factory()->create([
+                'conversation_id' => $conversation->id,
+                'thread_id' => $thread->id,
+                'sender_id' => $sender->id,
+                'sender_user_id' => $sender->id,
+                'recipient_user_id' => $recipient->id,
+                'booking_id' => $thread->booking_id,
+                'property_id' => $thread->property_id,
+                'sleeping_place_id' => $thread->sleeping_place_id,
+                'body' => sprintf('Older persisted message %03d', $index),
+                'created_at' => $sentAt,
+                'updated_at' => $sentAt,
+            ]);
+        }
+
+        Livewire::actingAs($guest)
+            ->test(ChatWindow::class, ['thread' => $thread])
+            ->set('body', 'Newest message remains after refresh.')
+            ->call('send')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('messages', [
+            'thread_id' => $thread->id,
+            'sender_user_id' => $guest->id,
+            'recipient_user_id' => $host->id,
+            'body' => 'Newest message remains after refresh.',
+        ]);
+
+        $this->actingAs($guest)
+            ->get(route('messages.show', ['locale' => 'en', 'thread' => $thread]))
+            ->assertOk()
+            ->assertSee('Newest message remains after refresh.');
+    }
+
+    public function test_message_textareas_submit_current_body_without_waiting_for_blur(): void
+    {
+        foreach ([
+            'resources/views/livewire/messages/chat-window.blade.php',
+            'resources/views/livewire/messages/message-composer.blade.php',
+            'resources/views/livewire/bookings/messages/booking-message-composer.blade.php',
+        ] as $view) {
+            $contents = file_get_contents(base_path($view));
+
+            $this->assertIsString($contents);
+            $this->assertStringContainsString('wire:model="body"', $contents);
+            $this->assertStringNotContainsString('wire:model.blur="body"', $contents);
+        }
+    }
+
     public function test_user_cannot_open_unrelated_private_booking_thread(): void
     {
         [$guest, $host, $property, $room, $sleepingPlace] = $this->createMessagingContext();

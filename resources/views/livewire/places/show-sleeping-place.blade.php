@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-6xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
+<x-ui.page>
     <flux:button
         variant="ghost"
         size="sm"
@@ -730,4 +730,4 @@
             </flux:card>
         </div>
     </section>
-</div>
+</x-ui.page>

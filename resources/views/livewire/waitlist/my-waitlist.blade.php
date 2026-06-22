@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-5xl space-y-5 px-4 py-4 pb-24 sm:px-6 lg:py-6">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('decision.waitlist.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('decision.waitlist.title') }}</flux:heading>
@@ -154,4 +154,4 @@
             @endforelse
         </div>
     </section>
-</div>
+</x-ui.page>

@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('search.messages.title') }}</flux:heading>
 
     <div class="space-y-2">
@@ -35,4 +35,4 @@
             </flux:card>
         @endforelse
     </div>
-</div>
+</x-ui.page>

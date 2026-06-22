@@ -122,10 +122,12 @@
             @endauth
         </flux:header>
 
-        <flux:main container class="!px-4 !py-4 !pb-24 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-8">
-            <flux:callout wire:offline class="mb-4" variant="warning" icon="exclamation-triangle" :text="__('navigation.offline_banner')" />
+        <flux:main class="!px-0 !py-0">
+            <div class="mx-auto w-full max-w-5xl px-4 py-4 pb-24 sm:px-6 lg:py-6">
+                <flux:callout wire:offline class="mb-4" variant="warning" icon="exclamation-triangle" :text="__('navigation.offline_banner')" />
 
-            {{ $slot }}
+                {{ $slot }}
+            </div>
         </flux:main>
 
         <x-app.mobile-nav />

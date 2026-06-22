@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-2xl space-y-5 px-4 py-4 pb-28 sm:px-6">
+<x-ui.page>
     <section class="space-y-3">
         <flux:badge color="emerald">{{ __('booking.review.eyebrow') }}</flux:badge>
         <div class="space-y-2">
@@ -121,7 +121,7 @@
         @endif
 
         <div class="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95 sm:static sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-            <div class="mx-auto flex max-w-2xl gap-2">
+            <div class="mx-auto flex w-full max-w-5xl gap-2">
                 <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" wire:target="submit,photos">
                     <span wire:loading.remove wire:target="submit">{{ __('booking.review.submit') }}</span>
                     <span wire:loading wire:target="submit">{{ __('booking.review.submitting') }}</span>
@@ -139,4 +139,4 @@
             </div>
         </div>
     </form>
-</div>
+</x-ui.page>

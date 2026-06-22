@@ -1,4 +1,4 @@
-<div class="max-w-5xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('host.dashboard') }}</flux:heading>
 
     <livewire:host.hints.host-hints-panel lazy />
@@ -90,4 +90,4 @@
             </flux:card>
         @endforelse
     </div>
-</div>
+</x-ui.page>

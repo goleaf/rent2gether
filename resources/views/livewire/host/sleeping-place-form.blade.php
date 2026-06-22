@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('host.sleeping_place_wizard.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ $sleepingPlaceId ? __('host.sleeping_place_wizard.edit_heading') : __('host.sleeping_place_wizard.heading') }}</flux:heading>
@@ -355,4 +355,4 @@
             </div>
         </div>
     </form>
-</div>
+</x-ui.page>

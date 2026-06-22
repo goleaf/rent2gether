@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-28 sm:px-6">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('booking.payment_page.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('booking.payment_page.title') }}</flux:heading>
@@ -160,7 +160,7 @@
     @endif
 
     <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
-        <div class="mx-auto flex max-w-3xl items-center gap-3 sm:block">
+        <div class="mx-auto flex w-full max-w-5xl items-center gap-3 sm:block">
             <div class="min-w-0 flex-1 sm:hidden">
                 <div class="text-xs text-zinc-500">{{ __('booking.total') }}</div>
                 <div class="truncate text-sm font-semibold">{{ $this->money($booking->total_amount, $booking->currency) }}</div>
@@ -184,4 +184,4 @@
             @endif
         </div>
     </div>
-</div>
+</x-ui.page>

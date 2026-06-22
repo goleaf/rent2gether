@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class RatingEventFactory extends Factory
 {
+    private static int $number = 1;
+
     /**
      * Define the model's default state.
      *
@@ -21,7 +23,7 @@ class RatingEventFactory extends Factory
     public function definition(): array
     {
         return [
-            'rating_event_number' => sprintf('RATE-%s-%06d', now()->format('Y'), $this->faker->unique()->numberBetween(1, 999999)),
+            'rating_event_number' => sprintf('RATE-%s-%06d', now()->format('Y'), self::$number++),
             'source_type' => 'review',
             'source_id' => 1,
             'event_key' => 'review_submitted',

@@ -1,0 +1,67 @@
+<?php
+
+return [
+    'title' => 'Рейтинги',
+
+    'metrics' => [
+        'overall' => 'Общий рейтинг',
+        'cleanliness' => 'Чистота',
+        'safety' => 'Безопасность',
+        'location' => 'Расположение',
+        'description_accuracy' => 'Соответствие описанию',
+        'sleeping_place_quality' => 'Качество спального места',
+        'mattress_quality' => 'Качество матраса',
+        'noise_level' => 'Уровень шума',
+        'kitchen' => 'Кухня',
+        'bathroom' => 'Ванная',
+        'host_communication' => 'Общение с хозяином',
+        'roommate_communication' => 'Общение с соседями',
+        'internet' => 'Интернет',
+        'value_for_money' => 'Цена и качество',
+        'amenities' => 'Удобства',
+        'problem_resolution' => 'Решение проблем',
+        'rules_respect' => 'Соблюдение правил',
+        'cleanliness_after_stay' => 'Чистота после гостя',
+        'communication' => 'Общение',
+        'punctuality' => 'Пунктуальность',
+        'respect_for_roommates' => 'Уважение к соседям',
+        'care_for_property' => 'Бережное отношение к вещам',
+        'payment_reliability' => 'Оплата без проблем',
+        'response_speed' => 'Скорость ответа',
+        'honesty' => 'Честность',
+        'hospitality' => 'Гостеприимство',
+        'check_in_quality' => 'Качество заселения',
+        'checkout_quality' => 'Качество выезда',
+    ],
+
+    'target_types' => [
+        'guest' => 'Гость',
+        'host' => 'Хозяин',
+        'property' => 'Помещение',
+        'room' => 'Комната',
+        'sleeping_place' => 'Спальное место',
+    ],
+
+    'events' => [
+        'review_submitted' => 'Отзыв отправлен',
+        'confirmed_complaint' => 'Жалоба подтверждена',
+        'resolved_complaint' => 'Жалоба решена',
+        'confirmed_mismatch' => 'Несоответствие подтверждено',
+        'resolved_mismatch' => 'Несоответствие решено',
+        'confirmed_no_show' => 'Незаезд подтверждён',
+        'rejected_no_show' => 'Незаезд отклонён',
+        'confirmed_deposit_deduction' => 'Удержание залога подтверждено',
+        'rejected_deposit_deduction' => 'Удержание залога отклонено',
+        'fast_problem_resolution' => 'Проблема быстро решена',
+        'successful_check_in' => 'Успешное заселение',
+        'successful_checkout' => 'Успешный выезд',
+    ],
+
+    'messages' => [
+        'rating_summary' => ':rating из 5 на основе :count отзывов.',
+        'rating_short' => ':rating из 5',
+        'not_enough_reviews' => 'Пока недостаточно отзывов.',
+        'rating_frozen_by_dispute' => 'Влияние на рейтинг заморожено до решения спора.',
+        'unconfirmed_events_do_not_count' => 'Неподтверждённые события не учитываются в рейтинге.',
+    ],
+];

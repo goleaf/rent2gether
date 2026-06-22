@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-4xl space-y-5">
+<x-ui.page>
     <section class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
@@ -169,4 +169,4 @@
     <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
         {{ __('host.back_to_properties') }}
     </flux:button>
-</div>
+</x-ui.page>

@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-32 sm:px-6">
+<x-ui.page>
     <section class="space-y-3">
         <flux:badge color="amber">{{ __('booking.complaint.eyebrow') }}</flux:badge>
         <div class="space-y-2">
@@ -99,7 +99,7 @@
         </flux:card>
 
         <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
-            <div class="mx-auto grid max-w-3xl grid-cols-2 gap-2">
+            <div class="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2">
                 <flux:button href="{{ $reporterRole === 'host' ? route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) : route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
                     {{ __('app.actions.back') }}
                 </flux:button>
@@ -110,4 +110,4 @@
             </div>
         </div>
     </form>
-</div>
+</x-ui.page>

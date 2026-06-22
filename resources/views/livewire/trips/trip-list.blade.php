@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page>
     <section class="space-y-3">
         <flux:badge color="emerald">{{ __('booking.trips.eyebrow') }}</flux:badge>
         <div class="space-y-2">
@@ -85,4 +85,4 @@
     @if($bookings->hasPages())
         <div>{{ $bookings->links() }}</div>
     @endif
-</div>
+</x-ui.page>

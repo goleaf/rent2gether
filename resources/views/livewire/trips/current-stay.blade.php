@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page>
     <section class="space-y-3">
         <flux:badge color="emerald">{{ __('booking.trips.eyebrow') }}</flux:badge>
         <div class="space-y-2">
@@ -73,13 +73,13 @@
         <livewire:extensions.extend-stay :booking="$booking" :key="'extend-stay-'.$booking->id" />
 
         <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
-            <div class="mx-auto grid max-w-3xl grid-cols-2 gap-2 sm:grid-cols-3">
+            <div class="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2 sm:grid-cols-3">
                 <flux:button href="{{ route('bookings.extend', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
                     {{ __('booking.trips.actions.extend') }}
                 </flux:button>
-                <flux:button href="{{ route('complaints.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                <x-ui.report-problem-button href="{{ route('complaints.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate class="w-full">
                     {{ __('booking.trips.actions.report_problem') }}
-                </flux:button>
+                </x-ui.report-problem-button>
                 <flux:button href="{{ route('bookings.checkout', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full col-span-2 sm:col-span-1">
                     {{ __('booking.trips.actions.check_out') }}
                 </flux:button>
@@ -104,4 +104,4 @@
             </flux:button>
         </flux:card>
     @endif
-</div>
+</x-ui.page>

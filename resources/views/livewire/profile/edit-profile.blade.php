@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('app.profile.edit') }}</flux:heading>
 
     @if(session('success'))
@@ -80,4 +80,4 @@
 
         <flux:button type="submit" variant="primary">{{ __('app.actions.save') }}</flux:button>
     </form>
-</div>
+</x-ui.page>

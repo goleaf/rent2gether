@@ -2,13 +2,17 @@
 
 namespace App\Services\Reviews;
 
+use App\Models\SleepingPlace;
+
 class ReviewListingCardIntegrationService
 {
+    public function __construct(private readonly SleepingPlaceRatingService $ratings) {}
+
     /**
-     * Create a new class instance.
+     * @return array<string, mixed>
      */
-    public function __construct()
+    public function buildCardRating(SleepingPlace $place): array
     {
-        //
+        return $this->ratings->getCardRating($place);
     }
 }

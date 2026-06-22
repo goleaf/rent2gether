@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('listing_wizard.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('listing_wizard.title') }}</flux:heading>
@@ -65,4 +65,4 @@
             @endif
         </div>
     </div>
-</div>
+</x-ui.page>

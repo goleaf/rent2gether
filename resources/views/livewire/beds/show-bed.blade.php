@@ -1,4 +1,4 @@
-    <div class="max-w-5xl mx-auto space-y-8">
+    <x-ui.page class="space-y-8">
 
         {{-- Breadcrumb --}}
         <flux:breadcrumbs>
@@ -259,4 +259,4 @@
 
         </div>
 
-    </div>
+    </x-ui.page>

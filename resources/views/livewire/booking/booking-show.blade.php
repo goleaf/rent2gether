@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('booking.title') }} #{{ $booking->id }}</flux:heading>
 
     @if(session('success'))
@@ -78,4 +78,4 @@
             {{ __('booking.back_to_bookings') }}
         </flux:button>
     </div>
-</div>
+</x-ui.page>

@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ $bed ? __('listing.form.edit_bed') : __('listing.form.new_bed') }}</flux:heading>
     <flux:text class="text-zinc-500">{{ $room->property->title }} &middot; {{ $room->title }}</flux:text>
 
@@ -64,4 +64,4 @@
             <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $room->property]) }}" variant="ghost">{{ __('app.actions.cancel') }}</flux:button>
         </div>
     </form>
-</div>
+</x-ui.page>

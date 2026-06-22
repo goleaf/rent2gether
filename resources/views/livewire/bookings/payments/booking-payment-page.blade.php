@@ -1,4 +1,4 @@
-<section class="mx-auto w-full max-w-xl space-y-4 px-4 py-4">
+<x-ui.section>
     <livewire:bookings.payments.payment-summary-card :payment-id="$payment->id" />
 
     <livewire:bookings.payments.payment-deadline-banner :payment-id="$payment->id" />
@@ -18,4 +18,4 @@
 
     <livewire:bookings.payments.payment-attempts-list :payment-id="$payment->id" />
     <livewire:bookings.payments.payment-receipt-card :payment-id="$payment->id" />
-</section>
+</x-ui.section>

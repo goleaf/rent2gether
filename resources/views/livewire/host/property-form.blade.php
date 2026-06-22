@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('host.property_wizard.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('host.property_wizard.heading') }}</flux:heading>
@@ -361,4 +361,4 @@
             </div>
         </div>
     </form>
-</div>
+</x-ui.page>

@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-2xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:heading size="xl" level="1">{{ __('account.security.heading') }}</flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('account.security.helper') }}</flux:text>
@@ -43,4 +43,4 @@
             </flux:button>
         </form>
     </flux:card>
-</div>
+</x-ui.page>

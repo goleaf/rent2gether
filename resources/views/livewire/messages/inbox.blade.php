@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>
         <flux:heading size="xl" level="1">{{ $page['title'] }}</flux:heading>
@@ -61,4 +61,4 @@
             </flux:card>
         @endforelse
     </div>
-</div>
+</x-ui.page>

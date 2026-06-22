@@ -2,13 +2,17 @@
 
 namespace App\Services\Reviews;
 
+use App\Models\Room;
+
 class ReviewCompatibilityIntegrationService
 {
+    public function __construct(private readonly RoommateExperienceReviewService $roommates) {}
+
     /**
-     * Create a new class instance.
+     * @return array<string, mixed>
      */
-    public function __construct()
+    public function buildRoommateCompatibilitySummary(Room $room): array
     {
-        //
+        return $this->roommates->buildPublicRoommateSummary($room);
     }
 }

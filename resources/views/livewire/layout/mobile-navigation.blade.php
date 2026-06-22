@@ -1,5 +1,5 @@
 <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 px-3 py-2 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95" aria-label="{{ __('common.navigation.mobile') }}">
-    <div class="mx-auto grid max-w-xl grid-cols-5 gap-1 text-xs">
+    <div class="mx-auto grid w-full max-w-5xl grid-cols-5 gap-1 text-xs">
         <a wire:navigate href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" class="rounded-lg px-2 py-2 text-center text-zinc-700 dark:text-zinc-200">
             {{ __('common.navigation.search') }}
         </a>

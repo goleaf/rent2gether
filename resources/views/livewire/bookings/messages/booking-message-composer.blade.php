@@ -1,7 +1,7 @@
 <form wire:submit="send" class="space-y-3">
     <flux:field>
         <flux:label>{{ __('messages.fields.message') }}</flux:label>
-        <flux:textarea rows="3" wire:model.blur="body" placeholder="{{ __('messages.messages.type_message') }}" />
+        <flux:textarea rows="3" wire:model="body" placeholder="{{ __('messages.messages.type_message') }}" />
         <flux:error name="body" />
     </flux:field>
 

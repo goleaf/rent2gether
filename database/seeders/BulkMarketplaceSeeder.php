@@ -167,6 +167,7 @@ use App\Models\GuestHintDismissal;
 use App\Models\GuestHintImpression;
 use App\Models\GuestPreference;
 use App\Models\GuestProfile;
+use App\Models\GuestReputationSnapshot;
 use App\Models\HostBulkActionBatch;
 use App\Models\HostBulkActionItem;
 use App\Models\HostBulkActionLog;
@@ -189,6 +190,7 @@ use App\Models\HostListingSuggestion;
 use App\Models\HostListingWizardSession;
 use App\Models\HostProfile;
 use App\Models\HostRepresentative;
+use App\Models\HostReputationSnapshot;
 use App\Models\HostUnresponsiveContactAttempt;
 use App\Models\HostUnresponsiveEvent;
 use App\Models\HostUnresponsiveGuestAction;
@@ -255,11 +257,21 @@ use App\Models\PropertyConditionDetail;
 use App\Models\PropertyCurrentOccupancySnapshot;
 use App\Models\PropertyLocationDetail;
 use App\Models\PropertyPhoto;
+use App\Models\PropertyRatingSnapshot;
 use App\Models\PropertyRule;
 use App\Models\PropertyTranslation;
+use App\Models\RatingAggregate;
+use App\Models\RatingEvent;
 use App\Models\RefundRequest;
 use App\Models\Region;
 use App\Models\Review;
+use App\Models\ReviewEvent;
+use App\Models\ReviewMedia;
+use App\Models\ReviewPolicy;
+use App\Models\ReviewRequest;
+use App\Models\ReviewResponse;
+use App\Models\ReviewScore;
+use App\Models\ReviewStatusLog;
 use App\Models\Room;
 use App\Models\RoomAccessDetail;
 use App\Models\RoomComfortDetail;
@@ -267,8 +279,10 @@ use App\Models\RoomCompatibilityProfile;
 use App\Models\RoomConditionDetail;
 use App\Models\RoomCurrentOccupancySnapshot;
 use App\Models\RoomLayoutDetail;
+use App\Models\RoommateExperienceReview;
 use App\Models\RoomOccupantSnapshot;
 use App\Models\RoomPhoto;
+use App\Models\RoomRatingSnapshot;
 use App\Models\RoomTemplate;
 use App\Models\RoomTranslation;
 use App\Models\Rule;
@@ -294,6 +308,7 @@ use App\Models\SleepingPlacePhoto;
 use App\Models\SleepingPlacePhysicalDetail;
 use App\Models\SleepingPlacePositionDetail;
 use App\Models\SleepingPlacePricingSetting;
+use App\Models\SleepingPlaceRatingSnapshot;
 use App\Models\SleepingPlaceStorageDetail;
 use App\Models\SleepingPlaceTemplate;
 use App\Models\SleepingPlaceTranslation;
@@ -4021,6 +4036,7 @@ class BulkMarketplaceSeeder extends Seeder
             ->create();
 
         $this->seedReviews($bookingRows, $sleepingPlaceRows, $userIds, $bedIds);
+        $this->seedReviewRatingsReputationRecords($bookingRows, $sleepingPlaceRows, $userIds);
 
         Complaint::factory()
             ->count($this->missingFor(Complaint::class))
@@ -5369,6 +5385,242 @@ class BulkMarketplaceSeeder extends Seeder
                 $created++;
             }
         }
+    }
+
+    /**
+     * @param  list<array{id:int,property_id:int,room_id:int,sleeping_place_id:int,guest_user_id:int,host_user_id:int,check_in_date:string,check_out_date:string}>  $bookingRows
+     * @param  list<array{id:int,property_id:int,room_id:int}>  $sleepingPlaceRows
+     * @param  list<int>  $userIds
+     */
+    private function seedReviewRatingsReputationRecords(array $bookingRows, array $sleepingPlaceRows, array $userIds): void
+    {
+        $reviewRows = Review::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'type', 'overall_rating'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (Review $review): array => [
+                'id' => $review->id,
+                'booking_id' => $review->booking_id,
+                'guest_user_id' => $review->guest_user_id,
+                'host_user_id' => $review->host_user_id,
+                'property_id' => $review->property_id,
+                'room_id' => $review->room_id,
+                'sleeping_place_id' => $review->sleeping_place_id,
+                'type' => $review->type instanceof ReviewType ? $review->type->value : (string) $review->type,
+                'overall_rating' => (float) $review->overall_rating,
+            ])
+            ->all();
+
+        $roomRows = $this->roomRows();
+        $propertyRows = $this->propertyRows();
+
+        $this->seedFactoryRows(
+            ReviewPolicy::class,
+            fn (int $index): array => [
+                'scope_type' => ['global', 'property', 'room', 'sleeping_place'][$index % 4],
+                'scope_id' => match ($index % 4) {
+                    1 => $this->pick($propertyRows, $index)['id'],
+                    2 => $this->pick($roomRows, $index)['id'],
+                    3 => $this->pick($sleepingPlaceRows, $index)['id'],
+                    default => null,
+                },
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ReviewRequest::class,
+            function (int $index) use ($bookingRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $requestType = ['guest_reviews_place', 'host_reviews_guest', 'guest_reviews_roommates'][$index % 3];
+                $isHostReview = $requestType === 'host_reviews_guest';
+
+                return [
+                    'booking_id' => $booking['id'],
+                    'booking_check_out_id' => null,
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'request_type' => $requestType,
+                    'status' => ['created', 'sent', 'submitted', 'closed'][$index % 4],
+                    'reviewer_user_id' => $isHostReview ? $booking['host_user_id'] : $booking['guest_user_id'],
+                    'reviewer_type' => $isHostReview ? 'host' : 'guest',
+                    'review_subject_type' => $isHostReview ? 'guest' : ($requestType === 'guest_reviews_roommates' ? 'roommates' : 'sleeping_place'),
+                    'review_subject_user_id' => $isHostReview ? $booking['guest_user_id'] : ($requestType === 'guest_reviews_place' ? $booking['host_user_id'] : null),
+                    'due_at' => CarbonImmutable::parse($booking['check_out_date'])->addDays(14),
+                    'submitted_at' => $index % 4 === 2 ? now()->subDays($index % 7) : null,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            ReviewScore::class,
+            fn (int $index): array => [
+                'review_id' => $this->pick($reviewRows, $index)['id'],
+                'score_key' => ['overall', 'cleanliness', 'safety', 'internet', 'communication'][$index % 5],
+                'score_value' => 3 + ($index % 3),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ReviewMedia::class,
+            fn (int $index): array => [
+                'review_id' => $this->pick($reviewRows, $index)['id'],
+                'uploaded_by_user_id' => $this->pick($reviewRows, $index)['guest_user_id'],
+                'path' => sprintf('bulk-demo/reviews/%04d.webp', $index + 1),
+                'thumbnail_path' => sprintf('bulk-demo/reviews/%04d-thumb.webp', $index + 1),
+                'media_role' => ['positive_photo', 'cleanliness_photo', 'sleeping_place_photo'][$index % 3],
+                'visibility' => $index % 11 === 0 ? 'internal_future' : 'public',
+                'approved_for_public_display' => $index % 11 !== 0,
+                'public_display_at' => $index % 11 !== 0 ? now()->subDays($index % 30) : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ReviewResponse::class,
+            fn (int $index): array => [
+                'review_id' => $this->pick($reviewRows, $index)['id'],
+                'responder_user_id' => $this->pick($reviewRows, $index)['host_user_id'],
+                'responder_type' => 'host',
+                'status' => 'published',
+                'response_text' => 'reviews.demo.host_response',
+                'published_at' => now()->subDays($index % 20),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            RoommateExperienceReview::class,
+            fn (int $index): array => [
+                'review_id' => $this->pick($reviewRows, $index)['id'],
+                'booking_id' => $this->pick($reviewRows, $index)['booking_id'],
+                'room_id' => $this->pick($reviewRows, $index)['room_id'],
+                'property_id' => $this->pick($reviewRows, $index)['property_id'],
+                'sleeping_place_id' => $this->pick($reviewRows, $index)['sleeping_place_id'],
+                'quiet_roommates' => $index % 3 !== 0,
+                'clean_roommates' => $index % 4 !== 0,
+                'friendly_roommates' => $index % 5 !== 0,
+                'roommate_experience_rating' => 3 + ($index % 3),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            RatingEvent::class,
+            fn (int $index): array => [
+                'source_type' => 'review',
+                'source_id' => $this->pick($reviewRows, $index)['id'],
+                'event_key' => 'review_submitted',
+                'event_type' => 'review',
+                'target_type' => $this->pick($reviewRows, $index)['type'] === ReviewType::HostToGuest->value ? 'guest' : 'sleeping_place',
+                'target_user_id' => $this->pick($reviewRows, $index)['type'] === ReviewType::HostToGuest->value ? $this->pick($reviewRows, $index)['guest_user_id'] : $this->pick($reviewRows, $index)['host_user_id'],
+                'property_id' => $this->pick($reviewRows, $index)['property_id'],
+                'room_id' => $this->pick($reviewRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($reviewRows, $index)['sleeping_place_id'],
+                'booking_id' => $this->pick($reviewRows, $index)['booking_id'],
+                'metric_key' => 'overall',
+                'impact_direction' => $this->pick($reviewRows, $index)['overall_rating'] >= 4 ? 'positive' : 'neutral',
+                'impact_value' => $this->pick($reviewRows, $index)['overall_rating'],
+                'confirmed' => true,
+                'frozen' => false,
+                'ignored' => false,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            RatingAggregate::class,
+            fn (int $index): array => [
+                'target_type' => ['sleeping_place', 'room', 'property', 'host', 'guest'][$index % 5],
+                'target_user_id' => in_array($index % 5, [3, 4], true) ? $this->pick($userIds, $index) : null,
+                'property_id' => in_array($index % 5, [2], true) ? $this->pick($propertyRows, $index)['id'] : null,
+                'room_id' => $index % 5 === 1 ? $this->pick($roomRows, $index)['id'] : null,
+                'sleeping_place_id' => $index % 5 === 0 ? $this->pick($sleepingPlaceRows, $index)['id'] : null,
+                'metric_key' => ['overall', 'cleanliness', 'safety', 'communication'][$index % 4],
+                'rating_average' => 3 + ($index % 3),
+                'rating_weighted_average' => 3 + ($index % 3),
+                'rating_count' => 1 + ($index % 12),
+                'rating_sum' => 3 + ($index % 3),
+                'rating_weight_sum' => 1 + ($index % 12),
+                'last_review_id' => $this->pick($reviewRows, $index)['id'],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            HostReputationSnapshot::class,
+            fn (int $index): array => [
+                'host_user_id' => $this->pick($userIds, $index),
+                'overall_rating' => 3 + ($index % 3),
+                'reviews_count' => 1 + ($index % 20),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            GuestReputationSnapshot::class,
+            fn (int $index): array => [
+                'guest_user_id' => $this->pick($userIds, $index),
+                'overall_rating' => 3 + ($index % 3),
+                'reviews_count' => 1 + ($index % 20),
+                'completed_stays_count' => 1 + ($index % 15),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            SleepingPlaceRatingSnapshot::class,
+            fn (int $index): array => [
+                'sleeping_place_id' => $this->pick($sleepingPlaceRows, $index)['id'],
+                'room_id' => $this->pick($sleepingPlaceRows, $index)['room_id'],
+                'property_id' => $this->pick($sleepingPlaceRows, $index)['property_id'],
+                'host_user_id' => $this->pick($userIds, $index),
+                'overall_rating' => 3 + ($index % 3),
+                'reviews_count' => 1 + ($index % 20),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            RoomRatingSnapshot::class,
+            fn (int $index): array => [
+                'room_id' => $this->pick($roomRows, $index)['id'],
+                'property_id' => $this->pick($roomRows, $index)['property_id'],
+                'host_user_id' => $this->pick($userIds, $index),
+                'overall_rating' => 3 + ($index % 3),
+                'reviews_count' => 1 + ($index % 20),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            PropertyRatingSnapshot::class,
+            fn (int $index): array => [
+                'property_id' => $this->pick($propertyRows, $index)['id'],
+                'host_user_id' => $this->pick($userIds, $index),
+                'overall_rating' => 3 + ($index % 3),
+                'reviews_count' => 1 + ($index % 20),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ReviewStatusLog::class,
+            fn (int $index): array => [
+                'review_id' => $this->pick($reviewRows, $index)['id'],
+                'user_id' => $this->pick($reviewRows, $index)['guest_user_id'],
+                'old_status' => 'submitted',
+                'new_status' => 'published',
+                'reason_key' => 'bulk_demo_seed',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ReviewEvent::class,
+            fn (int $index): array => [
+                'review_id' => $this->pick($reviewRows, $index)['id'],
+                'review_request_id' => null,
+                'booking_id' => $this->pick($reviewRows, $index)['booking_id'],
+                'event_key' => ['review_submitted', 'review_published', 'rating_event_created'][$index % 3],
+                'event_type' => 'review',
+                'user_id' => $this->pick($reviewRows, $index)['guest_user_id'],
+                'occurred_at' => now()->subDays($index % 30),
+                'context_json' => ['seed' => true],
+            ],
+        );
     }
 
     private function seedMediaAndNotifications(): void

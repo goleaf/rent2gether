@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5">
+<x-ui.page>
     <section class="space-y-2">
         <flux:badge color="emerald">{{ __('host.profile.onboarding.eyebrow') }}</flux:badge>
         <flux:heading size="xl" level="1">{{ __('host.profile.onboarding.heading') }}</flux:heading>
@@ -80,4 +80,4 @@
             </div>
         </div>
     </form>
-</div>
+</x-ui.page>

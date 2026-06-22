@@ -1,4 +1,4 @@
-<section class="mx-auto w-full max-w-xl space-y-4 px-4 py-4">
+<x-ui.section>
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
@@ -140,4 +140,4 @@
             </div>
         @endforelse
     </div>
-</section>
+</x-ui.section>

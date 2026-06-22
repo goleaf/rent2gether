@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page>
     <header class="space-y-1">
         <flux:heading size="xl" level="1">{{ __('notifications.settings.title') }}</flux:heading>
         <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ __('notifications.settings.helper') }}</flux:text>
@@ -38,4 +38,4 @@
             {{ __('notifications.actions.save_settings') }}
         </flux:button>
     </section>
-</div>
+</x-ui.page>

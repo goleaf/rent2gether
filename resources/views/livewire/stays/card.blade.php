@@ -78,7 +78,7 @@
                 <flux:button variant="primary" class="w-full">{{ __('stays.actions.message_host') }}</flux:button>
                 <flux:button class="w-full">{{ __('stays.actions.request_extension') }}</flux:button>
                 <flux:button class="w-full">{{ __('stays.actions.request_relocation') }}</flux:button>
-                <flux:button variant="danger" class="w-full">{{ __('stays.actions.report_problem') }}</flux:button>
+                <x-ui.report-problem-button class="w-full">{{ __('stays.actions.report_problem') }}</x-ui.report-problem-button>
             </div>
         @endif
     @else

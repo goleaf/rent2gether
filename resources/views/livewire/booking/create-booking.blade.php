@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('booking.book') }}: {{ $bed->title }}</flux:heading>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -86,4 +86,4 @@
             @endif
         </div>
     </div>
-</div>
+</x-ui.page>

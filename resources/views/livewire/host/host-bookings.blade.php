@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto space-y-6">
+<x-ui.page class="space-y-6">
     <flux:heading size="xl">{{ __('booking.host_bookings') }}</flux:heading>
 
     <flux:tabs wire:model="tab">
@@ -35,4 +35,4 @@
 
         {{ $this->bookings->links() }}
     </div>
-</div>
+</x-ui.page>

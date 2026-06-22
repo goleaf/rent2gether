@@ -18,11 +18,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ReviewFactory extends Factory
 {
+    private static int $number = 1;
+
     public function definition(): array
     {
         return [
             'booking_id' => Booking::factory(),
-            'review_number' => sprintf('REV-%s-%06d', now()->format('Y'), $this->faker->unique()->numberBetween(1, 999999)),
+            'review_number' => sprintf('REV-%s-%06d', now()->format('Y'), self::$number++),
             'review_request_id' => null,
             'booking_stay_id' => null,
             'booking_check_out_id' => null,

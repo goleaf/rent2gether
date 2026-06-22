@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-24 sm:px-6">
+<x-ui.page>
     <section class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-2">
@@ -78,4 +78,4 @@
             </flux:card>
         @endforelse
     </section>
-</div>
+</x-ui.page>

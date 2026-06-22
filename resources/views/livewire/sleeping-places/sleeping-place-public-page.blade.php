@@ -1,4 +1,4 @@
-<div class="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-5 px-4 pb-24 pt-6">
+<x-ui.page class="space-y-0 flex min-h-screen flex-col gap-5">
     @if($this->context)
         <section class="space-y-2">
             <flux:badge color="lime">{{ __('domain.entities.sleeping_place') }}</flux:badge>
@@ -32,4 +32,4 @@
             {{ __('sleeping_places.empty.not_found') }}
         </div>
     @endif
-</div>
+</x-ui.page>

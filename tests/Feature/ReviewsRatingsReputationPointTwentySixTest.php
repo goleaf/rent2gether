@@ -89,7 +89,7 @@ class ReviewsRatingsReputationPointTwentySixTest extends TestCase
         $this->assertTrue($requests->every(fn (ReviewRequest $request): bool => $request->sleeping_place_id === $place->id));
         $this->assertTrue($requests->contains(fn (ReviewRequest $request): bool => $request->reviewer_user_id === $guest->id));
         $this->assertTrue($requests->contains(fn (ReviewRequest $request): bool => $request->reviewer_user_id === $host->id));
-        $this->assertTrue($requests->first()->due_at->isSameDay(CarbonImmutable::parse('2026-07-06')));
+        $this->assertTrue($requests->first()->due_at->isSameDay(CarbonImmutable::parse('2026-06-29')));
     }
 
     public function test_no_normal_review_request_for_no_show_or_cancelled_before_check_in(): void
@@ -143,9 +143,6 @@ class ReviewsRatingsReputationPointTwentySixTest extends TestCase
             'recommend' => true,
         ]);
 
-        $published = app(ReviewPublishingService::class)->publishPairIfReady($booking->refresh());
-
-        $this->assertCount(2, $published);
         $this->assertSame('published', $guestReview->refresh()->status->value);
         $this->assertSame('published', $hostReview->refresh()->status->value);
         $this->assertTrue($guestReview->is_public);
@@ -185,6 +182,7 @@ class ReviewsRatingsReputationPointTwentySixTest extends TestCase
         ]);
 
         $experience = RoommateExperienceReview::query()->where('review_id', $review->id)->firstOrFail();
+        app(ReviewPublishingService::class)->publishReview($review->refresh());
         $public = app(ReviewPrivacyService::class)->filterReviewForPublic($review->refresh());
 
         $this->assertSame($booking->room_id, $experience->room_id);

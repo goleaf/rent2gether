@@ -1,4 +1,4 @@
-<div class="mx-auto w-full max-w-3xl space-y-4 px-4 py-4">
+<x-ui.page class="space-y-4">
     <flux:card class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
@@ -27,4 +27,4 @@
     @if ($summary)
         <livewire:bookings.create.booking-confirmation-step :booking-id="$summary['id']" :key="'confirmation-'.$summary['id']" />
     @endif
-</div>
+</x-ui.page>

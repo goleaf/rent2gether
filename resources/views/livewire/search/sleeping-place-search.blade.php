@@ -1,5 +1,5 @@
-<div class="min-h-screen bg-zinc-50 pb-24 dark:bg-zinc-950">
-    <section class="mx-auto max-w-6xl space-y-4 px-4 py-4">
+<x-ui.page>
+    <x-ui.section>
         <div class="space-y-1">
             <flux:heading size="xl" level="1">{{ __('search.title') }}</flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('search.helper') }}</flux:text>
@@ -111,9 +111,9 @@
                 :key="'save-search-'.$city.'-'.$district.'-'.$checkIn.'-'.$checkOut.'-'.$priceMin.'-'.$priceMax.'-'.$instantBooking"
             />
         </flux:card>
-    </section>
+    </x-ui.section>
 
-    <section class="mx-auto max-w-6xl px-4">
+    <x-ui.section>
         <main class="min-w-0 space-y-4">
             <div class="flex items-center justify-between gap-3">
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
@@ -160,7 +160,7 @@
                 @endif
             @endif
         </main>
-    </section>
+    </x-ui.section>
 
     @if($filtersOpen)
         <div class="fixed inset-0 z-40">
@@ -189,4 +189,4 @@
             </section>
         </div>
     @endif
-</div>
+</x-ui.page>

@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl space-y-5 px-4 py-4 pb-28 sm:px-6">
+<x-ui.page>
     <div class="space-y-2">
         <flux:button
             variant="ghost"
@@ -168,7 +168,7 @@
     </flux:card>
 
     <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:px-0 sm:py-0 sm:backdrop-blur-none">
-        <div class="mx-auto flex max-w-3xl items-center gap-3 sm:block">
+        <div class="mx-auto flex w-full max-w-5xl items-center gap-3 sm:block">
             <div class="min-w-0 flex-1 sm:hidden">
                 <div class="text-xs text-zinc-500">{{ __('booking.total') }}</div>
                 <div class="truncate text-sm font-semibold">
@@ -193,4 +193,4 @@
             </flux:button>
         </div>
     </div>
-</div>
+</x-ui.page>

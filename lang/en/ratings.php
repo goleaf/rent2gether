@@ -1,0 +1,67 @@
+<?php
+
+return [
+    'title' => 'Ratings',
+
+    'metrics' => [
+        'overall' => 'Overall rating',
+        'cleanliness' => 'Cleanliness',
+        'safety' => 'Safety',
+        'location' => 'Location',
+        'description_accuracy' => 'Description accuracy',
+        'sleeping_place_quality' => 'Sleeping place quality',
+        'mattress_quality' => 'Mattress quality',
+        'noise_level' => 'Noise level',
+        'kitchen' => 'Kitchen',
+        'bathroom' => 'Bathroom',
+        'host_communication' => 'Host communication',
+        'roommate_communication' => 'Roommate communication',
+        'internet' => 'Internet',
+        'value_for_money' => 'Value for money',
+        'amenities' => 'Amenities',
+        'problem_resolution' => 'Problem resolution',
+        'rules_respect' => 'Rules respect',
+        'cleanliness_after_stay' => 'Cleanliness after stay',
+        'communication' => 'Communication',
+        'punctuality' => 'Punctuality',
+        'respect_for_roommates' => 'Respect for roommates',
+        'care_for_property' => 'Care for property',
+        'payment_reliability' => 'Payment reliability',
+        'response_speed' => 'Response speed',
+        'honesty' => 'Honesty',
+        'hospitality' => 'Hospitality',
+        'check_in_quality' => 'Check-in quality',
+        'checkout_quality' => 'Checkout quality',
+    ],
+
+    'target_types' => [
+        'guest' => 'Guest',
+        'host' => 'Host',
+        'property' => 'Property',
+        'room' => 'Room',
+        'sleeping_place' => 'Sleeping place',
+    ],
+
+    'events' => [
+        'review_submitted' => 'Review submitted',
+        'confirmed_complaint' => 'Complaint confirmed',
+        'resolved_complaint' => 'Complaint resolved',
+        'confirmed_mismatch' => 'Mismatch confirmed',
+        'resolved_mismatch' => 'Mismatch resolved',
+        'confirmed_no_show' => 'No-show confirmed',
+        'rejected_no_show' => 'No-show rejected',
+        'confirmed_deposit_deduction' => 'Deposit deduction confirmed',
+        'rejected_deposit_deduction' => 'Deposit deduction rejected',
+        'fast_problem_resolution' => 'Problem resolved quickly',
+        'successful_check_in' => 'Successful check-in',
+        'successful_checkout' => 'Successful checkout',
+    ],
+
+    'messages' => [
+        'rating_summary' => ':rating out of 5 from :count reviews.',
+        'rating_short' => ':rating out of 5',
+        'not_enough_reviews' => 'Not enough reviews yet.',
+        'rating_frozen_by_dispute' => 'Rating impact is frozen until the dispute is resolved.',
+        'unconfirmed_events_do_not_count' => 'Unconfirmed events are not counted in ratings.',
+    ],
+];

@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ReviewRequestFactory extends Factory
 {
+    private static int $number = 1;
+
     /**
      * Define the model's default state.
      *
@@ -24,7 +26,7 @@ class ReviewRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'review_request_number' => sprintf('REVR-%s-%06d', now()->format('Y'), $this->faker->unique()->numberBetween(1, 999999)),
+            'review_request_number' => sprintf('REVR-%s-%06d', now()->format('Y'), self::$number++),
             'booking_id' => Booking::factory(),
             'booking_stay_id' => null,
             'booking_check_out_id' => BookingCheckOut::factory(),
