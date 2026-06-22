@@ -110,6 +110,94 @@ Use Livewire redirect helpers from component actions after the action succeeds.
 - Flash post-redirect messages as translation keys/context and render them through localized UI.
 - Test success redirects, failure paths that should not redirect, flash messages, and locale preservation.
 
+### File Downloads
+
+Use Livewire downloads only for small files where the base64 transfer through a Livewire response is acceptable.
+
+- Return `response()->download()` or `Storage::download()` from a Livewire action after authorization.
+- Treat `streamDownload()` as collected-before-download in Livewire, not true browser streaming.
+- Keep public component state to IDs and compact metadata; never expose storage paths or file contents.
+- Resolve files through models, policies, and services/actions.
+- Avoid Livewire downloads for large media, archives, or heavy reports; use a dedicated named download route/endpoint with policy-backed service/action logic when needed.
+- Use ASCII-safe filenames and avoid private data in filenames.
+- Add loading feedback for slow downloads, but keep backend authorization and idempotency authoritative.
+- Test successful downloads with `assertFileDownloaded()` and blocked downloads with `assertNoFileDownloaded()`.
+
+### Teleport
+
+Use Livewire `@teleport` only when custom overlay content needs to escape parent stacking, overflow, or nested-dialog contexts.
+
+- Prefer Flux modal, popover, dropdown, toast, and drawer primitives when they already solve the UI need.
+- Use `@teleport('body')` as the default for custom modal, bottom-sheet, popover, and toast shells that need body-level placement.
+- Teleport targets must be stable CSS selectors outside the current Livewire component, usually `body` or a documented layout-level root such as `#modal-root`.
+- Never teleport into another element inside the same component.
+- Put exactly one root element inside each `@teleport` block.
+- Do not put `@teleport` inside large loops or use it to keep huge hidden modal DOM in the page. Render one active overlay by selected ID/state or extract a focused child component.
+- Keep teleported content translated, mobile-first, small in DOM size, and backed by normal Livewire authorization, validation, and tests.
+
+### Wire Bind
+
+Use Livewire `wire:bind:{attribute}` for lightweight client-side attribute changes that should react without a full component re-render.
+
+- Good uses: character-limit classes, selected-state classes, state-driven disabled buttons, ARIA state, small `data-*` counters, and bounded style tokens.
+- Keep expressions short. Move business rules, authorization, route generation, translation lookup, and complex formatting to the Livewire class, computed properties, DTOs, or services.
+- Prefer static, enumerated class values. Do not build unbounded Tailwind class names from user data.
+- Bind styles only from sanitized, bounded values. Do not pass raw user input into `wire:bind:style`.
+- Use `wire:bind:disabled` only for state-driven client interactivity. Server actions must still validate, authorize, and protect against duplicate submissions.
+- Prefer `data-loading` or `wire:loading.attr="disabled"` for request-in-flight disabling.
+- Use `wire:bind:href` only with component-generated or whitelisted URLs, preferably named localized routes.
+- Never bind access codes, exact private addresses, payment/provider payloads, internal notes, storage paths, or other sensitive values into client-readable attributes.
+
+### Wire Click
+
+Use Livewire `wire:click` for user-triggered component actions, not as a replacement for normal links or form submissions.
+
+- Put click behavior in public Livewire action methods and delegate real business logic to services/actions.
+- Use `type="button"` on buttons that are not form submissions.
+- Prefer buttons for actions. If an action is rendered as an `<a>` tag, use `wire:click.prevent`.
+- Use named route links with `wire:navigate` for navigation.
+- Pass compact scalar IDs only. Treat click parameters like request input: re-load models, authorize, validate state, and check idempotency before mutating data.
+- Pair risky actions with translated confirmation UI, but keep backend protection authoritative.
+- Use `data-loading`, scoped `wire:loading`, and stable disabled-looking states for click feedback.
+- Use `.renderless` only for side effects that do not need UI updates.
+- Use `.preserve-scroll` for load-more and in-place list/panel actions.
+- Use `.async` only for independent idempotent actions; do not use it for booking, payment, deposit, checkout, inventory, or same-record mutations.
+- Test success, authorization failure, tampered IDs, duplicate submission, and translated feedback.
+
+### Wire Submit
+
+Use Livewire `wire:submit` on forms for form submission. Livewire automatically prevents default form submission and disables submit buttons/read-only inputs during the request.
+
+- Prefer `wire:submit="save"` on `<form>` over `wire:click` on submit buttons.
+- Use `type="submit"` for the primary submit button and `type="button"` for secondary actions.
+- Validate and authorize in the submit action before persistence.
+- Use Livewire Form Objects for larger forms and multi-step flows.
+- Delegate persistence, pricing, availability, uploads, workflow transitions, and side effects to services/actions.
+- Treat submit parameters as untrusted; re-load models, authorize, validate state, and check idempotency.
+- Keep automatic disabled/readonly behavior as UX only; backend duplicate-submit protection remains required.
+- Use translated loading/success/error feedback and stable layout on mobile.
+- Use `.preserve-scroll` for inline forms where needed; avoid `.async` for ordered workflows.
+- Test success, validation, authorization/tampering, duplicate submit, redirect/state, and translated feedback.
+
+### Wire Model
+
+Use Livewire `wire:model` to bind form input values to component properties. By default, `wire:model` does not send a network request on every input update; values synchronize with the server when an action runs, such as `wire:submit` or `wire:click`.
+
+- Use plain `wire:model` when submit/action-time synchronization is enough.
+- Use `wire:model.blur` for normal text fields and `wire:model.change` for selects, checkboxes, radios, switches, and bounded option controls.
+- Use `wire:model.enter` for compact fields where Enter is the intended commit point.
+- Use `wire:model.live` only for real-time validation, search, autocomplete, dependent filters, or small previews that need server updates while editing.
+- Prefer `wire:model.live.debounce.500ms` or `wire:model.live.debounce.750ms` for search/autocomplete; `.live` has a 150ms default debounce.
+- Avoid live updates for long textareas such as messages, reviews, complaints, notes, rules, descriptions, and dispute details.
+- Use `.number` and `.boolean` as helper casts only; still validate and normalize server-side.
+- Use `.fill`, `.deep`, `.preserve-scroll`, `.debounce.Xms`, and `.throttle.Xms` only for deliberate cases documented in `docs/LIVEWIRE_4_REFERENCE.md`.
+- For dependent selects, add a stable `wire:key` to the changing select so Livewire resets and refreshes the value when options change.
+- Bind Form Object fields with dot notation such as `wire:model.blur="form.title"`.
+- Do not put content inside a bound `<textarea>`; initialize component state instead.
+- Do not copy official examples that query in Blade loops or use `Model::all()` for options. Preload option DTOs through the Livewire class, computed properties, or services.
+- Keep bound state small and safe: IDs, enum-like strings, booleans, dates, and bounded arrays.
+- Never bind access codes, payment/provider payloads, private dispute details, internal notes, full models, or DTO graphs into client-readable state.
+
 ### Loading States
 
 Use Livewire's automatic `data-loading` attribute as the default loading-state styling hook for network actions.
