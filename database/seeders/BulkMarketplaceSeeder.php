@@ -139,6 +139,15 @@ use App\Models\ComplaintResponse;
 use App\Models\ComplaintStatusHistory;
 use App\Models\ComplaintStatusLog;
 use App\Models\Conversation;
+use App\Models\ConversationEvent;
+use App\Models\ConversationInternalNote;
+use App\Models\ConversationMessage;
+use App\Models\ConversationMessageAttachment;
+use App\Models\ConversationMessageRead;
+use App\Models\ConversationParticipant;
+use App\Models\ConversationSafetyWarning;
+use App\Models\ConversationStatusLog;
+use App\Models\ConversationSystemEvent;
 use App\Models\Country;
 use App\Models\CountryTranslation;
 use App\Models\DepositRecord;
@@ -214,6 +223,8 @@ use App\Models\ListingReadinessCheck;
 use App\Models\MediaItem;
 use App\Models\MediaItemTranslation;
 use App\Models\Message;
+use App\Models\MessageTemplate;
+use App\Models\MessageTemplateUsage;
 use App\Models\MessageThread;
 use App\Models\Notification;
 use App\Models\PaymentReceipt;
@@ -291,6 +302,7 @@ use App\Models\WaitlistOffer;
 use App\Services\Inventory\InventoryCategoryService;
 use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\DemoMediaFileService;
+use App\Services\Messaging\MessageTemplateService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
@@ -3670,6 +3682,8 @@ class BulkMarketplaceSeeder extends Seeder
                 ];
             })
             ->create();
+
+        $this->seedPointTwentyFourConversations($bookingRows);
     }
 
     /**
@@ -3705,14 +3719,264 @@ class BulkMarketplaceSeeder extends Seeder
             Conversation::factory()->create([
                 'participant_one_id' => $participantOneId,
                 'participant_two_id' => $participantTwoId,
+                'conversation_type' => 'booking',
+                'status' => 'active',
+                'guest_user_id' => $booking['guest_user_id'],
+                'host_user_id' => $booking['host_user_id'],
+                'property_id' => $booking['property_id'],
+                'room_id' => $booking['room_id'],
+                'sleeping_place_id' => $booking['sleeping_place_id'],
                 'booking_id' => $booking['id'],
                 'bed_id' => $this->pick($bedIds, $index),
+                'guest_unread_count' => $index % 5,
+                'host_unread_count' => $index % 4,
+                'has_urgent_messages' => $index % 17 === 0,
+                'has_important_messages' => $index % 13 === 0,
+                'guest_can_write' => true,
+                'host_can_write' => true,
+                'is_read_only' => false,
+                'is_system_only' => false,
                 'last_message_at' => now(),
             ]);
 
             $existingKeys[$key] = true;
             $created++;
         }
+    }
+
+    /**
+     * @param  list<array{id:int,property_id:int,room_id:int,sleeping_place_id:int,guest_user_id:int,host_user_id:int,check_in_date:string,check_out_date:string}>  $bookingRows
+     */
+    private function seedPointTwentyFourConversations(array $bookingRows): void
+    {
+        app(MessageTemplateService::class)->seedDefaultTemplates();
+
+        $this->seedFactoryRows(
+            MessageTemplate::class,
+            fn (int $index): array => [
+                'template_key' => sprintf('bulk_message_template_%04d', $index + 1),
+                'template_category' => ['booking', 'check_in', 'check_out', 'maintenance', 'inventory'][$index % 5],
+                'sender_type' => $index % 2 === 0 ? 'guest' : 'host',
+                'conversation_type' => $index % 3 === 0 ? 'booking' : null,
+                'title_translation_key' => $index % 2 === 0 ? 'messages.templates_guest.i_will_arrive_soon' : 'messages.templates_host.i_will_reply_soon',
+                'body_translation_key' => $index % 2 === 0 ? 'messages.templates_guest.i_will_arrive_soon' : 'messages.templates_host.i_will_reply_soon',
+                'visible_to_guest' => $index % 2 === 0,
+                'visible_to_host' => $index % 2 !== 0,
+                'requires_booking' => true,
+                'creates_action' => false,
+                'action_type' => 'none',
+                'sort_order' => $index,
+                'active' => true,
+            ],
+        );
+
+        $conversationRows = Conversation::query()
+            ->select(['id', 'guest_user_id', 'host_user_id', 'booking_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->whereNotNull('guest_user_id')
+            ->whereNotNull('host_user_id')
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (Conversation $conversation): array => [
+                'id' => $conversation->id,
+                'guest_user_id' => $conversation->guest_user_id,
+                'host_user_id' => $conversation->host_user_id,
+                'booking_id' => $conversation->booking_id,
+                'property_id' => $conversation->property_id,
+                'room_id' => $conversation->room_id,
+                'sleeping_place_id' => $conversation->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            ConversationParticipant::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($conversationRows, $index)['id'],
+                'user_id' => $index % 2 === 0 ? $this->pick($conversationRows, $index)['guest_user_id'] : $this->pick($conversationRows, $index)['host_user_id'],
+                'participant_type' => $index % 2 === 0 ? 'guest' : 'host',
+                'display_name_snapshot' => $index % 2 === 0 ? 'Demo guest' : 'Demo host',
+                'can_write' => true,
+                'can_read' => true,
+                'can_upload' => true,
+                'can_use_templates' => true,
+                'muted' => $index % 19 === 0,
+                'archived' => $index % 23 === 0,
+                'joined_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationMessage::class,
+            function (int $index) use ($conversationRows): array {
+                $conversation = $this->pick($conversationRows, $index);
+                $system = $index % 10 === 0;
+                $guestSender = $index % 2 === 0;
+
+                return [
+                    'message_number' => sprintf('MSG-%s-%06d', now()->format('Y'), $index + 1),
+                    'conversation_id' => $conversation['id'],
+                    'sender_user_id' => $system ? null : ($guestSender ? $conversation['guest_user_id'] : $conversation['host_user_id']),
+                    'sender_type' => $system ? 'system' : ($guestSender ? 'guest' : 'host'),
+                    'recipient_user_id' => $system ? null : ($guestSender ? $conversation['host_user_id'] : $conversation['guest_user_id']),
+                    'recipient_type' => $system ? null : ($guestSender ? 'host' : 'guest'),
+                    'message_type' => $system ? 'system_event' : ($index % 7 === 0 ? 'quick_template' : 'text'),
+                    'status' => $system ? 'system' : 'sent',
+                    'body' => $system ? null : sprintf('Bulk conversation message %04d', $index + 1),
+                    'template_key' => $index % 7 === 0 ? 'i_will_arrive_soon' : null,
+                    'translation_key' => $system ? 'messages.system_events.booking_created' : null,
+                    'translation_params_json' => $system ? ['booking' => $conversation['booking_id']] : null,
+                    'source_type' => 'booking',
+                    'source_id' => $conversation['booking_id'],
+                    'booking_id' => $conversation['booking_id'],
+                    'property_id' => $conversation['property_id'],
+                    'room_id' => $conversation['room_id'],
+                    'sleeping_place_id' => $conversation['sleeping_place_id'],
+                    'is_system' => $system,
+                    'is_important' => $index % 13 === 0,
+                    'is_urgent' => $index % 17 === 0,
+                    'is_internal_note' => false,
+                    'original_locale' => $system ? null : ($index % 2 === 0 ? 'en' : 'ru'),
+                    'sent_at' => now()->subMinutes($index % 240),
+                ];
+            },
+        );
+
+        $messageRows = ConversationMessage::query()
+            ->select(['id', 'conversation_id', 'sender_user_id', 'booking_id', 'source_type', 'source_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (ConversationMessage $message): array => [
+                'id' => $message->id,
+                'conversation_id' => $message->conversation_id,
+                'sender_user_id' => $message->sender_user_id,
+                'booking_id' => $message->booking_id,
+                'source_type' => $message->source_type,
+                'source_id' => $message->source_id,
+            ])
+            ->all();
+        $templateRows = MessageTemplate::query()
+            ->select(['id', 'template_key'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (MessageTemplate $template): array => ['id' => $template->id, 'template_key' => $template->template_key])
+            ->all();
+
+        $this->seedFactoryRows(
+            ConversationMessageAttachment::class,
+            fn (int $index): array => [
+                'conversation_message_id' => $this->pick($messageRows, $index)['id'],
+                'conversation_id' => $this->pick($messageRows, $index)['conversation_id'],
+                'uploaded_by_user_id' => $this->pick($messageRows, $index)['sender_user_id'],
+                'attachment_type' => ['photo', 'booking_card', 'system_card'][$index % 3],
+                'media_type' => $index % 3 === 0 ? 'photo' : null,
+                'path' => sprintf('bulk-demo/messages/%04d.jpg', $index + 1),
+                'thumbnail_path' => sprintf('bulk-demo/messages/%04d-thumb.jpg', $index + 1),
+                'visibility' => $index % 11 === 0 ? 'host_only' : 'guest_and_host',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationMessageRead::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($messageRows, $index)['conversation_id'],
+                'conversation_message_id' => $this->pick($messageRows, $index)['id'],
+                'user_id' => $this->pick($conversationRows, $index)['host_user_id'],
+                'read_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            MessageTemplateUsage::class,
+            fn (int $index): array => [
+                'message_template_id' => $this->pick($templateRows, $index)['id'],
+                'template_key' => $this->pick($templateRows, $index)['template_key'],
+                'conversation_id' => $this->pick($messageRows, $index)['conversation_id'],
+                'conversation_message_id' => $this->pick($messageRows, $index)['id'],
+                'user_id' => $this->pick($messageRows, $index)['sender_user_id'],
+                'booking_id' => $this->pick($messageRows, $index)['booking_id'],
+                'source_type' => $this->pick($messageRows, $index)['source_type'],
+                'source_id' => $this->pick($messageRows, $index)['source_id'],
+                'used_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationSystemEvent::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($messageRows, $index)['conversation_id'],
+                'conversation_message_id' => $this->pick($messageRows, $index)['id'],
+                'event_key' => ['booking_created', 'payment_completed', 'check_in_instruction_available', 'place_ready'][$index % 4],
+                'event_type' => 'system',
+                'source_type' => 'booking',
+                'source_id' => $this->pick($messageRows, $index)['booking_id'],
+                'booking_id' => $this->pick($messageRows, $index)['booking_id'],
+                'translation_key' => 'messages.system_events.booking_created',
+                'importance_level' => $index % 17 === 0 ? 'urgent' : 'normal',
+                'occurred_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationInternalNote::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($conversationRows, $index)['id'],
+                'booking_id' => $this->pick($conversationRows, $index)['booking_id'],
+                'guest_user_id' => $this->pick($conversationRows, $index)['guest_user_id'],
+                'host_user_id' => $this->pick($conversationRows, $index)['host_user_id'],
+                'property_id' => $this->pick($conversationRows, $index)['property_id'],
+                'room_id' => $this->pick($conversationRows, $index)['room_id'],
+                'sleeping_place_id' => $this->pick($conversationRows, $index)['sleeping_place_id'],
+                'note' => sprintf('Bulk internal note %04d', $index + 1),
+                'note_type' => ['booking_note', 'guest_preference', 'check_in_note', 'other'][$index % 4],
+                'created_by_user_id' => $this->pick($conversationRows, $index)['host_user_id'],
+                'visible_to_host' => true,
+                'visible_to_guest' => false,
+                'internal' => true,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationSafetyWarning::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($messageRows, $index)['conversation_id'],
+                'conversation_message_id' => $this->pick($messageRows, $index)['id'],
+                'warning_key' => $index % 2 === 0 ? 'possible_off_platform_payment' : 'possible_sensitive_access_details',
+                'severity' => $index % 17 === 0 ? 'high' : 'warning',
+                'triggered_by_user_id' => $this->pick($messageRows, $index)['sender_user_id'],
+                'visible_to_sender' => true,
+                'visible_to_recipient' => false,
+                'message_key' => $index % 2 === 0 ? 'messages.messages.off_platform_payment_warning' : 'messages.messages.access_details_warning',
+                'context_json' => ['seed' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationStatusLog::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($conversationRows, $index)['id'],
+                'user_id' => $this->pick($conversationRows, $index)['host_user_id'],
+                'old_status' => 'active',
+                'new_status' => $index % 9 === 0 ? 'closed' : 'active',
+                'reason_key' => 'bulk_demo_seed',
+                'context_json' => ['seed' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ConversationEvent::class,
+            fn (int $index): array => [
+                'conversation_id' => $this->pick($conversationRows, $index)['id'],
+                'event_key' => ['conversation_created', 'message_sent', 'message_read', 'safety_warning_created'][$index % 4],
+                'event_type' => 'system',
+                'source_type' => 'bulk_demo_seed',
+                'source_id' => $index + 1,
+                'user_id' => $this->pick($conversationRows, $index)['host_user_id'],
+                'occurred_at' => now(),
+                'context_json' => ['seed' => true],
+            ],
+        );
     }
 
     private function seedSocialRecords(): void
