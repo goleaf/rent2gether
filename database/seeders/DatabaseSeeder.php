@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             GeoSeeder::class,
             AmenityRuleSeeder::class,
             MarketplaceDemoSeeder::class,
+            DemoHostGuestSeeder::class,
             BulkMarketplaceSeeder::class,
         ]);
     }
