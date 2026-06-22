@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Services\Cleaning;
+
+use App\Models\CleaningEvent;
+use App\Models\CleaningTask;
+use Illuminate\Support\Collection;
+
+class CleaningEventService
+{
+    public function record(CleaningTask $task, string $eventKey, array $context = []): CleaningEvent
+    {
+        return CleaningEvent::query()->create([
+            'cleaning_task_id' => $task->id,
+            'event_key' => $eventKey,
+            'event_type' => $context['event_type'] ?? 'system',
+            'source_type' => $context['source_type'] ?? null,
+            'source_id' => $context['source_id'] ?? null,
+            'user_id' => $context['user_id'] ?? null,
+            'occurred_at' => $context['occurred_at'] ?? now(),
+            'context_json' => $context === [] ? null : $context,
+        ]);
+    }
+
+    public function getTimeline(CleaningTask $task): Collection
+    {
+        return $task->events()
+            ->orderBy('occurred_at')
+            ->orderBy('id')
+            ->get();
+    }
+}

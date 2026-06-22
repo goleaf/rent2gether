@@ -373,6 +373,22 @@ class SleepingPlace extends Model
     }
 
     /**
+     * Lists canonical cleaning tasks that prepare this Sleeping Place.
+     */
+    public function cleaningTasks(): HasMany
+    {
+        return $this->hasMany(CleaningTask::class);
+    }
+
+    /**
+     * Lists canonical inspection tasks that verify this Sleeping Place.
+     */
+    public function inspectionTasks(): HasMany
+    {
+        return $this->hasMany(InspectionTask::class);
+    }
+
+    /**
      * Lists related Sleeping Place Calendar Rule records for this Sleeping Place.
      */
     public function calendarRules(): HasMany

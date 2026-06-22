@@ -117,16 +117,38 @@ use App\Models\CheckinRecord;
 use App\Models\CheckoutRecord;
 use App\Models\City;
 use App\Models\CityTranslation;
+use App\Models\CleaningEvent;
+use App\Models\CleaningPolicy;
+use App\Models\CleaningStatusLog;
+use App\Models\CleaningTask;
+use App\Models\CleaningTaskIssue;
+use App\Models\CleaningTaskItem;
+use App\Models\CleaningTaskMedia;
 use App\Models\CoLivingProfile;
 use App\Models\CoLivingVisibilitySetting;
 use App\Models\CompatibilityResult;
 use App\Models\Complaint;
+use App\Models\ComplaintAction;
+use App\Models\ComplaintCase;
+use App\Models\ComplaintEvent;
+use App\Models\ComplaintEvidence;
+use App\Models\ComplaintParty;
+use App\Models\ComplaintResolutionOption;
+use App\Models\ComplaintResponse;
 use App\Models\ComplaintStatusHistory;
+use App\Models\ComplaintStatusLog;
 use App\Models\Conversation;
 use App\Models\Country;
 use App\Models\CountryTranslation;
 use App\Models\DepositRecord;
 use App\Models\DiscountRule;
+use App\Models\DisputeCase;
+use App\Models\DisputeDecision;
+use App\Models\DisputeEvent;
+use App\Models\DisputeEvidence;
+use App\Models\DisputeMessage;
+use App\Models\DisputeResolutionProposal;
+use App\Models\DisputeStatusLog;
 use App\Models\Favorite;
 use App\Models\FavoriteCollection;
 use App\Models\GuestCompatibilityProfile;
@@ -166,6 +188,11 @@ use App\Models\HostUnresponsivePolicy;
 use App\Models\HostUnresponsivePolicySnapshot;
 use App\Models\HostUnresponsiveRepresentativeResponse;
 use App\Models\HostUnresponsiveStatusLog;
+use App\Models\InspectionEvent;
+use App\Models\InspectionStatusLog;
+use App\Models\InspectionTask;
+use App\Models\InspectionTaskItem;
+use App\Models\InspectionTaskMedia;
 use App\Models\ListingCreationDraft;
 use App\Models\ListingHintSnapshot;
 use App\Models\ListingPublicationCheck;
@@ -178,6 +205,7 @@ use App\Models\Notification;
 use App\Models\PaymentReceipt;
 use App\Models\PaymentRecord;
 use App\Models\Payout;
+use App\Models\PlaceReadinessCheck;
 use App\Models\PriceRule;
 use App\Models\PromoCode;
 use App\Models\PromoCodeRedemption;
@@ -3731,6 +3759,262 @@ class BulkMarketplaceSeeder extends Seeder
                 'status' => ComplaintStatus::Created->value,
             ])
             ->create();
+
+        $this->seedComplaintDisputeRecords($bookingRows, $userIds);
+    }
+
+    /**
+     * @param  list<array{id:int,property_id:int,room_id:int,sleeping_place_id:int,guest_user_id:int,host_user_id:int,check_in_date:string,check_out_date:string}>  $bookingRows
+     * @param  list<int>  $userIds
+     */
+    private function seedComplaintDisputeRecords(array $bookingRows, array $userIds): void
+    {
+        $this->seedFactoryRows(
+            ComplaintCase::class,
+            function (int $index) use ($bookingRows): array {
+                $booking = $this->pick($bookingRows, $index);
+
+                return [
+                    'complaint_number' => sprintf('CMP-%s-%06d', now()->format('Y'), $index + 1),
+                    'booking_id' => $booking['id'],
+                    'guest_user_id' => $booking['guest_user_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'reporter_user_id' => $booking['guest_user_id'],
+                    'against_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'source_type' => 'bulk_demo',
+                    'source_id' => $booking['id'],
+                    'submitted_by_type' => 'guest',
+                    'against_type' => 'host',
+                    'complaint_type' => $index % 5 === 0 ? 'deposit_problem' : 'dirty_room',
+                    'severity' => $index % 7 === 0 ? 'high' : 'medium',
+                    'status' => 'submitted',
+                    'description' => sprintf('Bulk complaint case %04d', $index + 1),
+                    'desired_resolution_type' => 'fix_problem',
+                    'resolution_status' => 'not_started',
+                    'currency' => 'EUR',
+                ];
+            },
+        );
+
+        $caseRows = ComplaintCase::query()
+            ->select(['id', 'booking_id', 'guest_user_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id', 'complaint_type', 'severity', 'currency'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (ComplaintCase $case): array => [
+                'id' => $case->id,
+                'booking_id' => $case->booking_id,
+                'guest_user_id' => $case->guest_user_id,
+                'host_user_id' => $case->host_user_id,
+                'property_id' => $case->property_id,
+                'room_id' => $case->room_id,
+                'sleeping_place_id' => $case->sleeping_place_id,
+                'complaint_type' => $case->complaint_type,
+                'severity' => $case->severity,
+                'currency' => $case->currency ?: 'EUR',
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            ComplaintParty::class,
+            function (int $index) use ($caseRows): array {
+                $case = $this->pick($caseRows, $index);
+                $isReporter = $index % 2 === 0;
+
+                return [
+                    'complaint_case_id' => $case['id'],
+                    'user_id' => $isReporter ? $case['guest_user_id'] : $case['host_user_id'],
+                    'party_type' => $isReporter ? 'reporter' : 'against',
+                    'role_in_case' => $isReporter ? 'reported_problem' : 'accused',
+                    'can_respond' => true,
+                    'notified_at' => $isReporter ? null : now(),
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            ComplaintEvidence::class,
+            fn (int $index): array => [
+                'complaint_case_id' => $this->pick($caseRows, $index)['id'],
+                'booking_id' => $this->pick($caseRows, $index)['booking_id'],
+                'uploaded_by_user_id' => $this->pick($caseRows, $index)['guest_user_id'],
+                'evidence_type' => 'photo',
+                'media_type' => 'photo',
+                'evidence_role' => 'problem_photo',
+                'path' => sprintf('bulk/complaints/%04d.jpg', $index + 1),
+                'visibility' => 'guest_and_host',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ComplaintResponse::class,
+            fn (int $index): array => [
+                'complaint_case_id' => $this->pick($caseRows, $index)['id'],
+                'user_id' => $this->pick($caseRows, $index)['host_user_id'],
+                'response_type' => 'send_message',
+                'message' => sprintf('Bulk complaint response %04d', $index + 1),
+                'requires_guest_response' => false,
+                'requires_host_response' => false,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ComplaintResolutionOption::class,
+            fn (int $index): array => [
+                'complaint_case_id' => $this->pick($caseRows, $index)['id'],
+                'resolution_type' => $index % 3 === 0 ? 'cleaning' : 'fix_problem',
+                'status' => 'offered',
+                'amount' => 0,
+                'currency' => $this->pick($caseRows, $index)['currency'],
+                'offered_by_user_id' => $this->pick($caseRows, $index)['host_user_id'],
+                'offered_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ComplaintAction::class,
+            fn (int $index): array => [
+                'complaint_case_id' => $this->pick($caseRows, $index)['id'],
+                'action_type' => 'notify_other_party',
+                'status' => 'completed',
+                'created_by_user_id' => $this->pick($caseRows, $index)['guest_user_id'],
+                'completed_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ComplaintStatusLog::class,
+            fn (int $index): array => [
+                'complaint_case_id' => $this->pick($caseRows, $index)['id'],
+                'user_id' => $this->pick($caseRows, $index)['guest_user_id'],
+                'new_status' => 'submitted',
+                'context_json' => ['bulk' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            ComplaintEvent::class,
+            fn (int $index): array => [
+                'complaint_case_id' => $this->pick($caseRows, $index)['id'],
+                'event_key' => 'complaint_submitted',
+                'event_type' => 'system',
+                'user_id' => $this->pick($caseRows, $index)['guest_user_id'],
+                'occurred_at' => now(),
+                'context_json' => ['bulk' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            DisputeCase::class,
+            function (int $index) use ($caseRows): array {
+                $case = $this->pick($caseRows, $index);
+
+                return [
+                    'dispute_number' => sprintf('DSP-%s-%06d', now()->format('Y'), $index + 1),
+                    'complaint_case_id' => $case['id'],
+                    'booking_id' => $case['booking_id'],
+                    'guest_user_id' => $case['guest_user_id'],
+                    'host_user_id' => $case['host_user_id'],
+                    'opened_by_user_id' => $case['guest_user_id'],
+                    'property_id' => $case['property_id'],
+                    'room_id' => $case['room_id'],
+                    'sleeping_place_id' => $case['sleeping_place_id'],
+                    'source_type' => 'complaint_case',
+                    'source_id' => $case['id'],
+                    'dispute_type' => $case['complaint_type'] === 'deposit_problem' ? 'deposit_dispute' : 'other',
+                    'severity' => $case['severity'],
+                    'status' => 'opened',
+                    'amount_disputed' => $index % 5 === 0 ? 50 : 0,
+                    'currency' => $case['currency'],
+                ];
+            },
+        );
+
+        $disputeRows = DisputeCase::query()
+            ->select(['id', 'guest_user_id', 'host_user_id', 'currency'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (DisputeCase $dispute): array => [
+                'id' => $dispute->id,
+                'guest_user_id' => $dispute->guest_user_id,
+                'host_user_id' => $dispute->host_user_id,
+                'currency' => $dispute->currency ?: 'EUR',
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            DisputeEvidence::class,
+            fn (int $index): array => [
+                'dispute_case_id' => $this->pick($disputeRows, $index)['id'],
+                'uploaded_by_user_id' => $this->pick($disputeRows, $index)['guest_user_id'],
+                'evidence_type' => 'photo',
+                'media_type' => 'photo',
+                'evidence_role' => 'problem_photo',
+                'path' => sprintf('bulk/disputes/%04d.jpg', $index + 1),
+                'visibility' => 'guest_and_host',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            DisputeMessage::class,
+            fn (int $index): array => [
+                'dispute_case_id' => $this->pick($disputeRows, $index)['id'],
+                'user_id' => $this->pick($userIds, $index),
+                'message_type' => 'statement',
+                'message' => sprintf('Bulk dispute message %04d', $index + 1),
+                'visibility' => 'guest_and_host',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            DisputeResolutionProposal::class,
+            fn (int $index): array => [
+                'dispute_case_id' => $this->pick($disputeRows, $index)['id'],
+                'proposed_by_user_id' => $this->pick($disputeRows, $index)['guest_user_id'],
+                'resolution_type' => 'no_action',
+                'amount' => 0,
+                'currency' => $this->pick($disputeRows, $index)['currency'],
+                'status' => 'offered',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            DisputeDecision::class,
+            fn (int $index): array => [
+                'dispute_case_id' => $this->pick($disputeRows, $index)['id'],
+                'decision_type' => 'system_rule',
+                'resolution_type' => 'no_action',
+                'currency' => $this->pick($disputeRows, $index)['currency'],
+                'decided_by_type' => 'system_rule',
+                'status' => 'recorded',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            DisputeStatusLog::class,
+            fn (int $index): array => [
+                'dispute_case_id' => $this->pick($disputeRows, $index)['id'],
+                'user_id' => $this->pick($disputeRows, $index)['guest_user_id'],
+                'new_status' => 'opened',
+                'context_json' => ['bulk' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            DisputeEvent::class,
+            fn (int $index): array => [
+                'dispute_case_id' => $this->pick($disputeRows, $index)['id'],
+                'event_key' => 'dispute_opened',
+                'event_type' => 'system',
+                'user_id' => $this->pick($disputeRows, $index)['guest_user_id'],
+                'occurred_at' => now(),
+                'context_json' => ['bulk' => true],
+            ],
+        );
     }
 
     private function seedDecisionAndQueueRecords(): void
@@ -4001,6 +4285,238 @@ class BulkMarketplaceSeeder extends Seeder
                     'room_id' => $booking['room_id'],
                     'sleeping_place_id' => $booking['sleeping_place_id'],
                     'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            CleaningPolicy::class,
+            function (int $index) use ($sleepingPlaceRows): array {
+                $place = $this->pick($sleepingPlaceRows, $index);
+
+                return [
+                    'property_id' => $place['property_id'],
+                    'room_id' => $place['room_id'],
+                    'sleeping_place_id' => $place['id'],
+                    'inspection_required_after_cleaning' => $index % 3 === 0,
+                    'require_after_photos' => true,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            CleaningTask::class,
+            function (int $index) use ($bookingRows, $checkOutRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $checkOut = $this->pick($checkOutRows, $index);
+
+                return [
+                    'booking_id' => $booking['id'],
+                    'booking_check_out_id' => $checkOut['id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'cleaning_type' => $index % 2 === 0 ? 'after_check_out' : 'turnover_cleaning',
+                    'cleaning_scope' => 'sleeping_place',
+                    'status' => $index % 5 === 0 ? 'completed' : 'scheduled',
+                    'priority' => $index % 7 === 0 ? 'same_day_turnover' : 'normal',
+                    'scheduled_date' => CarbonImmutable::now()->addDays($index % 30)->toDateString(),
+                    'after_photos_required' => true,
+                    'after_photos_uploaded' => $index % 5 === 0,
+                    'checklist_completed' => $index % 5 === 0,
+                    'inspection_required' => $index % 3 === 0,
+                ];
+            },
+        );
+
+        $cleaningTaskRows = CleaningTask::query()
+            ->select(['id', 'booking_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (CleaningTask $task): array => [
+                'id' => $task->id,
+                'booking_id' => $task->booking_id,
+                'host_user_id' => $task->host_user_id,
+                'property_id' => $task->property_id,
+                'room_id' => $task->room_id,
+                'sleeping_place_id' => $task->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            CleaningTaskItem::class,
+            function (int $index) use ($cleaningTaskRows): array {
+                $itemKey = ['replace_bedding', 'replace_towel', 'wipe_dust', 'check_mattress', 'upload_after_photos'][$index % 5];
+
+                return [
+                    'cleaning_task_id' => $this->pick($cleaningTaskRows, $index)['id'],
+                    'item_key' => $itemKey,
+                    'label_key' => 'cleaning.items.'.$itemKey,
+                    'status' => $index % 4 === 0 ? 'completed' : 'pending',
+                    'sort_order' => $index % 20,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            CleaningTaskMedia::class,
+            function (int $index) use ($cleaningTaskRows, $userIds): array {
+                $task = $this->pick($cleaningTaskRows, $index);
+
+                return [
+                    'cleaning_task_id' => $task['id'],
+                    'booking_id' => $task['booking_id'],
+                    'uploaded_by_user_id' => $this->pick($userIds, $index),
+                    'media_role' => $index % 2 === 0 ? 'after_cleaning_sleeping_place' : 'before_cleaning_sleeping_place',
+                    'path' => sprintf('bulk-demo/canonical-cleaning/%04d.jpg', $index + 1),
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            CleaningTaskIssue::class,
+            function (int $index) use ($cleaningTaskRows): array {
+                $task = $this->pick($cleaningTaskRows, $index);
+
+                return [
+                    'cleaning_task_id' => $task['id'],
+                    'booking_id' => $task['booking_id'],
+                    'host_user_id' => $task['host_user_id'],
+                    'property_id' => $task['property_id'],
+                    'room_id' => $task['room_id'],
+                    'sleeping_place_id' => $task['sleeping_place_id'],
+                    'issue_type' => ['extra_dirt_found', 'needs_repair', 'forgotten_items_found', 'bad_smell_found'][$index % 4],
+                    'severity' => $index % 5 === 0 ? 'high' : 'medium',
+                    'blocks_calendar' => $index % 5 === 0,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            CleaningStatusLog::class,
+            fn (int $index): array => [
+                'cleaning_task_id' => $this->pick($cleaningTaskRows, $index)['id'],
+                'new_status' => $index % 5 === 0 ? 'completed' : 'scheduled',
+                'reason_key' => 'bulk_demo_seed',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            CleaningEvent::class,
+            fn (int $index): array => [
+                'cleaning_task_id' => $this->pick($cleaningTaskRows, $index)['id'],
+                'event_key' => $index % 5 === 0 ? 'cleaning_completed' : 'cleaning_created',
+                'occurred_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InspectionTask::class,
+            function (int $index) use ($cleaningTaskRows, $checkOutRows): array {
+                $task = $this->pick($cleaningTaskRows, $index);
+
+                return [
+                    'booking_id' => $task['booking_id'],
+                    'booking_check_out_id' => $this->pick($checkOutRows, $index)['id'],
+                    'cleaning_task_id' => $task['id'],
+                    'host_user_id' => $task['host_user_id'],
+                    'property_id' => $task['property_id'],
+                    'room_id' => $task['room_id'],
+                    'sleeping_place_id' => $task['sleeping_place_id'],
+                    'inspection_type' => $index % 2 === 0 ? 'post_cleaning' : 'post_checkout',
+                    'inspection_scope' => 'sleeping_place',
+                    'status' => $index % 5 === 0 ? 'passed' : 'scheduled',
+                    'passed' => $index % 5 === 0,
+                ];
+            },
+        );
+
+        $inspectionRows = InspectionTask::query()
+            ->select(['id', 'booking_id', 'host_user_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (InspectionTask $task): array => [
+                'id' => $task->id,
+                'booking_id' => $task->booking_id,
+                'host_user_id' => $task->host_user_id,
+                'property_id' => $task->property_id,
+                'room_id' => $task->room_id,
+                'sleeping_place_id' => $task->sleeping_place_id,
+            ])
+            ->all();
+
+        $this->seedFactoryRows(
+            InspectionTaskItem::class,
+            function (int $index) use ($inspectionRows): array {
+                $itemKey = ['sleeping_place_clean', 'mattress_clean', 'bedding_ready', 'access_code_working', 'photos_uploaded'][$index % 5];
+
+                return [
+                    'inspection_task_id' => $this->pick($inspectionRows, $index)['id'],
+                    'item_key' => $itemKey,
+                    'label_key' => 'inspections.items.'.$itemKey,
+                    'status' => $index % 4 === 0 ? 'completed' : 'pending',
+                    'sort_order' => $index % 20,
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            InspectionTaskMedia::class,
+            function (int $index) use ($inspectionRows, $userIds): array {
+                $task = $this->pick($inspectionRows, $index);
+
+                return [
+                    'inspection_task_id' => $task['id'],
+                    'booking_id' => $task['booking_id'],
+                    'uploaded_by_user_id' => $this->pick($userIds, $index),
+                    'path' => sprintf('bulk-demo/canonical-inspections/%04d.jpg', $index + 1),
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            InspectionStatusLog::class,
+            fn (int $index): array => [
+                'inspection_task_id' => $this->pick($inspectionRows, $index)['id'],
+                'new_status' => $index % 5 === 0 ? 'passed' : 'scheduled',
+                'reason_key' => 'bulk_demo_seed',
+            ],
+        );
+
+        $this->seedFactoryRows(
+            InspectionEvent::class,
+            fn (int $index): array => [
+                'inspection_task_id' => $this->pick($inspectionRows, $index)['id'],
+                'event_key' => $index % 5 === 0 ? 'inspection_passed' : 'inspection_created',
+                'occurred_at' => now(),
+            ],
+        );
+
+        $this->seedFactoryRows(
+            PlaceReadinessCheck::class,
+            function (int $index) use ($bookingRows): array {
+                $booking = $this->pick($bookingRows, $index);
+
+                return [
+                    'booking_id' => $booking['id'],
+                    'next_booking_id' => $this->pick($bookingRows, $index + 1)['id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'host_user_id' => $booking['host_user_id'],
+                    'status' => $index % 5 === 0 ? 'ready' : 'checking',
+                    'check_reason' => $index % 2 === 0 ? 'before_check_in' : 'same_day_turnover',
+                    'target_check_in_at' => CarbonImmutable::now()->addDays($index % 30)->setTime(17, 0),
+                    'cleaning_completed' => $index % 5 === 0,
+                    'inspection_completed' => $index % 5 === 0,
+                    'repair_completed' => true,
+                    'inventory_ready' => true,
+                    'access_ready' => $index % 5 === 0,
+                    'calendar_available' => $index % 5 === 0,
+                    'same_day_turnover' => $index % 2 === 1,
                 ];
             },
         );
