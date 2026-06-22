@@ -39,13 +39,34 @@
                         @if($card['attachments'] !== [])
                             <div class="mt-2 space-y-1">
                                 @foreach($card['attachments'] as $attachment)
-                                    <a
-                                        href="{{ asset('storage/'.$attachment['path']) }}"
-                                        target="_blank"
-                                        class="block rounded-lg bg-white/20 px-2 py-1 text-xs underline"
-                                    >
-                                        {{ $attachment['original_name'] ?? __('messages.thread.attachment') }}
-                                    </a>
+                                    @if(($attachment['type'] ?? null) === 'image')
+                                        <a
+                                            href="{{ Storage::disk('public')->url($attachment['full_path'] ?? $attachment['path']) }}"
+                                            target="_blank"
+                                            class="block w-32 overflow-hidden rounded-lg bg-white/20"
+                                        >
+                                            <img
+                                                src="{{ Storage::disk('public')->url($attachment['thumbnail_path'] ?? $attachment['path']) }}"
+                                                alt="{{ $attachment['original_name'] ?? __('messages.thread.attachment') }}"
+                                                width="128"
+                                                height="96"
+                                                class="h-24 w-32 object-cover"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                            <span class="block truncate px-2 py-1 text-xs underline">
+                                                {{ $attachment['original_name'] ?? __('messages.thread.attachment') }}
+                                            </span>
+                                        </a>
+                                    @else
+                                        <a
+                                            href="{{ asset('storage/'.$attachment['path']) }}"
+                                            target="_blank"
+                                            class="block rounded-lg bg-white/20 px-2 py-1 text-xs underline"
+                                        >
+                                            {{ $attachment['original_name'] ?? __('messages.thread.attachment') }}
+                                        </a>
+                                    @endif
                                 @endforeach
                             </div>
                         @endif

@@ -166,8 +166,11 @@ class HostCleaningFeatureTest extends TestCase
             'after_photos_required' => true,
         ]);
         app(HostCleaningTaskService::class)->start($listing['host'], $task);
-        app(HostCleaningPhotoService::class)->addBeforePhoto($listing['host'], $task, UploadedFile::fake()->image('before.jpg'));
-        app(HostCleaningPhotoService::class)->addAfterPhoto($listing['host'], $task, UploadedFile::fake()->image('after.jpg'));
+        $beforePhoto = app(HostCleaningPhotoService::class)->addBeforePhoto($listing['host'], $task, UploadedFile::fake()->image('before.jpg'));
+        $afterPhoto = app(HostCleaningPhotoService::class)->addAfterPhoto($listing['host'], $task, UploadedFile::fake()->image('after.jpg'));
+
+        $this->assertStringEndsWith('.webp', $beforePhoto->path);
+        $this->assertStringEndsWith('.webp', $afterPhoto->path);
 
         foreach ($task->items()->pluck('item_key') as $itemKey) {
             app(HostCleaningChecklistService::class)->markItemCompleted($listing['host'], $task, $itemKey);

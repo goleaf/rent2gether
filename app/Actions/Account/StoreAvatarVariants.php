@@ -16,23 +16,15 @@ class StoreAvatarVariants
     public function handle(User $user, UploadedFile $avatar): array
     {
         $contents = $this->readUpload($avatar);
-        $extension = $this->extension($avatar);
         $baseName = (string) Str::uuid();
         $directory = 'avatars/'.$user->id;
-        $original = $avatar->storeAs($directory, $baseName.'-original.'.$extension, 'public');
         $source = $this->sourceImage($contents);
 
-        if ($original === false) {
-            throw new RuntimeException('The uploaded avatar could not be stored.');
-        }
-
-        $paths = [
-            'original' => $original,
-        ];
-
         if (! $source) {
+            $extension = $this->extension($avatar);
+
             return [
-                ...$paths,
+                'original' => $this->copyVariant($contents, $directory.'/'.$baseName.'-original.'.$extension),
                 'thumb' => $this->copyVariant($contents, $directory.'/'.$baseName.'-thumb.'.$extension),
                 'medium' => $this->copyVariant($contents, $directory.'/'.$baseName.'-medium.'.$extension),
             ];
@@ -40,9 +32,9 @@ class StoreAvatarVariants
 
         try {
             return [
-                ...$paths,
-                'thumb' => $this->variant($source, $directory.'/'.$baseName.'-thumb.jpg', 160),
-                'medium' => $this->variant($source, $directory.'/'.$baseName.'-medium.jpg', 480),
+                'original' => $this->variant($source, $directory.'/'.$baseName.'-original.webp', 1600, 86),
+                'thumb' => $this->variant($source, $directory.'/'.$baseName.'-thumb.webp', 160, 80),
+                'medium' => $this->variant($source, $directory.'/'.$baseName.'-medium.webp', 480, 84),
             ];
         } finally {
             $this->destroyImage($source);
@@ -78,7 +70,7 @@ class StoreAvatarVariants
 
     private function sourceImage(string $contents): mixed
     {
-        if (! function_exists('imagecreatefromstring') || ! function_exists('imagejpeg')) {
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagewebp')) {
             return false;
         }
 
@@ -94,7 +86,7 @@ class StoreAvatarVariants
         return $path;
     }
 
-    private function variant(mixed $image, string $path, int $size): string
+    private function variant(mixed $image, string $path, int $size, int $quality): string
     {
         $width = imagesx($image);
         $height = imagesy($image);
@@ -109,10 +101,14 @@ class StoreAvatarVariants
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
 
         try {
+            imagealphablending($target, false);
+            imagesavealpha($target, true);
+            $transparent = imagecolorallocatealpha($target, 0, 0, 0, 127);
+            imagefill($target, 0, 0, $transparent);
             imagecopyresampled($target, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
             ob_start();
-            $written = imagejpeg($target, null, 82);
+            $written = imagewebp($target, null, $quality);
             $contents = (string) ob_get_clean();
         } finally {
             $this->destroyImage($target);

@@ -48,7 +48,17 @@ class GuestHostMessagingTest extends TestCase
         $this->assertSame('Is this place available?', $message->body);
         $this->assertSame('en', $message->locale);
         $this->assertCount(1, $message->attachments);
+        $this->assertSame('image', $message->attachments[0]['type']);
+        $this->assertSame('image/webp', $message->attachments[0]['mime']);
+        $this->assertStringEndsWith('.webp', $message->attachments[0]['path']);
         Storage::disk('public')->assertExists($message->attachments[0]['path']);
+        Storage::disk('public')->assertExists($message->attachments[0]['thumbnail_path']);
+        Storage::disk('public')->assertExists($message->attachments[0]['full_path']);
+
+        Livewire::actingAs($guest)
+            ->test(ChatWindow::class, ['thread' => $thread])
+            ->assertSee(Storage::disk('public')->url($message->attachments[0]['thumbnail_path']), false)
+            ->assertSee(Storage::disk('public')->url($message->attachments[0]['full_path']), false);
 
         $this->assertDatabaseHas('notifications', [
             'user_id' => $host->id,

@@ -24,6 +24,8 @@ use App\Services\Reviews\ReviewService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -165,6 +167,27 @@ class CompletedStayReviewFlowTest extends TestCase
             ->assertSeeLivewire(CreateReview::class)
             ->assertSee(__('booking.review.host_title', [], 'ru'))
             ->assertSee(__('booking.review.fields.rule_following_rating', [], 'ru'));
+    }
+
+    public function test_guest_review_uploads_photos_as_webp(): void
+    {
+        Storage::fake('public');
+
+        [$booking, $guest] = $this->createStayBooking();
+
+        Livewire::actingAs($guest)
+            ->test(CreateReview::class, ['booking' => $booking])
+            ->set('photos', [
+                UploadedFile::fake()->image('sleeping-place.png', 1200, 900)->size(500),
+            ])
+            ->call('submit')
+            ->assertHasNoErrors();
+
+        $review = Review::query()->firstOrFail();
+
+        $this->assertCount(1, $review->photos_json);
+        $this->assertStringEndsWith('.webp', $review->photos_json[0]);
+        Storage::disk('public')->assertExists($review->photos_json[0]);
     }
 
     public function test_public_listing_reviews_and_profile_summary_show_visible_reviews(): void

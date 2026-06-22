@@ -69,10 +69,22 @@ class MediaUploadSystemTest extends TestCase
         $this->assertNotNull($media->thumb_path);
         $this->assertNotNull($media->mobile_path);
         $this->assertNotNull($media->full_path);
+        $this->assertSame('image/webp', $media->mime_type);
 
         Storage::disk('public')->assertExists($media->thumb_path);
         Storage::disk('public')->assertExists($media->mobile_path);
         Storage::disk('public')->assertExists($media->full_path);
+        $this->assertOptimizedWebp($media->thumb_path, 320);
+        $this->assertOptimizedWebp($media->mobile_path, 720);
+        $this->assertOptimizedWebp($media->full_path, 1600);
+
+        $this->assertDatabaseHas('property_photos', [
+            'property_id' => $property->id,
+            'media_item_id' => $media->id,
+            'path' => $media->path,
+            'thumbnail_path' => $media->thumb_path,
+            'status' => 'active',
+        ]);
 
         $component
             ->assertSee(Storage::disk('public')->url($media->thumb_path), false)
@@ -117,6 +129,11 @@ class MediaUploadSystemTest extends TestCase
         [$host, $property] = $this->hostProperty();
         $media = $this->storeMedia($property, $host, 'delete-me.jpg');
 
+        $this->assertDatabaseHas('property_photos', [
+            'property_id' => $property->id,
+            'media_item_id' => $media->id,
+        ]);
+
         Livewire::actingAs($host)
             ->test(ManageMedia::class, [
                 'ownerType' => 'property',
@@ -130,6 +147,41 @@ class MediaUploadSystemTest extends TestCase
         Storage::disk('public')->assertMissing($media->thumb_path);
         Storage::disk('public')->assertMissing($media->mobile_path);
         Storage::disk('public')->assertMissing($media->full_path);
+        $this->assertSame(0, $property->photos()->count());
+    }
+
+    public function test_listing_media_uploads_mirror_legacy_photo_tables_for_all_listing_levels(): void
+    {
+        [$host, $property] = $this->hostProperty();
+        $propertyMedia = $this->storeMedia($property, $host, 'property.jpg', 'gallery');
+
+        $room = Room::factory()->for($property)->create(['status' => RoomStatus::Draft->value]);
+        $roomMedia = $this->storeMedia($room, $host, 'room.jpg', 'room');
+
+        $sleepingPlace = SleepingPlace::factory()
+            ->for($property)
+            ->for($room)
+            ->create(['status' => 'draft']);
+        $sleepingPlaceMedia = $this->storeMedia($sleepingPlace, $host, 'place.jpg', 'exact_place');
+
+        $this->assertDatabaseHas('property_photos', [
+            'property_id' => $property->id,
+            'media_item_id' => $propertyMedia->id,
+            'path' => $propertyMedia->path,
+            'thumbnail_path' => $propertyMedia->thumb_path,
+        ]);
+        $this->assertDatabaseHas('room_photos', [
+            'room_id' => $room->id,
+            'media_item_id' => $roomMedia->id,
+            'path' => $roomMedia->path,
+            'thumbnail_path' => $roomMedia->thumb_path,
+        ]);
+        $this->assertDatabaseHas('sleeping_place_photos', [
+            'sleeping_place_id' => $sleepingPlace->id,
+            'media_item_id' => $sleepingPlaceMedia->id,
+            'path' => $sleepingPlaceMedia->path,
+            'thumbnail_path' => $sleepingPlaceMedia->thumb_path,
+        ]);
     }
 
     public function test_deleting_sleeping_place_media_removes_photo_mirror_row(): void
@@ -289,5 +341,16 @@ class MediaUploadSystemTest extends TestCase
             collection: $collection,
             captions: ['en' => $filename],
         );
+    }
+
+    private function assertOptimizedWebp(string $path, int $maxSide): void
+    {
+        $this->assertStringEndsWith('.webp', $path);
+
+        $image = getimagesizefromstring(Storage::disk('public')->get($path));
+
+        $this->assertIsArray($image);
+        $this->assertSame('image/webp', $image['mime'] ?? null);
+        $this->assertLessThanOrEqual($maxSide, max((int) $image[0], (int) $image[1]));
     }
 }

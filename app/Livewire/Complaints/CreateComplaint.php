@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Complaints;
 
+use App\Actions\Media\StoreOptimizedImageAction;
 use App\Enums\ComplaintType;
 use App\Models\Booking;
 use App\Models\User;
@@ -49,7 +50,7 @@ class CreateComplaint extends Component
         $this->reporterRole = $this->isHost($booking, $user) ? 'host' : 'guest';
     }
 
-    public function submit(ComplaintService $complaints): void
+    public function submit(ComplaintService $complaints, StoreOptimizedImageAction $images): void
     {
         $allowedTypes = array_keys($this->complaintTypes());
 
@@ -65,7 +66,7 @@ class CreateComplaint extends Component
         ], [], app('translator')->get('booking.complaint.validation_attributes'));
 
         $paths = collect($validated['media'] ?? [])
-            ->map(fn (TemporaryUploadedFile $file): string => $file->store('complaints', 'public'))
+            ->map(fn (TemporaryUploadedFile $file): string => $images->handle($file, 'complaints')['mobile_path'])
             ->values()
             ->all();
 

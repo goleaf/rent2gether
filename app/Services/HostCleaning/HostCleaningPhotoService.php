@@ -2,6 +2,7 @@
 
 namespace App\Services\HostCleaning;
 
+use App\Actions\Media\StoreOptimizedImageAction;
 use App\Models\HostCleaningTask;
 use App\Models\HostCleaningTaskPhoto;
 use App\Models\User;
@@ -10,6 +11,8 @@ use Illuminate\Http\UploadedFile;
 
 class HostCleaningPhotoService
 {
+    public function __construct(private readonly StoreOptimizedImageAction $images) {}
+
     public function addBeforePhoto(User $user, HostCleaningTask $task, UploadedFile $file): HostCleaningTaskPhoto
     {
         return $this->addPhoto($user, $task, $file, 'before');
@@ -42,7 +45,7 @@ class HostCleaningPhotoService
     {
         $this->authorize($user, $task);
 
-        $path = $file->store('cleaning/'.$task->id, 'public');
+        $path = $this->images->handle($file, 'cleaning/'.$task->id.'/'.$type)['mobile_path'];
         $photo = HostCleaningTaskPhoto::query()->create([
             'host_cleaning_task_id' => $task->id,
             'uploaded_by_user_id' => $user->id,

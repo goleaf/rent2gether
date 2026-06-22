@@ -3,6 +3,10 @@
 namespace App\Actions\Media;
 
 use App\Models\MediaItem;
+use App\Models\Property;
+use App\Models\PropertyPhoto;
+use App\Models\Room;
+use App\Models\RoomPhoto;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlacePhoto;
 use App\Models\User;
@@ -80,26 +84,40 @@ class StoreMediaItemAction
             ]);
         }
 
-        $this->syncSleepingPlacePhoto($owner, $mediaItem, $user, $cleanCaptions);
+        $this->syncListingPhoto($owner, $mediaItem, $user, $cleanCaptions);
 
         return $mediaItem->load('translations');
     }
 
     /**
-     * Mirrors uploaded sleeping-place media into the legacy listing photo table used by readiness checks.
+     * Mirrors uploaded listing media into legacy photo tables used by readiness checks.
      *
      * @param  array<string, string>  $captions
      */
-    private function syncSleepingPlacePhoto(Model $owner, MediaItem $mediaItem, User $user, array $captions): void
+    private function syncListingPhoto(Model $owner, MediaItem $mediaItem, User $user, array $captions): void
     {
-        if (! $owner instanceof SleepingPlace) {
+        $photoModel = match (true) {
+            $owner instanceof Property => PropertyPhoto::class,
+            $owner instanceof Room => RoomPhoto::class,
+            $owner instanceof SleepingPlace => SleepingPlacePhoto::class,
+            default => null,
+        };
+
+        $ownerColumn = match (true) {
+            $owner instanceof Property => 'property_id',
+            $owner instanceof Room => 'room_id',
+            $owner instanceof SleepingPlace => 'sleeping_place_id',
+            default => null,
+        };
+
+        if ($photoModel === null || $ownerColumn === null) {
             return;
         }
 
-        SleepingPlacePhoto::query()->updateOrCreate(
+        $photoModel::query()->updateOrCreate(
             ['media_item_id' => $mediaItem->id],
             [
-                'sleeping_place_id' => $owner->id,
+                $ownerColumn => $owner->id,
                 'uploaded_by_user_id' => $user->id,
                 'disk' => $mediaItem->disk ?: 'public',
                 'path' => $mediaItem->path,

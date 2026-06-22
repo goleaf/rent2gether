@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Messages;
 
+use App\Actions\Media\StoreOptimizedImageAction;
 use App\Models\MessageThread;
 use App\Services\Messaging\MessageService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -48,7 +49,7 @@ class ChatWindow extends Component
         $this->body = $templates[$key];
     }
 
-    public function send(): void
+    public function send(StoreOptimizedImageAction $images): void
     {
         $validated = $this->validate($this->rules(), attributes: $this->validationAttributes());
 
@@ -57,7 +58,7 @@ class ChatWindow extends Component
                 $this->thread(),
                 auth()->user(),
                 (string) ($validated['body'] ?? ''),
-                $this->storedAttachments(),
+                $this->storedAttachments($images),
                 $this->important,
             );
         } catch (ValidationException $exception) {
@@ -214,13 +215,30 @@ class ChatWindow extends Component
     /**
      * @return list<array<string, mixed>>
      */
-    private function storedAttachments(): array
+    private function storedAttachments(StoreOptimizedImageAction $images): array
     {
         $attachments = [];
 
         foreach ($this->uploads as $upload) {
-            $path = $upload->store("messages/{$this->threadId}", 'public');
             $mime = $upload->getMimeType() ?: 'application/octet-stream';
+
+            if (str_starts_with($mime, 'image/')) {
+                $paths = $images->handle($upload, "messages/{$this->threadId}");
+
+                $attachments[] = [
+                    'path' => $paths['mobile_path'],
+                    'thumbnail_path' => $paths['thumb_path'],
+                    'full_path' => $paths['full_path'],
+                    'original_name' => $upload->getClientOriginalName(),
+                    'mime' => $paths['mime'] ?: 'image/webp',
+                    'size' => $paths['size'],
+                    'type' => 'image',
+                ];
+
+                continue;
+            }
+
+            $path = $upload->store("messages/{$this->threadId}", 'public');
 
             $attachments[] = [
                 'path' => $path,

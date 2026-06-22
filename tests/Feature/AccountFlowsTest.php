@@ -160,8 +160,9 @@ class AccountFlowsTest extends TestCase
             'account_role' => UserSetting::ROLE_BOTH,
         ]);
         $this->assertNotNull($profile->avatar_path);
+        $this->assertStringEndsWith('-medium.webp', $profile->avatar_path);
         Storage::disk('public')->assertExists($profile->avatar_path);
-        Storage::disk('public')->assertExists(str_replace('-medium.jpg', '-thumb.jpg', $profile->avatar_path));
+        Storage::disk('public')->assertExists(str_replace('-medium.webp', '-thumb.webp', $profile->avatar_path));
 
         Livewire::actingAs($user->fresh())
             ->test(ProfileSetupPage::class)

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Reviews;
 
+use App\Actions\Media\StoreOptimizedImageAction;
 use App\Enums\ReviewType;
 use App\Models\Booking;
 use App\Models\User;
@@ -77,7 +78,7 @@ class CreateReview extends Component
         $this->reviewType = $this->resolveReviewType($booking, $user, $type);
     }
 
-    public function submit(ReviewService $reviews): void
+    public function submit(ReviewService $reviews, StoreOptimizedImageAction $images): void
     {
         $user = auth()->user();
 
@@ -115,7 +116,7 @@ class CreateReview extends Component
         $validated = $this->validate($this->guestRules(), [], $this->validationAttributes());
 
         $photoPaths = collect($validated['photos'] ?? [])
-            ->map(fn (TemporaryUploadedFile $photo): string => $photo->store('review-photos', 'public'))
+            ->map(fn (TemporaryUploadedFile $photo): string => $images->handle($photo, 'review-photos')['mobile_path'])
             ->values()
             ->all();
 

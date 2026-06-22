@@ -14,12 +14,11 @@ class ImageVariantGenerator
     public function generate(UploadedFile $file, string $directory, string $baseName, string $disk = 'public'): array
     {
         $contents = $this->readUpload($file);
-        [$width, $height, $mime] = $this->imageMetadata($contents, $file);
-        $size = $file->getSize();
+        [$width, $height, $sourceMime] = $this->imageMetadata($contents, $file);
         $source = $this->hasMemoryForImageDecode($width, $height, strlen($contents)) ? $this->sourceImage($contents) : false;
 
         if (! $source) {
-            $extension = $this->extension($file, $mime);
+            $extension = $this->extension($file, $sourceMime);
             $path = $directory.'/'.$baseName.'-full.'.$extension;
             $this->put($disk, $path, $contents);
 
@@ -30,19 +29,19 @@ class ImageVariantGenerator
                 'full_path' => $path,
                 'width' => $width,
                 'height' => $height,
-                'mime' => $mime,
-                'size' => $size,
+                'mime' => $sourceMime,
+                'size' => $file->getSize(),
             ];
         }
 
-        $fullPath = $directory.'/'.$baseName.'-full.jpg';
-        $mobilePath = $directory.'/'.$baseName.'-mobile.jpg';
-        $thumbPath = $directory.'/'.$baseName.'-thumb.jpg';
+        $fullPath = $directory.'/'.$baseName.'-full.webp';
+        $mobilePath = $directory.'/'.$baseName.'-mobile.webp';
+        $thumbPath = $directory.'/'.$baseName.'-thumb.webp';
 
         try {
-            $this->writeJpegVariant($source, $contents, $mime, $width, $height, $fullPath, 1600, 84, $disk);
-            $this->writeJpegVariant($source, $contents, $mime, $width, $height, $mobilePath, 720, 80, $disk);
-            $this->writeJpegVariant($source, $contents, $mime, $width, $height, $thumbPath, 320, 76, $disk);
+            $this->writeWebpVariant($source, $contents, $fullPath, 1600, 86, $disk);
+            $this->writeWebpVariant($source, $contents, $mobilePath, 720, 82, $disk);
+            $this->writeWebpVariant($source, $contents, $thumbPath, 320, 78, $disk);
         } finally {
             $this->destroyImage($source);
         }
@@ -54,8 +53,8 @@ class ImageVariantGenerator
             'full_path' => $fullPath,
             'width' => $width,
             'height' => $height,
-            'mime' => $mime,
-            'size' => $size,
+            'mime' => 'image/webp',
+            'size' => $this->storedSize($disk, $fullPath, $file->getSize()),
         ];
     }
 
@@ -96,21 +95,15 @@ class ImageVariantGenerator
 
     private function sourceImage(string $contents): mixed
     {
-        if (! function_exists('imagecreatefromstring') || ! function_exists('imagejpeg')) {
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagewebp')) {
             return false;
         }
 
         return @imagecreatefromstring($contents);
     }
 
-    private function writeJpegVariant(mixed $source, string $originalContents, ?string $mime, ?int $width, ?int $height, string $path, int $maxSize, int $quality, string $disk): void
+    private function writeWebpVariant(mixed $source, string $originalContents, string $path, int $maxSize, int $quality, string $disk): void
     {
-        if ($this->canCopyOriginalJpeg($mime, $width, $height, $maxSize)) {
-            $this->put($disk, $path, $originalContents);
-
-            return;
-        }
-
         $sourceWidth = imagesx($source);
         $sourceHeight = imagesy($source);
         $scale = min($maxSize / max(1, $sourceWidth), $maxSize / max(1, $sourceHeight), 1);
@@ -126,12 +119,14 @@ class ImageVariantGenerator
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
 
         try {
-            $white = imagecolorallocate($target, 255, 255, 255);
-            imagefill($target, 0, 0, $white);
+            imagealphablending($target, false);
+            imagesavealpha($target, true);
+            $transparent = imagecolorallocatealpha($target, 0, 0, 0, 127);
+            imagefill($target, 0, 0, $transparent);
             imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
 
             ob_start();
-            $written = imagejpeg($target, null, $quality);
+            $written = imagewebp($target, null, $quality);
             $contents = (string) ob_get_clean();
         } finally {
             $this->destroyImage($target);
@@ -142,15 +137,6 @@ class ImageVariantGenerator
         }
 
         $this->put($disk, $path, $contents);
-    }
-
-    private function canCopyOriginalJpeg(?string $mime, ?int $width, ?int $height, int $maxSize): bool
-    {
-        return $mime === 'image/jpeg'
-            && (int) $width > 0
-            && (int) $height > 0
-            && $width <= $maxSize
-            && $height <= $maxSize;
     }
 
     private function extension(UploadedFile $file, ?string $mime): string
@@ -167,6 +153,15 @@ class ImageVariantGenerator
     {
         if (Storage::disk($disk)->put($path, $contents) === false) {
             throw new RuntimeException('The uploaded image could not be stored.');
+        }
+    }
+
+    private function storedSize(string $disk, string $path, ?int $fallback): ?int
+    {
+        try {
+            return Storage::disk($disk)->size($path);
+        } catch (\Throwable) {
+            return $fallback;
         }
     }
 

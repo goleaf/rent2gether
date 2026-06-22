@@ -227,6 +227,19 @@ use App\Models\MessageTemplate;
 use App\Models\MessageTemplateUsage;
 use App\Models\MessageThread;
 use App\Models\Notification;
+use App\Models\NotificationAction;
+use App\Models\NotificationCategoryPreference;
+use App\Models\NotificationDelivery;
+use App\Models\NotificationDeliveryAttempt;
+use App\Models\NotificationDeviceToken;
+use App\Models\NotificationDigest;
+use App\Models\NotificationDigestItem;
+use App\Models\NotificationEvent;
+use App\Models\NotificationPreference;
+use App\Models\NotificationReminder;
+use App\Models\NotificationStatusLog;
+use App\Models\NotificationSystemEvent;
+use App\Models\NotificationTemplate;
 use App\Models\PaymentReceipt;
 use App\Models\PaymentRecord;
 use App\Models\Payout;
@@ -303,6 +316,7 @@ use App\Services\Inventory\InventoryCategoryService;
 use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\DemoMediaFileService;
 use App\Services\Messaging\MessageTemplateService;
+use App\Services\Notifications\NotificationTemplateService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
@@ -5361,6 +5375,7 @@ class BulkMarketplaceSeeder extends Seeder
     {
         $userIds = $this->ids(User::class);
         $propertyIds = $this->ids(Property::class);
+        $bookingRows = $this->bookingRows();
 
         $mediaItems = MediaItem::factory()
             ->count($this->missingFor(MediaItem::class))
@@ -5388,21 +5403,285 @@ class BulkMarketplaceSeeder extends Seeder
         $this->seedMediaItemTranslations();
         $this->ensureBulkMediaFiles();
 
-        Notification::factory()
-            ->count($this->missingFor(Notification::class))
-            ->sequence(function (Sequence $sequence) use ($userIds): array {
-                $userId = $this->pick($userIds, $sequence->index);
+        app(NotificationTemplateService::class)->seedDefaultTemplates();
+
+        $this->seedFactoryRows(
+            NotificationTemplate::class,
+            fn (int $index): array => [
+                'template_key' => sprintf('bulk_notification_%06d', $index + 1),
+                'notification_category' => ['booking', 'payment', 'message', 'system'][$index % 4],
+                'title_translation_key' => 'notifications.events.booking_started',
+                'body_translation_key' => 'notifications.events.booking_started',
+                'default_priority' => ['low', 'normal', 'high'][$index % 3],
+                'default_action_type' => ['open_booking', 'open_payment', 'open_conversation'][$index % 3],
+                'supports_in_app' => true,
+                'supports_email' => $index % 3 === 0,
+                'active' => true,
+            ],
+        );
+
+        $templateRows = NotificationTemplate::query()
+            ->select(['id', 'template_key', 'notification_category', 'default_priority', 'default_action_type', 'title_translation_key', 'body_translation_key'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (NotificationTemplate $template): array => $template->toArray())
+            ->all();
+
+        $this->seedFactoryRows(
+            NotificationEvent::class,
+            function (int $index) use ($bookingRows, $templateRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $template = $this->pick($templateRows, $index);
 
                 return [
+                    'event_number' => sprintf('NEVT-%s-%06d', now()->format('Y'), $index + 1),
+                    'event_key' => $template['template_key'],
+                    'event_type' => 'system',
+                    'notification_category' => $template['notification_category'],
+                    'source_type' => 'booking',
+                    'source_id' => $booking['id'],
+                    'booking_id' => $booking['id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'created_by_user_id' => $booking['host_user_id'],
+                    'payload_json' => ['reference' => $booking['booking_number'] ?? $booking['id']],
+                ];
+            },
+        );
+
+        $eventRows = NotificationEvent::query()
+            ->select(['id', 'event_key', 'notification_category', 'source_type', 'source_id', 'booking_id', 'property_id', 'room_id', 'sleeping_place_id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (NotificationEvent $event): array => $event->toArray())
+            ->all();
+
+        Notification::factory()
+            ->count($this->missingFor(Notification::class))
+            ->sequence(function (Sequence $sequence) use ($userIds, $bookingRows, $templateRows, $eventRows): array {
+                $userId = $this->pick($userIds, $sequence->index);
+                $booking = $this->pick($bookingRows, $sequence->index);
+                $template = $this->pick($templateRows, $sequence->index);
+                $event = $this->pick($eventRows, $sequence->index);
+                $read = $sequence->index % 4 === 0;
+
+                return [
+                    'notification_event_id' => $event['id'],
+                    'notification_template_id' => $template['id'],
                     'user_id' => $userId,
+                    'recipient_user_id' => $userId,
+                    'recipient_type' => $sequence->index % 2 === 0 ? 'guest' : 'host',
+                    'notification_category' => $template['notification_category'],
+                    'notification_type' => $sequence->index % 5 === 0 ? 'reminder' : 'info',
+                    'priority' => $template['default_priority'],
                     'notifiable_id' => $userId,
                     'notifiable_type' => User::class,
-                    'data' => ['params' => ['reference' => sprintf('RTG-BULK-%04d', $sequence->index + 1)]],
-                    'status' => $sequence->index % 4 === 0 ? 'read' : 'unread',
-                    'read_at' => $sequence->index % 4 === 0 ? now() : null,
+                    'data' => [
+                        'params' => ['reference' => sprintf('RTG-BULK-%04d', $sequence->index + 1)],
+                        'payload' => ['safe' => true],
+                    ],
+                    'title_key' => $template['title_translation_key'],
+                    'body_key' => $template['body_translation_key'],
+                    'title_translation_key' => $template['title_translation_key'],
+                    'body_translation_key' => $template['body_translation_key'],
+                    'translation_params_json' => ['reference' => sprintf('RTG-BULK-%04d', $sequence->index + 1)],
+                    'source_type' => 'booking',
+                    'source_id' => $booking['id'],
+                    'booking_id' => $booking['id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'action_type' => $template['default_action_type'],
+                    'action_label_translation_key' => $template['default_action_type'] ? 'notifications.actions.'.$template['default_action_type'] : null,
+                    'status' => $read ? 'read' : 'created',
+                    'read_at' => $read ? now() : null,
+                    'is_read' => $read,
+                    'is_urgent' => in_array($template['default_priority'], ['urgent', 'critical'], true),
+                    'is_critical' => $template['default_priority'] === 'critical',
                 ];
             })
             ->create();
+
+        $notificationRows = Notification::query()
+            ->select(['id', 'recipient_user_id', 'notification_category', 'priority', 'source_type', 'source_id', 'booking_id', 'property_id', 'room_id', 'sleeping_place_id', 'action_type'])
+            ->orderBy('created_at')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (Notification $notification): array => $notification->toArray())
+            ->all();
+
+        $this->seedFactoryRows(
+            NotificationDelivery::class,
+            fn (int $index): array => [
+                'notification_id' => $this->pick($notificationRows, $index)['id'],
+                'recipient_user_id' => $this->pick($notificationRows, $index)['recipient_user_id'],
+                'channel' => ['in_app', 'email', 'sms_future', 'push_future'][$index % 4],
+                'status' => $index % 4 >= 2 ? 'ready' : 'sent',
+                'scheduled_at' => now()->subMinutes($index % 120),
+                'sent_at' => $index % 4 >= 2 ? null : now()->subMinutes($index % 60),
+                'attempt_count' => $index % 4 >= 2 ? 0 : 1,
+            ],
+        );
+
+        $deliveryRows = NotificationDelivery::query()
+            ->select(['id', 'notification_id', 'channel', 'status', 'provider'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (NotificationDelivery $delivery): array => $delivery->toArray())
+            ->all();
+
+        $this->seedFactoryRows(
+            NotificationDeliveryAttempt::class,
+            fn (int $index): array => [
+                'notification_delivery_id' => $this->pick($deliveryRows, $index)['id'],
+                'notification_id' => $this->pick($deliveryRows, $index)['notification_id'],
+                'channel' => $this->pick($deliveryRows, $index)['channel'],
+                'attempt_number' => 1,
+                'status' => $this->pick($deliveryRows, $index)['status'],
+                'attempted_at' => now()->subMinutes($index % 60),
+            ],
+        );
+
+        $this->seedMissingUserOwnedRows(
+            NotificationPreference::class,
+            $userIds,
+            fn (int $userId, int $index): NotificationPreference => NotificationPreference::factory()->create([
+                'user_id' => $userId,
+                'language_locale' => $index % 2 === 0 ? 'en' : 'ru',
+                'digest_type' => ['none', 'daily', 'weekly', 'important_only'][$index % 4],
+            ]),
+        );
+
+        $this->seedFactoryRows(
+            NotificationCategoryPreference::class,
+            fn (int $index): array => [
+                'user_id' => $this->pick($userIds, $index),
+                'notification_category' => ['booking', 'payment', 'message', 'deposit'][$index % 4],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            NotificationReminder::class,
+            function (int $index) use ($userIds, $bookingRows, $templateRows): array {
+                $booking = $this->pick($bookingRows, $index);
+                $template = $this->pick($templateRows, $index);
+
+                return [
+                    'reminder_number' => sprintf('REM-%s-%06d', now()->format('Y'), $index + 1),
+                    'user_id' => $this->pick($userIds, $index),
+                    'recipient_type' => $index % 2 === 0 ? 'guest' : 'host',
+                    'reminder_type' => ['payment_deadline', 'check_in_soon', 'checkout_soon', 'deposit_guest_response_due'][$index % 4],
+                    'status' => ['scheduled', 'due', 'processed', 'cancelled'][$index % 4],
+                    'priority' => $template['default_priority'],
+                    'source_type' => 'booking',
+                    'source_id' => $booking['id'],
+                    'booking_id' => $booking['id'],
+                    'property_id' => $booking['property_id'],
+                    'room_id' => $booking['room_id'],
+                    'sleeping_place_id' => $booking['sleeping_place_id'],
+                    'notification_template_id' => $template['id'],
+                    'scheduled_for' => now()->addHours($index % 72),
+                    'due_at' => $index % 4 === 1 ? now() : null,
+                    'processed_at' => $index % 4 === 2 ? now() : null,
+                    'cancelled_at' => $index % 4 === 3 ? now() : null,
+                    'translation_params_json' => ['reference' => sprintf('RTG-BULK-%04d', $index + 1)],
+                    'action_type' => $template['default_action_type'],
+                ];
+            },
+        );
+
+        $this->seedFactoryRows(
+            NotificationAction::class,
+            fn (int $index): array => [
+                'notification_id' => $this->pick($notificationRows, $index)['id'],
+                'user_id' => $this->pick($notificationRows, $index)['recipient_user_id'],
+                'action_type' => $this->pick($notificationRows, $index)['action_type'] ?: 'open_booking',
+                'status' => ['available', 'performed', 'expired', 'cancelled'][$index % 4],
+                'source_type' => $this->pick($notificationRows, $index)['source_type'],
+                'source_id' => $this->pick($notificationRows, $index)['source_id'],
+                'performed_at' => $index % 4 === 1 ? now() : null,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            NotificationDigest::class,
+            fn (int $index): array => [
+                'digest_number' => sprintf('NDG-%s-%06d', now()->format('Y'), $index + 1),
+                'user_id' => $this->pick($userIds, $index),
+                'digest_type' => ['daily', 'weekly', 'important_only'][$index % 3],
+                'status' => ['created', 'ready', 'sent', 'read'][$index % 4],
+                'period_start' => now()->subDays(1 + ($index % 7)),
+                'period_end' => now()->subDays($index % 3),
+                'notification_count' => 1,
+                'urgent_count' => $index % 5 === 0 ? 1 : 0,
+                'important_count' => $index % 3 === 0 ? 1 : 0,
+            ],
+        );
+
+        $digestRows = NotificationDigest::query()
+            ->select(['id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->pluck('id')
+            ->all();
+
+        $this->seedFactoryRows(
+            NotificationDigestItem::class,
+            fn (int $index): array => [
+                'notification_digest_id' => $this->pick($digestRows, $index),
+                'notification_id' => $this->pick($notificationRows, $index)['id'],
+                'sort_order' => $index % 20,
+            ],
+        );
+
+        $this->seedFactoryRows(
+            NotificationDeviceToken::class,
+            fn (int $index): array => [
+                'user_id' => $this->pick($userIds, $index),
+                'platform' => ['web_future', 'ios_future', 'android_future'][$index % 3],
+            ],
+        );
+
+        $reminderRows = NotificationReminder::query()
+            ->select(['id'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->pluck('id')
+            ->all();
+
+        $this->seedFactoryRows(
+            NotificationStatusLog::class,
+            fn (int $index): array => [
+                'notification_id' => $this->pick($notificationRows, $index)['id'],
+                'notification_delivery_id' => $this->pick($deliveryRows, $index)['id'],
+                'notification_reminder_id' => $this->pick($reminderRows, $index),
+                'user_id' => $this->pick($userIds, $index),
+                'old_status' => null,
+                'new_status' => ['created', 'sent', 'read', 'dismissed'][$index % 4],
+                'context_json' => ['seeded' => true],
+            ],
+        );
+
+        $this->seedFactoryRows(
+            NotificationSystemEvent::class,
+            fn (int $index): array => [
+                'event_key' => ['notification_created', 'notification_sent', 'notification_read', 'digest_created'][$index % 4],
+                'event_type' => 'system',
+                'notification_id' => $this->pick($notificationRows, $index)['id'],
+                'notification_event_id' => $this->pick($eventRows, $index)['id'],
+                'notification_delivery_id' => $this->pick($deliveryRows, $index)['id'],
+                'notification_reminder_id' => $this->pick($reminderRows, $index),
+                'source_type' => $this->pick($notificationRows, $index)['source_type'],
+                'source_id' => $this->pick($notificationRows, $index)['source_id'],
+                'user_id' => $this->pick($userIds, $index),
+                'occurred_at' => now()->subMinutes($index % 120),
+                'context_json' => ['seeded' => true],
+            ],
+        );
     }
 
     private function ensureBulkMediaFiles(): void

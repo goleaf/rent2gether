@@ -116,6 +116,7 @@ class CheckInOutFlowTest extends TestCase
         $this->assertTrue((bool) $record->has_issue);
         $this->assertSame('The key code did not open the front door.', $record->problem_description);
         $this->assertCount(1, $record->problem_media);
+        $this->assertStringEndsWith('.webp', $record->problem_media[0]);
 
         Storage::disk('public')->assertExists($record->problem_media[0]);
     }

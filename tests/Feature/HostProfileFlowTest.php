@@ -61,6 +61,7 @@ class HostProfileFlowTest extends TestCase
         $this->assertSame('moderate', $profile->default_cancellation_policy);
         $this->assertSame('small', $profile->default_deposit_setting);
         $this->assertNotNull($profile->avatar_path);
+        $this->assertStringEndsWith('-medium.webp', $profile->avatar_path);
         Storage::disk('public')->assertExists($profile->avatar_path);
 
         $this->assertDatabaseHas('user_settings', [

@@ -27,6 +27,7 @@ class NotificationsPage extends Component
             ->update([
                 'read_at' => now(),
                 'status' => 'read',
+                'is_read' => true,
             ]);
 
         unset($this->items, $this->unreadCount);

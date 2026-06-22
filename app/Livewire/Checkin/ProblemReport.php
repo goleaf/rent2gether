@@ -3,6 +3,7 @@
 namespace App\Livewire\Checkin;
 
 use App\Actions\Bookings\ReportCheckInProblem;
+use App\Actions\Media\StoreOptimizedImageAction;
 use App\Livewire\Trips\Concerns\LoadsTripBookings;
 use App\Models\Booking;
 use App\Models\User;
@@ -37,7 +38,7 @@ class ProblemReport extends Component
         $this->bookingId = $booking->id;
     }
 
-    public function submit(ReportCheckInProblem $reportProblem): void
+    public function submit(ReportCheckInProblem $reportProblem, StoreOptimizedImageAction $images): void
     {
         $validated = $this->validate([
             'problemDescription' => ['required', 'string', 'min:10', 'max:2000'],
@@ -46,7 +47,7 @@ class ProblemReport extends Component
         ], [], app('translator')->get('booking.problem_report.validation_attributes'));
 
         $paths = collect($validated['photos'] ?? [])
-            ->map(fn (TemporaryUploadedFile $photo): string => $photo->store('checkin-problems', 'public'))
+            ->map(fn (TemporaryUploadedFile $photo): string => $images->handle($photo, 'checkin-problems')['mobile_path'])
             ->values()
             ->all();
 

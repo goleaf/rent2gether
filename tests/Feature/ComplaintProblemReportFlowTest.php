@@ -128,7 +128,13 @@ class ComplaintProblemReportFlowTest extends TestCase
         $complaint = Complaint::query()->firstOrFail();
 
         $this->assertCount(1, $complaint->media);
+        $this->assertStringEndsWith('.webp', $complaint->media[0]);
         Storage::disk('public')->assertExists($complaint->media[0]);
+
+        $this->actingAs($guest)
+            ->get(route('complaints.show', ['locale' => 'en', 'complaint' => $complaint]))
+            ->assertOk()
+            ->assertSee(Storage::disk('public')->url($complaint->media[0]), false);
     }
 
     public function test_complaint_detail_shows_status_timeline(): void

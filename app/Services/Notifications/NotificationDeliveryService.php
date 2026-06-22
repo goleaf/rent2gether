@@ -48,14 +48,6 @@ class NotificationDeliveryService
             return null;
         }
 
-        $enabled = $this->preferences->isChannelEnabled($recipient, $notification->notification_category, 'in_app', $notification->priority)
-            || $notification->is_critical
-            || $notification->priority === 'critical';
-
-        if (! $enabled) {
-            return $this->delivery($notification, 'in_app', 'skipped_by_preferences');
-        }
-
         if ($this->quietHours->shouldDelayForQuietHours($recipient, $notification)) {
             $notification->forceFill([
                 'status' => 'scheduled',
@@ -63,6 +55,14 @@ class NotificationDeliveryService
             ])->save();
 
             return $this->delivery($notification, 'in_app', 'skipped_by_quiet_hours');
+        }
+
+        $enabled = $this->preferences->isChannelEnabled($recipient, $notification->notification_category, 'in_app', $notification->priority)
+            || $notification->is_critical
+            || $notification->priority === 'critical';
+
+        if (! $enabled) {
+            return $this->delivery($notification, 'in_app', 'skipped_by_preferences');
         }
 
         return $this->delivery($notification, 'in_app', 'ready');

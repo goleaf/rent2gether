@@ -3,6 +3,9 @@
 namespace App\Actions\Media;
 
 use App\Models\MediaItem;
+use App\Models\PropertyPhoto;
+use App\Models\RoomPhoto;
+use App\Models\SleepingPlacePhoto;
 
 class ReorderMediaItemsAction
 {
@@ -37,5 +40,15 @@ class ReorderMediaItemsAction
 
         $mediaItem->update(['sort_order' => $swap->sort_order]);
         $swap->update(['sort_order' => $currentOrder]);
+
+        foreach ([PropertyPhoto::class, RoomPhoto::class, SleepingPlacePhoto::class] as $photoModel) {
+            $photoModel::query()
+                ->where('media_item_id', $mediaItem->id)
+                ->update(['sort_order' => $mediaItem->sort_order]);
+
+            $photoModel::query()
+                ->where('media_item_id', $swap->id)
+                ->update(['sort_order' => $swap->sort_order]);
+        }
     }
 }
