@@ -22,6 +22,7 @@ use App\Models\HostReputationSnapshot;
 use App\Models\Property;
 use App\Models\RatingAggregate;
 use App\Models\RatingEvent;
+use App\Models\Review;
 use App\Models\ReviewMedia;
 use App\Models\ReviewPolicy;
 use App\Models\ReviewRequest;
@@ -33,6 +34,7 @@ use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceRatingSnapshot;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Services\Reviews\RatingAggregateService;
 use App\Services\Reviews\RatingEventService;
 use App\Services\Reviews\RatingImpactService;
 use App\Services\Reviews\ReviewEligibilityService;
@@ -190,6 +192,46 @@ class ReviewsRatingsReputationPointTwentySixTest extends TestCase
         $this->assertArrayHasKey('roommate_summary', $public);
         $this->assertArrayNotHasKey('target_user_id', $public);
         $this->assertArrayNotHasKey('private_comment', $public);
+    }
+
+    public function test_rating_aggregate_recalculates_multiple_published_reviews_for_same_sleeping_place(): void
+    {
+        [$booking, $guest, $host, $place] = $this->createCompletedStay();
+
+        $firstReview = $this->createPublishedPlaceReview($booking, $guest, $host, $place, 4);
+
+        $secondGuest = User::factory()->create(['name' => 'Point 26 Second Guest']);
+        $secondBooking = Booking::factory()->create([
+            'bed_id' => null,
+            'guest_id' => $secondGuest->id,
+            'guest_user_id' => $secondGuest->id,
+            'host_id' => $host->id,
+            'host_user_id' => $host->id,
+            'property_id' => $place->property_id,
+            'room_id' => $place->room_id,
+            'sleeping_place_id' => $place->id,
+            'status' => BookingStatus::Completed,
+            'payment_status' => PaymentStatus::Paid,
+            'check_in' => '2026-05-10',
+            'check_out' => '2026-05-12',
+            'check_in_date' => '2026-05-10',
+            'check_out_date' => '2026-05-12',
+            'checked_in_at' => '2026-05-10 15:00:00',
+            'checked_out_at' => '2026-05-12 11:00:00',
+            'review_deadline_at' => '2026-05-26 12:00:00',
+        ]);
+        $secondReview = $this->createPublishedPlaceReview($secondBooking, $secondGuest, $host, $place, 2);
+
+        $aggregate = app(RatingAggregateService::class)->recalculateMetric('sleeping_place', [
+            'sleeping_place_id' => $place->id,
+            'room_id' => $place->room_id,
+            'property_id' => $place->property_id,
+        ], 'overall');
+
+        $this->assertSame(2, $aggregate->rating_count);
+        $this->assertSame(3.0, (float) $aggregate->rating_average);
+        $this->assertGreaterThan($firstReview->id, $secondReview->id);
+        $this->assertSame($secondReview->id, $aggregate->last_review_id);
     }
 
     public function test_expired_request_cannot_be_submitted(): void
@@ -415,5 +457,39 @@ class ReviewsRatingsReputationPointTwentySixTest extends TestCase
         ]);
 
         return [$booking, $guest, $host, $place, $checkOut];
+    }
+
+    private function createPublishedPlaceReview(Booking $booking, User $guest, User $host, SleepingPlace $place, int $score): Review
+    {
+        $review = Review::factory()->create([
+            'booking_id' => $booking->id,
+            'reviewer_id' => $guest->id,
+            'reviewee_id' => $host->id,
+            'author_user_id' => $guest->id,
+            'author_type' => 'guest',
+            'target_user_id' => null,
+            'target_type' => 'sleeping_place',
+            'guest_user_id' => $guest->id,
+            'host_user_id' => $host->id,
+            'type' => 'guest_to_place',
+            'review_subject_type' => 'sleeping_place',
+            'bed_id' => null,
+            'sleeping_place_id' => $place->id,
+            'room_id' => $place->room_id,
+            'property_id' => $place->property_id,
+            'overall_rating' => $score,
+            'status' => 'published',
+            'is_public' => true,
+            'published_at' => now(),
+            'visible_at' => now(),
+        ]);
+
+        ReviewScore::factory()->for($review)->create([
+            'score_key' => 'overall',
+            'score_value' => $score,
+            'is_public' => true,
+        ]);
+
+        return $review;
     }
 }

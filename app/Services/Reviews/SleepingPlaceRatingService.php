@@ -47,10 +47,16 @@ class SleepingPlaceRatingService
      */
     public function getFullPageRating(SleepingPlace $place): array
     {
-        return $this->getCardRating($place) + [
-            'internet_rating' => (float) $this->getOrCreate($place)->internet_rating,
-            'noise_level_rating' => (float) $this->getOrCreate($place)->noise_level_rating,
-            'value_for_money_rating' => (float) $this->getOrCreate($place)->value_for_money_rating,
+        $snapshot = $this->getOrCreate($place);
+
+        return [
+            'overall_rating' => (float) $snapshot->overall_rating,
+            'reviews_count' => $snapshot->reviews_count,
+            'cleanliness_rating' => (float) $snapshot->cleanliness_rating,
+            'safety_rating' => (float) $snapshot->safety_rating,
+            'internet_rating' => (float) $snapshot->internet_rating,
+            'noise_level_rating' => (float) $snapshot->noise_level_rating,
+            'value_for_money_rating' => (float) $snapshot->value_for_money_rating,
         ];
     }
 }

@@ -35,7 +35,7 @@
                             &middot; &euro;{{ number_format($booking->total, 2) }}
                         </flux:text>
                     </div>
-                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}">
+                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate>
                         {{ __('app.actions.review') }}
                     </flux:button>
                 </flux:card>
@@ -67,7 +67,7 @@
                         <flux:text class="font-medium">{{ $booking->guest->name }}</flux:text>
                         <flux:text size="sm" class="text-zinc-500">{{ $booking->bed->title }} &middot; {{ __('host.checkout') }}: {{ $booking->check_out->translatedFormat('d M') }}</flux:text>
                     </div>
-                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}">
+                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate>
                         {{ __('app.actions.manage') }}
                     </flux:button>
                 </flux:card>

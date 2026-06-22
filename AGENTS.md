@@ -66,6 +66,14 @@ Current replacements for deleted legacy surfaces:
 - Use Flux Select only for bounded choices. For lists of up to 5 items, consider documented Radio or Checkbox patterns first; for large datasets such as countries/cities, use Autocomplete or documented backend-search Select/Combobox patterns and never preload huge option lists.
 - Current reviewed Flux reference pages are documented in `docs/flux-ui-components.md` and include Flux principles, patterns, theming, dark mode, customization, header/sidebar layouts, accordion, autocomplete, avatar, badge, brand, button, breadcrumbs, calendar, callout, card, carousel, chart, checkbox, color picker, command, composer, context, date picker, dropdown, editor, field, file upload, heading, icon, input, modal, navbar, OTP input, pillbox, popover, profile, progress, radio, select, separator, skeleton, slider, switch, table, tabs, text, textarea, time picker, timeline, toast, and tooltip.
 
+## Livewire 4 documentation rules
+
+- Treat every user-provided `https://livewire.laravel.com/docs/4.x/...` documentation URL as authoritative project guidance after reading it.
+- Before implementing related Livewire behavior, check `docs/LIVEWIRE_4_REFERENCE.md`, use Laravel Boost `search-docs`, and inspect existing sibling Livewire components.
+- When a new Livewire documentation URL is provided, update both `AGENTS.md` when it changes project rules and `docs/LIVEWIRE_4_REFERENCE.md` with the source URL, review date, documented API, project rules, and mistakes to avoid.
+- Official Livewire examples may use view-based or single-file components. In this project, translate those examples into class components under `app/Livewire/...` and Blade views under `resources/views/livewire/...`; do not introduce Volt or inline PHP Blade components.
+- Current reviewed Livewire reference pages are documented in `docs/LIVEWIRE_4_REFERENCE.md` and include Livewire Islands, Lazy Loading, Loading States, Validation, File Uploads, Pagination, URL Query Parameters, Computed Properties, and Redirecting.
+
 ## Product goal
 
 Build a friendly mobile website where:
@@ -563,7 +571,7 @@ Use Flux components where practical.
 Keep tap targets large.
 Keep forms short per step.
 Show skeletons and loading states for every network action.
-Use Livewire data-loading styling and wire:loading where appropriate.
+Prefer Livewire `data-loading` styling for network-action feedback; use `wire:loading` only where a simple show/hide directive is clearer.
 Use wire:navigate for internal navigation where it improves perceived speed.
 Use lazy loading for below-the-fold Livewire components.
 
@@ -575,7 +583,23 @@ Keep public properties small.
 Never store huge arrays in Livewire public properties.
 Store IDs, filters, and compact state only.
 Use computed properties for derived data.
+Use `#[Computed]` for derived display data, query-backed DTOs, and values read multiple times in one render or action.
+Access computed properties in Blade through `$this`, such as `$this->results`; do not expect plain `$results` variables.
+Do not use `#[Computed]` on Livewire Form Objects.
+Remember normal computed properties are memoized only for one Livewire request; they are recalculated on the next update.
+Use `unset($this->computedName)` after an action mutates data already read by that computed property.
+Use `#[Computed(persist: true)]` or `#[Computed(cache: true)]` only with a clear cache lifetime, cache key/invalidation plan, and safe sharing scope.
+Computed properties must still use selected columns, eager loading, pagination, scopes, and indexes; do not use them to hide `Model::all()` or N+1 queries.
 Use form objects or dedicated component state when useful.
+Use `#[Validate]` for simple static Livewire rules and always call `$this->validate()` or `$this->form->validate()` before persisting.
+Use `#[Validate(..., onUpdate: false)]` when colocated rules should not run on every update.
+Use a `rules()` method or Livewire Form Object rules for Laravel `Rule` objects, dynamic validation, uniqueness checks, authenticated-user constraints, cross-field date logic, and database-dependent rules.
+Use Livewire Form Objects for larger forms, reusable form state, multi-step flows, and dense booking/listing/edit surfaces.
+Reference form object fields in Blade and tests with their form prefix, such as `form.title`.
+Use real-time validation sparingly; prefer `wire:model.live.blur` only for text fields that genuinely need early validation feedback, and avoid live validation for long textareas.
+Do not use `translate: false` for user-facing validation messages.
+Do not hard-code validation messages or attribute labels in `message:`, `as:`, `messages()`, `validationAttributes()`, `$this->addError()`, or custom validators; use translation keys or Laravel validation language files.
+Use `assertHasErrors()` and rule-specific validation assertions in Livewire tests.
 Use wire:model.blur for normal text fields.
 Use wire:model.change for selects, checkboxes, radios.
 Use wire:model.live.debounce.500ms or wire:model.live.debounce.750ms only for search and autocomplete fields.
@@ -585,16 +609,68 @@ Never render hidden huge filter sections.
 Use bottom sheets, drawers, and lazy components for large secondary UI.
 Use pagination or cursor pagination for lists.
 Use cursor pagination or load-more behavior for public search results.
+Use `WithPagination` in every Livewire component that owns pagination.
+Keep paginated queries in computed methods or concise query methods, not Blade templates.
+Use `cursorPaginate()` for large, append-only, or feed-like datasets such as search results, messages, notifications, reviews, favorites, and activity lists.
+Use `simplePaginate()` when next/previous navigation is enough and total counts are not needed.
+Use `paginate()` only when numbered pages or total counts are a real user need.
+Keep Livewire's URL pagination for shareable search/listing pages; use `WithoutUrlPagination` only for private widgets or embedded dashboard panels.
+Call `$this->resetPage()` when search, filters, sorting, date range, tabs, or other query-shaping state changes.
+Use named paginator `pageName` values when one screen contains multiple paginated lists, and pass `pageName` to pagination helper methods.
+Use `links(data: ['scrollTo' => '#selector'])` for below-the-top lists when pagination should return the user to the list.
+Do not switch Livewire pagination to Bootstrap; if custom pagination views are introduced, keep labels translated and controls mobile-first.
 Use URL query state for search filters that should be shareable.
+Use `#[Url]` only for small shareable state such as search, filters, sort keys, date/location filters, selected content tabs, and pagination-adjacent state.
+Do not put sensitive or private data, access codes, exact private addresses, internal notes, payment/provider payloads, large arrays, models, DTOs, or long form bodies into URL-bound properties.
+Prefer compact aliases with `#[Url(as: 'q', except: '')]`; use `except` to keep URLs clean and `keep: true` sparingly.
+Use `history: true` only when the browser Back button should step through previous query values; keep the default replace-state behavior for noisy live search.
+Use nullable URL properties only when an empty query value should become `null`; otherwise prefer explicit defaults.
+Use `queryString()` or trait query-string hooks for dynamic or reusable URL configuration.
+Validate, coerce, and whitelist URL-backed state before applying Eloquent scopes.
+Reset pagination when URL-backed filters, sorts, date ranges, search, or tabs change.
+Use `$this->redirect()` or `$this->redirectRoute()` from Livewire actions after successful validation, authorization, and persistence.
+Prefer `redirectRoute()` with named localized routes for internal UI flows.
+Use `redirectIntended()` only with a safe fallback route or URL.
+Use `navigate: true` on internal redirects only when `wire:navigate` behavior is appropriate for the destination.
+Do not use `redirectAction()` for new UI flows; do not create controllers just to redirect from Livewire.
+Never redirect to raw user-supplied URLs or put sensitive data in redirect URLs.
+Flash post-redirect messages as translation keys/context, not hard-coded visible strings.
 Use events carefully and keep component boundaries simple.
 Use WithFileUploads only for upload components.
+Do not name Livewire upload methods or properties `upload`; use names like `savePhoto`, `storeMedia`, `attachDocument`, or `saveAvatar`.
+Keep upload public properties small: one temporary file or a bounded array of temporary files.
+Validate upload type, size, dimensions, and authorization before storage; `accept` attributes are only browser hints.
+Use `temporaryUrl()` only for image previews, keep previews thumbnail-sized, and avoid large preview DOM on mobile.
+Use `data-loading`, scoped `wire:loading wire:target`, Livewire upload progress events, and `$cancelUpload('property')` where they materially improve slow-3G upload UX.
+Store final files through Laravel filesystem APIs or project media services, then persist only path/metadata and reset temporary upload properties.
+Do not introduce S3 or `LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK` without an explicit infrastructure decision plus config, env, docs, and tests.
+Test uploads with `Storage::fake()`, `UploadedFile::fake()`, successful storage assertions, invalid-file assertions, and authorization failures.
 Validate every action server-side.
 Show friendly validation errors in the active locale.
 Use compact DTO arrays for cards.
 Use selected columns for all list/card queries.
 Use cached lookup values for amenities, rules, countries, and common cities.
-Use data-loading states, wire:loading, and skeletons for network actions.
+Prefer `data-loading` Tailwind variants for Livewire network actions; use `wire:loading` only for simple show/hide indicators.
+Use `data-loading:*` on the element that triggers the request, `in-data-loading:*` for child label swaps, `has-data-loading:*` for parent styling, and `peer-data-loading:*` for sibling styling when useful.
+Avoid deeply nested `in-data-loading:*` selectors when parent and child components can load at the same time.
+Every visible loading label must use translation keys.
+Loading states must not replace server-side validation, authorization, idempotency, transactions, or duplicate-submit protection.
 Use optimistic UI only where the rollback path is safe and obvious.
+Use `lazy` for below-the-fold Livewire child components whose slow data should not block the first render.
+Use `defer` for secondary Livewire child components that should load immediately after the first render without waiting for viewport visibility.
+For class-based lazy or deferred components, define a `placeholder()` method instead of Blade `@placeholder`; the placeholder root element type must match the final component root element type.
+Pass scalar IDs, filters, booleans, and compact strings into lazy/deferred components whenever possible instead of full models or large arrays.
+Use `#[Lazy]` or `#[Defer]` only when every usage of the component should be delayed; otherwise prefer instance-level `lazy` or `defer`.
+Use `lazy.bundle`, `defer.bundle`, `#[Lazy(bundle: true)]`, or `#[Defer(bundle: true)]` only for many similar components with similar load cost; avoid bundling mixed fast and slow components.
+Use `Livewire::withoutLazyLoading()` in tests when assertions need final lazy-loaded content.
+Use `@island` for isolated expensive or independent regions inside one component when it improves mobile performance without creating extra child component overhead.
+Use `@island(lazy: true)` for below-the-fold expensive regions and `@island(defer: true)` for regions that can load immediately after the first page render.
+Use `@placeholder` inside lazy, defer, or skip islands so old phones and slow 3G users see stable loading states.
+Do not put `@island` inside Blade loops or conditionals; put loops and conditionals inside the island and expose needed data through component properties or computed properties.
+Do not rely on template-local variables inside islands, and never add `@php` to work around island scope. Prepare values in Livewire classes, services, presenters, DTOs, or class-based Blade components.
+Use named islands and `wire:island`, `wire:island.append`, or `wire:island.prepend` only for focused update targets such as load-more lists, feeds, counters, and dashboard panels.
+Use `always: true` sparingly, only when the island must synchronize with every parent update.
+Avoid mutating the same state from the root component and multiple islands at the same time because parallel island requests can race.
 
 ## SQLite rules
 

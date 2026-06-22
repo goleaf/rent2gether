@@ -6,6 +6,7 @@ use App\Enums\ReviewType;
 use App\Models\RatingAggregate;
 use App\Models\Review;
 use App\Models\ReviewScore;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class RatingAggregateService
@@ -26,28 +27,15 @@ class RatingAggregateService
      */
     public function recalculateMetric(string $targetType, array $targetIds, string $metricKey): RatingAggregate
     {
-        $reviewQuery = Review::query()
-            ->where('status', 'published')
-            ->where('is_public', true);
+        $reviewQuery = $this->publishedReviewQuery($targetType, $targetIds);
 
-        foreach ($this->targetColumns($targetType, $targetIds) as $column => $value) {
-            $reviewQuery->where($column, $value);
-        }
-
-        $reviewTypes = $this->reviewTypesForTarget($targetType);
-
-        if ($reviewTypes !== []) {
-            $reviewQuery->whereIn('type', $reviewTypes);
-        }
-
-        $reviewIds = $reviewQuery->pluck('id');
         $scoreQuery = ReviewScore::query()
-            ->whereIn('review_id', $reviewIds)
+            ->whereIn('review_id', (clone $reviewQuery)->select('id'))
             ->where('score_key', $metricKey)
             ->where('is_public', true);
 
-        $count = (int) $scoreQuery->count();
-        $sum = (float) $scoreQuery->sum('score_value');
+        $count = (int) (clone $scoreQuery)->count();
+        $sum = (float) (clone $scoreQuery)->sum('score_value');
         $average = $count > 0 ? round($sum / $count, 2) : 0.0;
 
         return RatingAggregate::query()->updateOrCreate(
@@ -58,7 +46,7 @@ class RatingAggregateService
                 'rating_count' => $count,
                 'rating_sum' => $sum,
                 'rating_weight_sum' => $count > 0 ? $count : null,
-                'last_review_id' => $reviewIds->last(),
+                'last_review_id' => (clone $reviewQuery)->max('id'),
                 'last_recalculated_at' => now(),
             ],
         );
@@ -128,5 +116,28 @@ class RatingAggregateService
             'room' => [ReviewType::GuestToPlace->value, ReviewType::RoommateExperience->value],
             default => [],
         };
+    }
+
+    /**
+     * @param  array<string, int|null>  $targetIds
+     * @return Builder<Review>
+     */
+    private function publishedReviewQuery(string $targetType, array $targetIds): Builder
+    {
+        $query = Review::query()
+            ->where('status', 'published')
+            ->where('is_public', true);
+
+        foreach ($this->targetColumns($targetType, $targetIds) as $column => $value) {
+            $query->where($column, $value);
+        }
+
+        $reviewTypes = $this->reviewTypesForTarget($targetType);
+
+        if ($reviewTypes !== []) {
+            $query->whereIn('type', $reviewTypes);
+        }
+
+        return $query;
     }
 }

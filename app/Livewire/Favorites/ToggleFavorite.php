@@ -26,7 +26,7 @@ class ToggleFavorite extends Component
     public function toggle(): void
     {
         if (! auth()->check()) {
-            $this->redirect(route('auth.login'));
+            $this->redirect(route('auth.login'), navigate: true);
 
             return;
         }

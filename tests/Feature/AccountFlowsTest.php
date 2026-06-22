@@ -15,6 +15,7 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\User;
 use App\Models\UserSetting;
+use App\Services\Privacy\PrivacyPreferences;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -194,6 +195,38 @@ class AccountFlowsTest extends TestCase
         $this->assertFalse($settings->notification_preferences_json['email_messages']);
         $this->assertTrue($settings->notification_preferences_json['product_updates']);
         $this->assertFalse($settings->privacy_preferences_json['show_languages']);
+    }
+
+    public function test_account_settings_repair_legacy_string_encoded_preferences(): void
+    {
+        $user = User::factory()->create();
+        $settings = $user->setting()->create([
+            'locale' => 'en',
+            'currency' => 'EUR',
+        ]);
+
+        $settings->getConnection()->table($settings->getTable())->where('id', $settings->id)->update([
+            'notification_preferences_json' => json_encode(json_encode([
+                'email_messages' => false,
+                'email_bookings' => true,
+            ], JSON_THROW_ON_ERROR), JSON_THROW_ON_ERROR),
+            'privacy_preferences_json' => json_encode(json_encode(PrivacyPreferences::defaults(), JSON_THROW_ON_ERROR), JSON_THROW_ON_ERROR),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(AccountSettingsPage::class)
+            ->assertSet('emailMessages', false)
+            ->assertSet('showProfile', true)
+            ->set('productUpdates', true)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $settings = $user->fresh()->setting;
+
+        $this->assertIsArray($settings->notification_preferences_json);
+        $this->assertIsArray($settings->privacy_preferences_json);
+        $this->assertTrue($settings->notification_preferences_json['product_updates']);
+        $this->assertTrue($settings->privacy_preferences_json['show_profile']);
     }
 
     public function test_profile_edit_renders_and_saves_host_fields(): void

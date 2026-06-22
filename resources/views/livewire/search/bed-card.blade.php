@@ -1,4 +1,4 @@
-<a href="{{ route('beds.show', ['locale' => app()->getLocale(), 'bed' => $bed]) }}" class="group block bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-600 transition-all">
+<a href="{{ route('beds.show', ['locale' => app()->getLocale(), 'bed' => $bed]) }}" wire:navigate class="group block bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-600 transition-all">
     @if($media)
         <img
             src="{{ $media->imageUrl('mobile') }}"

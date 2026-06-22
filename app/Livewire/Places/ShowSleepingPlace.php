@@ -184,7 +184,7 @@ class ShowSleepingPlace extends Component
         $user = auth()->user();
 
         if (! $user instanceof User) {
-            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]));
+            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]), navigate: true);
 
             return;
         }
@@ -220,7 +220,7 @@ class ShowSleepingPlace extends Component
     public function openContact(): void
     {
         if (! auth()->check()) {
-            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]));
+            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]), navigate: true);
 
             return;
         }
@@ -245,7 +245,7 @@ class ShowSleepingPlace extends Component
         $guest = auth()->user();
 
         if (! $guest instanceof User) {
-            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]));
+            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]), navigate: true);
 
             return;
         }

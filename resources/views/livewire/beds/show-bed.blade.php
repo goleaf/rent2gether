@@ -2,8 +2,8 @@
 
         {{-- Breadcrumb --}}
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('home', ['locale' => app()->getLocale()]) }}">{{ __('navigation.home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('search.index', ['locale' => app()->getLocale()]) }}">{{ __('navigation.search') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('home', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.home') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.search') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ $bed->title }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -170,6 +170,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($bed->room->beds as $sibling)
                                 <a href="{{ route('beds.show', ['locale' => app()->getLocale(), 'bed' => $sibling]) }}"
+                                   wire:navigate
                                    class="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800 rounded-lg px-4 py-3 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 transition-colors">
                                     <div>
                                         <flux:text class="font-medium">{{ $sibling->title }}</flux:text>
@@ -219,7 +220,7 @@
                         </flux:field>
                     </div>
 
-                    <flux:button variant="primary" class="w-full" href="{{ route('search.index', ['locale' => app()->getLocale()]) }}">
+                    <flux:button variant="primary" class="w-full" href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate>
                         {{ $bed->instant_book ? __('listing.bed.book_instantly') : __('listing.bed.request_to_book') }}
                     </flux:button>
 

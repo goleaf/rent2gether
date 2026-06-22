@@ -115,6 +115,20 @@ class PrivacySettingsTest extends TestCase
         $this->assertFalse($preferences['host']['show_approximate_area_before_booking']);
     }
 
+    public function test_privacy_preferences_normalize_legacy_json_string_payloads(): void
+    {
+        $preferences = PrivacyPreferences::normalize(json_encode([
+            'show_profile' => false,
+            'show_languages' => false,
+            'show_reviews' => false,
+        ], JSON_THROW_ON_ERROR));
+
+        $this->assertFalse($preferences['show_profile']);
+        $this->assertFalse($preferences['guest']['show_languages']);
+        $this->assertFalse($preferences['show_languages']);
+        $this->assertFalse($preferences['show_reviews']);
+    }
+
     /**
      * @return array{0:User,1:User}
      */

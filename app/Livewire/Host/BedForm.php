@@ -143,7 +143,7 @@ class BedForm extends Component
             session()->flash('success', __('notifications.flash.bed_created'));
         }
 
-        $this->redirect(route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $this->room->property]));
+        $this->redirect(route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $this->room->property]), navigate: true);
     }
 
     public function bedTypes(): array

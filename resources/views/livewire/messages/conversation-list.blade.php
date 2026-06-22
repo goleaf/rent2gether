@@ -4,6 +4,7 @@
     <div class="space-y-2">
         @forelse($this->conversations as $conversation)
             <a href="{{ route('messages.show', ['locale' => app()->getLocale(), 'conversation' => $conversation]) }}"
+               wire:navigate
                class="block">
                 <flux:card class="flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition">
                     <div class="flex items-center gap-3">

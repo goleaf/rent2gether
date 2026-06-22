@@ -2,6 +2,8 @@
 
 namespace App\Services\Privacy;
 
+use JsonException;
+
 class PrivacyPreferences
 {
     /**
@@ -37,22 +39,24 @@ class PrivacyPreferences
     }
 
     /**
-     * @param  array<string, mixed>|null  $preferences
+     * @param  array<string, mixed>|string|null  $preferences
      * @return array<string, mixed>
      */
-    public static function normalize(?array $preferences): array
+    public static function normalize(array|string|null $preferences): array
     {
-        $preferences ??= [];
+        $preferences = self::decode($preferences);
         $normalized = self::defaults();
-        $hasNestedGuestPreferences = isset($preferences['guest']) && is_array($preferences['guest']);
+        $guestPreferences = self::arrayValue($preferences['guest'] ?? null);
+        $hostPreferences = self::arrayValue($preferences['host'] ?? null);
+        $hasNestedGuestPreferences = $guestPreferences !== [];
 
         $normalized['guest'] = array_replace(
             $normalized['guest'],
-            array_filter($preferences['guest'] ?? [], fn (mixed $value): bool => $value !== null),
+            array_filter($guestPreferences, fn (mixed $value): bool => $value !== null),
         );
         $normalized['host'] = array_replace(
             $normalized['host'],
-            array_filter($preferences['host'] ?? [], fn (mixed $value): bool => $value !== null),
+            array_filter($hostPreferences, fn (mixed $value): bool => $value !== null),
         );
 
         if (! $hasNestedGuestPreferences && array_key_exists('show_profile', $preferences)) {
@@ -85,18 +89,53 @@ class PrivacyPreferences
     }
 
     /**
-     * @param  array<string, mixed>|null  $preferences
+     * @param  array<string, mixed>|string|null  $preferences
      */
-    public static function guest(?array $preferences, string $key): bool
+    public static function guest(array|string|null $preferences, string $key): bool
     {
         return (bool) (self::normalize($preferences)['guest'][$key] ?? false);
     }
 
     /**
-     * @param  array<string, mixed>|null  $preferences
+     * @param  array<string, mixed>|string|null  $preferences
      */
-    public static function host(?array $preferences, string $key): bool
+    public static function host(array|string|null $preferences, string $key): bool
     {
         return (bool) (self::normalize($preferences)['host'][$key] ?? false);
+    }
+
+    /**
+     * @param  array<string, mixed>|string|null  $preferences
+     * @return array<string, mixed>
+     */
+    private static function decode(array|string|null $preferences): array
+    {
+        if ($preferences === null || $preferences === '') {
+            return [];
+        }
+
+        if (is_array($preferences)) {
+            return $preferences;
+        }
+
+        $decoded = $preferences;
+
+        for ($attempt = 0; $attempt < 2 && is_string($decoded); $attempt++) {
+            try {
+                $decoded = json_decode($decoded, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                return [];
+            }
+        }
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function arrayValue(mixed $value): array
+    {
+        return is_array($value) ? $value : [];
     }
 }

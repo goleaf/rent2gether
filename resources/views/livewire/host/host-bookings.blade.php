@@ -22,7 +22,7 @@
                 <div class="flex items-center gap-3">
                     <flux:badge>{{ $booking->status->label() }}</flux:badge>
                     <flux:text class="font-semibold">&euro;{{ number_format($booking->total, 2) }}</flux:text>
-                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}">
+                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate>
                         {{ __('app.actions.manage') }}
                     </flux:button>
                 </div>

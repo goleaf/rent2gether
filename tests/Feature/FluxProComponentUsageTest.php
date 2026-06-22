@@ -154,6 +154,17 @@ class FluxProComponentUsageTest extends TestCase
         }
     }
 
+    public function test_flux_ghost_buttons_use_visible_secondary_surface(): void
+    {
+        $stylesheet = File::get(resource_path('css/app.scss'));
+
+        $this->assertStringContainsString('[data-flux-button].bg-transparent.text-zinc-800:not(.absolute):not(.fixed)', $stylesheet);
+        $this->assertStringContainsString('background-color: #f0f9ff;', $stylesheet);
+        $this->assertStringContainsString('color: #075985;', $stylesheet);
+        $this->assertStringContainsString('background-color: rgba(56, 189, 248, 0.12);', $stylesheet);
+        $this->assertFileDoesNotExist(resource_path('views/flux/button/index.blade.php'));
+    }
+
     public function test_root_level_custom_rounded_panels_are_not_used_for_livewire_and_shared_components(): void
     {
         $offenders = collect([

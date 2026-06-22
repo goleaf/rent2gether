@@ -66,7 +66,7 @@
             {{ __('booking.trips.actions.report_problem') }}
         </x-ui.report-problem-button>
 
-        <flux:button href="{{ route('host.bookings.index', ['locale' => app()->getLocale()]) }}" variant="ghost">
+        <flux:button href="{{ route('host.bookings.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
             {{ __('app.actions.back') }}
         </flux:button>
     </div>

@@ -23,7 +23,7 @@
             </div>
 
             <div class="mb-8 text-center">
-                <a href="{{ url('/'.app()->getLocale()) }}" class="inline-flex items-center gap-2 text-zinc-900 dark:text-white hover:opacity-80 transition-opacity">
+                <a href="{{ url('/'.app()->getLocale()) }}" wire:navigate class="inline-flex items-center gap-2 text-zinc-900 dark:text-white hover:opacity-80 transition-opacity">
                     <flux:icon name="home" class="size-6" />
                     <span class="text-xl font-semibold">rent2gether</span>
                 </a>

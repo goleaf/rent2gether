@@ -119,7 +119,7 @@ class CreateBooking extends Component
         $this->redirect(route('guest.bookings.show', [
             'locale' => app()->getLocale(),
             'booking' => $result['booking'],
-        ]));
+        ]), navigate: true);
     }
 
     public function render(): View

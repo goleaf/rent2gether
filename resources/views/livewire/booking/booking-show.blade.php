@@ -74,7 +74,7 @@
             </flux:button>
         @endif
 
-        <flux:button href="{{ route('guest.bookings.index', ['locale' => app()->getLocale()]) }}" variant="ghost">
+        <flux:button href="{{ route('guest.bookings.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
             {{ __('booking.back_to_bookings') }}
         </flux:button>
     </div>

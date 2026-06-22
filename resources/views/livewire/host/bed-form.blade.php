@@ -61,7 +61,7 @@
 
         <div class="flex gap-3">
             <flux:button type="submit" variant="primary">{{ $bed ? __('app.actions.update') : __('app.actions.create') }}</flux:button>
-            <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $room->property]) }}" variant="ghost">{{ __('app.actions.cancel') }}</flux:button>
+            <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $room->property]) }}" variant="ghost" wire:navigate>{{ __('app.actions.cancel') }}</flux:button>
         </div>
     </form>
 </x-ui.page>

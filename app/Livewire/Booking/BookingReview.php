@@ -188,7 +188,7 @@ class BookingReview extends Component
         $guest = auth()->user();
 
         if (! $guest instanceof User) {
-            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]));
+            $this->redirect(route('auth.login', ['locale' => app()->getLocale()]), navigate: true);
 
             return;
         }

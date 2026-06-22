@@ -30,7 +30,7 @@
             <flux:card class="space-y-3">
                 <flux:heading size="lg">{{ __('app.home_guest_title') }}</flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('app.home_guest_text') }}</flux:text>
-                <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary">
+                <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
                     {{ __('app.search_places') }}
                 </flux:button>
             </flux:card>
@@ -38,7 +38,7 @@
             <flux:card class="space-y-3">
                 <flux:heading size="lg">{{ __('app.home_host_title') }}</flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('app.home_host_text') }}</flux:text>
-                <flux:button href="{{ route('health', ['locale' => app()->getLocale()]) }}">
+                <flux:button href="{{ route('health', ['locale' => app()->getLocale()]) }}" wire:navigate>
                     {{ __('app.view_health') }}
                 </flux:button>
             </flux:card>
