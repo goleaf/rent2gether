@@ -164,6 +164,87 @@ Use Livewire `wire:click` for user-triggered component actions, not as a replace
 - Use `.async` only for independent idempotent actions; do not use it for booking, payment, deposit, checkout, inventory, or same-record mutations.
 - Test success, authorization failure, tampered IDs, duplicate submission, and translated feedback.
 
+### Wire Navigate
+
+Use `wire:navigate` on internal app links when faster page swaps improve mobile UX.
+
+- Prefer named localized routes in `href`.
+- Do not use `wire:navigate` for external links, downloads, file URLs, anchor-only behavior, or flows that intentionally need a full reload.
+- Active navigate links get `data-current`; prefer Tailwind `data-current:*` variants.
+- Use `wire:current` only when its documented class behavior is needed, and use `wire:current.ignore` when automatic active state must be disabled.
+- Use `.hover` sparingly because it prefetches after about 60ms and can increase server load.
+- Avoid `.hover` on dense search results, feeds, messages, notifications, and expensive pages.
+- Use `@persist` only in layouts outside Livewire components for true cross-page state.
+- Use `wire:navigate:scroll` for persisted scroll containers.
+- Use `livewire:navigated` instead of `DOMContentLoaded` for code that runs after every navigate visit.
+- Avoid accumulating document listeners across pages; clean them up or use `{ once: true }`.
+- Keep custom body scripts idempotent; use `data-navigate-once` only when a body script must run once.
+- Test locale preservation, active state, back/forward behavior, and script lifecycle for custom JavaScript.
+
+### Wire Current
+
+Use `wire:current` when a link needs Livewire-managed active classes.
+
+- Prefer automatic `data-current:*` styling for normal `wire:navigate` links.
+- Use `wire:current="classes"` only when class-based active styling is clearer or when navigation is persisted with `@persist`.
+- Every `wire:current` link needs a real `href`, preferably from a named localized route.
+- Default matching is partial: `/posts` also matches `/posts/1`.
+- Use `.exact` for root, dashboard, and top-level links that should not match nested paths.
+- Use `.strict` only when trailing slashes intentionally matter.
+- Use `wire:current.ignore` to disable automatic `data-current` behavior on a `wire:navigate` link.
+- Keep active classes static and bounded; do not generate them from user input.
+- Do not use Blade server-side active route conditionals inside `@persist` navigation; use `data-current` or `wire:current`.
+- Keep active states layout-stable on mobile and test locale-prefixed paths plus persisted navigation.
+
+### Wire Cloak
+
+Use `wire:cloak` to hide small state-dependent elements until Livewire has initialized.
+
+- Use it for anti-flicker on elements that might briefly show the wrong state before initialization.
+- Pair it with `wire:show` when multiple mutually exclusive states could flash together.
+- Remember `wire:cloak` has no modifiers.
+- Do not use it as a loading state for Livewire requests; use `data-loading`, `wire:loading`, lazy/defer, islands, or skeletons instead.
+- Do not use it to hide sensitive, unauthorized, private, payment, access, dispute, or internal-note data.
+- Do not cloak large first-screen sections, long lists, forms, or primary content.
+- Keep cloaked icons, badges, menus, and small panels layout-stable on mobile.
+- Test the initialized state; `wire:cloak` only hides the pre-init flash.
+
+### Extended Wire Directives
+
+Use the extended Livewire directives only for focused UI behavior.
+
+- Use `wire:confirm` with translated copy for simple destructive confirmations, but keep authorization, validation, and idempotency on the server.
+- Use `wire:dirty` for small unsaved-change hints and bounded dirty styling; dirty state is a hint, not a persistence guarantee.
+- Use `wire:show` for small conditional UI that can stay in the DOM; do not use it to hide sensitive/private content or huge filter trees.
+- Use `wire:transition` and `#[Transition]` sparingly for orientation in wizards or small swaps; respect reduced motion and avoid motion in urgent booking/access/payment flows.
+- Use `wire:init` only for non-critical post-render loading. Prefer lazy/defer/components or islands for delayed sections.
+- Use `wire:intersect.once` for safe viewport-triggered work, and keep thresholds/margins conservative on mobile.
+- Use `wire:poll.visible.30s` or slower for small urgent panels, ideally inside an island or child component.
+- Use `wire:offline` for translated connection banners and disabled-looking states, not as a retry system.
+- Use `wire:ignore`, `wire:ref`, and `wire:replace` only around intentional JavaScript/DOM ownership boundaries with cleanup and synchronization back to Livewire.
+- Use `wire:sort` only when drag sorting is truly useful; persist through services/actions and provide touch-friendly handles.
+- Use `wire:stream` only for lightweight progressive text/status output; do not stream sensitive or unbounded payloads.
+- Use `wire:text` only for small text-only client updates.
+
+### Livewire Attributes
+
+Use Livewire PHP attributes in class components only.
+
+- Use `#[Locked]` on scalar public IDs that should resist client tampering, but still authorize every action.
+- Use `#[Session]`, `#[Reactive]`, `#[Modelable]`, and `#[Json]` only for compact non-sensitive state.
+- Use `#[On]` for explicit events with small trusted-shaped payloads; avoid event-heavy component coupling.
+- Use `#[Renderless]`, `#[Async]`, and `#[Isolate]` only for independent side effects or isolated requests that cannot race over shared workflow state.
+- Use `#[Js]` only for browser-only UI behavior; keep business, privacy, pricing, and booking decisions in PHP services/actions.
+- Use `#[Layout]` and `#[Title]` for full-page component metadata when it remains translated and consistent with the app shell.
+
+### Runtime Safety
+
+- Hydrated public properties are browser-visible and untrusted.
+- Morphing needs stable roots, valid HTML, and stable `wire:key` values for repeated/dynamic regions.
+- Nested components own their own state; use events, `#[Reactive]`, `#[Modelable]`, or explicit keys only when the dependency is real.
+- Use `@persist` only in layout-level Navigate markup, `@placeholder` inside lazy/defer/skip islands, and `@teleport` only when Flux primitives cannot solve the overlay placement.
+- Treat custom JavaScript directives, custom synthesizers, package development, and contribution-guide patterns as advanced infrastructure, not normal app code.
+
 ### Wire Submit
 
 Use Livewire `wire:submit` on forms for form submission. Livewire automatically prevents default form submission and disables submit buttons/read-only inputs during the request.
@@ -207,7 +288,14 @@ Use Livewire's automatic `data-loading` attribute as the default loading-state s
 - Use `has-data-loading:*` when a parent section should visually react to a loading child.
 - Use `peer-data-loading:*` for sibling feedback when it keeps markup simple.
 - Use `wire:loading` only for simple show/hide loading indicators where the directive is clearer than Tailwind variants.
+- Use `wire:loading.remove` only when an element should be visible by default and hidden during a request.
+- Use `wire:loading.class`, `wire:loading.class.remove`, and `wire:loading.attr` only for simple toggles; prefer `data-loading:*` for Tailwind styling on request triggers.
+- Use `wire:loading.attr="disabled"` for non-submit buttons or controls outside `wire:submit` forms.
+- Scope `wire:loading` with `wire:target` for action names, property names, comma-separated actions, parameter-specific row actions, or `wire:target.except` when a component has multiple requests.
+- Use display modifiers such as `.inline`, `.block`, `.flex`, `.grid`, `.table`, and `.inline-flex` when the default `inline-block` display is wrong.
+- Use `.delay` or delay aliases to avoid flashing indicators on fast requests.
 - Keep loading states translated, subtle, and layout-stable for old phones and slow 3G.
+- Do not use broad unscoped `wire:loading` in components with multiple actions unless every request should show the same indicator.
 - Do not hide slow queries behind loading states; fix the query, index, pagination, or payload size first.
 
 ### Islands

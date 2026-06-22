@@ -112,12 +112,37 @@ Livewire rules:
 - Prefer `data-loading` Tailwind variants for Livewire network-action feedback.
 - Use `wire:loading` only for simple show/hide loading indicators where it is clearer than `data-loading` selectors.
 - Use `data-loading:*` on the request trigger, `in-data-loading:*` for child label swaps, `has-data-loading:*` for parent styling, and `peer-data-loading:*` for sibling styling when useful.
+- Use `wire:loading.remove` only for inverse visibility where an element should be hidden during a request.
+- Use `wire:loading.class`, `wire:loading.class.remove`, and `wire:loading.attr` only for simple toggles; prefer `data-loading:*` for most Tailwind styling.
+- Use `wire:loading.attr="disabled"` for non-submit buttons or controls outside `wire:submit` forms; `wire:submit` already disables submit buttons and marks inputs readonly.
+- Scope `wire:loading` with `wire:target` when a component has multiple requests, including action names, property names, comma-separated actions, parameter-specific row actions, or `wire:target.except`.
+- Use `wire:loading` display modifiers such as `.inline`, `.block`, `.flex`, `.grid`, `.table`, and `.inline-flex` when the default `inline-block` display would break layout.
+- Use `wire:loading.delay` or its aliases to avoid flicker, but do not make essential feedback so delayed that old-phone or slow-3G users think the action did nothing.
 - Avoid deeply nested `in-data-loading:*` selectors when parent and child components can load at the same time.
 - Every visible loading label must use translation keys.
 - Loading states must not replace backend validation, authorization, idempotency, transactions, or duplicate-submit protection.
 - Use skeletons for deferred network content.
 - Use optimistic UI only where the rollback path is safe and obvious.
-- Use wire:navigate for internal links where appropriate.
+- Use `wire:navigate` for internal app links where faster page swaps improve mobile UX.
+- Prefer named localized routes in `href`; never navigate to raw user-supplied URLs.
+- Do not use `wire:navigate` for external links, downloads, file URLs, anchor-only behavior, forms, or flows that intentionally need a full reload.
+- Use `data-current:*` Tailwind variants for active navigate links; use `wire:current` only when its documented class behavior is needed.
+- Use `wire:current` only on links with real `href` values, preferably named localized routes.
+- Remember `wire:current` uses partial matching by default; use `.exact` for root/dashboard/top-level links and `.strict` only when trailing slashes intentionally matter.
+- Use `wire:current.ignore` on `wire:navigate` links only when automatic `data-current` active styling must be disabled.
+- Inside `@persist` navigation, prefer `data-current` or `wire:current` over server-side active route conditionals because persisted markup does not rerender on every Navigate visit.
+- Keep active navigation classes static, bounded, translated where visible/accessibility text is involved, and layout-stable on mobile.
+- Use `wire:cloak` only for small state-dependent elements that would flash incorrectly before Livewire initializes, especially elements controlled by `wire:show`.
+- Remember `wire:cloak` has no modifiers and is not a request loading state.
+- Do not use `wire:cloak` to hide sensitive, unauthorized, private, payment, access, dispute, or internal-note data.
+- Do not cloak large first-screen sections, long lists, forms, or primary content; use translated skeletons, lazy/defer, islands, or server-rendered safe defaults instead.
+- Keep cloaked icon swaps, badges, menus, and panels layout-stable on mobile.
+- Use `wire:navigate.hover` sparingly because hover prefetch can request pages users never visit; avoid it on dense search results, feeds, messages, notifications, and expensive pages.
+- Use `@persist` only in layouts outside Livewire components, and use `wire:navigate:scroll` for persisted scroll containers.
+- Use `livewire:navigated` instead of `DOMContentLoaded` for code that runs after every navigate visit.
+- Clean up persistent document listeners across Navigate visits or register them with `{ once: true }`.
+- Keep custom body scripts idempotent; use `data-navigate-once` only when a body script must run once.
+- Test important Navigate links for locale preservation, active state, back/forward behavior, and custom JavaScript lifecycle.
 - Use lazy loading for below-the-fold sections.
 - Read `docs/LIVEWIRE_4_REFERENCE.md` before using a Livewire 4 feature covered by user-provided official docs.
 - Use `lazy` for below-the-fold child components and `defer` for secondary visible child components that should load after the first render.
@@ -130,6 +155,27 @@ Livewire rules:
 - Do not put `@island` inside loops or conditionals; put loops/conditionals inside the island and expose state through component properties or computed properties.
 - Do not rely on template-local variables or `@php` inside islands.
 - Use named islands with `wire:island`, `wire:island.append`, or `wire:island.prepend` only for focused refresh/load-more/feed behavior.
+- Use `wire:confirm` with translated copy only as UX confirmation; every server action still needs authorization, validation, state checks, and idempotency.
+- Use `wire:dirty` for small unsaved-change hints and bounded styling; dirty state is not a save guarantee.
+- Use `wire:show` for small conditional UI that may remain in the DOM; do not use it for sensitive/private content or huge hidden sections.
+- Use `wire:transition` and `#[Transition]` sparingly for small orientation-preserving swaps, and avoid them in urgent booking/payment/access flows.
+- Use `wire:init`, `wire:intersect`, and `wire:poll` only for non-critical or tightly scoped refresh work. Prefer lazy/defer/islands for delayed sections, and keep polling visible, scoped, and slow (`30s` or slower by default).
+- Use `wire:offline` for translated connection feedback, not as a retry queue.
+- Use `wire:ignore`, `wire:ref`, and `wire:replace` only for intentional JavaScript/DOM ownership boundaries with cleanup and synchronization back to Livewire.
+- Use `wire:sort` only for touch-friendly reorderable lists, with authorized persistence through services/actions.
+- Use `wire:stream` only for lightweight progressive status/text output; never stream sensitive, private, or unbounded payloads.
+- Use `wire:text` only for small text-only client updates.
+- Use `#[Locked]` on scalar public IDs that should resist client tampering, but never treat it as authorization.
+- Use `#[Session]`, `#[Reactive]`, `#[Modelable]`, and `#[Json]` only for compact non-sensitive state.
+- Use `#[On]` for explicit small-payload events; avoid event-heavy component coupling.
+- Use `#[Renderless]`, `#[Async]`, and `#[Isolate]` only for independent side effects or isolated requests that cannot race over shared workflow state.
+- Use `#[Js]` only for browser-only UI behavior; pricing, availability, authorization, privacy, and workflow decisions stay in PHP services/actions.
+- Use `#[Layout]` and `#[Title]` for full-page component metadata only when translated and app-shell consistent.
+- Treat hydrated public properties as browser-visible and untrusted; keep them small, safe, and validated.
+- Keep morphing stable with valid HTML, one stable root, and stable `wire:key` values for dynamic/repeated regions.
+- Nested components own independent state; use events, `#[Reactive]`, `#[Modelable]`, or explicit keys only when the dependency is real.
+- Use `@persist` only in layout-level Navigate markup, `@placeholder` inside lazy/defer/skip islands, and `@teleport` only when Flux primitives cannot solve overlay placement.
+- Treat custom JavaScript directives, custom synthesizers, package development, and contribution-guide patterns as advanced infrastructure requiring an explicit architecture decision.
 - Use WithFileUploads only inside upload-focused components.
 - Do not name Livewire upload methods or properties `upload`; Livewire reserves that term.
 - Keep upload public properties small: one temporary file or a bounded array of temporary files.

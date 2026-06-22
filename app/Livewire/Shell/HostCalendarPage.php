@@ -24,6 +24,8 @@ use Livewire\Component;
 
 class HostCalendarPage extends Component
 {
+    private const SELECTOR_OPTION_LIMIT = 30;
+
     public ?int $selectedPropertyId = null;
 
     public ?int $selectedRoomId = null;
@@ -229,7 +231,7 @@ class HostCalendarPage extends Component
                 'sleepingPlaces as host_sleeping_places_count',
             ])
             ->orderBy('created_at', 'desc')
-            ->limit(50)
+            ->limit(self::SELECTOR_OPTION_LIMIT)
             ->get()
             ->map(fn (Property $property): array => [
                 'id' => $property->id,
@@ -251,7 +253,7 @@ class HostCalendarPage extends Component
             ->withCount('sleepingPlaces')
             ->orderBy('room_number')
             ->orderBy('id')
-            ->limit(50)
+            ->limit(self::SELECTOR_OPTION_LIMIT)
             ->get()
             ->map(fn (Room $room): array => [
                 'id' => $room->id,
@@ -275,7 +277,7 @@ class HostCalendarPage extends Component
             ->orderBy('property_id')
             ->orderBy('room_id')
             ->orderBy('place_number')
-            ->limit(50)
+            ->limit(self::SELECTOR_OPTION_LIMIT)
             ->get()
             ->map(function (SleepingPlace $place) use ($resolver): array {
                 $translation = $resolver->resolve($place->translations, app()->getLocale(), 'en');

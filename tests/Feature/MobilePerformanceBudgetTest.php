@@ -125,8 +125,26 @@ class MobilePerformanceBudgetTest extends TestCase
             preg_match_all('/<(?:flux:textarea|textarea)\b[^>]*>/s', $contents, $textareaMatches);
 
             foreach ($textareaMatches[0] as $tag) {
-                if (preg_match('/wire:model(?!\.(?:blur|change|defer))/', $tag)) {
-                    $violations[] = $file->getRelativePathname().': textarea should use blur/change/defer binding';
+                if (str_contains($tag, 'wire:model.live')) {
+                    $violations[] = $file->getRelativePathname().': textarea should not use live binding';
+                }
+            }
+        }
+
+        $this->assertSame([], $violations);
+    }
+
+    public function test_livewire_query_limits_stay_mobile_sized(): void
+    {
+        $violations = [];
+
+        foreach (File::allFiles(app_path('Livewire')) as $file) {
+            $contents = File::get($file->getPathname());
+            preg_match_all('/->limit\((\d+)\)/', $contents, $limitMatches, PREG_SET_ORDER);
+
+            foreach ($limitMatches as $match) {
+                if ((int) $match[1] > 30) {
+                    $violations[] = $file->getRelativePathname().': limit('.$match[1].') exceeds the mobile Livewire budget';
                 }
             }
         }

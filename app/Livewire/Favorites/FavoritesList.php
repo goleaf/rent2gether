@@ -22,6 +22,8 @@ use Livewire\Component;
 
 class FavoritesList extends Component
 {
+    private const INITIAL_FAVORITE_CARD_LIMIT = 30;
+
     public string $selectedCollection = '';
 
     /** @var list<int> */
@@ -162,7 +164,7 @@ class FavoritesList extends Component
             ])
             ->orderByDesc('priority')
             ->latest()
-            ->limit(40)
+            ->limit(self::INITIAL_FAVORITE_CARD_LIMIT)
             ->get()
             ->filter(fn (Favorite $favorite): bool => $favorite->sleepingPlace instanceof SleepingPlace)
             ->map(fn (Favorite $favorite): array => $this->card($favorite))

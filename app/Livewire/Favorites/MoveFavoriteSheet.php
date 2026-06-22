@@ -7,10 +7,14 @@ use App\Models\User;
 use App\Services\Favorites\FavoriteService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class MoveFavoriteSheet extends Component
 {
+    private const COLLECTION_LIMIT = 30;
+
+    #[Locked]
     public int $favoriteId;
 
     public ?int $collectionId = null;
@@ -39,7 +43,7 @@ class MoveFavoriteSheet extends Component
             ->forUser((int) auth()->id())
             ->active()
             ->ordered()
-            ->limit(40)
+            ->limit(self::COLLECTION_LIMIT)
             ->get();
     }
 

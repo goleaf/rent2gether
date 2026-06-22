@@ -104,7 +104,7 @@ class ChatWindow extends Component
             ->with(['sender:id,name'])
             ->latest('created_at')
             ->latest('id')
-            ->limit(100)
+            ->limit(30)
             ->get()
             ->reverse()
             ->values();

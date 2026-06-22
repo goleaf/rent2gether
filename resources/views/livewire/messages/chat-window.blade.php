@@ -21,7 +21,7 @@
         </div>
     </section>
 
-    <section class="mt-4 flex-1 space-y-3 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950" wire:poll.7s>
+    <section class="mt-4 flex-1 space-y-3 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950" wire:poll.visible.10s>
         @forelse($messageCards as $card)
             <div class="{{ $card['mine'] ? 'ml-auto' : 'mr-auto' }} max-w-[88%] space-y-1">
                 @if($card['message']->is_system_message || $card['message']->system_message)

@@ -9,6 +9,8 @@ use Livewire\Component;
 
 class NotificationsPage extends Component
 {
+    private const INITIAL_NOTIFICATION_LIMIT = 20;
+
     public function markAsRead(string $notificationId): void
     {
         Notification::query()
@@ -60,7 +62,7 @@ class NotificationsPage extends Component
             ])
             ->forUser(auth()->id())
             ->recent()
-            ->limit(50)
+            ->limit(self::INITIAL_NOTIFICATION_LIMIT)
             ->get();
     }
 

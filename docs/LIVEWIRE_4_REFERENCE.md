@@ -11,7 +11,12 @@ Project override: official examples may use view-based or single-file components
 | --- | --- | --- |
 | <https://livewire.laravel.com/docs/4.x/islands> | 2026-06-22 | Binding for isolated Livewire update regions and mobile performance work. |
 | <https://livewire.laravel.com/docs/4.x/lazy> | 2026-06-22 | Binding for lazy/deferred Livewire components, placeholders, bundling, and lazy-testing rules. |
+| <https://livewire.laravel.com/docs/4.x/navigate> | 2026-06-22 | Binding for Livewire Navigate SPA-like visits, redirects, prefetching, persisted elements, active links, JavaScript hooks, script evaluation, analytics, and progress bar configuration. |
+| <https://livewire.laravel.com/docs/4.x/wire-navigate> | 2026-06-22 | Binding for the `wire:navigate` directive, `.hover` prefetching, and `data-current` active-link styling. |
+| <https://livewire.laravel.com/docs/4.x/wire-current> | 2026-06-22 | Binding for `wire:current`, active link class application, partial matching, `.exact`, `.strict`, and troubleshooting requirements. |
+| <https://livewire.laravel.com/docs/4.x/wire-cloak> | 2026-06-22 | Binding for `wire:cloak`, initial-load cloaking, dynamic `wire:show` flicker prevention, and the no-modifier reference. |
 | <https://livewire.laravel.com/docs/4.x/loading-states> | 2026-06-22 | Binding for `data-loading`, Tailwind loading variants, and `wire:loading` fallback rules. |
+| <https://livewire.laravel.com/docs/4.x/wire-loading> | 2026-06-22 | Binding for `wire:loading`, `wire:target`, `.remove`, `.class`, `.attr`, `.delay`, display modifiers, and targeted loading indicators. |
 | <https://livewire.laravel.com/docs/4.x/validation> | 2026-06-22 | Binding for `#[Validate]`, form objects, real-time validation, custom rules, and validation tests. |
 | <https://livewire.laravel.com/docs/4.x/uploads> | 2026-06-22 | Binding for `WithFileUploads`, temporary files, previews, progress, cancellation, configuration, and upload tests. |
 | <https://livewire.laravel.com/docs/4.x/pagination> | 2026-06-22 | Binding for `WithPagination`, URL pagination, page resets, named paginators, cursor pagination, and pagination views. |
@@ -24,6 +29,52 @@ Project override: official examples may use view-based or single-file components
 | <https://livewire.laravel.com/docs/4.x/wire-click> | 2026-06-22 | Binding for `wire:click`, action parameters, link `.prevent`, `.renderless`, `.preserve-scroll`, `.async`, and click modifiers. |
 | <https://livewire.laravel.com/docs/4.x/wire-submit> | 2026-06-22 | Binding for `wire:submit`, form actions, automatic `preventDefault()`, automatic submit disabling/readonly inputs, and submit modifiers. |
 | <https://livewire.laravel.com/docs/4.x/wire-model> | 2026-06-22 | Binding for `wire:model`, default update timing, `.live`, `.blur`, `.change`, `.enter`, casts, nested properties, dependent selects, and event propagation. |
+| <https://livewire.laravel.com/docs/4.x/wire-dirty> | 2026-06-22 | Binding for `wire:dirty`, `$dirty`, targeted dirty indicators, `.remove`, and `.class` dirty styling. |
+| <https://livewire.laravel.com/docs/4.x/wire-confirm> | 2026-06-22 | Binding for `wire:confirm`, browser confirmation, `.prompt`, destructive-action UX, and translated confirmation copy. |
+| <https://livewire.laravel.com/docs/4.x/wire-transition> | 2026-06-22 | Binding for View Transitions, transition names, typed transitions, reduced-motion behavior, and `#[Transition]` coordination. |
+| <https://livewire.laravel.com/docs/4.x/wire-init> | 2026-06-22 | Binding for post-initial-render component actions and non-critical deferred initialization. |
+| <https://livewire.laravel.com/docs/4.x/wire-intersect> | 2026-06-22 | Binding for viewport-triggered actions, `:enter`, `:leave`, `.once`, `.half`, `.full`, `.threshold`, and `.margin`. |
+| <https://livewire.laravel.com/docs/4.x/wire-poll> | 2026-06-22 | Binding for conservative polling, `.visible`, interval modifiers, background behavior, and island-scoped urgent panels. |
+| <https://livewire.laravel.com/docs/4.x/wire-offline> | 2026-06-22 | Binding for offline banners, class/attribute modifiers, and mobile connectivity feedback. |
+| <https://livewire.laravel.com/docs/4.x/wire-ignore> | 2026-06-22 | Binding for DOM regions managed outside Livewire, `.self`, third-party widgets, and safe synchronization boundaries. |
+| <https://livewire.laravel.com/docs/4.x/wire-ref> | 2026-06-22 | Binding for JavaScript element references, `$refs`, `@script`, and cleanup requirements. |
+| <https://livewire.laravel.com/docs/4.x/wire-replace> | 2026-06-22 | Binding for whole-element replacement when morphing would break external DOM ownership or browser state. |
+| <https://livewire.laravel.com/docs/4.x/wire-show> | 2026-06-22 | Binding for CSS display toggling, `wire:cloak` pairing, and small conditional UI. |
+| <https://livewire.laravel.com/docs/4.x/wire-sort> | 2026-06-22 | Binding for drag sorting, `wire:sort:item`, groups, handles, ignore regions, persistence, and authorization. |
+| <https://livewire.laravel.com/docs/4.x/wire-stream> | 2026-06-22 | Binding for streamed DOM updates, append/replace behavior, and cautious use in lightweight progressive output. |
+| <https://livewire.laravel.com/docs/4.x/wire-text> | 2026-06-22 | Binding for client-side text updates from component state without a full morph. |
+| <https://livewire.laravel.com/docs/4.x/attribute-async> | 2026-06-22 | Binding for `#[Async]`, `.async`, independent idempotent side effects, and workflow-safety restrictions. |
+| <https://livewire.laravel.com/docs/4.x/attribute-computed> | 2026-06-22 | Binding for the dedicated `#[Computed]` attribute reference in addition to the feature overview. |
+| <https://livewire.laravel.com/docs/4.x/attribute-defer> | 2026-06-22 | Binding for `#[Defer]` as the class-level version of deferred component loading. |
+| <https://livewire.laravel.com/docs/4.x/attribute-isolate> | 2026-06-22 | Binding for `#[Isolate]`, request isolation, and avoiding unrelated slow component blocking. |
+| <https://livewire.laravel.com/docs/4.x/attribute-js> | 2026-06-22 | Binding for `#[Js]`, JavaScript actions, and browser-only interactions. |
+| <https://livewire.laravel.com/docs/4.x/attribute-json> | 2026-06-22 | Binding for `#[Json]`, safe JSON serialization, and public-state payload constraints. |
+| <https://livewire.laravel.com/docs/4.x/attribute-layout> | 2026-06-22 | Binding for `#[Layout]` on full-page components and project layout consistency. |
+| <https://livewire.laravel.com/docs/4.x/attribute-lazy> | 2026-06-22 | Binding for `#[Lazy]` as the class-level version of lazy component loading. |
+| <https://livewire.laravel.com/docs/4.x/attribute-locked> | 2026-06-22 | Binding for `#[Locked]`, tamper-resistant public IDs, and the rule that locking is not authorization. |
+| <https://livewire.laravel.com/docs/4.x/attribute-modelable> | 2026-06-22 | Binding for `#[Modelable]`, parent-child `wire:model` APIs, and small form-control state. |
+| <https://livewire.laravel.com/docs/4.x/attribute-on> | 2026-06-22 | Binding for `#[On]`, event listeners, dynamic event names, and simple component boundaries. |
+| <https://livewire.laravel.com/docs/4.x/attribute-reactive> | 2026-06-22 | Binding for `#[Reactive]`, reactive child props, and payload caution. |
+| <https://livewire.laravel.com/docs/4.x/attribute-renderless> | 2026-06-22 | Binding for `#[Renderless]`, no-render side effects, and performance-focused actions. |
+| <https://livewire.laravel.com/docs/4.x/attribute-session> | 2026-06-22 | Binding for `#[Session]`, session-backed component state, and compact non-sensitive persistence. |
+| <https://livewire.laravel.com/docs/4.x/attribute-title> | 2026-06-22 | Binding for `#[Title]`, full-page component titles, and translated title rules. |
+| <https://livewire.laravel.com/docs/4.x/attribute-transition> | 2026-06-22 | Binding for `#[Transition]`, typed transitions, and skip behavior. |
+| <https://livewire.laravel.com/docs/4.x/attribute-url> | 2026-06-22 | Binding for the dedicated `#[Url]` attribute reference in addition to the URL feature overview. |
+| <https://livewire.laravel.com/docs/4.x/attribute-validate> | 2026-06-22 | Binding for the dedicated `#[Validate]` attribute reference in addition to the validation feature overview. |
+| <https://livewire.laravel.com/docs/4.x/directive-island> | 2026-06-22 | Binding for the `@island` directive reference in addition to the Islands feature overview. |
+| <https://livewire.laravel.com/docs/4.x/directive-placeholder> | 2026-06-22 | Binding for `@placeholder` inside lazy/defer/skip islands and placeholder skeleton rules. |
+| <https://livewire.laravel.com/docs/4.x/directive-persist> | 2026-06-22 | Binding for `@persist`, Navigate-preserved DOM, layout-only persistence, and scroll containers. |
+| <https://livewire.laravel.com/docs/4.x/directive-teleport> | 2026-06-22 | Binding for the dedicated `@teleport` directive reference in addition to the Teleport feature overview. |
+| <https://livewire.laravel.com/docs/4.x/morphing> | 2026-06-22 | Binding for Livewire morphing, stable DOM structure, keys, and when to use ignore/replace boundaries. |
+| <https://livewire.laravel.com/docs/4.x/hydration> | 2026-06-22 | Binding for hydration/dehydration, public property payloads, and client-visible state constraints. |
+| <https://livewire.laravel.com/docs/4.x/understanding-nesting> | 2026-06-22 | Binding for nested components, prop boundaries, keys, reactive props, and update isolation. |
+| <https://livewire.laravel.com/docs/4.x/troubleshooting> | 2026-06-22 | Binding for DOM-diff troubleshooting, root/key errors, asset/config checks, and diagnostics. |
+| <https://livewire.laravel.com/docs/4.x/security> | 2026-06-22 | Binding for Livewire security, public-state trust boundaries, authorization, and locked properties. |
+| <https://livewire.laravel.com/docs/4.x/csp> | 2026-06-22 | Binding for CSP-aware Livewire/Alpine usage and strict-script deployment caution. |
+| <https://livewire.laravel.com/docs/4.x/javascript> | 2026-06-22 | Binding for `@script`, `$wire`, Livewire hooks, custom directives, cleanup, and Navigate lifecycle. |
+| <https://livewire.laravel.com/docs/4.x/synthesizers> | 2026-06-22 | Binding for custom property synthesizers as advanced infrastructure only. |
+| <https://livewire.laravel.com/docs/4.x/packages> | 2026-06-22 | Binding for package development guidance, but not a default app feature path. |
+| <https://livewire.laravel.com/docs/4.x/contribution-guide> | 2026-06-22 | Binding for upstream contribution context only; no app runtime changes required. |
 
 ## Validation
 
@@ -504,6 +555,91 @@ Livewire `wire:model` binds form input values to component properties. By defaul
 - Test validation and authorization failures for tampered model-bound values.
 - Test locale-visible labels, placeholders, validation feedback, and empty states around model-bound controls.
 
+## Wire Navigate
+
+Livewire Navigate turns normal internal links into Livewire-managed page visits. Livewire intercepts the click, fetches the next page in the background, shows the top progress bar when needed, then swaps the URL, page title, and body without a full browser load.
+
+### Component Rules
+
+- Use `wire:navigate` on internal app links where SPA-like navigation improves perceived speed.
+- Prefer named localized route URLs in `href`; never navigate to raw user-supplied URLs.
+- Do not use `wire:navigate` for external links, downloads, file/media URLs, anchor-only links, forms, or flows that intentionally need a full page load.
+- Use `$this->redirect(..., navigate: true)` or `$this->redirectRoute(..., navigate: true)` only after validation, authorization, and persistence succeed, and only for internal destinations.
+- Active `wire:navigate` links automatically receive `data-current`; prefer Tailwind `data-current:*` variants for active navigation styles.
+- Use `wire:current` only when its documented class behavior is needed, and use `wire:current.ignore` when automatic active styling must be disabled on a navigate link.
+- Use `wire:navigate.hover` sparingly. It prefetches after about 60ms of hover and can request pages users never visit.
+- Avoid `.hover` on dense lists, search results, feeds, message rows, notification rows, or expensive pages.
+- Remember default mousedown/up prefetch is already built into Navigate, so `.hover` is not the default.
+- Use `@persist` only for layout-level elements that truly must survive page changes, such as media players or app chrome, and keep persisted elements outside Livewire components.
+- Use `wire:navigate:scroll` on persisted scroll containers when their own scroll position must survive navigation.
+- Use manual `Livewire.navigate('/path')` only for internal, generated or whitelisted paths and rare JavaScript integration points.
+
+### JavaScript And Assets
+
+- `DOMContentLoaded` fires only on the first page load. Use `livewire:navigated` for code that must run after every Navigate visit.
+- Use `livewire:navigate`, `livewire:navigating`, and `livewire:navigated` only for focused integration needs; `livewire:navigate` can be cancelled and `livewire:navigating` supports `event.detail.onSwap()`.
+- Document event listeners persist across page visits. Clean them up or register them with `{ once: true }` when they should not accumulate.
+- Identical `<head>` scripts run once, new head scripts are evaluated, and head assets can block the page swap.
+- Vite assets are tracked automatically with `data-navigate-track`; avoid ad hoc asset swapping unless the page truly needs it.
+- Body scripts are re-evaluated after navigation. Use `data-navigate-once` only for body scripts that must run once.
+- Analytics snippets may need SPA-aware configuration, such as Fathom's `data-spa="auto"`.
+- The Navigate progress bar appears only after a short delay and should be configured through `config/livewire.php`, not page-local UI code.
+
+### Project Rules
+
+- Keep `wire:navigate` links translated and accessible; link labels, active labels, and `aria-*` text must come from translation keys.
+- Preserve locale and query-string intent on named localized routes.
+- Do not use Navigate to hide slow pages. Fix queries, eager loading, indexes, pagination, lazy loading, or payload size first.
+- For mobile shell navigation, use `data-current:*` active styling and stable dimensions so labels do not shift.
+- Test important Navigate links for locale preservation, active state, back/forward behavior, and JavaScript lifecycle when custom scripts are involved.
+
+## Wire Current
+
+Livewire `wire:current` applies CSS classes to links whose `href` matches the current page. It works with `wire:navigate` page changes and also adds `data-current` to matching links.
+
+### Component Rules
+
+- Prefer automatic `data-current` styling for normal `wire:navigate` links, especially in the mobile shell.
+- Use `wire:current="classes"` only when class-based active styling is clearer than Tailwind `data-current:*`, or inside persisted navigation where server-side active conditionals will not rerender.
+- Every `wire:current` link must have a real `href`, preferably generated from a named localized route.
+- Do not use `wire:current` to create links, change destinations, hide authorization state, or replace backend route/policy checks.
+- Keep `wire:current` class lists static and bounded. Do not build active class strings from user input or unbounded data.
+- By default, `wire:current` uses partial path matching, so a `/posts` link matches `/posts/1`.
+- Use `.exact` when only the exact path should be active, especially for root, dashboard, and top-level tab links.
+- Use `.strict` only when trailing slashes are intentionally meaningful; default matching ignores trailing slashes.
+- Use `wire:current.ignore` on `wire:navigate` links when automatic `data-current` behavior must be disabled.
+
+### Project Rules
+
+- Active navigation styles must be mobile-stable: no layout jumps, clipped labels, or tap-target shrinkage.
+- Active labels, tooltips, and accessible text must still use translation keys; `wire:current` should only contain CSS classes.
+- Prefer active styling that improves orientation without overloading dense lists, search results, messages, or notifications.
+- Do not use PHP route checks in Blade for links inside `@persist`; use `data-current` or `wire:current` so active state follows Navigate page changes.
+- If active state does not update, verify the page has Livewire scripts or at least one Livewire component, and verify the link has `href`.
+- Test root-route `.exact` behavior, nested route partial behavior, locale-prefixed paths, and persisted navigation active state when those surfaces are used.
+
+## Wire Cloak
+
+Livewire `wire:cloak` hides an element on initial page load until Livewire has fully initialized. It prevents users from briefly seeing uninitialized dynamic content, especially content controlled by `wire:show`.
+
+### Component Rules
+
+- Use `wire:cloak` for small state-dependent elements that would otherwise flash in the wrong state before Livewire initializes.
+- Pair `wire:cloak` with `wire:show` when multiple mutually exclusive states could briefly render together on initial load.
+- Remember `wire:cloak` has no modifiers, parameters, target syntax, or delay configuration.
+- Do not use `wire:cloak` as a loading state for Livewire requests; use `data-loading`, `wire:loading`, lazy/defer, or skeletons for request-time feedback.
+- Do not use `wire:cloak` to hide sensitive, unauthorized, private, paid, access-code, payment, dispute, or internal-note data. Sensitive data must not be rendered for unauthorized users at all.
+- Do not cloak large first-screen sections, long lists, forms, or primary content just to avoid designing a stable loading/empty state.
+- Keep cloaked elements layout-stable so initialization does not cause a jump on old phones or slow 3G.
+- Prefer server-rendered safe defaults when possible; use `wire:cloak` only when the initial client-side state would otherwise be misleading.
+
+### Project Rules
+
+- Visible text inside cloaked elements must still use translation keys.
+- Cloaked icon swaps, badges, menus, and small panels should reserve stable dimensions.
+- When a large section needs delayed data, use lazy/deferred components or islands with translated placeholders instead of `wire:cloak`.
+- Test that the final initialized state is correct; `wire:cloak` only hides the pre-init flash and does not prove state, authorization, or visibility logic.
+
 ## Loading States
 
 Livewire automatically adds a `data-loading` attribute to elements that trigger network requests. In this project, prefer `data-loading` Tailwind variants for most loading feedback and reserve `wire:loading` for simple show/hide cases where the directive is clearer.
@@ -565,13 +701,27 @@ Styling a parent when a child is loading:
 
 ### Wire Loading
 
-`wire:loading` remains allowed for very simple show/hide loading indicators, especially where an existing component already uses it clearly. Prefer `data-loading` when targeting would become complex, when events cross component boundaries, or when the loading state is mostly styling.
+`wire:loading` remains allowed for simple show/hide loading indicators, especially where an existing component already uses it clearly. Prefer `data-loading` when styling the request trigger itself, when events cross component boundaries, or when the loading state is mostly Tailwind styling.
+
+- `wire:loading` hides the element by default and shows it while the component has an in-flight request.
+- Use `wire:loading.remove` for inverse behavior: visible by default and hidden during loading.
+- Use `wire:loading.class="..."` or `wire:loading.class.remove="..."` only for simple class toggles; prefer `data-loading:*` variants for most Tailwind styling on request triggers.
+- Use `wire:loading.attr="disabled"` for non-submit buttons or controls outside `wire:submit` forms. `wire:submit` already disables submit buttons and marks inputs readonly while submitting.
+- Add `wire:target="action"` or `wire:target="property"` when a component has more than one possible request and the indicator must react only to one action or one live property update.
+- Use comma-separated targets, such as `wire:target="save, remove"`, only when one indicator deliberately covers multiple actions.
+- Use parameter targets such as `wire:target="remove({{ $id }})"` for repeated list rows so one row's indicator does not appear for every row.
+- Use `wire:target.except="download"` for broad indicators that should ignore one action or property.
+- Use display modifiers such as `.inline`, `.block`, `.flex`, `.grid`, `.table`, or `.inline-flex` when the default `inline-block` display value is wrong for the layout.
+- Use `.delay` to avoid flicker for fast requests. The default delay is 200ms; aliases are available from `.delay.shortest` at 50ms through `.delay.longest` at 1000ms.
+- Keep `wire:loading` indicators short, translated, and layout-stable. For old phones and slow 3G, avoid adding large hidden DOM or shifting content during loading.
+- For file uploads, scope upload feedback with `wire:loading wire:target="photo"` or use the automatic `data-loading` approach documented above.
 
 ### Project Rules
 
 - Every visible loading label must use translation keys.
 - Keep loading feedback subtle on old phones: opacity, disabled pointer behavior, small spinner/icons, skeletons, and stable layout are preferred.
 - Avoid deeply nested `in-data-loading:*` selectors when parent and child components can load at the same time; the variant reacts to any loading ancestor.
+- Do not use broad unscoped `wire:loading` in components with multiple actions unless every request should show the same indicator.
 - Do not use loading states to hide slow queries. Optimize queries, selected columns, indexes, eager loading, and pagination first.
 - Do not rely on loading state to prevent duplicate writes. Server-side validation, authorization, idempotency, and transactions still matter.
 
@@ -789,3 +939,111 @@ Keep polling intervals conservative. For this project, prefer `wire:poll.visible
 - Do not use islands as a substitute for reusable components when the UI is shared across screens.
 - Do not combine aggressive polling, large DOM output, and slow database queries inside one island.
 - Do not copy official single-file component examples with inline PHP into this project.
+
+## Extended Wire Directives
+
+These directives are allowed when they solve a specific mobile UX or performance problem. Do not add them as decoration, and do not use client-side behavior as a substitute for authorization, validation, privacy, idempotency, or domain services.
+
+### Confirmation And Dirty State
+
+- Use `wire:confirm` only on actions where a browser confirmation is acceptable UX. For richer mobile confirmation, prefer a Flux modal or bottom sheet backed by the same Livewire action.
+- Confirmation messages must come from translation keys. Do not hard-code English or Russian copy in `wire:confirm`.
+- Use `wire:confirm.prompt` only for rare destructive actions where typed confirmation is worth the friction. Keep the expected token stable and not localized if the match must be exact, but localize the prompt text around it.
+- `wire:confirm` does not protect the server. Destructive, paid, access-related, inventory, deposit, cancellation, and privacy actions must still authorize, validate state, and be idempotent.
+- Use `wire:dirty` for unsaved-change hints on editable forms, targeted field warnings, and local form state styling.
+- Use `wire:dirty wire:target="property"` or `$dirty('property')` when only one field or group should show dirty feedback.
+- Use `wire:dirty.class="..."` for bounded visual states such as border or text color. Do not generate unbounded Tailwind classes from user data.
+- Keep dirty indicators small, translated, and stable in layout. They are not save guarantees; they only compare client and server state.
+
+### Visibility And Transitions
+
+- Use `wire:show` for small conditional UI that can stay in the DOM and toggle CSS display.
+- Pair `wire:show` with `wire:cloak` when initial uninitialized visibility would flash the wrong state.
+- Do not use `wire:show` for large hidden filter trees, private data, access details, payment payloads, internal notes, or anything the user should not receive in the DOM.
+- Use `wire:transition` only for small state changes where View Transitions improve orientation without slowing old phones. Functionality must remain correct when the browser has no transition support or reduced motion is enabled.
+- Give transitions explicit names when more than one region can animate at the same time.
+- Use `#[Transition]`, `$this->transition()`, or `$this->skipTransition()` for action-level transition direction or skip behavior. Avoid transitions in booking, payment, access, or emergency flows when motion could slow the task.
+
+### Initialization, Intersections, Polling, And Offline
+
+- Use `wire:init` only for non-critical data that can load after the first render. Do not delay first-screen booking actions, payment checks, access/privacy decisions, or required validation behind `wire:init`.
+- Prefer `lazy`, `defer`, and islands over `wire:init` when the delayed region is a whole component or isolated section.
+- Use `wire:intersect.once` for one-time viewport side effects such as marking a hint seen, loading a below-the-fold summary, or tracking a safe analytics event.
+- Use `wire:intersect` thresholds and margins conservatively so old phones do not fire noisy requests during scroll.
+- Use `wire:poll.visible.30s` or slower for urgent panels that genuinely need periodic refresh. Avoid second-by-second polling.
+- Scope polling to islands or small child components whenever possible so the whole screen does not re-render.
+- Do not poll expensive queries, full search results, large message histories, or notification centers. Use cursor pagination, load-more, and explicit refresh actions instead.
+- Use `wire:offline` for small connection banners and disabled-looking states. Offline UI must be translated and should not hide important already-rendered context.
+- Offline UI is not a retry queue. Mutating actions still need server-side validation and clear failure messages after reconnection.
+
+### DOM Boundaries And JavaScript Bridges
+
+- Use `wire:ignore` only for DOM owned by a third-party widget or custom JavaScript that Livewire should not morph. Keep a clear synchronization path back to Livewire state.
+- Use `wire:ignore.self` when Livewire may update children but must not change the root element's attributes.
+- Do not use `wire:ignore` to hide broken Livewire markup, stale state, or authorization problems.
+- Use `wire:replace` only when replacing an entire element is safer than morphing, such as small external DOM bridges or browser-managed state that morphing would corrupt.
+- Use `wire:ref` and `$refs` only inside component JavaScript that needs a specific DOM element. Clean up listeners and timers with Livewire cleanup hooks.
+- In class components, wrap component-specific scripts in `@script`; do not place raw persistent document listeners in Blade.
+- Use `wire:text` for small text-only client updates where avoiding a morph is useful. Do not use it for rich HTML, translated markup, sensitive values, or complex formatting that belongs in PHP.
+
+### Sorting And Streaming
+
+- Use `wire:sort` for drag-and-drop order editing only when the order matters to the user and keyboard/mobile alternatives are acceptable.
+- Persist sort order in a service/action, re-load models by ID, authorize ownership, validate destination groups, and handle concurrent reorder attempts.
+- Use `wire:sort:handle` for dense cards so scrolling remains possible on touch devices. Use `wire:sort:ignore` for controls inside sortable rows.
+- Do not use sorting for booking, payment, deposit, access, or legal/dispute ordering where accidental drag could be costly.
+- Use `wire:stream` only for lightweight progressive output such as safe generated text, small status logs, or counters. It is not a general replacement for pagination, polling, or queues.
+- Prefer `wire:stream.replace` for counters/progress and append mode for genuinely append-only text.
+- Do not stream private payloads, access codes, payment/provider data, internal notes, or unbounded content into the DOM.
+
+## Livewire PHP Attributes
+
+Attributes belong in class components under `app/Livewire/...`. They do not change the project's rule that business logic belongs in services/actions and visible strings belong in translation files.
+
+- Use `#[Locked]` on public scalar identifiers that must not be changed from the browser, such as `bookingId`, `propertyId`, `roomId`, and `sleepingPlaceId`. Locked values are still client-visible and are not authorization.
+- Use `#[Session]` only for compact, non-sensitive UI preferences such as selected tabs or local filter state. Do not put access details, private messages, payment data, internal notes, or large arrays in session-backed public properties.
+- Use `#[Reactive]` for small child props that must update when the parent changes. Avoid making large arrays, model graphs, or frequently changing lists reactive.
+- Use `#[Modelable]` for reusable input-like child components with one small model value. Do not model complex forms through many nested child components if a Livewire Form Object is clearer.
+- Use `#[On]` for explicit component events with stable names. Keep event payloads small and treat them as untrusted input.
+- Dynamic event names must be bounded by trusted IDs or enum-like state; do not build event names from raw user input.
+- Use `#[Renderless]` for actions that do not change visible state, such as safe analytics, read markers, or tiny side effects. If the user should see changed state, let the component render.
+- Use `#[Async]` or `.async` only for independent idempotent work that does not mutate the same record/workflow as other in-flight actions. Avoid it for booking, payment, deposit, inventory, checkout, access, cancellation, and review publication flows.
+- Use `#[Isolate]` only when an independent component request should not be bundled with or block other components. Avoid isolated requests that race over shared state.
+- Use `#[Js]` for small browser-only actions. Do not put pricing, availability, authorization, privacy, validation, or workflow decisions in JavaScript actions.
+- Use `#[Json]` only for safe, compact, JSON-serializable public state. Remember public state is sent to the browser.
+- Use `#[Layout]` and `#[Title]` for full-page Livewire components when it keeps page metadata close to the component. Titles must be translated or resolved from translated metadata.
+- Use `#[Lazy]` and `#[Defer]` at class level only when every use of the component should delay loading. Prefer instance-level `lazy` or `defer` for one-off placements.
+- Use `#[Transition]` for action-level transition types or skip behavior; keep reduced-motion and low-end device comfort in mind.
+- The dedicated `#[Computed]`, `#[Url]`, and `#[Validate]` references reinforce the existing rules in this file: small/safe state, explicit cache invalidation, shareable-only URL state, translated validation, and validation before persistence.
+
+## Blade Directives And Runtime Internals
+
+### Placeholders, Persisted DOM, And Teleport
+
+- Use `@placeholder` inside lazy, defer, or skip islands. For class-based lazy/deferred child components, keep using a `placeholder()` method.
+- Placeholder markup must be translated, skeleton-friendly, query-free, and root-compatible with the loaded content.
+- Use `@persist` only in layout-level markup that exists across Navigate visits, such as the navigation loading bar or a future media player. Do not persist booking, payment, access, dispute, or form state by accident.
+- Persisted markup does not re-render on each Navigate visit, so active navigation should use `data-current` or `wire:current`, not server-side active route checks.
+- Use `@teleport` according to the Teleport section above; the dedicated directive page does not change the project's preference for Flux primitives first.
+
+### Morphing, Hydration, And Nesting
+
+- Keep one stable root element per Livewire view and per loop item.
+- Use stable `wire:key` values for repeated components, conditional swaps, dynamic form rows, and any list where identity matters.
+- Do not rely on morphing to repair invalid HTML, duplicated keys, missing roots, or large conditional DOM swaps.
+- Reach for `wire:ignore` or `wire:replace` only after the DOM boundary is intentional and documented.
+- Hydration means public properties are serialized between requests. Keep them small, non-sensitive, and easy to validate.
+- Never store access codes, exact private addresses, payment/provider payloads, internal notes, private dispute details, or large DTO/model graphs in public properties.
+- Nested Livewire components have their own state and do not automatically re-render just because the parent re-renders. Use events, `#[Reactive]`, `#[Modelable]`, or explicit keys only when the dependency is real.
+- Pass scalar IDs and compact values into nested components. Let each component authorize and query its own data when it owns an interaction boundary.
+
+### Troubleshooting, Security, CSP, JavaScript, And Advanced Extension Points
+
+- When a Livewire view behaves strangely, check for missing/duplicated `wire:key`, multiple root elements, invalid nesting, stale assets, missing scripts, untracked `wire:navigate` JavaScript, and broad `wire:ignore` first.
+- Treat every public property, action parameter, event payload, URL-bound value, and model ID as untrusted. Re-load, authorize, validate, and check current workflow state server-side.
+- `#[Locked]`, hidden inputs, disabled buttons, `wire:confirm`, and loading states are UX helpers, not security controls.
+- Strict CSP changes must be made deliberately with Livewire and Alpine requirements verified. Do not add inline scripts outside `@script`, and prefer documented hooks/directives.
+- Use the Livewire JavaScript APIs for component-local behavior only when HTML directives and Flux components are not enough.
+- Register custom JavaScript directives rarely, keep them idempotent, and always clean up listeners.
+- Custom synthesizers are advanced infrastructure. Do not create one unless a domain value object truly cannot be handled by normal casts, DTO arrays, or Livewire-supported types.
+- Package development and contribution-guide pages are upstream-maintenance references. They do not justify adding app packages, changing dependencies, or moving app code into packages without an explicit architecture decision.
