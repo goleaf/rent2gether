@@ -7,6 +7,7 @@ use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Livewire\Host\SleepingPlaceForm;
 use App\Livewire\Host\SleepingPlaceList;
+use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\Rule;
@@ -14,6 +15,8 @@ use App\Models\RuleTranslation;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -162,6 +165,58 @@ class HostSleepingPlaceFlowTest extends TestCase
             ]);
 
         $this->assertDatabaseCount('sleeping_places', 0);
+    }
+
+    public function test_host_can_save_sleeping_place_photos_from_edit_form(): void
+    {
+        Storage::fake('public');
+
+        [$host, $room] = $this->hostRoom();
+        $sleepingPlace = SleepingPlace::factory()
+            ->for($room)
+            ->for($room->property)
+            ->hasTranslations(1, ['locale' => 'en', 'title' => 'Editable lower bunk'])
+            ->hasTranslations(1, ['locale' => 'ru', 'title' => 'Редактируемая нижняя кровать'])
+            ->create([
+                'display_name' => 'Editable lower bunk',
+                'status' => SleepingPlaceStatus::Active,
+                'base_price_per_night' => 24,
+                'currency' => 'EUR',
+                'min_nights' => 1,
+                'max_guests' => 1,
+            ]);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceForm::class, ['room' => $room, 'sleepingPlace' => $sleepingPlace])
+            ->set('step', 7)
+            ->set('exactPhoto', UploadedFile::fake()->image('exact-place.jpg', 1200, 800)->size(500))
+            ->set('detailPhoto', UploadedFile::fake()->image('detail-place.jpg', 900, 700)->size(350))
+            ->call('publish')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        $mediaItems = MediaItem::query()
+            ->where('mediable_type', SleepingPlace::class)
+            ->where('mediable_id', $sleepingPlace->id)
+            ->orderBy('collection')
+            ->get();
+
+        $this->assertCount(2, $mediaItems);
+        $this->assertSame(['detail', 'exact_place'], $mediaItems->pluck('collection')->all());
+
+        foreach ($mediaItems as $mediaItem) {
+            Storage::disk('public')->assertExists($mediaItem->thumb_path);
+            Storage::disk('public')->assertExists($mediaItem->mobile_path);
+            Storage::disk('public')->assertExists($mediaItem->full_path);
+
+            $this->assertDatabaseHas('sleeping_place_photos', [
+                'sleeping_place_id' => $sleepingPlace->id,
+                'media_item_id' => $mediaItem->id,
+                'path' => $mediaItem->path,
+                'thumbnail_path' => $mediaItem->thumb_path,
+                'status' => 'active',
+            ]);
+        }
     }
 
     public function test_sleeping_place_list_shows_translated_card_content(): void

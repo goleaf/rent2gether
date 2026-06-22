@@ -6,6 +6,8 @@ use App\Enums\BookingStatus;
 use App\Enums\UserNotificationType;
 use App\Models\Booking;
 use App\Models\Notification;
+use App\Models\NotificationEvent;
+use App\Models\NotificationTemplate;
 use App\Models\Review;
 use App\Models\SleepingPlace;
 use App\Models\User;
@@ -45,6 +47,181 @@ class NotificationService
             'channel' => 'database',
             'status' => 'unread',
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function createForUser(User $user, string $templateKey, array $context = []): Notification
+    {
+        $template = $this->templateFor($templateKey);
+        $booking = $this->contextBooking($context);
+        $priority = (string) ($context['priority'] ?? $template->default_priority);
+        $deduplicationKey = $context['deduplication_key'] ?? $this->deduplicationKey($templateKey, $user, $context);
+        $deduplication = app(NotificationDeduplicationService::class);
+
+        if ($deduplicationKey && $existing = $deduplication->findRecentDuplicate($deduplicationKey)) {
+            return $deduplication->mergeIntoExisting($existing, $context);
+        }
+
+        $params = $this->notificationParams($booking, $context);
+        $payload = $context['payload'] ?? [];
+        $actionType = $context['action_type'] ?? $template->default_action_type;
+        $locale = app(NotificationPreferenceService::class)->getOrCreateForUser($user)->language_locale ?: $this->localeFor($user);
+
+        $notification = Notification::query()->create([
+            'id' => (string) Str::uuid(),
+            'notification_number' => app(NotificationNumberService::class)->generateNotificationNumber(),
+            'notification_event_id' => $context['notification_event_id'] ?? null,
+            'notification_template_id' => $template->id,
+            'type' => $templateKey,
+            'notifiable_type' => User::class,
+            'notifiable_id' => $user->id,
+            'user_id' => $user->id,
+            'recipient_user_id' => $user->id,
+            'recipient_type' => $context['recipient_type'] ?? $this->recipientTypeFor($user, $booking),
+            'notification_category' => $context['notification_category'] ?? $template->notification_category,
+            'notification_type' => $context['notification_type'] ?? $this->notificationTypeFor($priority),
+            'status' => 'created',
+            'priority' => $priority,
+            'title_key' => $template->title_translation_key,
+            'body_key' => $template->body_translation_key,
+            'title_translation_key' => $template->title_translation_key,
+            'body_translation_key' => $template->body_translation_key,
+            'short_body_translation_key' => $template->short_body_translation_key,
+            'translation_params_json' => $params,
+            'locale' => $locale,
+            'source_type' => $context['source_type'] ?? ($booking ? 'booking' : null),
+            'source_id' => $context['source_id'] ?? $booking?->id,
+            'booking_id' => $booking?->id ?? $context['booking_id'] ?? null,
+            'property_id' => $booking?->property_id ?? $context['property_id'] ?? null,
+            'room_id' => $booking?->room_id ?? $context['room_id'] ?? null,
+            'sleeping_place_id' => $booking?->sleeping_place_id ?? $context['sleeping_place_id'] ?? null,
+            'action_type' => $actionType,
+            'action_url' => $context['action_url'] ?? null,
+            'action_label_translation_key' => $actionType ? 'notifications.actions.'.$actionType : null,
+            'deduplication_key' => $deduplicationKey,
+            'throttle_key' => $context['throttle_key'] ?? null,
+            'data' => [
+                'params' => $params,
+                'payload' => $payload,
+            ],
+            'channel' => 'in_app',
+            'is_read' => false,
+            'is_dismissed' => false,
+            'is_action_required' => (bool) ($context['is_action_required'] ?? $template->requires_action),
+            'is_urgent' => $priority === 'urgent' || $priority === 'critical',
+            'is_critical' => $priority === 'critical' || $template->is_critical,
+        ]);
+
+        $notification->loadMissing('recipient');
+        app(NotificationDeliveryService::class)->createDeliveries($notification);
+
+        if ($actionType) {
+            app(NotificationActionService::class)->createAction($notification, $actionType, $context);
+        }
+
+        app(NotificationSystemEventService::class)->record('notification_created', ['notification' => $notification]);
+
+        return $notification->refresh();
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function createFromEvent(NotificationEvent $event, User $recipient, string $templateKey, array $context = []): Notification
+    {
+        return $this->createForUser($recipient, $templateKey, $context + [
+            'notification_event_id' => $event->id,
+            'notification_category' => $event->notification_category,
+            'source_type' => $event->source_type,
+            'source_id' => $event->source_id,
+            'booking_id' => $event->booking_id,
+            'property_id' => $event->property_id,
+            'room_id' => $event->room_id,
+            'sleeping_place_id' => $event->sleeping_place_id,
+            'payload' => $event->payload_json ?? [],
+        ]);
+    }
+
+    public function markRead(User $user, Notification $notification): Notification
+    {
+        if (! app(NotificationPrivacyService::class)->canView($user, $notification)) {
+            return $notification;
+        }
+
+        $notification->forceFill([
+            'status' => 'read',
+            'read_at' => now(),
+            'is_read' => true,
+        ])->save();
+
+        app(NotificationSystemEventService::class)->record('notification_read', ['notification' => $notification, 'user_id' => $user->id]);
+
+        return $notification->refresh();
+    }
+
+    public function markDismissed(User $user, Notification $notification): Notification
+    {
+        if (! app(NotificationPrivacyService::class)->canView($user, $notification)) {
+            return $notification;
+        }
+
+        $notification->forceFill([
+            'status' => 'dismissed',
+            'dismissed_at' => now(),
+            'is_dismissed' => true,
+        ])->save();
+
+        app(NotificationSystemEventService::class)->record('notification_dismissed', ['notification' => $notification, 'user_id' => $user->id]);
+
+        return $notification->refresh();
+    }
+
+    public function markActionTaken(User $user, Notification $notification): Notification
+    {
+        app(NotificationActionService::class)->performAction($user, $notification);
+
+        return $notification->refresh();
+    }
+
+    public function cancel(Notification $notification, ?string $reason = null): Notification
+    {
+        $notification->forceFill([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+        ])->save();
+
+        app(NotificationSystemEventService::class)->record('notification_cancelled', ['notification' => $notification, 'reason' => $reason]);
+
+        return $notification->refresh();
+    }
+
+    public function expire(Notification $notification): Notification
+    {
+        $notification->forceFill([
+            'status' => 'expired',
+            'expired_at' => now(),
+        ])->save();
+
+        $notification->actions()->update(['status' => 'expired']);
+        app(NotificationSystemEventService::class)->record('notification_expired', ['notification' => $notification]);
+
+        return $notification->refresh();
+    }
+
+    public function archive(User $user, Notification $notification): Notification
+    {
+        if (! app(NotificationPrivacyService::class)->canView($user, $notification)) {
+            return $notification;
+        }
+
+        $notification->forceFill([
+            'status' => 'archived',
+            'archived_at' => now(),
+        ])->save();
+
+        return $notification->refresh();
     }
 
     public function notifyBookingCreated(Booking $booking): void
@@ -318,6 +495,120 @@ class NotificationService
             'date' => $booking->check_in_date?->toDateString(),
             'deadline' => $booking->payment_deadline_at?->format('H:i'),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     * @return array<string, scalar|null>
+     */
+    private function notificationParams(?Booking $booking, array $context): array
+    {
+        $params = [];
+
+        if ($booking instanceof Booking) {
+            $booking->loadMissing([
+                'guest:id,name',
+                'host:id,name',
+                'sleepingPlace:id,display_name,place_number',
+                'sleepingPlace.translations:id,sleeping_place_id,locale,title',
+            ]);
+
+            $params = $this->bookingParams($booking);
+        }
+
+        $extra = $context['translation_params_json'] ?? $context['params'] ?? [];
+
+        return array_merge($params, is_array($extra) ? $extra : []);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function contextBooking(array $context): ?Booking
+    {
+        if (($context['booking'] ?? null) instanceof Booking) {
+            return $context['booking'];
+        }
+
+        if (isset($context['booking_id'])) {
+            return Booking::query()
+                ->select([
+                    'id',
+                    'reference',
+                    'guest_user_id',
+                    'host_user_id',
+                    'property_id',
+                    'room_id',
+                    'sleeping_place_id',
+                    'payment_deadline_at',
+                    'check_in_date',
+                    'check_out_date',
+                ])
+                ->find($context['booking_id']);
+        }
+
+        return null;
+    }
+
+    private function templateFor(string $templateKey): NotificationTemplate
+    {
+        $template = app(NotificationTemplateService::class)->getByKey($templateKey);
+
+        if (! $template instanceof NotificationTemplate) {
+            app(NotificationTemplateService::class)->seedDefaultTemplates();
+            $template = app(NotificationTemplateService::class)->getByKey($templateKey);
+        }
+
+        if (! $template instanceof NotificationTemplate) {
+            $template = NotificationTemplate::query()->create([
+                'template_key' => $templateKey,
+                'notification_category' => 'system',
+                'title_translation_key' => 'notifications.events.'.$templateKey,
+                'body_translation_key' => 'notifications.events.'.$templateKey,
+                'default_priority' => 'normal',
+                'default_action_type' => 'open_booking',
+                'supports_in_app' => true,
+                'active' => true,
+            ]);
+        }
+
+        return $template;
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function deduplicationKey(string $templateKey, User $user, array $context): ?string
+    {
+        if (! in_array($templateKey, ['guest_sent_message', 'host_sent_message', 'saved_search_new_results'], true)) {
+            return null;
+        }
+
+        return app(NotificationDeduplicationService::class)->buildDeduplicationKey($templateKey, $user, $context);
+    }
+
+    private function notificationTypeFor(string $priority): string
+    {
+        return match ($priority) {
+            'critical', 'urgent' => 'urgent_alert',
+            'high' => 'action_required',
+            default => 'info',
+        };
+    }
+
+    private function recipientTypeFor(User $user, ?Booking $booking): string
+    {
+        if ($booking instanceof Booking) {
+            if ((int) $booking->host_user_id === (int) $user->id) {
+                return 'host';
+            }
+
+            if ((int) $booking->guest_user_id === (int) $user->id) {
+                return 'guest';
+            }
+        }
+
+        return $user->is_host ? 'host' : 'guest';
     }
 
     private function notificationBooking(Booking $booking): Booking

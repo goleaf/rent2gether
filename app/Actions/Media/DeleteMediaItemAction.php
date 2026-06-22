@@ -3,6 +3,7 @@
 namespace App\Actions\Media;
 
 use App\Models\MediaItem;
+use App\Models\SleepingPlacePhoto;
 use Illuminate\Support\Facades\Storage;
 
 class DeleteMediaItemAction
@@ -22,6 +23,10 @@ class DeleteMediaItemAction
         ])->filter()
             ->unique()
             ->each(fn (string $path): bool => Storage::disk($mediaItem->disk ?: 'public')->delete($path));
+
+        SleepingPlacePhoto::query()
+            ->where('media_item_id', $mediaItem->id)
+            ->delete();
 
         $mediaItem->delete();
 

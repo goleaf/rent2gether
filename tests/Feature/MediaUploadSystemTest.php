@@ -132,6 +132,34 @@ class MediaUploadSystemTest extends TestCase
         Storage::disk('public')->assertMissing($media->full_path);
     }
 
+    public function test_deleting_sleeping_place_media_removes_photo_mirror_row(): void
+    {
+        [$host, $property] = $this->hostProperty();
+        $room = Room::factory()->for($property)->create(['status' => RoomStatus::Draft->value]);
+        $sleepingPlace = SleepingPlace::factory()
+            ->for($property)
+            ->for($room)
+            ->create(['status' => 'draft']);
+        $media = $this->storeMedia($sleepingPlace, $host, 'delete-place.jpg', 'exact_place');
+
+        $this->assertDatabaseHas('sleeping_place_photos', [
+            'sleeping_place_id' => $sleepingPlace->id,
+            'media_item_id' => $media->id,
+        ]);
+
+        Livewire::actingAs($host)
+            ->test(ManageMedia::class, [
+                'ownerType' => 'sleeping_place',
+                'ownerId' => $sleepingPlace->id,
+                'collection' => 'exact_place',
+            ])
+            ->call('deleteMedia', $media->id)
+            ->assertHasNoErrors();
+
+        $this->assertModelMissing($media);
+        $this->assertSame(0, $sleepingPlace->photos()->count());
+    }
+
     public function test_host_can_set_primary_media(): void
     {
         [$host, $property] = $this->hostProperty();

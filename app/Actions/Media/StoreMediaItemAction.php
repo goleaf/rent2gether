@@ -3,6 +3,8 @@
 namespace App\Actions\Media;
 
 use App\Models\MediaItem;
+use App\Models\SleepingPlace;
+use App\Models\SleepingPlacePhoto;
 use App\Models\User;
 use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\ImageVariantGenerator;
@@ -78,7 +80,38 @@ class StoreMediaItemAction
             ]);
         }
 
+        $this->syncSleepingPlacePhoto($owner, $mediaItem, $user, $cleanCaptions);
+
         return $mediaItem->load('translations');
+    }
+
+    /**
+     * Mirrors uploaded sleeping-place media into the legacy listing photo table used by readiness checks.
+     *
+     * @param  array<string, string>  $captions
+     */
+    private function syncSleepingPlacePhoto(Model $owner, MediaItem $mediaItem, User $user, array $captions): void
+    {
+        if (! $owner instanceof SleepingPlace) {
+            return;
+        }
+
+        SleepingPlacePhoto::query()->updateOrCreate(
+            ['media_item_id' => $mediaItem->id],
+            [
+                'sleeping_place_id' => $owner->id,
+                'uploaded_by_user_id' => $user->id,
+                'disk' => $mediaItem->disk ?: 'public',
+                'path' => $mediaItem->path,
+                'thumbnail_path' => $mediaItem->thumb_path ?: $mediaItem->thumbnail_path,
+                'caption' => collect($captions)->first(),
+                'sort_order' => $mediaItem->sort_order,
+                'is_primary' => (bool) $mediaItem->is_primary,
+                'is_main' => (bool) ($mediaItem->is_primary || $mediaItem->is_cover),
+                'status' => $mediaItem->status ?: 'active',
+                'visibility' => 'public',
+            ],
+        );
     }
 
     /**

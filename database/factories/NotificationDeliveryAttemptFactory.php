@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\NotificationDeliveryAttempt;
+use App\Models\Notification;
+use App\Models\NotificationDelivery;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +20,15 @@ class NotificationDeliveryAttemptFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'notification_delivery_id' => NotificationDelivery::factory(),
+            'notification_id' => Notification::factory(),
+            'channel' => 'email',
+            'attempt_number' => 1,
+            'status' => 'ready',
+            'attempted_at' => now(),
+            'provider' => null,
+            'provider_response_json' => null,
+            'failure_reason' => null,
         ];
     }
 }

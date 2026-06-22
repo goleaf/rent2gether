@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\NotificationDigestItem;
+use App\Models\Notification;
+use App\Models\NotificationDigest;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +20,9 @@ class NotificationDigestItemFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'notification_digest_id' => NotificationDigest::factory(),
+            'notification_id' => Notification::factory(),
+            'sort_order' => $this->faker->numberBetween(0, 50),
         ];
     }
 }
