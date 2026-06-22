@@ -404,7 +404,7 @@ class PropertyForm extends Component
     {
         return collect(array_keys(self::PHOTO_FIELDS))
             ->mapWithKeys(fn (string $field): array => [
-                $field => ['nullable', 'image', 'max:2048', 'dimensions:max_width=2400,max_height=2400'],
+                $field => ['nullable', 'image', 'max:2048', 'dimensions:min_width=1,min_height=1'],
             ])
             ->all();
     }

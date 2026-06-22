@@ -188,7 +188,7 @@ class ManageMedia extends Component
             'ownerType' => ['required', Rule::in(['property', 'room', 'sleeping_place', 'avatar', 'user', 'complaint', 'checkin', 'checkout', 'review'])],
             'ownerId' => ['required', 'integer', 'min:1'],
             'collection' => ['required', 'string', 'max:80'],
-            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096', 'dimensions:max_width=5000,max_height=5000'],
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096', 'dimensions:min_width=1,min_height=1'],
             'captions' => ['array'],
             ...collect($this->contentLocales())->mapWithKeys(fn (array $locale): array => [
                 'captions.'.$locale['code'] => ['nullable', 'string', 'max:160'],

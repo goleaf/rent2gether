@@ -219,6 +219,49 @@ class HostSleepingPlaceFlowTest extends TestCase
         }
     }
 
+    public function test_host_can_save_phone_sized_sleeping_place_photos_from_edit_form(): void
+    {
+        Storage::fake('public');
+
+        [$host, $room] = $this->hostRoom();
+        $sleepingPlace = SleepingPlace::factory()
+            ->for($room)
+            ->for($room->property)
+            ->hasTranslations(1, ['locale' => 'en', 'title' => 'Phone photo lower bunk'])
+            ->hasTranslations(1, ['locale' => 'ru', 'title' => 'Нижняя кровать с фото'])
+            ->create([
+                'display_name' => 'Phone photo lower bunk',
+                'status' => SleepingPlaceStatus::Active,
+                'base_price_per_night' => 24,
+                'currency' => 'EUR',
+                'min_nights' => 1,
+                'max_guests' => 1,
+            ]);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceForm::class, ['room' => $room, 'sleepingPlace' => $sleepingPlace])
+            ->set('step', 7)
+            ->set('exactPhoto', UploadedFile::fake()->image('exact-place-phone.jpg', 3000, 2000)->size(900))
+            ->set('detailPhoto', UploadedFile::fake()->image('detail-place-phone.jpg', 2800, 1900)->size(850))
+            ->call('publish')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        $mediaItems = MediaItem::query()
+            ->where('mediable_type', SleepingPlace::class)
+            ->where('mediable_id', $sleepingPlace->id)
+            ->orderBy('collection')
+            ->get();
+
+        $this->assertCount(2, $mediaItems);
+
+        foreach ($mediaItems as $mediaItem) {
+            $this->assertSame('image/webp', $mediaItem->mime);
+            $this->assertStringEndsWith('.webp', $mediaItem->path);
+            Storage::disk('public')->assertExists($mediaItem->mobile_path);
+        }
+    }
+
     public function test_sleeping_place_list_shows_translated_card_content(): void
     {
         [$host, $room] = $this->hostRoom();

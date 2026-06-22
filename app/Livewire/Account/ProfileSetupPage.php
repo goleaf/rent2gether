@@ -95,7 +95,7 @@ class ProfileSetupPage extends Component
 
         $validated = $this->validate([
             'displayName' => ['required', 'string', 'max:255'],
-            'avatar' => ['nullable', 'image', 'max:1024', 'dimensions:max_width=2000,max_height=2000'],
+            'avatar' => ['nullable', 'image', 'max:1024', 'dimensions:min_width=1,min_height=1'],
             'phone' => ['nullable', 'string', 'max:40'],
             'countryQuery' => ['nullable', 'string', 'max:120'],
             'countryId' => [$this->countryQuery !== '' ? 'required' : 'nullable', 'integer', 'exists:countries,id'],

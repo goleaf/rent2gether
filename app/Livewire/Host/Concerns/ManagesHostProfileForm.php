@@ -67,7 +67,7 @@ trait ManagesHostProfileForm
     {
         return [
             'displayName' => ['required', 'string', 'max:255'],
-            'avatar' => ['nullable', 'image', 'max:1024', 'dimensions:max_width=2000,max_height=2000'],
+            'avatar' => ['nullable', 'image', 'max:1024', 'dimensions:min_width=1,min_height=1'],
             'about' => ['nullable', 'string', 'max:1000'],
             'languages' => ['nullable', 'string', 'max:120'],
             'responseStyle' => ['required', Rule::in(['friendly', 'quick', 'detailed'])],
