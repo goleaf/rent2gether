@@ -66,7 +66,14 @@
     </span>
 </flux:label>
                     <flux:textarea rows="3" wire:model.blur="guestMessage" />
-                    <flux:description>{{ __('booking.extension.guest_message_helper') }}</flux:description>
+                    <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('booking.extension.guest_message_helper') }}
+                            </span>
+                        </span>
+                    </flux:description>
                     <flux:error name="guestMessage" />
                 </flux:field>
             </div>

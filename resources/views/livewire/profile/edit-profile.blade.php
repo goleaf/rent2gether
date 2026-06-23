@@ -226,11 +226,16 @@
                         @endforeach
                     </flux:select>
                     <flux:description>
-                        @if($this->calculatedHostExperienceYears === null)
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                @if($this->calculatedHostExperienceYears === null)
                             {{ __('app.profile.experience_years_empty') }}
                         @else
                             {{ trans_choice('app.profile.experience_years_calculated', $this->calculatedHostExperienceYears, ['count' => $this->calculatedHostExperienceYears]) }}
                         @endif
+                            </span>
+                        </span>
                     </flux:description>
                     <flux:error name="hostExperienceStartedYear" />
                 </flux:field>

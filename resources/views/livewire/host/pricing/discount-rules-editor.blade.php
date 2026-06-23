@@ -79,14 +79,14 @@
             </div>
         @empty
             <flux:callout color="zinc" icon="information-circle">
-                <flux:callout.heading>{{ __('pricing.empty.discount_rules') }}</flux:callout.heading>
+                <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('pricing.empty.discount_rules') }}</flux:callout.heading>
             </flux:callout>
         @endforelse
     </div>
 
     @if ($savedMessageKey)
         <flux:callout color="green" icon="check-circle">
-            <flux:callout.heading>{{ __($savedMessageKey) }}</flux:callout.heading>
+            <flux:callout.heading icon="check-circle" icon:variant="mini">{{ __($savedMessageKey) }}</flux:callout.heading>
         </flux:callout>
     @endif
 </flux:card>

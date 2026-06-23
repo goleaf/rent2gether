@@ -32,7 +32,7 @@
 
     @if(($summary['host_will_see']['warnings'] ?? []) !== [])
         <flux:callout color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('guest_intake.summary.warning_title') }}</flux:callout.heading>
+            <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('guest_intake.summary.warning_title') }}</flux:callout.heading>
             <flux:callout.text>
                 <ul class="list-inside list-disc space-y-1">
                     @foreach($summary['host_will_see']['warnings'] as $warning)

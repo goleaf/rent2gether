@@ -213,7 +213,14 @@
     </span>
 </flux:label>
             <flux:textarea rows="3" wire:model.blur="keySafeLocationNote" />
-            <flux:description>{{ __('property.helpers.private_access_note') }}</flux:description>
+            <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('property.helpers.private_access_note') }}
+                            </span>
+                        </span>
+                    </flux:description>
             <flux:error name="keySafeLocationNote" />
         </flux:field>
 

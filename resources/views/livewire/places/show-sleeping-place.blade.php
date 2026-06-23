@@ -193,7 +193,7 @@
 
                 @if($availabilityWarning)
                     <flux:callout color="amber" icon="exclamation-triangle">
-                        <flux:callout.heading>{{ __('listing.detail.booking.warning_heading') }}</flux:callout.heading>
+                        <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('listing.detail.booking.warning_heading') }}</flux:callout.heading>
                         <flux:callout.text>{{ $availabilityWarning }}</flux:callout.text>
                     </flux:callout>
 

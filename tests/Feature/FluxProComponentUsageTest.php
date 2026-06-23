@@ -287,6 +287,8 @@ class FluxProComponentUsageTest extends TestCase
     public function test_structural_flux_surfaces_have_icons(): void
     {
         $missingIcons = [];
+        $invalidIcons = [];
+        $invalidIconVariants = [];
 
         foreach (File::allFiles(resource_path('views')) as $file) {
             if (! str_ends_with($file->getFilename(), '.blade.php')) {
@@ -312,9 +314,19 @@ class FluxProComponentUsageTest extends TestCase
                 if (! self::fluxOpeningTagHasIcon($occurrence['tag']) && ! str_contains($occurrence['body'], '<flux:icon')) {
                     $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, 'flux:breadcrumbs.item');
                 }
+
+                self::collectInvalidFluxIcons($relativePath, $contents, $occurrence, 'flux:breadcrumbs.item', $invalidIcons, $invalidIconVariants);
             }
 
-            foreach (['flux:label', 'flux:accordion.heading'] as $component) {
+            foreach (self::findFluxComponentOccurrences($contents, 'flux:callout.heading') as $occurrence) {
+                if (! self::fluxOpeningTagHasIcon($occurrence['tag']) && ! str_contains($occurrence['body'], '<flux:icon')) {
+                    $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, 'flux:callout.heading');
+                }
+
+                self::collectInvalidFluxIcons($relativePath, $contents, $occurrence, 'flux:callout.heading', $invalidIcons, $invalidIconVariants);
+            }
+
+            foreach (['flux:label', 'flux:accordion.heading', 'flux:description'] as $component) {
                 foreach (self::findFluxComponentOccurrences($contents, $component) as $occurrence) {
                     if (! str_contains($occurrence['body'], '<flux:icon')) {
                         $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component);
@@ -324,6 +336,8 @@ class FluxProComponentUsageTest extends TestCase
         }
 
         $this->assertSame([], $missingIcons);
+        $this->assertSame([], $invalidIcons);
+        $this->assertSame([], $invalidIconVariants);
     }
 
     public function test_form_controls_do_not_use_non_icon_label_shorthand(): void

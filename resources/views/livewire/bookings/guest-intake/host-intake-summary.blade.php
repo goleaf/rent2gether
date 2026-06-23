@@ -47,7 +47,7 @@
 
     @if($summary['warnings'] !== [] || $summary['required_confirmations'] !== [])
         <flux:callout color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('guest_intake.summary.warning_title') }}</flux:callout.heading>
+            <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('guest_intake.summary.warning_title') }}</flux:callout.heading>
             <flux:callout.text>{{ __('guest_intake.summary.warning_helper') }}</flux:callout.text>
         </flux:callout>
     @endif

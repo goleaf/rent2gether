@@ -67,14 +67,19 @@
                 <flux:select.option value="both">{{ __('account.roles.both') }}</flux:select.option>
             </flux:select>
             <flux:description>
-                @if($accountRole === 'host')
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                @if($accountRole === 'host')
                     {{ __('account.roles.host_helper') }}
                 @elseif($accountRole === 'both')
                     {{ __('account.roles.both_helper') }}
                 @else
                     {{ __('account.roles.guest_helper') }}
                 @endif
-            </flux:description>
+                            </span>
+                        </span>
+                    </flux:description>
             <flux:error name="accountRole" />
         </flux:field>
 

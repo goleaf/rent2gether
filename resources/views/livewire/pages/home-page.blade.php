@@ -60,7 +60,7 @@
         </section>
 
         <flux:callout color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('app.home_calculation_heading') }}</flux:callout.heading>
+            <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('app.home_calculation_heading') }}</flux:callout.heading>
             <flux:callout.text>{{ __('app.home_calculation_text') }}</flux:callout.text>
         </flux:callout>
 

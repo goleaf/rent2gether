@@ -52,7 +52,7 @@
 
     @if($unavailableDates)
         <flux:callout color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('booking.date_selector.unavailable.title') }}</flux:callout.heading>
+            <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('booking.date_selector.unavailable.title') }}</flux:callout.heading>
             <flux:callout.text>{{ __('booking.date_selector.unavailable.helper') }}</flux:callout.text>
         </flux:callout>
 
@@ -180,7 +180,7 @@
         @endif
 
         <flux:callout icon="calendar-days">
-            <flux:callout.heading>{{ __('booking.date_selector.deadlines.title') }}</flux:callout.heading>
+            <flux:callout.heading icon="calendar-days" icon:variant="mini">{{ __('booking.date_selector.deadlines.title') }}</flux:callout.heading>
             <flux:callout.text>
                 {{ __('booking.date_selector.deadlines.cancellation', ['deadline' => \Carbon\CarbonImmutable::parse($quote['cancellation_deadline'])->translatedFormat('d M, H:i')]) }}
                 {{ __('booking.date_selector.deadlines.payment', ['deadline' => \Carbon\CarbonImmutable::parse($quote['payment_deadline'])->translatedFormat('d M, H:i')]) }}

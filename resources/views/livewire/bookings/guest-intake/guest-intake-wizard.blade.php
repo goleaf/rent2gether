@@ -71,7 +71,7 @@
 
                 @if($tripPurpose === 'medical')
                     <flux:callout color="amber" icon="exclamation-triangle">
-                        <flux:callout.heading>{{ __('guest_intake.privacy.medical_title') }}</flux:callout.heading>
+                        <flux:callout.heading icon="shield-check" icon:variant="mini">{{ __('guest_intake.privacy.medical_title') }}</flux:callout.heading>
                         <flux:callout.text>{{ __('guest_intake.privacy.medical_helper') }}</flux:callout.text>
                     </flux:callout>
                 @endif
@@ -87,7 +87,14 @@
                         <flux:select.option value="safe">{{ __('guest_intake.visibility.safe') }}</flux:select.option>
                         <flux:select.option value="exact">{{ __('guest_intake.visibility.exact') }}</flux:select.option>
                     </flux:select>
-                    <flux:description>{{ __('guest_intake.privacy.visibility_helper') }}</flux:description>
+                    <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('guest_intake.privacy.visibility_helper') }}
+                            </span>
+                        </span>
+                    </flux:description>
                     <flux:error name="tripPurposeVisibility" />
                 </flux:field>
             </div>
@@ -580,7 +587,14 @@
     </span>
 </flux:label>
                     <flux:textarea rows="2" wire:model.blur="documentNotes" />
-                    <flux:description>{{ __('guest_intake.privacy.document_notes_helper') }}</flux:description>
+                    <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('guest_intake.privacy.document_notes_helper') }}
+                            </span>
+                        </span>
+                    </flux:description>
                 </flux:field>
                 <flux:field>
                     <flux:label>

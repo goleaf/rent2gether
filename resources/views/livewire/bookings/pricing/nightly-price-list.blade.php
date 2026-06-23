@@ -17,7 +17,7 @@
             </div>
         @empty
             <flux:callout color="zinc" icon="information-circle">
-                <flux:callout.heading>{{ __('pricing.empty.nightly_lines') }}</flux:callout.heading>
+                <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('pricing.empty.nightly_lines') }}</flux:callout.heading>
             </flux:callout>
         @endforelse
     </div>

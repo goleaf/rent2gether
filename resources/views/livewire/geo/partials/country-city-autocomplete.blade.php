@@ -7,7 +7,14 @@
                     <span class="min-w-0">{{ $countryLabel ?? __('geo.fields.country') }}</span>
                 </span>
             </flux:label>
-            <flux:description>{{ $countryDescription ?? __('geo.helpers.country') }}</flux:description>
+            <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ $countryDescription ?? __('geo.helpers.country') }}
+                            </span>
+                        </span>
+                    </flux:description>
             <flux:autocomplete
                 type="search"
                 clearable icon="map-pin"
@@ -55,7 +62,14 @@
                     <span class="min-w-0">{{ $cityLabel ?? __('geo.fields.city') }}</span>
                 </span>
             </flux:label>
-            <flux:description>{{ $cityDescription ?? ($this->cityAutocompleteDisabled ? __('geo.helpers.city_disabled') : __('geo.helpers.city')) }}</flux:description>
+            <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ $cityDescription ?? ($this->cityAutocompleteDisabled ? __('geo.helpers.city_disabled') : __('geo.helpers.city')) }}
+                            </span>
+                        </span>
+                    </flux:description>
             <flux:autocomplete
                 type="search"
                 clearable icon="map-pin"

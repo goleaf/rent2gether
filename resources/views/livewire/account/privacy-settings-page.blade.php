@@ -222,7 +222,7 @@
         </flux:card>
 
         <flux:callout icon="shield-check">
-            <flux:callout.heading>{{ __('account.privacy.note.title') }}</flux:callout.heading>
+            <flux:callout.heading icon="shield-check" icon:variant="mini">{{ __('account.privacy.note.title') }}</flux:callout.heading>
             <flux:callout.text>{{ __('account.privacy.note.text') }}</flux:callout.text>
         </flux:callout>
 

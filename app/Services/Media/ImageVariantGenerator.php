@@ -187,7 +187,9 @@ class ImageVariantGenerator
             return true;
         }
 
-        return ($limit - memory_get_usage(true)) > $estimatedBytes;
+        gc_collect_cycles();
+
+        return ($limit - memory_get_usage(false)) > $estimatedBytes;
     }
 
     private function memoryLimitBytes(): int

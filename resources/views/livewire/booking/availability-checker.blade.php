@@ -41,12 +41,12 @@
     @if($result)
         @if($result['available'])
             <flux:callout color="green" icon="check-circle">
-                <flux:callout.heading>{{ __('availability.checker.available_title') }}</flux:callout.heading>
+                <flux:callout.heading icon="check-circle" icon:variant="mini">{{ __('availability.checker.available_title') }}</flux:callout.heading>
                 <flux:callout.text>{{ __('availability.checker.available_text') }}</flux:callout.text>
             </flux:callout>
         @else
             <flux:callout color="amber" icon="exclamation-triangle">
-                <flux:callout.heading>{{ __('availability.checker.unavailable_title') }}</flux:callout.heading>
+                <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('availability.checker.unavailable_title') }}</flux:callout.heading>
                 <flux:callout.text>{{ __('availability.checker.unavailable_text') }}</flux:callout.text>
             </flux:callout>
 

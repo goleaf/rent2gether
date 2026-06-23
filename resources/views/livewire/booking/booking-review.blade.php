@@ -96,7 +96,7 @@
 
         @if($availabilityWarning)
             <flux:callout color="amber" icon="exclamation-triangle">
-                <flux:callout.heading>{{ __('booking.flow.dates.warning_title') }}</flux:callout.heading>
+                <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('booking.flow.dates.warning_title') }}</flux:callout.heading>
                 <flux:callout.text>{{ $availabilityWarning }}</flux:callout.text>
             </flux:callout>
 
@@ -145,7 +145,7 @@
             </div>
 
             <flux:callout icon="calendar-days">
-                <flux:callout.heading>{{ __('booking.flow.price.refund_title') }}</flux:callout.heading>
+                <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('booking.flow.price.refund_title') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('booking.date_selector.price.refund_summary', [
                         'refundable' => $this->money($quote['refundable_amount'], $quote['currency']),

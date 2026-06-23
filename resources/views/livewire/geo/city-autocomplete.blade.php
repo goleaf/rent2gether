@@ -6,7 +6,14 @@
                 <span class="min-w-0">{{ __('search.city_autocomplete.label') }}</span>
             </span>
         </flux:label>
-        <flux:description>{{ __('search.city_autocomplete.helper') }}</flux:description>
+        <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('search.city_autocomplete.helper') }}
+                            </span>
+                        </span>
+                    </flux:description>
         <flux:autocomplete
             :id="$inputId"
             type="search" icon="map-pin"

@@ -136,7 +136,7 @@
 
     @if ($savedMessageKey)
         <flux:callout color="green" icon="check-circle">
-            <flux:callout.heading>{{ __($savedMessageKey) }}</flux:callout.heading>
+            <flux:callout.heading icon="check-circle" icon:variant="mini">{{ __($savedMessageKey) }}</flux:callout.heading>
         </flux:callout>
     @endif
 </flux:card>

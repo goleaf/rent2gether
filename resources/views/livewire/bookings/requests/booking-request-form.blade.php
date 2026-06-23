@@ -1,7 +1,7 @@
 <div class="space-y-4">
     @if($submittedRequestId)
         <flux:callout variant="success" icon="check-circle">
-            <flux:callout.heading>{{ __('booking_requests.messages.request_sent') }}</flux:callout.heading>
+            <flux:callout.heading icon="check-circle" icon:variant="mini">{{ __('booking_requests.messages.request_sent') }}</flux:callout.heading>
             <flux:callout.text>{{ __('booking_requests.messages.host_reply_deadline') }}</flux:callout.text>
         </flux:callout>
         <livewire:bookings.requests.booking-request-summary :request="$submittedRequestId" :key="'request-summary-'.$submittedRequestId" />

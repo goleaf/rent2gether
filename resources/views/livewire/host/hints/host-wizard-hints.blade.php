@@ -1,5 +1,5 @@
 <flux:callout color="sky" data-host-wizard-hints icon="information-circle">
-    <flux:callout.heading>{{ __('host_hints.wizard_title') }}</flux:callout.heading>
+    <flux:callout.heading icon="information-circle" icon:variant="mini">{{ __('host_hints.wizard_title') }}</flux:callout.heading>
     <flux:callout.text>{{ __('host_hints.wizard_helper') }}</flux:callout.text>
 
     @if($hints)

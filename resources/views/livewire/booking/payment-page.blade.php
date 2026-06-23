@@ -62,7 +62,7 @@
 
         @if ($booking->payment_deadline_at && $canPay)
             <flux:callout icon="exclamation-triangle" color="amber">
-                <flux:callout.heading>{{ __('booking.payment_page.deadline.title') }}</flux:callout.heading>
+                <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('booking.payment_page.deadline.title') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('booking.payment_page.deadline.text', ['deadline' => $booking->payment_deadline_at->translatedFormat('d M Y, H:i')]) }}
                 </flux:callout.text>
@@ -137,18 +137,18 @@
 
             @if ($canUseDemoDriver)
                 <flux:callout icon="calendar-days" color="sky">
-                    <flux:callout.heading>{{ __('booking.payment_page.demo.title') }}</flux:callout.heading>
+                    <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('booking.payment_page.demo.title') }}</flux:callout.heading>
                     <flux:callout.text>{{ __('booking.payment_page.demo.helper') }}</flux:callout.text>
                 </flux:callout>
             @else
                 <flux:callout icon="information-circle" color="zinc">
-                    <flux:callout.heading>{{ __('booking.payment_page.production.title') }}</flux:callout.heading>
+                    <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __('booking.payment_page.production.title') }}</flux:callout.heading>
                     <flux:callout.text>{{ __('booking.payment_page.production.helper') }}</flux:callout.text>
                 </flux:callout>
             @endif
         @else
             <flux:callout icon="calendar-days" color="emerald">
-                <flux:callout.heading>{{ __('booking.payment_page.complete.title') }}</flux:callout.heading>
+                <flux:callout.heading icon="check-circle" icon:variant="mini">{{ __('booking.payment_page.complete.title') }}</flux:callout.heading>
                 <flux:callout.text>{{ __('booking.payment_page.complete.helper') }}</flux:callout.text>
             </flux:callout>
         @endif

@@ -25,7 +25,7 @@
 
     @if ($messageKey)
         <flux:callout color="blue" icon="information-circle">
-            <flux:callout.heading>{{ __($messageKey) }}</flux:callout.heading>
+            <flux:callout.heading icon="banknotes" icon:variant="mini">{{ __($messageKey) }}</flux:callout.heading>
         </flux:callout>
     @endif
 </flux:card>

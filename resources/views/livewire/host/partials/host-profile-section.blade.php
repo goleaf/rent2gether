@@ -52,7 +52,14 @@
     </span>
 </flux:label>
                     <flux:input wire:model.blur="languages" placeholder="{{ __('host.profile.helpers.languages_placeholder') }}" icon="language" />
-                    <flux:description>{{ __('host.profile.helpers.languages') }}</flux:description>
+                    <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('host.profile.helpers.languages') }}
+                            </span>
+                        </span>
+                    </flux:description>
                     <flux:error name="languages" />
                 </flux:field>
             </div>
@@ -65,7 +72,14 @@
     </span>
 </flux:label>
                 <flux:textarea wire:model.blur="about" rows="4" />
-                <flux:description>{{ __('host.profile.helpers.about') }}</flux:description>
+                <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('host.profile.helpers.about') }}
+                            </span>
+                        </span>
+                    </flux:description>
                 <flux:error name="about" />
             </flux:field>
         </div>
@@ -213,7 +227,14 @@
     </span>
 </flux:label>
                 <flux:textarea wire:model.blur="defaultHouseRules" rows="4" />
-                <flux:description>{{ __('host.profile.helpers.default_house_rules') }}</flux:description>
+                <flux:description>
+                        <span class="inline-flex min-w-0 items-start gap-1.5">
+                            <flux:icon name="information-circle" variant="mini" class="mt-0.5 size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">
+                                {{ __('host.profile.helpers.default_house_rules') }}
+                            </span>
+                        </span>
+                    </flux:description>
                 <flux:error name="defaultHouseRules" />
             </flux:field>
         </div>

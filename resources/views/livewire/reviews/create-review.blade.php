@@ -31,14 +31,14 @@
 
     @error('booking')
         <flux:callout color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('booking.review.warning_title') }}</flux:callout.heading>
+            <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('booking.review.warning_title') }}</flux:callout.heading>
             <flux:callout.text>{{ $message }}</flux:callout.text>
         </flux:callout>
     @enderror
 
     @error('review')
         <flux:callout color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('booking.review.warning_title') }}</flux:callout.heading>
+            <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('booking.review.warning_title') }}</flux:callout.heading>
             <flux:callout.text>{{ $message }}</flux:callout.text>
         </flux:callout>
     @enderror

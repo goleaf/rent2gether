@@ -55,7 +55,7 @@
 
         @if ($summary['requires_host_time_approval'])
             <flux:callout color="amber" icon="exclamation-triangle">
-                <flux:callout.heading>{{ __('pricing.messages.host_time_approval_required') }}</flux:callout.heading>
+                <flux:callout.heading icon="exclamation-triangle" icon:variant="mini">{{ __('pricing.messages.host_time_approval_required') }}</flux:callout.heading>
             </flux:callout>
         @endif
     </flux:card>
