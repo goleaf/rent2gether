@@ -11,11 +11,14 @@ use App\Models\Room;
 use App\Models\RoomOccupantSnapshot;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Queries\Occupants\RoomOccupantsForDateRangeQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class RoomOccupantSummaryService
 {
+    public function __construct(private readonly RoomOccupantsForDateRangeQuery $roomOccupantsForDateRange) {}
+
     public function getSummaryForRoom(Room $room, DateRange $range, ?User $viewer = null): RoomOccupantSummaryData
     {
         return $this->buildSummary($room, $range, null, null, false);
@@ -108,43 +111,7 @@ class RoomOccupantSummaryService
 
     private function baseQuery(Room $room, DateRange $range): Builder
     {
-        return RoomOccupantSnapshot::query()
-            ->select([
-                'id',
-                'room_id',
-                'sleeping_place_id',
-                'booking_id',
-                'user_id',
-                'status',
-                'check_in_date',
-                'check_out_date',
-                'public_alias_snapshot',
-                'age_range_snapshot',
-                'languages_json_snapshot',
-                'stay_purpose_snapshot',
-                'guest_type_snapshot',
-                'tourist_snapshot',
-                'student_snapshot',
-                'working_snapshot',
-                'remote_worker_snapshot',
-                'long_term_guest_snapshot',
-                'short_term_guest_snapshot',
-                'sleep_schedule_snapshot',
-                'wake_schedule_snapshot',
-                'home_presence_level_snapshot',
-                'smokes_snapshot',
-                'social_level_snapshot',
-                'prefers_quiet_snapshot',
-                'roommate_rating_average_snapshot',
-                'roommate_reviews_count_snapshot',
-                'can_show_before_booking',
-                'can_show_after_booking',
-            ])
-            ->where('room_id', $room->id)
-            ->visibleOccupants()
-            ->overlapping($range->checkIn->toDateString(), $range->checkOut->toDateString())
-            ->orderBy('check_out_date')
-            ->orderBy('id');
+        return $this->roomOccupantsForDateRange->handle($room, $range);
     }
 
     /**

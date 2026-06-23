@@ -99,6 +99,7 @@ Use actions for state changes that should stay testable and reusable across Live
 | Shared model concerns | `app/Models/Concerns/` |
 | Enums | `app/Enums/` |
 | DTO/data objects | `app/Data/` |
+| Named Eloquent query classes | `app/Queries/<Domain>/` |
 | Support helpers | `app/Support/` |
 | Policies | `app/Policies/` |
 | Form requests | `app/Http/Requests/` |
@@ -109,7 +110,7 @@ Use actions for state changes that should stay testable and reusable across Live
 | Translation files | `lang/en/`, `lang/ru/` |
 | Seed documentation | `docs/BULK_SEEDING.md` |
 
-Queries belong in Eloquent scopes, services, actions, or model relationships. Blade views must not query.
+Simple reusable constraints belong in Eloquent scopes, services, actions, or model relationships. Important reusable database use cases with business meaning may live in `app/Queries/<Domain>/` as focused query classes. Query classes must have one public `handle()` method, should usually return an Eloquent `Builder` when callers need to choose pagination or execution, and must not become generic repositories. Blade views must not query.
 
 ## Model Method Documentation
 
