@@ -2,7 +2,7 @@
     type="button"
     size="sm"
     variant="{{ $selected ? 'primary' : 'ghost' }}"
-    icon="scale"
+    icon="arrows-right-left"
     wire:click="toggle"
     wire:loading.attr="disabled"
     wire:target="toggle"

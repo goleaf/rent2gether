@@ -2,7 +2,7 @@
     type="button"
     variant="{{ $joined ? 'filled' : 'primary' }}"
     size="sm"
-    icon="{{ $offered ? 'sparkles' : 'clock' }}"
+    icon="clock"
     wire:click="join"
     wire:loading.attr="disabled"
     wire:target="join"

@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('listing_mismatch.components.guest_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('listing_mismatch.title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('listing_mismatch.components.guest_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing_mismatch.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('listing_mismatch.messages.guest_intro') }}
                 </flux:text>
             </div>
 
             @if ($report)
-                <flux:badge color="red">{{ __('listing_mismatch.statuses.' . $report->status) }}</flux:badge>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('listing_mismatch.statuses.' . $report->status) }}</flux:badge>
             @endif
         </div>
 
@@ -42,22 +47,22 @@
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <flux:button wire:click="requestRelocation" wire:loading.attr="disabled">
+                <flux:button wire:click="requestRelocation" wire:loading.attr="disabled" icon="plus">
                     {{ __('listing_mismatch.actions.request_relocation') }}
                 </flux:button>
-                <flux:button wire:click="requestCancellation" wire:loading.attr="disabled">
+                <flux:button wire:click="requestCancellation" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('listing_mismatch.actions.request_cancellation') }}
                 </flux:button>
-                <flux:button wire:click="requestRefund" wire:loading.attr="disabled">
+                <flux:button wire:click="requestRefund" wire:loading.attr="disabled" icon="plus">
                     {{ __('listing_mismatch.actions.request_refund') }}
                 </flux:button>
-                <flux:button wire:click="acceptResolution" wire:loading.attr="disabled">
+                <flux:button wire:click="acceptResolution" wire:loading.attr="disabled" icon="check">
                     {{ __('listing_mismatch.actions.accept_resolution') }}
                 </flux:button>
-                <flux:button wire:click="rejectResolution" wire:loading.attr="disabled">
+                <flux:button wire:click="rejectResolution" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('listing_mismatch.actions.reject_resolution') }}
                 </flux:button>
-                <flux:button variant="danger" wire:click="openDispute" wire:loading.attr="disabled">
+                <flux:button variant="danger" wire:click="openDispute" wire:loading.attr="disabled" icon="exclamation-triangle">
                     {{ __('listing_mismatch.actions.open_dispute') }}
                 </flux:button>
             </div>
@@ -84,7 +89,12 @@
             </div>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('listing_mismatch.fields.resolution_options') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing_mismatch.fields.resolution_options') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($report->resolutionOptions as $option)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('listing_mismatch.resolution_types.' . $option->resolution_type) }}</p>
@@ -96,7 +106,12 @@
             </div>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('listing_mismatch.fields.warnings') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing_mismatch.fields.warnings') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($report->warnings as $warning)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('listing_mismatch.warning_keys.' . $warning->warning_key) }}</p>
@@ -129,7 +144,7 @@
                     <flux:checkbox wire:model.change="guestWantsRefund" :label="__('listing_mismatch.fields.guest_wants_refund')" />
                 </div>
 
-                <flux:button variant="danger" wire:click="reportMismatch" wire:loading.attr="disabled">
+                <flux:button variant="danger" wire:click="reportMismatch" wire:loading.attr="disabled" icon="exclamation-triangle">
                     {{ __('listing_mismatch.actions.report_mismatch') }}
                 </flux:button>
             </div>
@@ -144,7 +159,7 @@
                         <p class="font-medium text-zinc-950 dark:text-white">{{ $item->mismatch_number }}</p>
                         <p class="text-zinc-600 dark:text-zinc-300">{{ __('listing_mismatch.types.' . $item->mismatch_type) }}</p>
                     </div>
-                    <flux:badge>{{ __('listing_mismatch.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="exclamation-triangle">{{ __('listing_mismatch.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

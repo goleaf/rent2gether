@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="amber">{{ __('booking.complaint.eyebrow') }}</flux:badge>
+        <flux:badge color="amber" icon="exclamation-triangle">{{ __('booking.complaint.eyebrow') }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ __('booking.complaint.title') }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.complaint.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">
                 {{ $reporterRole === 'host' ? __('booking.complaint.host_helper') : __('booking.complaint.guest_helper') }}
             </flux:text>
@@ -12,12 +17,17 @@
     <flux:card class="space-y-2">
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ $summaryTitle }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $summaryTitle }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.complaint.booking_reference', ['reference' => $booking->reference]) }}
                 </flux:text>
             </div>
-            <flux:badge color="zinc">{{ $booking->status->label() }}</flux:badge>
+            <flux:badge color="zinc" icon="exclamation-triangle">{{ $booking->status->label() }}</flux:badge>
         </div>
     </flux:card>
 
@@ -54,7 +64,12 @@
 
         <flux:card class="space-y-4">
             <div class="space-y-3">
-                <flux:heading size="lg">{{ __('booking.complaint.resolution_title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.resolution_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.complaint.resolution_helper') }}
                 </flux:text>
@@ -68,7 +83,12 @@
 
         <flux:card class="space-y-3">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('booking.complaint.fields.media') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.fields.media') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.complaint.media_helper') }}
                 </flux:text>
@@ -100,10 +120,10 @@
 
         <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
             <div class="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2">
-                <flux:button href="{{ $reporterRole === 'host' ? route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) : route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                <flux:button href="{{ $reporterRole === 'host' ? route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) : route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full" icon="arrow-left">
                     {{ __('app.actions.back') }}
                 </flux:button>
-                <flux:button type="submit" wire:loading.attr="disabled" wire:target="submit,media" data-loading variant="primary" class="w-full">
+                <flux:button type="submit" wire:loading.attr="disabled" wire:target="submit,media" data-loading variant="primary" class="w-full" icon="calendar-days">
                     <span wire:loading.remove wire:target="submit">{{ __('booking.complaint.submit') }}</span>
                     <span wire:loading wire:target="submit">{{ __('booking.complaint.submitting') }}</span>
                 </flux:button>

@@ -1,10 +1,15 @@
 <flux:card class="space-y-4">
     <div class="flex items-center justify-between gap-3">
         <div>
-            <flux:heading size="lg">{{ $room?->title }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $room?->title }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing_wizard.sleeping_places.auto_create_helper') }}</flux:text>
         </div>
-        <flux:button size="sm" type="button" wire:click="autoCreate" wire:loading.attr="disabled">
+        <flux:button size="sm" type="button" wire:click="autoCreate" wire:loading.attr="disabled" icon="plus">
             {{ __('listing_wizard.sleeping_places.auto_create') }}
         </flux:button>
     </div>

@@ -6,7 +6,7 @@
             variant="{{ $mode === $roleMode->value ? 'primary' : 'ghost' }}"
             wire:click="switchMode('{{ $roleMode->value }}')"
             wire:loading.attr="disabled"
-        >
+         icon="cursor-arrow-rays">
             {{ $roleMode->label() }}
         </flux:button>
     @empty

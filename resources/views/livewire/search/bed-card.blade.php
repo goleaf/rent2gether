@@ -42,7 +42,7 @@
                 <flux:badge color="zinc" size="sm" icon="lock-closed">{{ __('listing.bed.personal_locker') }}</flux:badge>
             @endif
             @if($bed->cancellation_policy->value === 'flexible')
-                <flux:badge color="blue" size="sm">{{ __('listing.cancellation_policy.flexible') }}</flux:badge>
+                <flux:badge color="blue" size="sm" icon="home-modern">{{ __('listing.cancellation_policy.flexible') }}</flux:badge>
             @endif
         </div>
 

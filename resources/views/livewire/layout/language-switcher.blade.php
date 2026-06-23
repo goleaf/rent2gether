@@ -6,7 +6,7 @@
             variant="{{ $locale === $supportedLocale ? 'primary' : 'ghost' }}"
             wire:click="switchLocale('{{ $supportedLocale }}')"
             wire:loading.attr="disabled"
-        >
+         icon="language">
             {{ __('navigation.languages.'.$supportedLocale) }}
         </flux:button>
     @empty

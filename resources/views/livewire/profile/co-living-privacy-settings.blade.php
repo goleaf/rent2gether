@@ -1,12 +1,17 @@
 <div class="space-y-4">
     @if(session('co_living_status'))
-        <flux:badge color="green">{{ session('co_living_status') }}</flux:badge>
+        <flux:badge color="green" icon="check-circle">{{ session('co_living_status') }}</flux:badge>
     @endif
 
     <form wire:submit="save" class="space-y-4">
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('occupants.privacy.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="shield-check" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('occupants.privacy.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('occupants.privacy.helper') }}</flux:text>
             </div>
 
@@ -32,7 +37,7 @@
             </div>
         </flux:card>
 
-        <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
+        <flux:button type="submit" variant="primary" wire:loading.attr="disabled" icon="check">
             <span wire:loading.remove>{{ __('occupants.actions.save_privacy') }}</span>
             <span wire:loading>{{ __('occupants.actions.saving') }}</span>
         </flux:button>

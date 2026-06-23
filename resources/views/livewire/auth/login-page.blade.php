@@ -1,6 +1,11 @@
 <flux:card class="space-y-6">
     <div>
-        <flux:heading size="lg">{{ __('auth.login.heading') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="information-circle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('auth.login.heading') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="mt-1 text-zinc-500">{{ __('auth.login.helper') }}</flux:text>
     </div>
 
@@ -24,7 +29,7 @@
             </flux:link>
         </div>
 
-        <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70">
+        <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" icon="arrow-right-end-on-rectangle">
             <span wire:loading.remove wire:target="login">{{ __('auth.login.submit') }}</span>
             <span wire:loading wire:target="login">{{ __('account.actions.signing_in') }}</span>
         </flux:button>

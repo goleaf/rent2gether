@@ -44,10 +44,10 @@
                 </div>
 
                 <div class="flex flex-wrap gap-1.5">
-                    <flux:badge size="sm">{{ $card['room_type'] }}</flux:badge>
-                    <flux:badge size="sm">{{ $card['sleeping_place_type'] }}</flux:badge>
-                    <flux:badge size="sm">{{ $card['priority_label'] }}</flux:badge>
-                    <flux:badge size="sm">{{ $card['decision_status_label'] }}</flux:badge>
+                    <flux:badge size="sm" icon="heart">{{ $card['room_type'] }}</flux:badge>
+                    <flux:badge size="sm" icon="heart">{{ $card['sleeping_place_type'] }}</flux:badge>
+                    <flux:badge size="sm" icon="heart">{{ $card['priority_label'] }}</flux:badge>
+                    <flux:badge size="sm" icon="heart">{{ $card['decision_status_label'] }}</flux:badge>
                 </div>
             </div>
         </div>
@@ -55,8 +55,8 @@
 
     @if(! empty($card['listing_card']))
         <div class="flex flex-wrap gap-1.5">
-            <flux:badge size="sm">{{ $card['priority_label'] }}</flux:badge>
-            <flux:badge size="sm">{{ $card['decision_status_label'] }}</flux:badge>
+            <flux:badge size="sm" icon="heart">{{ $card['priority_label'] }}</flux:badge>
+            <flux:badge size="sm" icon="heart">{{ $card['decision_status_label'] }}</flux:badge>
         </div>
     @endif
 
@@ -82,11 +82,11 @@
     </div>
 
     <div class="flex flex-wrap gap-2">
-        <flux:badge color="{{ $card['availability_state'] === 'available' || $card['availability_state'] === 'available_again' ? 'green' : ($card['availability_state'] === 'needs_check' ? 'zinc' : 'amber') }}">
+        <flux:badge color="{{ $card['availability_state'] === 'available' || $card['availability_state'] === 'available_again' ? 'green' : ($card['availability_state'] === 'needs_check' ? 'zinc' : 'amber') }}" icon="exclamation-triangle">
             {{ __('favorites.availability_statuses.'.$card['availability_state']) }}
         </flux:badge>
 
-        <flux:badge color="{{ $card['price_state'] === 'dropped' ? 'green' : ($card['price_state'] === 'increased' ? 'amber' : 'zinc') }}">
+        <flux:badge color="{{ $card['price_state'] === 'dropped' ? 'green' : ($card['price_state'] === 'increased' ? 'amber' : 'zinc') }}" icon="exclamation-triangle">
             @if($card['price_state'] === 'dropped' && $card['price_change'])
                 {{ __('favorites.price_dropped_amount', ['amount' => $card['price_change']]) }}
             @elseif($card['price_state'] === 'increased' && $card['price_change'])
@@ -106,17 +106,17 @@
     <div class="text-sm text-zinc-500">{{ $card['dates'] }}</div>
 
     <div class="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800 sm:flex sm:flex-wrap">
-        <flux:button href="{{ $card['url'] }}" size="sm" variant="primary" icon="arrow-right" wire:navigate>
+        <flux:button href="{{ $card['url'] }}" size="sm" variant="primary" icon="heart" wire:navigate>
             {{ __('favorites.open_place') }}
         </flux:button>
 
         @if($card['book_url'])
-            <flux:button href="{{ $card['book_url'] }}" size="sm" variant="ghost" icon="calendar-days" wire:navigate>
+            <flux:button href="{{ $card['book_url'] }}" size="sm" variant="ghost" icon="heart" wire:navigate>
                 {{ __('favorites.book') }}
             </flux:button>
         @endif
 
-        <flux:button type="button" size="sm" variant="{{ $selectedForCompare ? 'primary' : 'ghost' }}" icon="scale" wire:click="toggleCompare">
+        <flux:button type="button" size="sm" variant="{{ $selectedForCompare ? 'primary' : 'ghost' }}" icon="heart" wire:click="toggleCompare">
             {{ __('favorites.compare') }}
         </flux:button>
 

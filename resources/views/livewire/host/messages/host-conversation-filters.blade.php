@@ -6,7 +6,7 @@
             variant="{{ $status === $filterStatus ? 'primary' : 'ghost' }}"
             wire:click="setStatus('{{ $filterStatus }}')"
             class="shrink-0"
-        >
+         icon="funnel">
             {{ __('messages.statuses.'.$filterStatus) }}
         </flux:button>
     @empty

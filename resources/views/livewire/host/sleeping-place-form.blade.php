@@ -1,7 +1,12 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:badge color="emerald">{{ __('host.sleeping_place_wizard.eyebrow') }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ $sleepingPlaceId ? __('host.sleeping_place_wizard.edit_heading') : __('host.sleeping_place_wizard.heading') }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ __('host.sleeping_place_wizard.eyebrow') }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ $sleepingPlaceId ? __('host.sleeping_place_wizard.edit_heading') : __('host.sleeping_place_wizard.heading') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">
             {{ __('host.sleeping_place_wizard.helper', ['room' => $this->room->title]) }}
         </flux:text>
@@ -18,7 +23,7 @@
             <flux:text size="sm" class="font-medium text-zinc-700 dark:text-zinc-200">
                 {{ __('host.sleeping_place_wizard.progress', ['current' => $step, 'total' => 7]) }}
             </flux:text>
-            <flux:badge size="sm">{{ $status ? __('statuses.sleeping_place.'.$status) : __('statuses.sleeping_place.draft') }}</flux:badge>
+            <flux:badge size="sm" icon="clock">{{ $status ? __('statuses.sleeping_place.'.$status) : __('statuses.sleeping_place.draft') }}</flux:badge>
         </div>
 
         <div class="h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
@@ -35,7 +40,7 @@
                     class="shrink-0"
                     tooltip="{{ $wizardStep['title'] }}"
                     aria-current="{{ $step === $wizardStep['number'] ? 'step' : 'false' }}"
-                >
+                 icon="cursor-arrow-rays">
                     {{ $wizardStep['number'] }}
                 </flux:button>
             @endforeach
@@ -54,7 +59,12 @@
     <form wire:submit="publish" class="space-y-5">
         <flux:card class="space-y-5">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('host.sleeping_place_wizard.steps.'.$step.'.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host.sleeping_place_wizard.steps.'.$step.'.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('host.sleeping_place_wizard.steps.'.$step.'.helper') }}
                 </flux:text>
@@ -65,12 +75,12 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.place_number') }}</flux:label>
-                            <flux:input wire:model.blur="placeNumber" />
+                            <flux:input wire:model.blur="placeNumber" icon="pencil-square" />
                             <flux:error name="placeNumber" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.display_name') }}</flux:label>
-                            <flux:input wire:model.blur="displayName" />
+                            <flux:input wire:model.blur="displayName" icon="user" />
                             <flux:error name="displayName" />
                         </flux:field>
                         <flux:field>
@@ -93,17 +103,17 @@
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.bunk_level') }}</flux:label>
-                            <flux:input wire:model.blur="bunkLevel" />
+                            <flux:input wire:model.blur="bunkLevel" icon="pencil-square" />
                             <flux:error name="bunkLevel" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.length_cm') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="lengthCm" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="lengthCm" icon="numbered-list" />
                             <flux:error name="lengthCm" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.width_cm') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="widthCm" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="widthCm" icon="numbered-list" />
                             <flux:error name="widthCm" />
                         </flux:field>
                     </div>
@@ -113,7 +123,7 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.mattress_type') }}</flux:label>
-                            <flux:input wire:model.blur="mattressType" />
+                            <flux:input wire:model.blur="mattressType" icon="pencil-square" />
                             <flux:error name="mattressType" />
                         </flux:field>
                         <flux:field>
@@ -169,17 +179,17 @@
 
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.max_guests') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" icon="users" />
                             <flux:error name="maxGuests" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.min_guest_age') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="minGuestAge" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="minGuestAge" icon="user" />
                             <flux:error name="minGuestAge" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.max_guest_age') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuestAge" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuestAge" icon="user" />
                             <flux:error name="maxGuestAge" />
                         </flux:field>
                     </div>
@@ -204,23 +214,23 @@
                         ] as $property => $field)
                             <flux:field>
                                 <flux:label>{{ __('host.sleeping_place_wizard.fields.'.$field) }}</flux:label>
-                                <flux:input type="number" inputmode="decimal" step="0.01" wire:model.blur="{{ $property }}" />
+                                <flux:input type="number" inputmode="decimal" step="0.01" wire:model.blur="{{ $property }}" icon="home-modern" />
                                 <flux:error name="{{ $property }}" />
                             </flux:field>
                         @endforeach
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.currency') }}</flux:label>
-                            <flux:input maxlength="3" wire:model.blur="currency" />
+                            <flux:input maxlength="3" wire:model.blur="currency" icon="banknotes" />
                             <flux:error name="currency" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.min_nights') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="minNights" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="minNights" icon="numbered-list" />
                             <flux:error name="minNights" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.sleeping_place_wizard.fields.max_nights') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxNights" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxNights" icon="numbered-list" />
                             <flux:error name="maxNights" />
                         </flux:field>
                     </div>
@@ -236,10 +246,15 @@
                     <div class="grid gap-5">
                         @foreach($this->contentLocales() as $locale)
                             <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
+                                <flux:heading size="sm">
+                                    <span class="inline-flex min-w-0 items-center gap-2">
+                                        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ $locale['name'] }}</span>
+                                    </span>
+                                </flux:heading>
                                 <flux:field>
                                     <flux:label>{{ __('host.sleeping_place_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
-                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
@@ -303,15 +318,20 @@
                         @endforeach
 
                         <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                            <flux:heading size="sm">{{ __('host.sleeping_place_wizard.readiness.title') }}</flux:heading>
+                            <flux:heading size="sm">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.sleeping_place_wizard.readiness.title') }}</span>
+                                </span>
+                            </flux:heading>
                             <div class="mt-3 grid gap-2">
                                 @foreach($this->readinessChecklist() as $item)
                                     <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
                                         <span>{{ $item['label'] }}</span>
                                         @if($item['done'])
-                                            <flux:badge size="sm" color="green">{{ __('host.sleeping_place_wizard.readiness.done') }}</flux:badge>
+                                            <flux:badge size="sm" color="green" icon="check-circle">{{ __('host.sleeping_place_wizard.readiness.done') }}</flux:badge>
                                         @else
-                                            <flux:badge size="sm">{{ __('host.sleeping_place_wizard.readiness.later') }}</flux:badge>
+                                            <flux:badge size="sm" icon="check-circle">{{ __('host.sleeping_place_wizard.readiness.later') }}</flux:badge>
                                         @endif
                                     </div>
                                 @endforeach
@@ -331,17 +351,17 @@
 
         <div class="sticky bottom-20 z-10 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
             <div class="grid grid-cols-2 gap-3">
-                <flux:button type="button" variant="ghost" wire:click="previousStep" :disabled="$step === 1">
+                <flux:button type="button" variant="ghost" wire:click="previousStep" :disabled="$step === 1" icon="arrow-left">
                     {{ __('host.sleeping_place_wizard.actions.back') }}
                 </flux:button>
 
                 @if($step < 7)
-                    <flux:button type="button" variant="primary" wire:click="nextStep" class="data-loading:opacity-70">
+                    <flux:button type="button" variant="primary" wire:click="nextStep" class="data-loading:opacity-70" icon="arrow-right">
                         <span wire:loading.remove wire:target="nextStep">{{ __('host.sleeping_place_wizard.actions.save_and_continue') }}</span>
                         <span wire:loading wire:target="nextStep">{{ __('account.actions.saving') }}</span>
                     </flux:button>
                 @else
-                    <flux:button type="submit" variant="primary" class="data-loading:opacity-70">
+                    <flux:button type="submit" variant="primary" class="data-loading:opacity-70" icon="eye">
                         <span wire:loading.remove wire:target="publish">{{ __('host.sleeping_place_wizard.actions.review_and_save') }}</span>
                         <span wire:loading wire:target="publish">{{ __('account.actions.saving') }}</span>
                     </flux:button>
@@ -349,7 +369,7 @@
             </div>
 
             <div class="mt-3">
-                <flux:button class="w-full" href="{{ route('host.sleeping-places.index', ['locale' => app()->getLocale(), 'room' => $roomId]) }}" variant="ghost" wire:navigate>
+                <flux:button class="w-full" href="{{ route('host.sleeping-places.index', ['locale' => app()->getLocale(), 'room' => $roomId]) }}" variant="ghost" wire:navigate icon="x-mark">
                     {{ __('app.actions.cancel') }}
                 </flux:button>
             </div>

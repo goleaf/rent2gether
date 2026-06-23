@@ -3,7 +3,7 @@
         type="button"
         size="xs"
         variant="ghost"
-        icon="x-mark"
+        icon="user"
         wire:click="dismiss"
         wire:loading.attr="disabled"
         wire:target="dismiss"

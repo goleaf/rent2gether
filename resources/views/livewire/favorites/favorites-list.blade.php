@@ -1,7 +1,12 @@
 <section class="space-y-4" aria-labelledby="favorites-decision-title">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="space-y-1">
-            <flux:heading id="favorites-decision-title" size="lg">{{ __('decision.favorites.list_title') }}</flux:heading>
+            <flux:heading id="favorites-decision-title" size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('decision.favorites.list_title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('decision.favorites.list_helper') }}</flux:text>
         </div>
 
@@ -9,7 +14,7 @@
             <flux:button
                 type="button"
                 variant="primary"
-                icon="scale"
+                icon="cursor-arrow-rays"
                 wire:click="compareSelected"
                 wire:loading.attr="disabled"
                 wire:target="compareSelected"
@@ -32,7 +37,7 @@
                 size="sm"
                 wire:click="$set('selectedCollection', '')"
                 variant="{{ $selectedCollection === '' ? 'primary' : 'ghost' }}"
-            >
+             icon="heart">
                 {{ __('decision.favorites.all') }}
             </flux:button>
 
@@ -42,7 +47,7 @@
                     size="sm"
                     wire:click="$set('selectedCollection', @js($collection))"
                     variant="{{ $selectedCollection === $collection ? 'primary' : 'ghost' }}"
-                >
+                 icon="cursor-arrow-rays">
                     {{ $collection }}
                 </flux:button>
             @endforeach
@@ -98,8 +103,8 @@
                         </div>
 
                         <div class="flex flex-wrap gap-1">
-                            <flux:badge size="sm">{{ $card['room_type'] }}</flux:badge>
-                            <flux:badge size="sm">{{ $card['sleeping_place_type'] }}</flux:badge>
+                            <flux:badge size="sm" icon="heart">{{ $card['room_type'] }}</flux:badge>
+                            <flux:badge size="sm" icon="heart">{{ $card['sleeping_place_type'] }}</flux:badge>
                         </div>
                     </div>
                 </div>
@@ -124,17 +129,17 @@
 
                 <div class="flex flex-wrap gap-2">
                     @if($card['price_state'] === 'dropped')
-                        <flux:badge color="green">{{ __('decision.favorites.price_dropped') }}</flux:badge>
+                        <flux:badge color="green" icon="check-circle">{{ __('decision.favorites.price_dropped') }}</flux:badge>
                     @elseif($card['price_state'] === 'increased')
-                        <flux:badge color="amber">{{ __('decision.favorites.price_increased') }}</flux:badge>
+                        <flux:badge color="amber" icon="exclamation-triangle">{{ __('decision.favorites.price_increased') }}</flux:badge>
                     @else
-                        <flux:badge color="zinc">{{ __('decision.favorites.price_same') }}</flux:badge>
+                        <flux:badge color="zinc" icon="banknotes">{{ __('decision.favorites.price_same') }}</flux:badge>
                     @endif
 
                     @if($card['availability_changed'] === true)
-                        <flux:badge color="amber">{{ __('decision.favorites.availability_changed') }}</flux:badge>
+                        <flux:badge color="amber" icon="exclamation-triangle">{{ __('decision.favorites.availability_changed') }}</flux:badge>
                     @elseif($card['availability_changed'] === false)
-                        <flux:badge color="green">{{ __('decision.favorites.still_available') }}</flux:badge>
+                        <flux:badge color="green" icon="check-circle">{{ __('decision.favorites.still_available') }}</flux:badge>
                     @endif
                 </div>
 
@@ -156,8 +161,7 @@
                             max="9"
                             inputmode="numeric"
                             value="{{ $card['favorite']->priority }}"
-                            wire:change="updatePriority({{ $card['favorite']->id }}, $event.target.value)"
-                        />
+                            wire:change="updatePriority({{ $card['favorite']->id }}, $event.target.value)" icon="calendar-days" />
                     </flux:field>
                 </div>
 
@@ -168,7 +172,7 @@
                         label="{{ __('decision.compare.select_place') }}"
                     />
 
-                    <flux:button href="{{ $card['url'] }}" size="sm" variant="ghost" icon="arrow-right" wire:navigate>
+                    <flux:button href="{{ $card['url'] }}" size="sm" variant="ghost" icon="heart" wire:navigate>
                         {{ __('decision.favorites.open_place') }}
                     </flux:button>
                 </div>
@@ -180,10 +184,15 @@
                         <flux:icon name="heart" class="size-6" />
                     </div>
                     <div class="space-y-1">
-                        <flux:heading size="lg">{{ __('decision.favorites.empty_title') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('decision.favorites.empty_title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('decision.favorites.empty_helper') }}</flux:text>
                     </div>
-                    <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
+                    <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate icon="magnifying-glass">
                         {{ __('decision.favorites.empty_action') }}
                     </flux:button>
                 </div>

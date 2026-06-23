@@ -8,7 +8,12 @@
             @endif
         </div>
         <div>
-            <flux:heading size="xl">{{ $this->profileVisibility['display_name'] }}</flux:heading>
+            <flux:heading size="xl">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="user" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $this->profileVisibility['display_name'] }}</span>
+                </span>
+            </flux:heading>
             @if($this->profileVisibility['full_name'])
                 <flux:text size="sm" class="text-zinc-500">{{ $this->profileVisibility['full_name'] }}</flux:text>
             @endif
@@ -18,14 +23,19 @@
                 @if($this->profileVisibility['age_range']) &middot; {{ __('app.profile.age_range', ['range' => $this->profileVisibility['age_range']]) }}@endif
             </flux:text>
             @if($user->is_host)
-                <flux:badge color="blue" size="sm" class="mt-1">{{ __('app.profile.host') }}</flux:badge>
+                <flux:badge color="blue" size="sm" class="mt-1" icon="user">{{ __('app.profile.host') }}</flux:badge>
             @endif
         </div>
     </div>
 
     @if($user->bio)
         <flux:card>
-            <flux:heading size="sm">{{ __('app.profile.about') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="user" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('app.profile.about') }}</span>
+                </span>
+            </flux:heading>
             <flux:text>{{ $user->bio }}</flux:text>
         </flux:card>
     @endif
@@ -53,20 +63,30 @@
 
     @if($this->profileVisibility['show_reviews'])
     <div class="space-y-4">
-        <flux:heading size="lg">{{ __('app.profile.review_summary') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="star" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('app.profile.review_summary') }}</span>
+            </span>
+        </flux:heading>
 
         @foreach([
             'guest' => $this->reviewsAsGuest,
             'host' => $this->reviewsAsHost,
         ] as $group => $reviews)
             <section class="space-y-3">
-                <flux:heading size="sm">{{ __('app.profile.reviews_as_'.$group) }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="star" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('app.profile.reviews_as_'.$group) }}</span>
+                    </span>
+                </flux:heading>
 
                 @forelse($reviews as $review)
                     <flux:card class="space-y-2">
                         <div class="flex items-center justify-between gap-3">
                             <flux:text class="font-medium">{{ $review->reviewer?->name ?: __('listing.detail.reviews.guest') }}</flux:text>
-                            <flux:badge>{{ __('listing.detail.reviews.rating', ['rating' => number_format((float) $review->overall_rating, 1)]) }}</flux:badge>
+                            <flux:badge icon="star">{{ __('listing.detail.reviews.rating', ['rating' => number_format((float) $review->overall_rating, 1)]) }}</flux:badge>
                         </div>
                         <flux:text size="sm" class="text-zinc-500">{{ $review->created_at?->diffForHumans() }}</flux:text>
 

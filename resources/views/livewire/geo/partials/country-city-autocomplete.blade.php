@@ -2,8 +2,7 @@
     <div class="space-y-2">
         <flux:autocomplete
             type="search"
-            clearable
-            icon="globe-alt"
+            clearable icon="map-pin"
             wire:model.live.debounce.500ms="countryQuery"
             label="{{ $countryLabel ?? __('geo.fields.country') }}"
             description="{{ $countryDescription ?? __('geo.helpers.country') }}"
@@ -43,8 +42,7 @@
     <div class="space-y-2">
         <flux:autocomplete
             type="search"
-            clearable
-            icon="map-pin"
+            clearable icon="map-pin"
             wire:key="{{ $autocompleteKey ?? 'geo' }}-city-{{ $countryId ?: 'none' }}"
             wire:model.live.debounce.500ms="cityQuery"
             label="{{ $cityLabel ?? __('geo.fields.city') }}"

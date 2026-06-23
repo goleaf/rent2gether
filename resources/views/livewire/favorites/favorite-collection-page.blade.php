@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ __('favorites.collection') }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('favorites.collection') }}</flux:badge>
         <div class="space-y-1">
-            <flux:heading size="xl" level="1">{{ $this->collection->title }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $this->collection->title }}</span>
+                </span>
+            </flux:heading>
             @if($this->collection->description)
                 <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ $this->collection->description }}</flux:text>
             @else
@@ -11,9 +16,9 @@
         </div>
 
         <div class="flex flex-wrap gap-2">
-            <flux:badge>{{ trans_choice('favorites.counts.places', (int) $this->collection->favorites_count, ['count' => (int) $this->collection->favorites_count]) }}</flux:badge>
-            <flux:badge color="green">{{ trans_choice('favorites.counts.available', (int) $this->collection->available_favorites_count, ['count' => (int) $this->collection->available_favorites_count]) }}</flux:badge>
-            <flux:badge color="amber">{{ trans_choice('favorites.counts.price_changed', (int) $this->collection->price_changed_favorites_count, ['count' => (int) $this->collection->price_changed_favorites_count]) }}</flux:badge>
+            <flux:badge icon="heart">{{ trans_choice('favorites.counts.places', (int) $this->collection->favorites_count, ['count' => (int) $this->collection->favorites_count]) }}</flux:badge>
+            <flux:badge color="green" icon="check-circle">{{ trans_choice('favorites.counts.available', (int) $this->collection->available_favorites_count, ['count' => (int) $this->collection->available_favorites_count]) }}</flux:badge>
+            <flux:badge color="amber" icon="exclamation-triangle">{{ trans_choice('favorites.counts.price_changed', (int) $this->collection->price_changed_favorites_count, ['count' => (int) $this->collection->price_changed_favorites_count]) }}</flux:badge>
         </div>
     </section>
 
@@ -24,7 +29,7 @@
         </div>
 
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <flux:button type="button" variant="primary" icon="scale" wire:click="compareSelected" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" icon="heart" wire:click="compareSelected" wire:loading.attr="disabled">
                 {{ __('favorites.compare_selected', ['count' => count($selectedForCompare)]) }}
             </flux:button>
             <flux:text size="sm" class="text-zinc-500">{{ __('favorites.compare_helper') }}</flux:text>
@@ -51,7 +56,12 @@
                         <flux:icon name="folder-open" class="size-6" />
                     </div>
                     <div class="space-y-1">
-                        <flux:heading size="lg">{{ __('favorites.collection_empty.title') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('favorites.collection_empty.title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('favorites.collection_empty.text') }}</flux:text>
                     </div>
                 </div>
@@ -60,7 +70,7 @@
     </section>
 
     @if(count($this->cards) >= $visibleCount)
-        <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore" wire:loading.attr="disabled">
+        <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore" wire:loading.attr="disabled" icon="arrow-down">
             {{ __('favorites.load_more') }}
         </flux:button>
     @endif

@@ -1,5 +1,10 @@
 <flux:card class="space-y-4">
-    <flux:heading size="md">{{ __('payments.cards.attempts') }}</flux:heading>
+    <flux:heading size="md">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('payments.cards.attempts') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="grid gap-2">
         @forelse ($attempts as $attempt)

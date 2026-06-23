@@ -1,3 +1,3 @@
-<flux:callout>
+<flux:callout icon="chat-bubble-left-right">
     <flux:callout.text>{{ __('disputes.messages.some_actions_frozen') }}</flux:callout.text>
 </flux:callout>

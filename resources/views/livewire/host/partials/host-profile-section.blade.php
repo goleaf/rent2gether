@@ -35,13 +35,13 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
                     <flux:label>{{ __('host.profile.fields.display_name') }}</flux:label>
-                    <flux:input wire:model.blur="displayName" autocomplete="name" />
+                    <flux:input wire:model.blur="displayName" autocomplete="name" icon="user" />
                     <flux:error name="displayName" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('host.profile.fields.languages') }}</flux:label>
-                    <flux:input wire:model.blur="languages" placeholder="{{ __('host.profile.helpers.languages_placeholder') }}" />
+                    <flux:input wire:model.blur="languages" placeholder="{{ __('host.profile.helpers.languages_placeholder') }}" icon="language" />
                     <flux:description>{{ __('host.profile.helpers.languages') }}</flux:description>
                     <flux:error name="languages" />
                 </flux:field>
@@ -92,13 +92,13 @@
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
                 <flux:label>{{ __('host.profile.fields.default_check_in_time') }}</flux:label>
-                <flux:input type="time" wire:model.change="defaultCheckInTime" />
+                <flux:input type="time" wire:model.change="defaultCheckInTime" icon="calendar-days" />
                 <flux:error name="defaultCheckInTime" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('host.profile.fields.default_check_out_time') }}</flux:label>
-                <flux:input type="time" wire:model.change="defaultCheckOutTime" />
+                <flux:input type="time" wire:model.change="defaultCheckOutTime" icon="calendar-days" />
                 <flux:error name="defaultCheckOutTime" />
             </flux:field>
 

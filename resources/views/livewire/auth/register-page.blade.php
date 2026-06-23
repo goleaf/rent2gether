@@ -1,6 +1,11 @@
 <flux:card class="space-y-6">
     <div>
-        <flux:heading size="lg">{{ __('auth.register.heading') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="information-circle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('auth.register.heading') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="mt-1 text-zinc-500">{{ __('auth.register.helper') }}</flux:text>
     </div>
 
@@ -48,7 +53,7 @@
             <flux:error name="accountRole" />
         </flux:field>
 
-        <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70">
+        <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" icon="user-plus">
             <span wire:loading.remove wire:target="register">{{ __('auth.register.submit') }}</span>
             <span wire:loading wire:target="register">{{ __('account.actions.creating') }}</span>
         </flux:button>

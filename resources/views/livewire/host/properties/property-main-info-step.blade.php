@@ -1,22 +1,32 @@
 <form wire:submit="save" class="space-y-5">
     <flux:card class="space-y-4">
         <div>
-            <flux:heading size="lg">{{ __('property.steps.main.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('property.steps.main.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('property.steps.main.helper') }}</flux:text>
         </div>
 
         @if($wasSaved)
-            <flux:callout color="emerald" icon="check-circle">
+            <flux:callout color="emerald" icon="chat-bubble-left-right">
                 <flux:callout.text>{{ __('property.messages.saved') }}</flux:callout.text>
             </flux:callout>
         @endif
 
         @foreach($this->contentLocales() as $locale)
             <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $locale['name'] }}</span>
+                    </span>
+                </flux:heading>
                 <flux:field>
                     <flux:label>{{ __('property.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
-                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                 </flux:field>
                 <flux:field>
@@ -46,12 +56,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
                 <flux:label>{{ __('property.fields.property_subtype') }}</flux:label>
-                <flux:input wire:model.blur="propertySubtype" />
+                <flux:input wire:model.blur="propertySubtype" icon="home-modern" />
                 <flux:error name="propertySubtype" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('property.fields.district') }}</flux:label>
-                <flux:input wire:model.blur="district" />
+                <flux:input wire:model.blur="district" icon="map-pin" />
                 <flux:error name="district" />
             </flux:field>
         </div>
@@ -59,12 +69,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
                 <flux:label>{{ __('property.fields.street') }}</flux:label>
-                <flux:input wire:model.blur="street" />
+                <flux:input wire:model.blur="street" icon="map-pin" />
                 <flux:error name="street" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('property.fields.house_number') }}</flux:label>
-                <flux:input wire:model.blur="houseNumber" />
+                <flux:input wire:model.blur="houseNumber" icon="pencil-square" />
                 <flux:error name="houseNumber" />
             </flux:field>
         </div>
@@ -72,17 +82,17 @@
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
                 <flux:label>{{ __('property.fields.apartment_number') }}</flux:label>
-                <flux:input wire:model.blur="apartmentNumber" />
+                <flux:input wire:model.blur="apartmentNumber" icon="pencil-square" />
                 <flux:error name="apartmentNumber" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('property.fields.floor') }}</flux:label>
-                <flux:input type="number" inputmode="numeric" wire:model.blur="floor" />
+                <flux:input type="number" inputmode="numeric" wire:model.blur="floor" icon="home-modern" />
                 <flux:error name="floor" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('property.fields.total_floors') }}</flux:label>
-                <flux:input type="number" inputmode="numeric" wire:model.blur="totalFloors" />
+                <flux:input type="number" inputmode="numeric" wire:model.blur="totalFloors" icon="home-modern" />
                 <flux:error name="totalFloors" />
             </flux:field>
         </div>
@@ -96,7 +106,7 @@
         </div>
     </flux:card>
 
-    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled">
+    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled" icon="chat-bubble-left-right">
         <span wire:loading.remove wire:target="save">{{ __('property.actions.save_step') }}</span>
         <span wire:loading wire:target="save">{{ __('property.messages.saving') }}</span>
     </flux:button>

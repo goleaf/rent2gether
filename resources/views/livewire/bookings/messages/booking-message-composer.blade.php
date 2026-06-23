@@ -5,7 +5,7 @@
         <flux:error name="body" />
     </flux:field>
 
-    <flux:button type="submit" variant="primary" class="w-full">
+    <flux:button type="submit" variant="primary" class="w-full" icon="paper-airplane">
         <span wire:loading.remove wire:target="send">{{ __('messages.actions.send') }}</span>
         <span wire:loading wire:target="send">{{ __('messages.thread.actions.sending') }}</span>
     </flux:button>

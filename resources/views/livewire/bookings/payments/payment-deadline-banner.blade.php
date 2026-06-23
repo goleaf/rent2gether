@@ -1,10 +1,15 @@
 <flux:card class="space-y-3 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0 space-y-1">
-            <flux:heading size="sm">{{ __('payments.fields.payment_deadline') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('payments.fields.payment_deadline') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm">{{ $summary['deadline'] }}</flux:text>
         </div>
-        <flux:badge color="amber">{{ $summary['status'] }}</flux:badge>
+        <flux:badge color="amber" icon="exclamation-triangle">{{ $summary['status'] }}</flux:badge>
     </div>
 
     <div class="grid gap-2">

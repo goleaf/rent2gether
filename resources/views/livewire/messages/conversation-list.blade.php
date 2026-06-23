@@ -1,5 +1,10 @@
 <x-ui.page class="space-y-6">
-    <flux:heading size="xl">{{ __('search.messages.title') }}</flux:heading>
+    <flux:heading size="xl">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('search.messages.title') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="space-y-2">
         @forelse($this->conversations as $conversation)
@@ -22,7 +27,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         @if($conversation->unreadCountFor(auth()->id()) > 0)
-                            <flux:badge color="red" size="sm">{{ $conversation->unreadCountFor(auth()->id()) }}</flux:badge>
+                            <flux:badge color="red" size="sm" icon="exclamation-triangle">{{ $conversation->unreadCountFor(auth()->id()) }}</flux:badge>
                         @endif
                         @if($conversation->messages->last())
                             <flux:text size="sm" class="text-zinc-400">{{ $conversation->messages->last()->created_at->diffForHumans() }}</flux:text>

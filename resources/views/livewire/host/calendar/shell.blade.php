@@ -2,10 +2,15 @@
     <flux:card class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
-                <flux:badge color="zinc">{{ __('host_calendar.title') }}</flux:badge>
-                <flux:heading size="lg">{{ __('host_calendar.sections.'.$section) }}</flux:heading>
+                <flux:badge color="zinc" icon="user">{{ __('host_calendar.title') }}</flux:badge>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host_calendar.sections.'.$section) }}</span>
+                    </span>
+                </flux:heading>
             </div>
-            <flux:button variant="ghost" size="sm" wire:loading.attr="disabled">
+            <flux:button variant="ghost" size="sm" wire:loading.attr="disabled" icon="funnel">
                 {{ __('host_calendar.actions.filters') }}
             </flux:button>
         </div>
@@ -35,19 +40,29 @@
     </div>
 
     <flux:card class="space-y-3">
-        <flux:heading size="base">{{ __('host_calendar.views.property') }}</flux:heading>
+        <flux:heading size="base">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host_calendar.views.property') }}</span>
+            </span>
+        </flux:heading>
         <div class="flex flex-wrap gap-2">
             @foreach (['property', 'room', 'sleeping_place', 'check_ins', 'check_outs', 'cleaning', 'repairs', 'payouts', 'prices', 'occupancy'] as $view)
-                <flux:badge color="zinc">{{ __('host_calendar.views.'.$view) }}</flux:badge>
+                <flux:badge color="zinc" icon="user">{{ __('host_calendar.views.'.$view) }}</flux:badge>
             @endforeach
         </div>
     </flux:card>
 
     <flux:card class="space-y-2">
-        <flux:heading size="base">{{ __('host_calendar.actions.title') }}</flux:heading>
+        <flux:heading size="base">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host_calendar.actions.title') }}</span>
+            </span>
+        </flux:heading>
         <div class="grid gap-2 sm:grid-cols-2">
             @foreach (['open_booking', 'message_guest', 'mark_checked_in', 'create_cleaning', 'change_price', 'create_repair'] as $action)
-                <flux:button variant="ghost" class="justify-start" wire:loading.attr="disabled">
+                <flux:button variant="ghost" class="justify-start" wire:loading.attr="disabled" icon="calendar-days">
                     {{ __('host_calendar.actions.'.$action) }}
                 </flux:button>
             @endforeach
@@ -56,10 +71,10 @@
 
     <div class="sticky bottom-0 -mx-4 border-t border-zinc-200 bg-white/95 p-4 dark:border-zinc-800 dark:bg-zinc-950/95">
         <div class="flex gap-2">
-            <flux:button variant="ghost" class="flex-1" wire:loading.attr="disabled">
+            <flux:button variant="ghost" class="flex-1" wire:loading.attr="disabled" icon="calendar-days">
                 {{ __('host_calendar.actions.add_note') }}
             </flux:button>
-            <flux:button variant="primary" class="flex-1" wire:loading.attr="disabled">
+            <flux:button variant="primary" class="flex-1" wire:loading.attr="disabled" icon="calendar-days">
                 {{ __('host_calendar.actions.open_day') }}
             </flux:button>
         </div>

@@ -1,12 +1,17 @@
 <form wire:submit="save" class="space-y-5">
     <flux:card class="space-y-4">
         <div>
-            <flux:heading size="lg">{{ __('room.steps.access_storage.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('room.steps.access_storage.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('room.steps.access_storage.helper') }}</flux:text>
         </div>
 
         @if($wasSaved)
-            <flux:callout color="emerald" icon="check-circle">
+            <flux:callout color="emerald" icon="chat-bubble-left-right">
                 <flux:callout.text>{{ __('room.messages.saved') }}</flux:callout.text>
             </flux:callout>
         @endif
@@ -20,12 +25,12 @@
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
                 <flux:label>{{ __('room.fields.personal_lockers_count') }}</flux:label>
-                <flux:input type="number" inputmode="numeric" wire:model.blur="personalLockersCount" />
+                <flux:input type="number" inputmode="numeric" wire:model.blur="personalLockersCount" icon="numbered-list" />
                 <flux:error name="personalLockersCount" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('room.fields.chairs_count') }}</flux:label>
-                <flux:input type="number" inputmode="numeric" wire:model.blur="chairsCount" />
+                <flux:input type="number" inputmode="numeric" wire:model.blur="chairsCount" icon="numbered-list" />
                 <flux:error name="chairsCount" />
             </flux:field>
             <flux:field>
@@ -52,7 +57,7 @@
         </flux:field>
     </flux:card>
 
-    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled">
+    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled" icon="chat-bubble-left-right">
         <span wire:loading.remove wire:target="save">{{ __('room.actions.save_step') }}</span>
         <span wire:loading wire:target="save">{{ __('room.messages.saving') }}</span>
     </flux:button>

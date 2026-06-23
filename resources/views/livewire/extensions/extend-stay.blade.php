@@ -7,8 +7,13 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:badge color="emerald">{{ __('booking.extension.eyebrow') }}</flux:badge>
-            <flux:heading size="lg">{{ __('booking.extension.title') }}</flux:heading>
+            <flux:badge color="emerald" icon="check-circle">{{ __('booking.extension.eyebrow') }}</flux:badge>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.extension.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.extension.helper', ['place' => $placeTitle]) }}
             </flux:text>
@@ -26,16 +31,16 @@
         </div>
 
         @if($statusValue)
-            <flux:badge>{{ __('statuses.extension.'.$statusValue) }}</flux:badge>
+            <flux:badge icon="tag">{{ __('statuses.extension.'.$statusValue) }}</flux:badge>
         @endif
 
         @error('booking')
-            <flux:callout color="amber" icon="information-circle">
+            <flux:callout color="amber" icon="exclamation-triangle">
                 <flux:callout.text>{{ $message }}</flux:callout.text>
             </flux:callout>
         @enderror
         @error('extension')
-            <flux:callout color="amber" icon="information-circle">
+            <flux:callout color="amber" icon="exclamation-triangle">
                 <flux:callout.text>{{ $message }}</flux:callout.text>
             </flux:callout>
         @enderror
@@ -44,7 +49,7 @@
             <div class="space-y-4">
                 <flux:field>
                     <flux:label>{{ __('booking.extension.fields.requested_new_checkout') }}</flux:label>
-                    <flux:input type="date" wire:model.change="requestedNewCheckout" />
+                    <flux:input type="date" wire:model.change="requestedNewCheckout" icon="calendar-days" />
                     <flux:error name="requestedNewCheckout" />
                 </flux:field>
 
@@ -60,7 +65,12 @@
         @if($preview)
             <div class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
                 <div class="flex items-center justify-between gap-3">
-                    <flux:heading size="sm">{{ __('booking.extension.preview') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.extension.preview') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
                         {{ __('booking.extension.additional_nights_count', ['count' => $preview['additional_nights']]) }}
                     </flux:text>
@@ -100,11 +110,11 @@
         @endif
 
         @if($extension?->status === \App\Enums\BookingExtensionStatus::AwaitingHostApproval)
-            <flux:callout color="amber" icon="clock">
+            <flux:callout color="amber" icon="exclamation-triangle">
                 <flux:callout.text>{{ __('booking.extension.waiting_host') }}</flux:callout.text>
             </flux:callout>
         @elseif($extension?->status === \App\Enums\BookingExtensionStatus::AwaitingPayment)
-            <flux:callout color="blue" icon="credit-card">
+            <flux:callout color="blue" icon="information-circle">
                 <flux:callout.text>{{ __('booking.extension.waiting_payment') }}</flux:callout.text>
             </flux:callout>
         @elseif($extension?->status === \App\Enums\BookingExtensionStatus::Approved)
@@ -115,19 +125,19 @@
 
         <div class="grid gap-2 sm:grid-cols-2">
             @if(! $extension)
-                <flux:button wire:click="submit" variant="primary" class="w-full data-loading:opacity-70" :disabled="$preview === null">
+                <flux:button wire:click="submit" variant="primary" class="w-full data-loading:opacity-70" :disabled="$preview === null" icon="eye">
                     <span wire:loading.remove wire:target="submit">{{ __('booking.extension.actions.request') }}</span>
                     <span wire:loading wire:target="submit">{{ __('booking.extension.actions.requesting') }}</span>
                 </flux:button>
             @elseif($extension->status === \App\Enums\BookingExtensionStatus::AwaitingPayment && $canUseDemoPayment)
-                <flux:button wire:click="payExtension" variant="primary" class="w-full data-loading:opacity-70">
+                <flux:button wire:click="payExtension" variant="primary" class="w-full data-loading:opacity-70" icon="credit-card">
                     <span wire:loading.remove wire:target="payExtension">{{ __('booking.extension.actions.mark_paid') }}</span>
                     <span wire:loading wire:target="payExtension">{{ __('booking.extension.actions.marking_paid') }}</span>
                 </flux:button>
             @endif
 
             @if($extension && in_array($statusValue, ['awaiting_host_approval', 'awaiting_payment'], true))
-                <flux:button wire:click="cancelExtension" variant="ghost" class="w-full">
+                <flux:button wire:click="cancelExtension" variant="ghost" class="w-full" icon="x-mark">
                     {{ __('booking.extension.actions.cancel') }}
                 </flux:button>
             @endif

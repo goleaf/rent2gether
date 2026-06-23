@@ -1,12 +1,17 @@
 <div class="space-y-4">
     <flux:card class="space-y-3">
         <div class="space-y-1">
-            <flux:heading size="sm">{{ __('media.manager.title') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="photo" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('media.manager.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('media.manager.helper') }}</flux:text>
         </div>
 
         @if ($statusMessage || session('media-status'))
-            <flux:callout variant="success" :text="$statusMessage ?: session('media-status')" />
+            <flux:callout variant="success" :text="$statusMessage ?: session('media-status')"  icon="check-circle" />
         @endif
 
         <flux:file-upload
@@ -42,13 +47,13 @@
             @foreach($this->contentLocales() as $locale)
                 <flux:field wire:key="media-caption-{{ $locale['code'] }}">
                     <flux:label>{{ __('media.manager.caption', ['language' => $locale['name']]) }}</flux:label>
-                    <flux:input wire:model.blur="captions.{{ $locale['code'] }}" maxlength="160" />
+                    <flux:input wire:model.blur="captions.{{ $locale['code'] }}" maxlength="160" icon="language" />
                     <flux:error name="captions.{{ $locale['code'] }}" />
                 </flux:field>
             @endforeach
         </div>
 
-        <flux:button type="button" variant="primary" class="w-full" wire:click="savePhoto" wire:loading.attr="disabled" wire:target="savePhoto,photo">
+        <flux:button type="button" variant="primary" class="w-full" wire:click="savePhoto" wire:loading.attr="disabled" wire:target="savePhoto,photo" icon="photo">
             <span wire:loading.remove wire:target="savePhoto">{{ __('media.manager.actions.save') }}</span>
             <span wire:loading wire:target="savePhoto">{{ __('media.manager.actions.saving') }}</span>
         </flux:button>
@@ -77,30 +82,30 @@
                             </p>
                         </div>
                         @if($item['is_primary'])
-                            <flux:badge size="sm" color="green">{{ __('media.manager.primary') }}</flux:badge>
+                            <flux:badge size="sm" color="green" icon="check-circle">{{ __('media.manager.primary') }}</flux:badge>
                         @endif
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                        <flux:button type="button" size="xs" variant="ghost" wire:click="moveMedia({{ $item['id'] }}, 'up')" :disabled="$index === 0">
+                        <flux:button type="button" size="xs" variant="ghost" wire:click="moveMedia({{ $item['id'] }}, 'up')" :disabled="$index === 0" icon="photo">
                             {{ __('media.manager.actions.up') }}
                         </flux:button>
-                        <flux:button type="button" size="xs" variant="ghost" wire:click="moveMedia({{ $item['id'] }}, 'down')" :disabled="$index === count($this->mediaItems) - 1">
+                        <flux:button type="button" size="xs" variant="ghost" wire:click="moveMedia({{ $item['id'] }}, 'down')" :disabled="$index === count($this->mediaItems) - 1" icon="photo">
                             {{ __('media.manager.actions.down') }}
                         </flux:button>
                         @unless($item['is_primary'])
-                            <flux:button type="button" size="xs" variant="ghost" wire:click="setPrimary({{ $item['id'] }})">
+                            <flux:button type="button" size="xs" variant="ghost" wire:click="setPrimary({{ $item['id'] }})" icon="photo">
                                 {{ __('media.manager.actions.primary') }}
                             </flux:button>
                         @endunless
-                        <flux:button type="button" size="xs" variant="danger" wire:click="deleteMedia({{ $item['id'] }})" wire:confirm="{{ __('media.manager.delete_confirm') }}">
+                        <flux:button type="button" size="xs" variant="danger" wire:click="deleteMedia({{ $item['id'] }})" wire:confirm="{{ __('media.manager.delete_confirm') }}" icon="trash">
                             {{ __('media.manager.actions.delete') }}
                         </flux:button>
                     </div>
                 </div>
             </flux:card>
         @empty
-            <flux:callout variant="secondary" :text="__('media.manager.empty')" />
+            <flux:callout variant="secondary" :text="__('media.manager.empty')"  icon="information-circle" />
         @endforelse
     </div>
 </div>

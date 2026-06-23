@@ -1,5 +1,10 @@
 <flux:card class="space-y-3">
-    <flux:heading size="sm">{{ __('booking_requests.host_response.title') }}</flux:heading>
+    <flux:heading size="sm">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('booking_requests.host_response.title') }}</span>
+        </span>
+    </flux:heading>
 
     <flux:field>
         <flux:label>{{ __('booking_requests.fields.host_response') }}</flux:label>
@@ -8,33 +13,33 @@
     </flux:field>
 
     <div class="grid gap-2 sm:grid-cols-2">
-        <flux:button type="button" variant="primary" wire:click="approve">{{ __('booking_requests.actions.approve') }}</flux:button>
-        <flux:button type="button" variant="outline" wire:click="askQuestion">{{ __('booking_requests.actions.ask_question') }}</flux:button>
+        <flux:button type="button" variant="primary" wire:click="approve" icon="calendar-days">{{ __('booking_requests.actions.approve') }}</flux:button>
+        <flux:button type="button" variant="outline" wire:click="askQuestion" icon="chat-bubble-left-right">{{ __('booking_requests.actions.ask_question') }}</flux:button>
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
             <flux:label>{{ __('booking_requests.fields.proposed_check_in_time') }}</flux:label>
-            <flux:input type="time" wire:model.change="proposedCheckInTime" />
+            <flux:input type="time" wire:model.change="proposedCheckInTime" icon="calendar-days" />
         </flux:field>
         <flux:field>
             <flux:label>{{ __('booking_requests.fields.proposed_check_out_time') }}</flux:label>
-            <flux:input type="time" wire:model.change="proposedCheckOutTime" />
+            <flux:input type="time" wire:model.change="proposedCheckOutTime" icon="calendar-days" />
         </flux:field>
     </div>
-    <flux:button type="button" variant="outline" class="w-full" wire:click="proposeTimeChange">{{ __('booking_requests.actions.propose_time_change') }}</flux:button>
+    <flux:button type="button" variant="outline" class="w-full" wire:click="proposeTimeChange" icon="calendar-days">{{ __('booking_requests.actions.propose_time_change') }}</flux:button>
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
             <flux:label>{{ __('booking_requests.fields.proposed_check_in_date') }}</flux:label>
-            <flux:input type="date" wire:model.change="proposedCheckInDate" />
+            <flux:input type="date" wire:model.change="proposedCheckInDate" icon="calendar-days" />
         </flux:field>
         <flux:field>
             <flux:label>{{ __('booking_requests.fields.proposed_check_out_date') }}</flux:label>
-            <flux:input type="date" wire:model.change="proposedCheckOutDate" />
+            <flux:input type="date" wire:model.change="proposedCheckOutDate" icon="calendar-days" />
         </flux:field>
     </div>
-    <flux:button type="button" variant="outline" class="w-full" wire:click="proposeDateChange">{{ __('booking_requests.actions.propose_date_change') }}</flux:button>
+    <flux:button type="button" variant="outline" class="w-full" wire:click="proposeDateChange" icon="calendar-days">{{ __('booking_requests.actions.propose_date_change') }}</flux:button>
 
     <flux:field>
         <flux:label>{{ __('booking_requests.fields.rejection_reason') }}</flux:label>
@@ -48,9 +53,9 @@
     </flux:field>
 
     <div class="grid gap-2 sm:grid-cols-2">
-        <flux:button type="button" variant="danger" wire:click="reject">{{ __('booking_requests.actions.reject') }}</flux:button>
+        <flux:button type="button" variant="danger" wire:click="reject" icon="x-mark">{{ __('booking_requests.actions.reject') }}</flux:button>
         @if($request->status === 'approved')
-            <flux:button type="button" variant="primary" wire:click="convert">{{ __('booking_requests.actions.convert_to_booking') }}</flux:button>
+            <flux:button type="button" variant="primary" wire:click="convert" icon="calendar-days">{{ __('booking_requests.actions.convert_to_booking') }}</flux:button>
         @endif
     </div>
 </flux:card>

@@ -1,1 +1,1 @@
-<flux:badge color="{{ $summary['status_color'] }}">{{ $summary['status'] }}</flux:badge>
+<flux:badge color="{{ $summary['status_color'] }}" icon="calendar-days">{{ $summary['status'] }}</flux:badge>

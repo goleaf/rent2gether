@@ -1,7 +1,12 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:badge color="emerald">{{ __('waitlist.title') }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ __('waitlist.my_waitlist') }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ __('waitlist.title') }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('waitlist.my_waitlist') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ __('waitlist.helper') }}</flux:text>
     </section>
 
@@ -19,7 +24,7 @@
                             <flux:text size="sm" class="text-zinc-500">{{ $card['location'] }}</flux:text>
                         @endif
                     </div>
-                    <flux:badge size="sm" color="{{ $card['item']->status === 'offered' ? 'green' : 'zinc' }}">{{ __('waitlist.statuses.'.$card['item']->status) }}</flux:badge>
+                    <flux:badge size="sm" color="{{ $card['item']->status === 'offered' ? 'green' : 'zinc' }}" icon="exclamation-triangle">{{ __('waitlist.statuses.'.$card['item']->status) }}</flux:badge>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
@@ -42,14 +47,14 @@
                 </div>
 
                 @if($card['item']->activeOffer)
-                    <flux:callout color="green" icon="sparkles">
+                    <flux:callout color="green" icon="check-circle">
                         <flux:callout.text>{{ __('waitlist.offer_expires', ['time' => $card['item']->activeOffer->offer_expires_at?->format('H:i')]) }}</flux:callout.text>
                     </flux:callout>
                 @endif
 
                 <div class="flex flex-wrap gap-2">
                     @if($card['place'])
-                        <flux:button size="sm" variant="ghost" icon="arrow-top-right-on-square" href="{{ route('places.show', ['locale' => app()->getLocale(), 'sleepingPlace' => $card['place']]) }}" wire:navigate>
+                        <flux:button size="sm" variant="ghost" icon="eye" href="{{ route('places.show', ['locale' => app()->getLocale(), 'sleepingPlace' => $card['place']]) }}" wire:navigate>
                             {{ __('waitlist.open_listing') }}
                         </flux:button>
                     @endif
@@ -61,9 +66,14 @@
         @empty
             <flux:card>
                 <div class="space-y-3 text-center">
-                    <flux:heading size="lg">{{ __('waitlist.empty.title') }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('waitlist.empty.title') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('waitlist.empty.text') }}</flux:text>
-                    <flux:button variant="primary" href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate>
+                    <flux:button variant="primary" href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate icon="magnifying-glass">
                         {{ __('waitlist.empty.button') }}
                     </flux:button>
                 </div>

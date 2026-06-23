@@ -1,5 +1,5 @@
 <div>
-    <flux:button type="button" size="sm" variant="ghost" wire:click="open">
+    <flux:button type="button" size="sm" variant="ghost" wire:click="open" icon="eye">
         {{ __('guest_hints.details') }}
     </flux:button>
 
@@ -9,7 +9,12 @@
             <div class="space-y-4">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <flux:heading size="lg">{{ $hint['text'] ?? __('guest_hints.details') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="user" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ $hint['text'] ?? __('guest_hints.details') }}</span>
+                            </span>
+                        </flux:heading>
                         @if(! empty($hint['category']))
                             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_hints.categories.'.$hint['category']) }}</flux:text>
                         @endif

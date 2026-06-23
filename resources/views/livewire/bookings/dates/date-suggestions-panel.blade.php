@@ -1,7 +1,12 @@
 <div>
     @if($suggestions)
         <flux:card class="space-y-3">
-            <flux:heading size="sm">{{ __('booking_quotes.suggestions.title') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking_quotes.suggestions.title') }}</span>
+                </span>
+            </flux:heading>
 
             <div class="space-y-2">
                 @foreach($suggestions as $suggestion)
@@ -17,7 +22,7 @@
                             </flux:text>
                         @endif
                         @if($suggestion['price'])
-                            <flux:badge size="sm">{{ $suggestion['price'] }}</flux:badge>
+                            <flux:badge size="sm" icon="calendar-days">{{ $suggestion['price'] }}</flux:badge>
                         @endif
                     </div>
                 @endforeach

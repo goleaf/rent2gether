@@ -2,7 +2,12 @@
     @if($listingCard)
         <x-listings.card :card="$listingCard" card-variant="waitlist" embedded :show-actions="false" />
     @else
-        <flux:heading size="sm">{{ __('waitlist.title') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('waitlist.title') }}</span>
+            </span>
+        </flux:heading>
     @endif
 
     <div class="grid grid-cols-2 gap-2 text-sm">
@@ -20,9 +25,9 @@
     </div>
 
     <div class="flex flex-wrap gap-1.5">
-        <flux:badge size="sm">{{ __('waitlist.statuses.'.$item->status) }}</flux:badge>
+        <flux:badge size="sm" icon="tag">{{ __('waitlist.statuses.'.$item->status) }}</flux:badge>
         @if($item->max_price_per_night)
-            <flux:badge size="sm">{{ __('waitlist.max_price') }}: {{ \Illuminate\Support\Number::currency((float) $item->max_price_per_night, $item->currency ?: 'EUR', app()->getLocale()) }}</flux:badge>
+            <flux:badge size="sm" icon="banknotes">{{ __('waitlist.max_price') }}: {{ \Illuminate\Support\Number::currency((float) $item->max_price_per_night, $item->currency ?: 'EUR', app()->getLocale()) }}</flux:badge>
         @endif
     </div>
 </flux:card>

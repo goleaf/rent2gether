@@ -9,7 +9,7 @@
                 href="{{ $urlFor($locale) }}"
                 class="{{ app()->isLocale($locale) ? 'font-medium' : '' }}"
                 wire:navigate
-            >
+             icon="language">
                 {{ __('navigation.languages.'.$locale) }}
             </flux:menu.item>
         @endforeach

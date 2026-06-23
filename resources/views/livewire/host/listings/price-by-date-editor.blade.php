@@ -2,19 +2,19 @@
     <div class="grid gap-4 sm:grid-cols-3">
         <flux:field>
             <flux:label>{{ __('listing_calendar.fields.start_date') }}</flux:label>
-            <flux:input type="date" wire:model.change="start" />
+            <flux:input type="date" wire:model.change="start" icon="calendar-days" />
         </flux:field>
         <flux:field>
             <flux:label>{{ __('listing_calendar.fields.end_date') }}</flux:label>
-            <flux:input type="date" wire:model.change="end" />
+            <flux:input type="date" wire:model.change="end" icon="calendar-days" />
         </flux:field>
         <flux:field>
             <flux:label>{{ __('listing_calendar.fields.price') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="price" />
+            <flux:input type="number" step="0.01" wire:model.blur="price" icon="banknotes" />
         </flux:field>
     </div>
 
-    <flux:button type="button" variant="primary" wire:click="save" wire:loading.attr="disabled">
+    <flux:button type="button" variant="primary" wire:click="save" wire:loading.attr="disabled" icon="calendar-days">
         {{ __('listing_calendar.actions.save_price') }}
     </flux:button>
 </flux:card>

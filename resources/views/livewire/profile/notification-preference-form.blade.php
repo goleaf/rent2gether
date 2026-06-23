@@ -1,11 +1,16 @@
 <form wire:submit="save" class="space-y-4">
-    <flux:heading size="md">{{ __('profiles.sections.notifications') }}</flux:heading>
+    <flux:heading size="md">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('profiles.sections.notifications') }}</span>
+        </span>
+    </flux:heading>
 
-    <flux:input wire:model.blur="category" :label="__('profiles.fields.notification_category')" />
-    <flux:input wire:model.blur="channel" :label="__('profiles.fields.notification_channel')" />
+    <flux:input wire:model.blur="category" :label="__('profiles.fields.notification_category')" icon="user" />
+    <flux:input wire:model.blur="channel" :label="__('profiles.fields.notification_channel')" icon="user" />
     <flux:checkbox wire:model.change="enabled" :label="__('profiles.fields.notifications_enabled')" />
 
-    <flux:button type="submit" variant="primary" class="w-full" wire:loading.class="opacity-50">
+    <flux:button type="submit" variant="primary" class="w-full" wire:loading.class="opacity-50" icon="check">
         {{ __('common.actions.save') }}
     </flux:button>
 </form>

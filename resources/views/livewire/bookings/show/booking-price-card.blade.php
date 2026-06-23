@@ -1,7 +1,12 @@
 <flux:card class="space-y-4">
     <div class="flex items-center justify-between gap-3">
-        <flux:heading size="md">{{ __('bookings.cards.price') }}</flux:heading>
-        <flux:badge>{{ $summary['total_payable'] }}</flux:badge>
+        <flux:heading size="md">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('bookings.cards.price') }}</span>
+            </span>
+        </flux:heading>
+        <flux:badge icon="calendar-days">{{ $summary['total_payable'] }}</flux:badge>
     </div>
 
     <div class="grid gap-2">

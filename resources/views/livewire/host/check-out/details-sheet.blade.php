@@ -11,7 +11,7 @@
             </div>
 
             @if ($checkOut)
-                <flux:badge color="{{ in_array($checkOut->status, ['completed', 'closed'], true) ? 'emerald' : 'zinc' }}">
+                <flux:badge color="{{ in_array($checkOut->status, ['completed', 'closed'], true) ? 'emerald' : 'zinc' }}" icon="check-circle">
                     {{ __('check_out.statuses.' . $checkOut->status) }}
                 </flux:badge>
             @endif
@@ -44,7 +44,7 @@
                 @forelse ($checkOut->steps as $step)
                     <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __('check_out.steps.' . $step->step_key) }}</span>
-                        <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}">
+                        <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}" icon="check-circle">
                             {{ __('check_out.item_statuses.' . $step->status) }}
                         </flux:badge>
                     </div>

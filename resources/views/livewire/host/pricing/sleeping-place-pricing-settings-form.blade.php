@@ -1,40 +1,45 @@
 <flux:card class="space-y-4">
-    <flux:heading size="sm">{{ __('pricing.sections.host_settings') }}</flux:heading>
+    <flux:heading size="sm">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('pricing.sections.host_settings') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
             <flux:label>{{ __('pricing.fields.currency') }}</flux:label>
-            <flux:input wire:model.blur="currency" maxlength="3" />
+            <flux:input wire:model.blur="currency" maxlength="3" icon="banknotes" />
             <flux:error name="currency" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.base_nightly_price') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="baseNightlyPrice" />
+            <flux:input type="number" step="0.01" wire:model.blur="baseNightlyPrice" icon="banknotes" />
             <flux:error name="baseNightlyPrice" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.weekday_price') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="weekdayPrice" />
+            <flux:input type="number" step="0.01" wire:model.blur="weekdayPrice" icon="banknotes" />
             <flux:error name="weekdayPrice" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.weekend_price') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="weekendPrice" />
+            <flux:input type="number" step="0.01" wire:model.blur="weekendPrice" icon="banknotes" />
             <flux:error name="weekendPrice" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.cleaning_fee') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="cleaningFee" />
+            <flux:input type="number" step="0.01" wire:model.blur="cleaningFee" icon="banknotes" />
             <flux:error name="cleaningFee" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.deposit') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="depositAmount" />
+            <flux:input type="number" step="0.01" wire:model.blur="depositAmount" icon="banknotes" />
             <flux:error name="depositAmount" />
         </flux:field>
     </div>
@@ -45,29 +50,29 @@
     <div class="grid gap-3 sm:grid-cols-3">
         <flux:field>
             <flux:label>{{ __('pricing.fields.included_guests_count') }}</flux:label>
-            <flux:input type="number" wire:model.blur="includedGuestsCount" />
+            <flux:input type="number" wire:model.blur="includedGuestsCount" icon="users" />
             <flux:error name="includedGuestsCount" />
         </flux:field>
         <flux:field>
             <flux:label>{{ __('pricing.fields.max_guests_count') }}</flux:label>
-            <flux:input type="number" wire:model.blur="maxGuestsCount" />
+            <flux:input type="number" wire:model.blur="maxGuestsCount" icon="users" />
             <flux:error name="maxGuestsCount" />
         </flux:field>
         <flux:field>
             <flux:label>{{ __('pricing.fields.extra_guest_fee') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="extraGuestFee" />
+            <flux:input type="number" step="0.01" wire:model.blur="extraGuestFee" icon="banknotes" />
             <flux:error name="extraGuestFee" />
         </flux:field>
     </div>
 
     <div class="flex justify-end">
-        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled" icon="check">
             {{ __('pricing.actions.save_pricing') }}
         </flux:button>
     </div>
 
     @if ($savedMessageKey)
-        <flux:callout color="green">
+        <flux:callout color="green" icon="check-circle">
             <flux:callout.heading>{{ __($savedMessageKey) }}</flux:callout.heading>
         </flux:callout>
     @endif

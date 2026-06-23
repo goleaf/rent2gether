@@ -1,6 +1,11 @@
 <section class="space-y-4">
     <div class="space-y-1">
-        <flux:heading size="lg">{{ __('stays.host_title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('stays.host_title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('stays.messages.host_residents_helper') }}</flux:text>
     </div>
 
@@ -10,7 +15,7 @@
                 size="sm"
                 :variant="$activeFilter === $key ? 'primary' : 'outline'"
                 wire:click="setFilter('{{ $key }}')"
-            >
+             icon="funnel">
                 {{ $label }}
             </flux:button>
         @endforeach
@@ -26,7 +31,7 @@
                             {{ $resident->room?->title }} · {{ $resident->sleepingPlace?->display_name ?: $resident->sleepingPlace?->place_number }}
                         </flux:text>
                     </div>
-                    <flux:badge>{{ __('stays.statuses.'.$resident->status) }}</flux:badge>
+                    <flux:badge icon="user">{{ __('stays.statuses.'.$resident->status) }}</flux:badge>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
@@ -41,8 +46,8 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <flux:button size="sm">{{ __('stays.actions.message_guest') }}</flux:button>
-                    <flux:button size="sm">{{ __('stays.actions.add_note') }}</flux:button>
+                    <flux:button size="sm" icon="chat-bubble-left-right">{{ __('stays.actions.message_guest') }}</flux:button>
+                    <flux:button size="sm" icon="calendar-days">{{ __('stays.actions.add_note') }}</flux:button>
                 </div>
             </flux:card>
         @empty

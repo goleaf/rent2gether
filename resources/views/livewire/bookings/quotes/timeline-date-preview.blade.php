@@ -1,5 +1,10 @@
 <flux:card class="space-y-3">
-    <flux:heading size="sm">{{ __('booking_quotes.timeline.title') }}</flux:heading>
+    <flux:heading size="sm">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('booking_quotes.timeline.title') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="space-y-2">
         @foreach($dates as $date)
@@ -8,7 +13,7 @@
                     <flux:text size="sm" class="font-medium">{{ $date['label'] }}</flux:text>
                     <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $date['status'] }}</flux:text>
                 </div>
-                <flux:badge size="sm">{{ $date['scheduled_at'] }}</flux:badge>
+                <flux:badge size="sm" icon="calendar-days">{{ $date['scheduled_at'] }}</flux:badge>
             </div>
         @endforeach
     </div>

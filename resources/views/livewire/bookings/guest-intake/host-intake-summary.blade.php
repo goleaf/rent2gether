@@ -1,6 +1,11 @@
 <flux:card class="space-y-4">
     <div class="space-y-1">
-        <flux:heading size="lg">{{ __('guest_intake.summary.host_title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('guest_intake.summary.host_title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.summary.host_helper') }}</flux:text>
     </div>
 
@@ -27,7 +32,7 @@
         @if($summary['quiet_work_needs'] !== [])
             <div class="flex flex-wrap gap-1.5">
                 @foreach($summary['quiet_work_needs'] as $need)
-                    <flux:badge size="sm">{{ $need }}</flux:badge>
+                    <flux:badge size="sm" icon="calendar-days">{{ $need }}</flux:badge>
                 @endforeach
             </div>
         @endif

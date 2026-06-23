@@ -1,10 +1,15 @@
 <div class="space-y-5">
     <div class="space-y-3">
-        <flux:heading size="sm">{{ __('search.filter_groups.place') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.place') }}</span>
+            </span>
+        </flux:heading>
 
         <flux:field>
             <flux:label>{{ __('search.fields.district') }}</flux:label>
-            <flux:input wire:model.blur="district" placeholder="{{ __('search.placeholders.district') }}" />
+            <flux:input wire:model.blur="district" placeholder="{{ __('search.placeholders.district') }}" icon="map-pin" />
         </flux:field>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
@@ -53,17 +58,22 @@
     <flux:separator />
 
     <div class="space-y-3">
-        <flux:heading size="sm">{{ __('search.filter_groups.price') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.price') }}</span>
+            </span>
+        </flux:heading>
 
         <div class="grid grid-cols-2 gap-3">
             <flux:field>
                 <flux:label>{{ __('search.fields.price_min') }}</flux:label>
-                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="priceMin" />
+                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="priceMin" icon="banknotes" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('search.fields.price_max') }}</flux:label>
-                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="priceMax" />
+                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="priceMax" icon="banknotes" />
             </flux:field>
         </div>
 
@@ -87,7 +97,12 @@
     <flux:separator />
 
     <div class="space-y-3">
-        <flux:heading size="sm">{{ __('search.filter_groups.booking') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.booking') }}</span>
+            </span>
+        </flux:heading>
         <div class="space-y-2">
             <flux:checkbox wire:model.change="instantBooking" label="{{ __('search.filters_flags.instant_booking') }}" />
             <flux:checkbox wire:model.change="hostApprovalRequired" label="{{ __('search.filters_flags.host_approval_required') }}" />
@@ -99,7 +114,12 @@
     <flux:separator />
 
     <div class="space-y-3">
-        <flux:heading size="sm">{{ __('search.filter_groups.comfort') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.comfort') }}</span>
+            </span>
+        </flux:heading>
         <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             <flux:checkbox wire:model.change="wifi" label="{{ __('search.filters_flags.wifi') }}" />
             <flux:checkbox wire:model.change="kitchen" label="{{ __('search.filters_flags.kitchen') }}" />
@@ -116,7 +136,12 @@
     <flux:separator />
 
     <div class="space-y-3">
-        <flux:heading size="sm">{{ __('search.filter_groups.room_rules') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.room_rules') }}</span>
+            </span>
+        </flux:heading>
         <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             <flux:checkbox wire:model.change="lowerBunkOnly" label="{{ __('search.filters_flags.lower_bunk_only') }}" />
             <flux:checkbox wire:model.change="notUpperBunk" label="{{ __('search.filters_flags.not_upper_bunk') }}" />
@@ -131,14 +156,19 @@
 
         <flux:field>
             <flux:label>{{ __('search.fields.max_people_in_room') }}</flux:label>
-            <flux:input type="number" min="1" inputmode="numeric" wire:model.blur="maxPeopleInRoom" />
+            <flux:input type="number" min="1" inputmode="numeric" wire:model.blur="maxPeopleInRoom" icon="users" />
         </flux:field>
     </div>
 
     <flux:separator />
 
     <div class="space-y-3">
-        <flux:heading size="sm">{{ __('search.filter_groups.host') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.host') }}</span>
+            </span>
+        </flux:heading>
         <div class="space-y-2">
             <flux:checkbox wire:model.change="highRating" label="{{ __('search.filters_flags.high_rating') }}" />
             <flux:checkbox wire:model.change="verifiedHost" label="{{ __('search.filters_flags.verified_host') }}" />

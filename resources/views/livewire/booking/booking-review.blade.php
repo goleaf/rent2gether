@@ -10,27 +10,37 @@
             {{ __('booking.flow.actions.back_to_place') }}
         </flux:button>
 
-        <flux:badge color="emerald">{{ $bookingMode }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ __('booking.flow.title') }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ $bookingMode }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.flow.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('booking.flow.helper', ['title' => $placeTitle]) }}</flux:text>
     </div>
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('booking.flow.dates.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.flow.dates.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('booking.flow.dates.helper') }}</flux:text>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
             <flux:field>
                 <flux:label>{{ __('booking.date_selector.fields.check_in') }}</flux:label>
-                <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkIn" />
+                <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkIn" icon="calendar-days" />
                 <flux:error name="checkIn" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('booking.date_selector.fields.check_out') }}</flux:label>
-                <flux:input type="date" min="{{ $checkIn ?: now()->toDateString() }}" wire:model.change="checkOut" />
+                <flux:input type="date" min="{{ $checkIn ?: now()->toDateString() }}" wire:model.change="checkOut" icon="calendar-days" />
                 <flux:error name="checkOut" />
             </flux:field>
         </div>
@@ -38,19 +48,19 @@
         <div class="grid gap-3 sm:grid-cols-3">
             <flux:field>
                 <flux:label>{{ __('booking.date_selector.fields.guests_count') }}</flux:label>
-                <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" />
+                <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
                 <flux:error name="guestsCount" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('booking.flow.fields.check_in_time') }}</flux:label>
-                <flux:input type="time" wire:model.change="checkInTime" />
+                <flux:input type="time" wire:model.change="checkInTime" icon="calendar-days" />
                 <flux:error name="checkInTime" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('booking.flow.fields.arrival_time') }}</flux:label>
-                <flux:input type="time" wire:model.change="arrivalTime" />
+                <flux:input type="time" wire:model.change="arrivalTime" icon="clock" />
                 <flux:error name="arrivalTime" />
             </flux:field>
         </div>
@@ -68,7 +78,7 @@
             @if($unavailableDates)
                 <div class="flex flex-wrap gap-2">
                     @foreach($unavailableDates as $date)
-                        <flux:badge size="sm">{{ \Carbon\CarbonImmutable::parse($date)->translatedFormat('d M') }}</flux:badge>
+                        <flux:badge size="sm" icon="calendar-days">{{ \Carbon\CarbonImmutable::parse($date)->translatedFormat('d M') }}</flux:badge>
                     @endforeach
                 </div>
             @endif
@@ -78,7 +88,12 @@
     @if($quote)
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('booking.flow.price.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.flow.price.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ trans_choice('booking.date_selector.summary.selected_nights', $quote['nights_count'], ['count' => $quote['nights_count']]) }}
                 </flux:text>
@@ -104,7 +119,7 @@
                 @endforeach
             </div>
 
-            <flux:callout icon="information-circle">
+            <flux:callout icon="calendar-days">
                 <flux:callout.heading>{{ __('booking.flow.price.refund_title') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('booking.date_selector.price.refund_summary', [
@@ -135,7 +150,12 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('booking.flow.message.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.flow.message.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('booking.flow.message.helper') }}</flux:text>
         </div>
 
@@ -148,7 +168,12 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('booking.flow.profile.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.flow.profile.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('booking.flow.profile.helper') }}</flux:text>
         </div>
 
@@ -156,7 +181,7 @@
             @foreach($profileChecklist as $item)
                 <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
                     <span>{{ $item['label'] }}</span>
-                    <flux:badge color="{{ $item['done'] ? 'green' : 'zinc' }}">
+                    <flux:badge color="{{ $item['done'] ? 'green' : 'zinc' }}" icon="check-circle">
                         {{ $item['done'] ? __('booking.flow.profile.ready') : __('booking.flow.profile.can_update_later') }}
                     </flux:badge>
                 </div>
@@ -187,7 +212,7 @@
                 wire:click="submit"
                 wire:loading.attr="disabled"
                 wire:target="submit"
-            >
+             icon="calendar-days">
                 <span wire:loading.remove wire:target="submit">{{ __('booking.flow.actions.submit') }}</span>
                 <span wire:loading wire:target="submit">{{ __('booking.flow.actions.submitting') }}</span>
             </flux:button>

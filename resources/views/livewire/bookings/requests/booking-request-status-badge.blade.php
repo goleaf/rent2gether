@@ -1,1 +1,1 @@
-<flux:badge variant="{{ $variant }}">{{ $label }}</flux:badge>
+<flux:badge variant="{{ $variant }}" icon="calendar-days">{{ $label }}</flux:badge>

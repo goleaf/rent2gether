@@ -1,7 +1,12 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:badge color="emerald">{{ __('booking.payment_page.eyebrow') }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ __('booking.payment_page.title') }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ __('booking.payment_page.eyebrow') }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.payment_page.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">
             {{ __('booking.payment_page.helper') }}
         </flux:text>
@@ -16,14 +21,19 @@
     <flux:card class="space-y-4">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-                <flux:heading size="lg">{{ __('booking.payment_page.summary.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.payment_page.summary.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.payment_page.summary.reference', ['reference' => $booking->reference]) }}
                 </flux:text>
                 <div class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $placeTitle }}</div>
             </div>
 
-            <flux:badge color="amber">{{ $booking->payment_status->label() }}</flux:badge>
+            <flux:badge color="amber" icon="exclamation-triangle">{{ $booking->payment_status->label() }}</flux:badge>
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-sm">
@@ -51,7 +61,7 @@
         </div>
 
         @if ($booking->payment_deadline_at && $canPay)
-            <flux:callout icon="clock" color="amber">
+            <flux:callout icon="exclamation-triangle" color="amber">
                 <flux:callout.heading>{{ __('booking.payment_page.deadline.title') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('booking.payment_page.deadline.text', ['deadline' => $booking->payment_deadline_at->translatedFormat('d M Y, H:i')]) }}
@@ -62,7 +72,12 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('booking.payment_page.price.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.payment_page.price.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.payment_page.price.helper') }}
             </flux:text>
@@ -104,7 +119,12 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('booking.payment_page.method.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.payment_page.method.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.payment_page.method.helper') }}
             </flux:text>
@@ -116,18 +136,18 @@
             </div>
 
             @if ($canUseDemoDriver)
-                <flux:callout icon="beaker" color="sky">
+                <flux:callout icon="calendar-days" color="sky">
                     <flux:callout.heading>{{ __('booking.payment_page.demo.title') }}</flux:callout.heading>
                     <flux:callout.text>{{ __('booking.payment_page.demo.helper') }}</flux:callout.text>
                 </flux:callout>
             @else
-                <flux:callout icon="lock-closed" color="zinc">
+                <flux:callout icon="information-circle" color="zinc">
                     <flux:callout.heading>{{ __('booking.payment_page.production.title') }}</flux:callout.heading>
                     <flux:callout.text>{{ __('booking.payment_page.production.helper') }}</flux:callout.text>
                 </flux:callout>
             @endif
         @else
-            <flux:callout icon="check-circle" color="emerald">
+            <flux:callout icon="calendar-days" color="emerald">
                 <flux:callout.heading>{{ __('booking.payment_page.complete.title') }}</flux:callout.heading>
                 <flux:callout.text>{{ __('booking.payment_page.complete.helper') }}</flux:callout.text>
             </flux:callout>
@@ -137,7 +157,12 @@
     @if ($accessDetails)
         <flux:card class="space-y-3">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('booking.payment_page.access.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.payment_page.access.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking.payment_page.access.helper') }}
                 </flux:text>
@@ -173,12 +198,12 @@
                     wire:target="markAsPaid"
                     variant="primary"
                     class="w-full data-loading:opacity-70"
-                >
+                 icon="credit-card">
                     <span wire:loading.remove wire:target="markAsPaid">{{ __('booking.payment_page.actions.mark_paid') }}</span>
                     <span wire:loading wire:target="markAsPaid">{{ __('booking.payment_page.actions.marking_paid') }}</span>
                 </flux:button>
             @else
-                <flux:button href="{{ route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                <flux:button href="{{ route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full" icon="arrow-left">
                     {{ __('booking.payment_page.actions.back_to_booking') }}
                 </flux:button>
             @endif

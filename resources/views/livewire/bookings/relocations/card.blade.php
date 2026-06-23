@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('booking_relocations.components.guest_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('booking_relocations.title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('booking_relocations.components.guest_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_relocations.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('booking_relocations.messages.history_preserved') }}
                 </flux:text>
             </div>
 
             @if ($relocation)
-                <flux:badge color="blue">{{ __('booking_relocations.statuses.' . $relocation->status) }}</flux:badge>
+                <flux:badge color="blue" icon="calendar-days">{{ __('booking_relocations.statuses.' . $relocation->status) }}</flux:badge>
             @endif
         </div>
 
@@ -39,10 +44,10 @@
                 @endforeach
             </flux:select>
 
-            <flux:input type="date" wire:model.change="relocationDate" :label="__('booking_relocations.fields.relocation_date')" />
+            <flux:input type="date" wire:model.change="relocationDate" :label="__('booking_relocations.fields.relocation_date')" icon="calendar-days" />
             <flux:textarea wire:model.blur="guestComment" :label="__('booking_relocations.fields.guest_comment')" rows="3" />
 
-            <flux:button variant="primary" wire:click="requestRelocation" wire:loading.attr="disabled">
+            <flux:button variant="primary" wire:click="requestRelocation" wire:loading.attr="disabled" icon="calendar-days">
                 {{ __('booking_relocations.actions.request_relocation') }}
             </flux:button>
         </div>
@@ -59,7 +64,7 @@
                             {{ $item->relocation_date?->toDateString() }}
                         </p>
                     </div>
-                    <flux:badge>{{ __('booking_relocations.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="calendar-days">{{ __('booking_relocations.statuses.' . $item->status) }}</flux:badge>
                 </div>
 
                 <div class="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">

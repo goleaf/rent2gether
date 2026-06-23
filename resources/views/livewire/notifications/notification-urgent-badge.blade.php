@@ -1,1 +1,1 @@
-<flux:badge color="red">{{ $count }}</flux:badge>
+<flux:badge color="red" icon="exclamation-triangle">{{ $count }}</flux:badge>

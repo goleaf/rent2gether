@@ -25,10 +25,15 @@
     <section class="space-y-3">
         <div class="flex items-center justify-between gap-3">
             <div>
-                <flux:heading size="lg">{{ __('favorites.collections') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('favorites.collections') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('favorites.collections_helper') }}</flux:text>
             </div>
-            <flux:button type="button" size="sm" variant="primary" icon="plus" wire:click="$set('createCollectionOpen', true)">
+            <flux:button type="button" size="sm" variant="primary" icon="heart" wire:click="$set('createCollectionOpen', true)">
                 {{ __('favorites.create_collection') }}
             </flux:button>
         </div>
@@ -46,9 +51,14 @@
 
     <section class="space-y-3">
         <div class="flex items-center justify-between gap-3">
-            <flux:heading size="lg">{{ __('favorites.sections.recent') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('favorites.sections.recent') }}</span>
+                </span>
+            </flux:heading>
             @if($this->summary['total'] > 0)
-                <flux:button href="{{ route('favorites.index', ['locale' => app()->getLocale()]) }}" size="sm" variant="ghost" wire:navigate>
+                <flux:button href="{{ route('favorites.index', ['locale' => app()->getLocale()]) }}" size="sm" variant="ghost" wire:navigate icon="heart">
                     {{ __('favorites.all') }}
                 </flux:button>
             @endif
@@ -64,10 +74,15 @@
                             <flux:icon name="heart" class="size-6" />
                         </div>
                         <div class="space-y-1">
-                            <flux:heading size="lg">{{ __('favorites.empty.title') }}</flux:heading>
+                            <flux:heading size="lg">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('favorites.empty.title') }}</span>
+                                </span>
+                            </flux:heading>
                             <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('favorites.empty.text') }}</flux:text>
                         </div>
-                        <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
+                        <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate icon="magnifying-glass">
                             {{ __('favorites.empty.button') }}
                         </flux:button>
                     </div>
@@ -83,7 +98,12 @@
     ] as $section => $cards)
         @if($cards !== [])
             <section class="space-y-3">
-                <flux:heading size="lg">{{ __('favorites.sections.'.$section) }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('favorites.sections.'.$section) }}</span>
+                    </span>
+                </flux:heading>
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach($cards as $card)
                         <livewire:favorites.favorite-card :card="$card" :key="'favorite-'.$section.'-'.$card['id']" />

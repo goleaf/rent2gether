@@ -1,6 +1,11 @@
 <div class="space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
     <div class="space-y-1">
-        <flux:heading size="lg">{{ __('waitlist.join') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('waitlist.join') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('waitlist.helper') }}</flux:text>
     </div>
 
@@ -13,37 +18,37 @@
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
             <flux:label>{{ __('waitlist.check_in') }}</flux:label>
-            <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="desiredCheckIn" />
+            <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="desiredCheckIn" icon="calendar-days" />
             <flux:error name="desiredCheckIn" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('waitlist.check_out') }}</flux:label>
-            <flux:input type="date" min="{{ $desiredCheckIn ?: now()->toDateString() }}" wire:model.change="desiredCheckOut" />
+            <flux:input type="date" min="{{ $desiredCheckIn ?: now()->toDateString() }}" wire:model.change="desiredCheckOut" icon="calendar-days" />
             <flux:error name="desiredCheckOut" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('waitlist.guests_count') }}</flux:label>
-            <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" />
+            <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
             <flux:error name="guestsCount" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('waitlist.max_price') }}</flux:label>
-            <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxPricePerNight" />
+            <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxPricePerNight" icon="banknotes" />
             <flux:error name="maxPricePerNight" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('waitlist.max_total_price') }}</flux:label>
-            <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxTotalPrice" />
+            <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxTotalPrice" icon="banknotes" />
             <flux:error name="maxTotalPrice" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('waitlist.max_deposit') }}</flux:label>
-            <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxDeposit" />
+            <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxDeposit" icon="banknotes" />
             <flux:error name="maxDeposit" />
         </flux:field>
     </div>
@@ -63,7 +68,7 @@
     </flux:field>
 
     <div class="sticky bottom-20 -mx-4 border-t border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:dark:bg-transparent">
-        <flux:button type="button" variant="primary" class="w-full sm:w-auto" wire:click="join" wire:loading.attr="disabled" wire:target="join">
+        <flux:button type="button" variant="primary" class="w-full sm:w-auto" wire:click="join" wire:loading.attr="disabled" wire:target="join" icon="clock">
             {{ __('waitlist.join') }}
         </flux:button>
     </div>

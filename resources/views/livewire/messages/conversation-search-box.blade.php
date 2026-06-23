@@ -1,7 +1,7 @@
 <section class="space-y-3">
     <flux:field>
         <flux:label>{{ __('messages.actions.search') }}</flux:label>
-        <flux:input wire:model.live.debounce.500ms="query" />
+        <flux:input wire:model.live.debounce.500ms="query" icon="magnifying-glass" />
     </flux:field>
 
     @if(trim($query) !== '')

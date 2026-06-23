@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('no_show.components.host_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('no_show.host_title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('no_show.components.host_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('no_show.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('no_show.messages.host_waiting_notice') }}
                 </flux:text>
             </div>
 
             @if ($noShow)
-                <flux:badge color="red">{{ __('no_show.statuses.' . $noShow->status) }}</flux:badge>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('no_show.statuses.' . $noShow->status) }}</flux:badge>
             @endif
         </div>
 
@@ -29,7 +34,7 @@
 
             <div class="mt-4 grid gap-3">
                 <flux:textarea wire:model.blur="hostComment" :label="__('no_show.fields.host_comment')" rows="3" />
-                <flux:button variant="danger" wire:click="reportNoShow" wire:loading.attr="disabled">
+                <flux:button variant="danger" wire:click="reportNoShow" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.actions.report_no_show') }}
                 </flux:button>
             </div>
@@ -58,19 +63,24 @@
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <flux:button variant="danger" wire:click="confirmNoShow" wire:loading.attr="disabled">
+                <flux:button variant="danger" wire:click="confirmNoShow" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.actions.confirm_no_show') }}
                 </flux:button>
-                <flux:button wire:click="rejectNoShow" wire:loading.attr="disabled">
+                <flux:button wire:click="rejectNoShow" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('no_show.actions.reject_no_show') }}
                 </flux:button>
-                <flux:button variant="ghost" wire:click="cancelNoShow" wire:loading.attr="disabled">
+                <flux:button variant="ghost" wire:click="cancelNoShow" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('no_show.actions.cancel_no_show') }}
                 </flux:button>
             </div>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('no_show.fields.contact_attempts') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('no_show.fields.contact_attempts') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($noShow->contactAttempts as $attempt)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('no_show.contact_attempt_types.' . $attempt->attempt_type) }}</p>
@@ -95,7 +105,7 @@
                             {{ $item->sleepingPlace?->display_name ?? $item->sleepingPlace?->title ?? __('no_show.empty.unknown_place') }}
                         </p>
                     </div>
-                    <flux:badge>{{ __('no_show.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="exclamation-triangle">{{ __('no_show.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

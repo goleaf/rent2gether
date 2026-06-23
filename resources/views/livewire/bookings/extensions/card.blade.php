@@ -2,15 +2,20 @@
     <flux:card class="space-y-4">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-                <flux:badge color="emerald">{{ __('booking_extensions.components.' . $variant) }}</flux:badge>
-                <flux:heading size="lg">{{ __('booking_extensions.title') }}</flux:heading>
+                <flux:badge color="emerald" icon="check-circle">{{ __('booking_extensions.components.' . $variant) }}</flux:badge>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_extensions.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking_extensions.messages.guest_helper') }}
                 </flux:text>
             </div>
 
             @if ($extension)
-                <flux:badge color="{{ in_array($status, ['applied', 'paid', 'approved'], true) ? 'emerald' : (in_array($status, ['rejected', 'payment_failed', 'dates_unavailable'], true) ? 'amber' : 'zinc') }}">
+                <flux:badge color="{{ in_array($status, ['applied', 'paid', 'approved'], true) ? 'emerald' : (in_array($status, ['rejected', 'payment_failed', 'dates_unavailable'], true) ? 'amber' : 'zinc') }}" icon="exclamation-triangle">
                     {{ __('booking_extensions.statuses.' . $status) }}
                 </flux:badge>
             @endif
@@ -68,23 +73,28 @@
 
         @if (in_array($variant, ['guest_page', 'form'], true))
             <form wire:submit="requestExtension" class="space-y-3">
-                <flux:input type="date" wire:model.change="newCheckOutDate" :label="__('booking_extensions.fields.new_check_out_date')" />
+                <flux:input type="date" wire:model.change="newCheckOutDate" :label="__('booking_extensions.fields.new_check_out_date')" icon="calendar-days" />
                 <flux:textarea rows="3" wire:model.blur="guestMessage" :label="__('booking_extensions.fields.guest_message')" />
 
-                <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" wire:loading.attr="disabled">
+                <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" wire:loading.attr="disabled" icon="calendar-days">
                     <span wire:loading.remove wire:target="requestExtension">{{ __('booking_extensions.actions.request_extension') }}</span>
                     <span wire:loading wire:target="requestExtension">{{ __('booking_extensions.actions.requesting_extension') }}</span>
                 </flux:button>
             </form>
         @elseif ($variant === 'request_button')
-            <flux:button type="button" variant="primary" class="w-full" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:loading.attr="disabled" icon="calendar-days">
                 {{ __('booking_extensions.actions.request_extension') }}
             </flux:button>
         @endif
 
         @if (in_array($variant, ['guest_page', 'quote', 'payment'], true))
             <div class="space-y-2">
-                <flux:heading size="md">{{ __('booking_extensions.sections.price_lines') }}</flux:heading>
+                <flux:heading size="md">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_extensions.sections.price_lines') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($lines as $line)
                     <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800" wire:key="extension-line-{{ $line->id }}">
                         <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __($line->label_key) }}</span>
@@ -98,9 +108,14 @@
 
         @if (in_array($variant, ['guest_page', 'warnings'], true))
             <div class="space-y-2">
-                <flux:heading size="md">{{ __('booking_extensions.sections.warnings') }}</flux:heading>
+                <flux:heading size="md">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_extensions.sections.warnings') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($warnings as $warning)
-                    <flux:callout color="{{ $warning->blocking ? 'amber' : 'zinc' }}">
+                    <flux:callout color="{{ $warning->blocking ? 'amber' : 'zinc' }}" icon="chat-bubble-left-right">
                         <flux:callout.text>{{ __($warning->message_key, $warning->message_params_json ?: []) }}</flux:callout.text>
                     </flux:callout>
                 @empty
@@ -110,14 +125,19 @@
         @endif
 
         @if ($variant === 'payment')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="markPaid" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="markPaid" wire:loading.attr="disabled" icon="credit-card">
                 {{ __('booking_extensions.actions.pay') }}
             </flux:button>
         @endif
 
         @if ($variant === 'timeline')
             <div class="space-y-2">
-                <flux:heading size="md">{{ __('booking_extensions.sections.timeline') }}</flux:heading>
+                <flux:heading size="md">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_extensions.sections.timeline') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($timeline ?? collect() as $item)
                     <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <span>{{ __('booking_extensions.timeline.' . $item['key']) }}</span>

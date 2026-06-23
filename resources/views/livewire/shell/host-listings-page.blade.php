@@ -1,22 +1,27 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ __('shell.pages.host.listings.eyebrow') }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('shell.pages.host.listings.eyebrow') }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ __($page['title_key']) }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __($page['title_key']) }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ __($page['helper_key']) }}</flux:text>
         </div>
 
         <div class="grid gap-2 sm:grid-cols-4">
-            <flux:button href="{{ route('host.listings.index', ['locale' => app()->getLocale()]) }}" variant="{{ $page['scope'] === 'all' ? 'primary' : 'ghost' }}" wire:navigate>
+            <flux:button href="{{ route('host.listings.index', ['locale' => app()->getLocale()]) }}" variant="{{ $page['scope'] === 'all' ? 'primary' : 'ghost' }}" wire:navigate icon="home-modern">
                 {{ __('host.listings.tabs.all') }}
             </flux:button>
-            <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
+            <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate icon="home-modern">
                 {{ __('host.listings.tabs.properties') }}
             </flux:button>
-            <flux:button href="{{ route('host.listings.scope', ['locale' => app()->getLocale(), 'scope' => 'drafts']) }}" variant="{{ $page['scope'] === 'drafts' ? 'primary' : 'ghost' }}" wire:navigate>
+            <flux:button href="{{ route('host.listings.scope', ['locale' => app()->getLocale(), 'scope' => 'drafts']) }}" variant="{{ $page['scope'] === 'drafts' ? 'primary' : 'ghost' }}" wire:navigate icon="bookmark">
                 {{ __('host.listings.tabs.drafts') }}
             </flux:button>
-            <flux:button href="{{ route('host.listings.scope', ['locale' => app()->getLocale(), 'scope' => 'hidden']) }}" variant="{{ $page['scope'] === 'hidden' ? 'primary' : 'ghost' }}" wire:navigate>
+            <flux:button href="{{ route('host.listings.scope', ['locale' => app()->getLocale(), 'scope' => 'hidden']) }}" variant="{{ $page['scope'] === 'hidden' ? 'primary' : 'ghost' }}" wire:navigate icon="home-modern">
                 {{ __('host.listings.tabs.hidden') }}
             </flux:button>
         </div>
@@ -50,7 +55,12 @@
             @include('livewire.shell.partials.host-property-card', ['property' => $property])
         @empty
             <flux:card class="space-y-4 text-center">
-                <flux:heading size="lg">{{ __($page['empty_title_key']) }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __($page['empty_title_key']) }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __($page['empty_text_key']) }}</flux:text>
                 <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale()]) }}" variant="primary" icon="plus" wire:navigate>
                     {{ __('listing_wizard.title') }}

@@ -1,6 +1,11 @@
 <flux:card class="space-y-3">
     @if (isset($stays))
-        <flux:heading size="md">{{ __('stays.components.checkout_soon') }}</flux:heading>
+        <flux:heading size="md">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('stays.components.checkout_soon') }}</span>
+            </span>
+        </flux:heading>
         @forelse ($stays as $stay)
             <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
                 <flux:text class="font-medium">{{ $stay->guest?->name }}</flux:text>
@@ -12,10 +17,15 @@
     @elseif ($summary)
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:heading size="md">{{ __('stays.host_title') }}</flux:heading>
+                <flux:heading size="md">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('stays.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm">{{ $summary['sleeping_place'] }} · {{ $summary['room'] }}</flux:text>
             </div>
-            <flux:badge>{{ $summary['status'] }}</flux:badge>
+            <flux:badge icon="user">{{ $summary['status'] }}</flux:badge>
         </div>
         <flux:text size="sm">{{ __('stays.fields.nights_remaining') }}: {{ $summary['nights_remaining'] }}</flux:text>
     @else

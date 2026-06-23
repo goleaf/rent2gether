@@ -5,7 +5,7 @@
         href="{{ $guestHref }}"
         wire:navigate
         class="min-h-8"
-    >
+     icon="user">
         {{ __('navigation.guest_mode') }}
     </flux:button>
 
@@ -15,7 +15,7 @@
         href="{{ $hostHref }}"
         wire:navigate
         class="min-h-8"
-    >
+     icon="home-modern">
         {{ __('navigation.host_mode') }}
     </flux:button>
 </div>

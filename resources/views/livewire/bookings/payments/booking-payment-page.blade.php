@@ -8,10 +8,10 @@
     <livewire:bookings.payments.payment-method-picker :payment-id="$payment->id" />
 
     <div class="grid gap-2">
-        <flux:button type="button" variant="primary" class="w-full" wire:click="pay" wire:loading.attr="disabled">
+        <flux:button type="button" variant="primary" class="w-full" wire:click="pay" wire:loading.attr="disabled" icon="credit-card">
             {{ __('payments.actions.pay') }}
         </flux:button>
-        <flux:button type="button" variant="ghost" class="w-full">
+        <flux:button type="button" variant="ghost" class="w-full" icon="x-mark">
             {{ __('payments.actions.cancel_payment') }}
         </flux:button>
     </div>

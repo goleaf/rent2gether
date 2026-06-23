@@ -10,7 +10,7 @@
                 </h2>
             </div>
 
-            <flux:badge color="{{ $status === 'checked_in' ? 'emerald' : ($status === 'check_in_problem' || $status === 'problem_reported' || $status === 'host_unresponsive' || $status === 'waiting_for_resolution' ? 'amber' : 'zinc') }}">
+            <flux:badge color="{{ $status === 'checked_in' ? 'emerald' : ($status === 'check_in_problem' || $status === 'problem_reported' || $status === 'host_unresponsive' || $status === 'waiting_for_resolution' ? 'amber' : 'zinc') }}" icon="exclamation-triangle">
                 {{ __('check_in.statuses.' . $status) }}
             </flux:badge>
         </div>
@@ -61,7 +61,7 @@
                     @foreach ($steps as $step)
                         <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                             <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __('check_in.step_keys.' . $step->step_key) }}</span>
-                            <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}">
+                            <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}" icon="check-circle">
                                 {{ __('check_in.item_statuses.' . $step->status) }}
                             </flux:badge>
                         </div>
@@ -77,7 +77,7 @@
                     @foreach ($items as $item)
                         <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                             <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __($item->label_key) }}</span>
-                            <flux:badge color="{{ $item->status === 'completed' ? 'emerald' : 'zinc' }}">
+                            <flux:badge color="{{ $item->status === 'completed' ? 'emerald' : 'zinc' }}" icon="check-circle">
                                 {{ __('check_in.item_statuses.' . $item->status) }}
                             </flux:badge>
                         </div>
@@ -124,29 +124,29 @@
 
         @if ($variant === 'guest_arrival_buttons')
             <div class="grid grid-cols-1 gap-2">
-                <flux:button type="button" variant="filled" class="w-full" wire:click="markOnTheWay" wire:loading.attr="disabled">
+                <flux:button type="button" variant="filled" class="w-full" wire:click="markOnTheWay" wire:loading.attr="disabled" icon="key">
                     {{ __('check_in.actions.i_am_on_the_way') }}
                 </flux:button>
-                <flux:button type="button" variant="primary" class="w-full" wire:click="markArrived" wire:loading.attr="disabled">
+                <flux:button type="button" variant="primary" class="w-full" wire:click="markArrived" wire:loading.attr="disabled" icon="key">
                     {{ __('check_in.actions.i_arrived') }}
                 </flux:button>
             </div>
         @endif
 
         @if ($variant === 'arrival_button' || $variant === 'guest_page')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="markArrived" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="markArrived" wire:loading.attr="disabled" icon="key">
                 {{ __('check_in.actions.i_arrived') }}
             </flux:button>
         @endif
 
         @if ($variant === 'guest_confirm_button')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="key">
                 {{ __('check_in.actions.confirm_check_in') }}
             </flux:button>
         @endif
 
         @if ($variant === 'host_confirm_button')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="key">
                 {{ __('check_in.actions.confirm_check_in') }}
             </flux:button>
         @endif
@@ -164,14 +164,14 @@
                     @endforeach
                 </flux:select>
                 <flux:textarea wire:model.blur="description" :label="__('check_in.fields.problem_description')" />
-                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
+                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="key">
                     {{ __('check_in.actions.problem') }}
                 </flux:button>
             </form>
         @endif
 
         @if ($variant === 'problem_button')
-            <flux:button type="button" variant="danger" class="w-full">
+            <flux:button type="button" variant="danger" class="w-full" icon="key">
                 {{ __('check_in.actions.problem') }}
             </flux:button>
         @endif
@@ -183,9 +183,9 @@
                         <flux:select.option value="{{ $mediaRole }}">{{ __('check_in.media_roles.' . $mediaRole) }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:input wire:model.blur="path" :label="__('check_in.fields.media_path')" />
+                <flux:input wire:model.blur="path" :label="__('check_in.fields.media_path')" icon="calendar-days" />
                 <flux:textarea wire:model.blur="caption" :label="__('check_in.fields.media_caption')" />
-                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
+                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="camera">
                     {{ __('check_in.actions.upload_media') }}
                 </flux:button>
             </form>

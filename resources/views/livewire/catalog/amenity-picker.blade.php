@@ -6,8 +6,7 @@
         label="{{ __('host.amenities.picker.search_label') }}"
         description="{{ __('host.amenities.picker.helper') }}"
         placeholder="{{ __('host.amenities.picker.search_placeholder') }}"
-        container:class="max-h-80"
-    >
+        container:class="max-h-80" icon="magnifying-glass">
         @if(mb_strlen(trim($search)) >= 2)
             @foreach($this->groups as $group)
                 @foreach($group['options'] as $option)
@@ -27,7 +26,12 @@
         @forelse($this->groups as $group)
             <section class="space-y-2" wire:key="amenity-group-{{ $group['category'] }}">
                 <div class="flex items-center justify-between gap-3">
-                    <flux:heading size="sm">{{ $group['category_label'] }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $group['category_label'] }}</span>
+                        </span>
+                    </flux:heading>
                     <span class="text-xs text-zinc-500 dark:text-zinc-400">
                         {{ trans_choice('host.amenities.picker.group_count', count($group['options']), ['count' => count($group['options'])]) }}
                     </span>
@@ -43,7 +47,7 @@
                             wire:click="toggle({{ $option['id'] }})"
                             class="h-auto min-h-11 w-full justify-start whitespace-normal text-left"
                             aria-pressed="{{ $option['selected'] ? 'true' : 'false' }}"
-                        >
+                         icon="plus">
                             <span class="min-w-0">
                                 <span class="block font-medium">{{ $option['label'] }}</span>
                                 @if($option['description'])
@@ -64,7 +68,7 @@
     <div class="flex items-center justify-between gap-3 text-xs text-zinc-500 dark:text-zinc-400">
         <span>{{ trans_choice('host.amenities.picker.selected_count', count($selectedIds), ['count' => count($selectedIds)]) }}</span>
         @if($search !== '')
-            <flux:button type="button" size="xs" variant="ghost" wire:click="clearSearch">
+            <flux:button type="button" size="xs" variant="ghost" wire:click="clearSearch" icon="x-mark">
                 {{ __('host.amenities.picker.clear_search') }}
             </flux:button>
         @endif

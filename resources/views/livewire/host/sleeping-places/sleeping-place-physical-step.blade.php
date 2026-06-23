@@ -1,12 +1,17 @@
 <form wire:submit="save" class="space-y-5">
     <flux:card class="space-y-4">
         <div>
-            <flux:heading size="lg">{{ __('sleeping_place.steps.physical.title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('sleeping_place.steps.physical.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('sleeping_place.steps.physical.helper') }}</flux:text>
         </div>
 
         @if($wasSaved)
-            <flux:callout color="emerald" icon="check-circle">
+            <flux:callout color="emerald" icon="chat-bubble-left-right">
                 <flux:callout.text>{{ __('sleeping_place.messages.saved') }}</flux:callout.text>
             </flux:callout>
         @endif
@@ -15,7 +20,7 @@
             @foreach(['lengthCm', 'widthCm', 'heightCm', 'heightFromFloorCm', 'clearanceAboveCm', 'safetyRailHeightCm', 'maxWeightKg'] as $field)
                 <flux:field>
                     <flux:label>{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
-                    <flux:input type="number" inputmode="numeric" wire:model.blur="{{ $field }}" />
+                    <flux:input type="number" inputmode="numeric" wire:model.blur="{{ $field }}" icon="numbered-list" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
             @endforeach
@@ -25,7 +30,7 @@
             @foreach(['ladderComfortLevel', 'frameMaterial', 'frameStabilityLevel', 'squeakLevel'] as $field)
                 <flux:field>
                     <flux:label>{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
-                    <flux:input wire:model.blur="{{ $field }}" />
+                    <flux:input wire:model.blur="{{ $field }}" icon="pencil-square" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
             @endforeach
@@ -38,7 +43,7 @@
         </div>
     </flux:card>
 
-    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled">
+    <flux:button type="submit" variant="primary" class="w-full sm:w-auto" wire:loading.attr="disabled" icon="chat-bubble-left-right">
         <span wire:loading.remove wire:target="save">{{ __('sleeping_place.actions.save_step') }}</span>
         <span wire:loading wire:target="save">{{ __('sleeping_place.messages.saving') }}</span>
     </flux:button>

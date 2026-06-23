@@ -3,13 +3,13 @@
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
                 <flux:label>{{ __('preferences.fields.preferred_budget_min') }}</flux:label>
-                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="preferredBudgetMin" />
+                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="preferredBudgetMin" icon="banknotes" />
                 <flux:error name="preferredBudgetMin" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('preferences.fields.preferred_budget_max') }}</flux:label>
-                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="preferredBudgetMax" />
+                <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="preferredBudgetMax" icon="banknotes" />
                 <flux:error name="preferredBudgetMax" />
             </flux:field>
 
@@ -24,14 +24,14 @@
 
             <flux:field>
                 <flux:label>{{ __('preferences.fields.preferred_city') }}</flux:label>
-                <flux:input wire:model.blur="preferredCity" />
+                <flux:input wire:model.blur="preferredCity" icon="map-pin" />
                 <flux:description>{{ __('preferences.helpers.preferred_city') }}</flux:description>
                 <flux:error name="preferredCity" />
             </flux:field>
 
             <flux:field class="sm:col-span-2">
                 <flux:label>{{ __('preferences.fields.max_walking_distance_to_transport_meters') }}</flux:label>
-                <flux:input type="number" min="0" inputmode="numeric" wire:model.blur="maxWalkingDistanceToTransportMeters" />
+                <flux:input type="number" min="0" inputmode="numeric" wire:model.blur="maxWalkingDistanceToTransportMeters" icon="numbered-list" />
                 <flux:error name="maxWalkingDistanceToTransportMeters" />
             </flux:field>
         </div>
@@ -66,7 +66,7 @@
 
             <flux:field class="sm:col-span-2">
                 <flux:label>{{ __('preferences.fields.max_people_in_room') }}</flux:label>
-                <flux:input type="number" min="1" inputmode="numeric" wire:model.blur="maxPeopleInRoom" />
+                <flux:input type="number" min="1" inputmode="numeric" wire:model.blur="maxPeopleInRoom" icon="users" />
                 <flux:error name="maxPeopleInRoom" />
             </flux:field>
 

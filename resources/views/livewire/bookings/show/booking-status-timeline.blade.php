@@ -1,5 +1,10 @@
 <flux:card class="space-y-4">
-    <flux:heading size="md">{{ __('bookings.cards.status_timeline') }}</flux:heading>
+    <flux:heading size="md">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('bookings.cards.status_timeline') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="space-y-2">
         @forelse ($logs as $log)

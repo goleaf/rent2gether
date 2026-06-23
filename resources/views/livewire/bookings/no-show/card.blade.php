@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('no_show.components.guest_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('no_show.title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('no_show.components.guest_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('no_show.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('no_show.messages.guest_response_required') }}
                 </flux:text>
             </div>
 
             @if ($noShow)
-                <flux:badge color="red">{{ __('no_show.statuses.' . $noShow->status) }}</flux:badge>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('no_show.statuses.' . $noShow->status) }}</flux:badge>
             @endif
         </div>
 
@@ -42,28 +47,28 @@
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <flux:button wire:click="markOnTheWay" wire:loading.attr="disabled">
+                <flux:button wire:click="markOnTheWay" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.guest_responses.i_am_on_the_way') }}
                 </flux:button>
-                <flux:button wire:click="markLate" wire:loading.attr="disabled">
+                <flux:button wire:click="markLate" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.guest_responses.i_am_late') }}
                 </flux:button>
-                <flux:button wire:click="markArrived" wire:loading.attr="disabled">
+                <flux:button wire:click="markArrived" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.guest_responses.i_arrived') }}
                 </flux:button>
-                <flux:button wire:click="reportCheckInProblem" wire:loading.attr="disabled">
+                <flux:button wire:click="reportCheckInProblem" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.guest_responses.i_have_check_in_problem') }}
                 </flux:button>
-                <flux:button wire:click="reportHostNotAnswering" wire:loading.attr="disabled">
+                <flux:button wire:click="reportHostNotAnswering" wire:loading.attr="disabled" icon="chat-bubble-left-right">
                     {{ __('no_show.guest_responses.host_not_answering') }}
                 </flux:button>
-                <flux:button wire:click="requestCancellation" wire:loading.attr="disabled">
+                <flux:button wire:click="requestCancellation" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('no_show.guest_responses.i_want_to_cancel') }}
                 </flux:button>
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:input wire:model.blur="newArrivalTime" :label="__('no_show.fields.new_arrival_time')" />
+                <flux:input wire:model.blur="newArrivalTime" :label="__('no_show.fields.new_arrival_time')" icon="clock" />
                 <flux:textarea wire:model.blur="message" :label="__('no_show.fields.message')" rows="3" />
             </div>
 
@@ -89,12 +94,17 @@
                 <p class="mt-3 text-xs text-zinc-600 dark:text-zinc-300">{{ __('no_show.messages.deposit_refund_notice') }}</p>
             </div>
 
-            <flux:button class="mt-4 w-full" variant="danger" wire:click="disputeNoShow" wire:loading.attr="disabled">
+            <flux:button class="mt-4 w-full" variant="danger" wire:click="disputeNoShow" wire:loading.attr="disabled" icon="eye">
                 {{ __('no_show.actions.dispute') }}
             </flux:button>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('no_show.fields.responses') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('no_show.fields.responses') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($noShow->guestResponses as $response)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('no_show.guest_responses.' . $response->response_type) }}</p>
@@ -121,7 +131,7 @@
                         <p class="font-medium text-zinc-950 dark:text-white">{{ $item->no_show_number }}</p>
                         <p class="text-zinc-600 dark:text-zinc-300">{{ __('no_show.reasons.' . $item->reason_key) }}</p>
                     </div>
-                    <flux:badge>{{ __('no_show.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="exclamation-triangle">{{ __('no_show.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

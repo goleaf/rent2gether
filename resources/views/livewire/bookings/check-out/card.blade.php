@@ -10,7 +10,7 @@
                 </h2>
             </div>
 
-            <flux:badge color="{{ $status === 'completed' ? 'emerald' : (in_array($status, ['problem_reported', 'deposit_disputed', 'checkout_overdue'], true) ? 'amber' : 'zinc') }}">
+            <flux:badge color="{{ $status === 'completed' ? 'emerald' : (in_array($status, ['problem_reported', 'deposit_disputed', 'checkout_overdue'], true) ? 'amber' : 'zinc') }}" icon="exclamation-triangle">
                 {{ __('check_out.statuses.' . $status) }}
             </flux:badge>
         </div>
@@ -55,7 +55,7 @@
                     @foreach ($items as $item)
                         <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                             <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __($item->label_key) }}</span>
-                            <flux:badge color="{{ $item->status === 'completed' ? 'emerald' : 'zinc' }}">
+                            <flux:badge color="{{ $item->status === 'completed' ? 'emerald' : 'zinc' }}" icon="check-circle">
                                 {{ __('check_out.item_statuses.' . $item->status) }}
                             </flux:badge>
                         </div>
@@ -113,13 +113,13 @@
         @endif
 
         @if ($variant === 'guest_page' || $variant === 'guest_confirm_button')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="clipboard-document-check">
                 {{ __('check_out.actions.i_checked_out') }}
             </flux:button>
         @endif
 
         @if ($variant === 'host_confirm_button')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="clipboard-document-check">
                 {{ __('check_out.actions.confirm_checkout') }}
             </flux:button>
         @endif
@@ -130,7 +130,7 @@
                 <flux:checkbox wire:model.change="sleepingPlaceChecked" :label="__('check_out.fields.sleeping_place_free')" />
                 <flux:checkbox wire:model.change="hasDamage" :label="__('check_out.fields.has_damage')" />
                 <flux:checkbox wire:model.change="hasExtraDirty" :label="__('check_out.fields.has_extra_dirty')" />
-                <flux:button type="button" variant="primary" class="w-full" wire:click="completeInspection" wire:loading.attr="disabled">
+                <flux:button type="button" variant="primary" class="w-full" wire:click="completeInspection" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.create_inspection') }}
                 </flux:button>
             </div>
@@ -150,7 +150,7 @@
                 </flux:select>
                 <flux:textarea wire:model.blur="description" :label="__('check_out.fields.issue_description')" />
                 <flux:checkbox wire:model.change="depositRelated" :label="__('check_out.fields.needs_deposit_deduction')" />
-                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
+                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.report_issue') }}
                 </flux:button>
             </form>
@@ -158,10 +158,10 @@
 
         @if ($variant === 'forgotten_items')
             <form wire:submit="createItem" class="space-y-3">
-                <flux:input wire:model.blur="itemName" :label="__('check_out.fields.forgotten_item_name')" />
-                <flux:input wire:model.blur="storageLocation" :label="__('check_out.fields.storage_location')" />
-                <flux:input type="date" wire:model.change="keepUntil" :label="__('check_out.fields.keep_until')" />
-                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
+                <flux:input wire:model.blur="itemName" :label="__('check_out.fields.forgotten_item_name')" icon="calendar-days" />
+                <flux:input wire:model.blur="storageLocation" :label="__('check_out.fields.storage_location')" icon="calendar-days" />
+                <flux:input type="date" wire:model.change="keepUntil" :label="__('check_out.fields.keep_until')" icon="calendar-days" />
+                <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.add_forgotten_item') }}
                 </flux:button>
             </form>
@@ -169,19 +169,19 @@
 
         @if ($variant === 'deposit_decision')
             <div class="space-y-3">
-                <flux:button type="button" variant="primary" class="w-full" wire:click="returnFull" wire:loading.attr="disabled">
+                <flux:button type="button" variant="primary" class="w-full" wire:click="returnFull" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.return_deposit') }}
                 </flux:button>
-                <flux:input wire:model.blur="deductionAmount" :label="__('check_out.fields.deposit_deduction_amount')" />
+                <flux:input wire:model.blur="deductionAmount" :label="__('check_out.fields.deposit_deduction_amount')" icon="calendar-days" />
                 <flux:textarea wire:model.blur="deductionReason" :label="__('check_out.fields.deposit_deduction_reason')" />
-                <flux:button type="button" variant="danger" class="w-full" wire:click="requestDeduction" wire:loading.attr="disabled">
+                <flux:button type="button" variant="danger" class="w-full" wire:click="requestDeduction" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.deduct_deposit') }}
                 </flux:button>
             </div>
         @endif
 
         @if ($variant === 'review_request')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="sendRequests" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="sendRequests" wire:loading.attr="disabled" icon="paper-airplane">
                 {{ __('check_out.actions.request_review') }}
             </flux:button>
         @endif

@@ -1,11 +1,16 @@
 <flux:card class="space-y-3">
     <div class="space-y-1">
-        <flux:heading size="sm">{{ __('listing_wizard.progress.title') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('listing_wizard.progress.title') }}</span>
+            </span>
+        </flux:heading>
     </div>
 
     <div class="flex items-center justify-between gap-3">
         <flux:text size="sm" class="font-medium">{{ __('listing_wizard.step_counter', ['current' => $current, 'total' => $total]) }}</flux:text>
-        <flux:badge size="sm">{{ $progress['percentage'] }}%</flux:badge>
+        <flux:badge size="sm" icon="home-modern">{{ $progress['percentage'] }}%</flux:badge>
     </div>
 
     <div class="h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">

@@ -1,6 +1,6 @@
 <div class="space-y-4">
     @if($submittedRequestId)
-        <flux:callout variant="success">
+        <flux:callout variant="success" icon="check-circle">
             <flux:callout.heading>{{ __('booking_requests.messages.request_sent') }}</flux:callout.heading>
             <flux:callout.text>{{ __('booking_requests.messages.host_reply_deadline') }}</flux:callout.text>
         </flux:callout>
@@ -8,13 +8,23 @@
     @else
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('booking_requests.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_requests.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm">{{ __('booking_requests.messages.form_helper') }}</flux:text>
             </div>
 
             <div class="rounded-lg bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
                 <flux:text size="sm">{{ $summary['place'] }} · {{ $summary['room'] }}</flux:text>
-                <flux:heading size="sm">{{ $summary['dates'] }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $summary['dates'] }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm">{{ trans_choice('booking_requests.messages.nights_count', $summary['nights_count'], ['count' => $summary['nights_count']]) }} · {{ $summary['total'] }}</flux:text>
             </div>
 
@@ -44,12 +54,12 @@
             <div class="grid gap-3 sm:grid-cols-2">
                 <flux:field>
                     <flux:label>{{ __('booking_requests.fields.planned_arrival_time') }}</flux:label>
-                    <flux:input type="time" wire:model.change="plannedArrivalTime" />
+                    <flux:input type="time" wire:model.change="plannedArrivalTime" icon="clock" />
                     <flux:error name="plannedArrivalTime" />
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('booking_requests.fields.planned_departure_time') }}</flux:label>
-                    <flux:input type="time" wire:model.change="plannedDepartureTime" />
+                    <flux:input type="time" wire:model.change="plannedDepartureTime" icon="clock" />
                 </flux:field>
             </div>
 
@@ -75,7 +85,7 @@
                 <flux:checkbox wire:model.change="holdDates" :label="__('booking_requests.fields.hold_dates')" />
             </div>
 
-            <flux:button type="button" variant="primary" class="w-full" wire:click="submit" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="submit" wire:loading.attr="disabled" icon="paper-airplane">
                 <span wire:loading.remove wire:target="submit">{{ __('booking_requests.actions.send_request') }}</span>
                 <span wire:loading wire:target="submit">{{ __('booking_requests.actions.sending') }}</span>
             </flux:button>

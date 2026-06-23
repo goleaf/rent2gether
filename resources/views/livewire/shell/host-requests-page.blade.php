@@ -1,9 +1,14 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ $page['eyebrow'] }}</flux:badge>
 
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ $page['title'] }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $page['title'] }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">
                 {{ $page['helper'] }}
             </flux:text>
@@ -28,7 +33,12 @@
                 </div>
 
                 <div class="min-w-0 space-y-1">
-                    <flux:heading size="lg">{{ $page['empty_title'] }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $page['empty_title'] }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text class="text-zinc-600 dark:text-zinc-400">
                         {{ $page['empty_text'] }}
                     </flux:text>
@@ -54,7 +64,7 @@
                             </flux:text>
                         </div>
 
-                        <flux:badge color="amber">{{ $this->statusLabel($booking) }}</flux:badge>
+                        <flux:badge color="amber" icon="exclamation-triangle">{{ $this->statusLabel($booking) }}</flux:badge>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 text-sm">
@@ -74,7 +84,7 @@
                         <span>{{ $this->expiryLabel($booking) }}</span>
                     </div>
 
-                    <flux:button wire:click="selectRequest({{ $booking->id }})" variant="primary" class="w-full data-loading:opacity-70">
+                    <flux:button wire:click="selectRequest({{ $booking->id }})" variant="primary" class="w-full data-loading:opacity-70" icon="eye">
                         {{ __('host.requests.actions.review') }}
                     </flux:button>
                 </flux:card>
@@ -89,8 +99,13 @@
             <div class="space-y-5">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 space-y-1">
-                        <flux:badge color="emerald">{{ __('host.requests.detail.eyebrow') }}</flux:badge>
-                        <flux:heading size="lg" level="2">{{ $this->placeTitle($selectedRequest) }}</flux:heading>
+                        <flux:badge color="emerald" icon="check-circle">{{ __('host.requests.detail.eyebrow') }}</flux:badge>
+                        <flux:heading size="lg" level="2">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ $this->placeTitle($selectedRequest) }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">
                             {{ __('host.requests.detail.reference', ['reference' => $selectedRequest->reference]) }}
                         </flux:text>
@@ -118,7 +133,12 @@
                         </div>
 
                         <div class="min-w-0 space-y-1">
-                            <flux:heading size="md">{{ $guestSummary['name'] }}</flux:heading>
+                            <flux:heading size="md">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ $guestSummary['name'] }}</span>
+                                </span>
+                            </flux:heading>
                             <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">
                                 {{ __('host.requests.profile.rating_line', ['rating' => $guestSummary['rating'], 'reviews' => $guestSummary['reviews_count'], 'stays' => $guestSummary['previous_stays_count']]) }}
                             </flux:text>
@@ -152,7 +172,7 @@
                         <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ __('host.requests.profile.verification') }}</div>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($guestSummary['verification'] as $item)
-                                <flux:badge color="{{ $item['verified'] ? 'emerald' : 'zinc' }}">
+                                <flux:badge color="{{ $item['verified'] ? 'emerald' : 'zinc' }}" icon="check-circle">
                                     {{ $item['verified'] ? __('host.requests.profile.verified_prefix') : __('host.requests.profile.not_verified_prefix') }}
                                     {{ $item['label'] }}
                                 </flux:badge>
@@ -164,7 +184,7 @@
                         <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ __('host.requests.profile.relevant_preferences') }}</div>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($guestSummary['preferences'] as $preference)
-                                <flux:badge color="sky">{{ $preference }}</flux:badge>
+                                <flux:badge color="sky" icon="user">{{ $preference }}</flux:badge>
                             @endforeach
                         </div>
                     </div>
@@ -236,15 +256,14 @@
                         type="datetime-local"
                         wire:model.change="expiryAt"
                         label="{{ __('host.requests.fields.expiry') }}"
-                        :error="$errors->first('expiryAt') ?: $errors->first('paymentDeadline')"
-                    />
+                        :error="$errors->first('expiryAt') ?: $errors->first('paymentDeadline')" icon="calendar-days" />
 
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        <flux:button wire:click="acceptSelected" variant="primary" class="data-loading:opacity-70">
+                        <flux:button wire:click="acceptSelected" variant="primary" class="data-loading:opacity-70" icon="check">
                             {{ __('host.requests.actions.accept') }}
                         </flux:button>
 
-                        <flux:button wire:click="saveExpiry" variant="filled" class="data-loading:opacity-70">
+                        <flux:button wire:click="saveExpiry" variant="filled" class="data-loading:opacity-70" icon="check">
                             {{ __('host.requests.actions.save_expiry') }}
                         </flux:button>
                     </div>
@@ -259,7 +278,7 @@
                         :error="$errors->first('hostMessage')"
                     />
 
-                    <flux:button wire:click="sendMessage" variant="filled" class="w-full data-loading:opacity-70">
+                    <flux:button wire:click="sendMessage" variant="filled" class="w-full data-loading:opacity-70" icon="paper-airplane">
                         {{ __('host.requests.actions.send_message') }}
                     </flux:button>
                 </flux:card>
@@ -284,7 +303,7 @@
                         :error="$errors->first('declineMessage')"
                     />
 
-                    <flux:button wire:click="declineSelected" variant="danger" class="w-full data-loading:opacity-70">
+                    <flux:button wire:click="declineSelected" variant="danger" class="w-full data-loading:opacity-70" icon="x-mark">
                         {{ __('host.requests.actions.decline') }}
                     </flux:button>
                 </flux:card>

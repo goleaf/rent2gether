@@ -1,17 +1,27 @@
 <x-ui.page class="space-y-6">
-    <flux:heading size="xl">{{ __('app.profile.edit') }}</flux:heading>
+    <flux:heading size="xl">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="user" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('app.profile.edit') }}</span>
+        </span>
+    </flux:heading>
 
     @if(session('success'))
-        <flux:badge color="green">{{ session('success') }}</flux:badge>
+        <flux:badge color="green" icon="check-circle">{{ session('success') }}</flux:badge>
     @endif
 
     <form wire:submit="save" class="space-y-6">
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('app.profile.personal_information') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="user" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('app.profile.personal_information') }}</span>
+                </span>
+            </flux:heading>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <flux:input wire:model.blur="name" label="{{ __('app.profile.name') }}" :error="$errors->first('name')" />
-                <flux:input wire:model.blur="phone" label="{{ __('app.profile.phone') }}" :error="$errors->first('phone')" />
-                <flux:input type="date" wire:model.change="dateOfBirth" label="{{ __('app.profile.date_of_birth') }}" />
+                <flux:input wire:model.blur="name" label="{{ __('app.profile.name') }}" :error="$errors->first('name')" icon="user" />
+                <flux:input wire:model.blur="phone" label="{{ __('app.profile.phone') }}" :error="$errors->first('phone')" icon="phone" />
+                <flux:input type="date" wire:model.change="dateOfBirth" label="{{ __('app.profile.date_of_birth') }}" icon="calendar-days" />
                 <flux:select wire:model.change="gender" label="{{ __('app.profile.gender') }}">
                     <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
                     <flux:select.option value="male">{{ __('app.profile.male') }}</flux:select.option>
@@ -21,13 +31,18 @@
                 <div class="sm:col-span-2">
                     @include('livewire.geo.partials.country-city-autocomplete', ['autocompleteKey' => 'profile-edit'])
                 </div>
-                <flux:input wire:model.blur="occupation" label="{{ __('app.profile.occupation') }}" />
+                <flux:input wire:model.blur="occupation" label="{{ __('app.profile.occupation') }}" icon="briefcase" />
             </div>
             <flux:textarea wire:model.blur="bio" label="{{ __('app.profile.about_me') }}" rows="3" />
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('app.profile.lifestyle') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="user" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('app.profile.lifestyle') }}</span>
+                </span>
+            </flux:heading>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <flux:select wire:model.change="sleepSchedule" label="{{ __('app.profile.sleep_schedule') }}">
                     <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
@@ -53,7 +68,12 @@
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('app.profile.host_profile') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('app.profile.host_profile') }}</span>
+                </span>
+            </flux:heading>
             <flux:checkbox wire:model.change="isHost" label="{{ __('app.profile.is_host') }}" />
             @if($this->isHost)
                 <flux:textarea wire:model.blur="hostDescription" label="{{ __('app.profile.host_description') }}" rows="3" />
@@ -78,6 +98,6 @@
             @endif
         </flux:card>
 
-        <flux:button type="submit" variant="primary">{{ __('app.actions.save') }}</flux:button>
+        <flux:button type="submit" variant="primary" icon="check">{{ __('app.actions.save') }}</flux:button>
     </form>
 </x-ui.page>

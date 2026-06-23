@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="red">{{ __('cancellations.components.host_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('cancellations.host_title') }}</flux:heading>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('cancellations.components.host_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('cancellations.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('cancellations.messages.host_payout_notice') }}
                 </flux:text>
             </div>
 
             @if ($cancellation)
-                <flux:badge color="blue">{{ __('cancellations.statuses.' . $cancellation->status) }}</flux:badge>
+                <flux:badge color="blue" icon="user">{{ __('cancellations.statuses.' . $cancellation->status) }}</flux:badge>
             @endif
         </div>
 
@@ -34,7 +39,7 @@
                     <flux:select.option value="other">{{ __('cancellations.reasons.other') }}</flux:select.option>
                 </flux:select>
                 <flux:textarea wire:model.blur="hostComment" :label="__('cancellations.fields.comment')" rows="3" />
-                <flux:button variant="danger" wire:click="cancelBooking" wire:loading.attr="disabled">
+                <flux:button variant="danger" wire:click="cancelBooking" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('cancellations.actions.cancel_booking') }}
                 </flux:button>
             </div>
@@ -75,7 +80,7 @@
                             {{ $item->sleepingPlace?->display_name ?? $item->sleepingPlace?->title ?? __('cancellations.empty.unknown_place') }}
                         </p>
                     </div>
-                    <flux:badge>{{ __('cancellations.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="user">{{ __('cancellations.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

@@ -1,5 +1,10 @@
 <x-ui.page class="space-y-6">
-    <flux:heading size="xl">{{ __('host.earnings.title') }}</flux:heading>
+    <flux:heading size="xl">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('host.earnings.title') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <flux:card class="text-center">
@@ -21,7 +26,12 @@
     </div>
 
     <div class="space-y-3">
-        <flux:heading size="lg">{{ __('host.earnings.recent_payouts') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host.earnings.recent_payouts') }}</span>
+            </span>
+        </flux:heading>
         @forelse($this->recentPayouts as $payout)
             <flux:card class="flex items-center justify-between">
                 <div>
@@ -29,7 +39,7 @@
                     <flux:text size="sm" class="text-zinc-500">{{ $payout->created_at->translatedFormat('d M Y') }}</flux:text>
                 </div>
                 <div class="flex items-center gap-3">
-                    <flux:badge>{{ $payout->status->label() }}</flux:badge>
+                    <flux:badge icon="user">{{ $payout->status->label() }}</flux:badge>
                     <flux:text class="font-semibold">&euro;{{ number_format($payout->net_amount, 2) }}</flux:text>
                 </div>
             </flux:card>

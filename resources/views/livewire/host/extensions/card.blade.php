@@ -2,15 +2,20 @@
     <flux:card class="space-y-4">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-                <flux:badge color="blue">{{ __('booking_extensions.components.host_' . $variant) }}</flux:badge>
-                <flux:heading size="lg">{{ __('booking_extensions.host_title') }}</flux:heading>
+                <flux:badge color="blue" icon="calendar-days">{{ __('booking_extensions.components.host_' . $variant) }}</flux:badge>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_extensions.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('booking_extensions.messages.host_helper') }}
                 </flux:text>
             </div>
 
             @if ($extension)
-                <flux:badge color="{{ in_array($status, ['applied', 'paid', 'approved'], true) ? 'emerald' : 'zinc' }}">
+                <flux:badge color="{{ in_array($status, ['applied', 'paid', 'approved'], true) ? 'emerald' : 'zinc' }}" icon="check-circle">
                     {{ __('booking_extensions.statuses.' . $status) }}
                 </flux:badge>
             @endif
@@ -74,14 +79,14 @@
 
             @if (in_array($variant, ['details', 'response_panel', 'card'], true))
                 <div class="grid gap-2">
-                    <flux:button type="button" variant="primary" class="w-full" wire:click="approve" wire:loading.attr="disabled">
+                    <flux:button type="button" variant="primary" class="w-full" wire:click="approve" wire:loading.attr="disabled" icon="calendar-days">
                         {{ __('booking_extensions.actions.approve') }}
                     </flux:button>
-                    <flux:button type="button" variant="danger" class="w-full" wire:click="reject" wire:loading.attr="disabled">
+                    <flux:button type="button" variant="danger" class="w-full" wire:click="reject" wire:loading.attr="disabled" icon="x-mark">
                         {{ __('booking_extensions.actions.reject') }}
                     </flux:button>
-                    <flux:input type="date" wire:model.change="proposedNewCheckOutDate" :label="__('booking_extensions.fields.proposed_new_check_out_date')" />
-                    <flux:button type="button" class="w-full" wire:click="proposeNewCheckout" wire:loading.attr="disabled">
+                    <flux:input type="date" wire:model.change="proposedNewCheckOutDate" :label="__('booking_extensions.fields.proposed_new_check_out_date')" icon="calendar-days" />
+                    <flux:button type="button" class="w-full" wire:click="proposeNewCheckout" wire:loading.attr="disabled" icon="clipboard-document-check">
                         {{ __('booking_extensions.actions.propose_new_checkout') }}
                     </flux:button>
                 </div>
@@ -89,7 +94,12 @@
 
             @if ($variant === 'price')
                 <div class="space-y-2">
-                    <flux:heading size="md">{{ __('booking_extensions.sections.price_lines') }}</flux:heading>
+                    <flux:heading size="md">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_extensions.sections.price_lines') }}</span>
+                        </span>
+                    </flux:heading>
                     @forelse ($lines as $line)
                         <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800" wire:key="host-extension-line-{{ $line->id }}">
                             <span>{{ __($line->label_key) }}</span>

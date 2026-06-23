@@ -5,7 +5,7 @@
                 <flux:badge
                     size="sm"
                     color="{{ ($hint['type'] ?? '') === 'warning' || ($hint['type'] ?? '') === 'urgent' ? 'amber' : (($hint['type'] ?? '') === 'positive' || ($hint['type'] ?? '') === 'discount' ? 'emerald' : 'zinc') }}"
-                >
+                 icon="exclamation-triangle">
                     {{ $hint['text'] }}
                 </flux:badge>
             @empty

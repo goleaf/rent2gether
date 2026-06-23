@@ -1,15 +1,19 @@
 <x-ui.page>
     <x-ui.section>
         <div class="space-y-1">
-            <flux:heading size="xl" level="1">{{ __('search.title') }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="magnifying-glass" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('search.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('search.helper') }}</flux:text>
         </div>
 
         <flux:card class="space-y-4">
             <div class="space-y-3">
                 <flux:autocomplete
-                    type="search"
-                    icon="map-pin"
+                    type="search" icon="map-pin"
                     clearable
                     wire:model.live.debounce.500ms="cityQuery"
                     label="{{ __('search.fields.city') }}"
@@ -42,17 +46,17 @@
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <flux:field>
                     <flux:label>{{ __('search.fields.check_in') }}</flux:label>
-                    <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkIn" />
+                    <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkIn" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('search.fields.check_out') }}</flux:label>
-                    <flux:input type="date" min="{{ $checkIn ?: now()->addDay()->toDateString() }}" wire:model.change="checkOut" />
+                    <flux:input type="date" min="{{ $checkIn ?: now()->addDay()->toDateString() }}" wire:model.change="checkOut" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('search.fields.guests') }}</flux:label>
-                    <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" />
+                    <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
                 </flux:field>
 
                 <flux:field>
@@ -71,18 +75,18 @@
                 </flux:callout>
             @elseif($this->nights > 0)
                 <div class="flex flex-wrap gap-2 text-sm">
-                    <flux:badge color="blue">{{ trans_choice('search.summary.nights', $this->nights, ['count' => $this->nights]) }}</flux:badge>
-                    <flux:badge>{{ trans_choice('search.summary.calendar_days', $this->calendarDays, ['count' => $this->calendarDays]) }}</flux:badge>
+                    <flux:badge color="blue" icon="calendar-days">{{ trans_choice('search.summary.nights', $this->nights, ['count' => $this->nights]) }}</flux:badge>
+                    <flux:badge icon="calendar-days">{{ trans_choice('search.summary.calendar_days', $this->calendarDays, ['count' => $this->calendarDays]) }}</flux:badge>
                 </div>
             @endif
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <flux:button type="button" variant="primary" class="w-full sm:w-auto" wire:click="$set('filtersOpen', true)">
+                <flux:button type="button" variant="primary" class="w-full sm:w-auto" wire:click="$set('filtersOpen', true)" icon="funnel">
                     {{ __('search.actions.open_filters', ['count' => $this->activeFilterCount()]) }}
                 </flux:button>
 
                 @if($this->activeFilterCount() > 0)
-                    <flux:button type="button" variant="ghost" class="w-full sm:w-auto" wire:click="clearFilters">
+                    <flux:button type="button" variant="ghost" class="w-full sm:w-auto" wire:click="clearFilters" icon="x-mark">
                         {{ __('search.actions.clear_all') }}
                     </flux:button>
                 @endif
@@ -129,7 +133,12 @@
                 <flux:card class="space-y-4 text-center">
                     <flux:icon name="magnifying-glass" class="mx-auto size-10 text-zinc-300 dark:text-zinc-700" />
                     <div class="space-y-1">
-                        <flux:heading size="lg">{{ __('search.empty.title') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="magnifying-glass" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.empty.title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('search.empty.helper') }}</flux:text>
                     </div>
                     <div class="grid gap-2 text-left text-sm text-zinc-600 dark:text-zinc-300 sm:grid-cols-2">
@@ -152,7 +161,7 @@
 
                 @if($results['has_more'])
                     <div class="py-2">
-                        <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="loadMore">
+                        <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="loadMore" icon="arrow-down">
                             <span wire:loading.remove wire:target="loadMore">{{ __('search.actions.load_more') }}</span>
                             <span wire:loading wire:target="loadMore">{{ __('search.actions.loading_more') }}</span>
                         </flux:button>
@@ -169,10 +178,15 @@
             <section class="absolute inset-x-0 bottom-0 max-h-[86vh] overflow-y-auto rounded-t-xl bg-white p-4 shadow-2xl dark:bg-zinc-950 sm:bottom-4 sm:left-auto sm:right-4 sm:top-4 sm:w-full sm:max-w-sm sm:rounded-xl">
                 <div class="mb-4 flex items-center justify-between gap-3">
                     <div>
-                        <flux:heading size="lg">{{ __('search.filters') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="magnifying-glass" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.filters') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('search.filters_sheet.helper') }}</flux:text>
                     </div>
-                    <flux:button type="button" variant="ghost" size="sm" wire:click="$set('filtersOpen', false)">
+                    <flux:button type="button" variant="ghost" size="sm" wire:click="$set('filtersOpen', false)" icon="x-mark">
                         {{ __('search.filters_sheet.close') }}
                     </flux:button>
                 </div>
@@ -182,7 +196,7 @@
                 </div>
 
                 <div class="sticky bottom-0 -mx-4 border-t border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                    <flux:button type="button" variant="primary" class="w-full" wire:click="$set('filtersOpen', false)">
+                    <flux:button type="button" variant="primary" class="w-full" wire:click="$set('filtersOpen', false)" icon="magnifying-glass">
                         {{ __('search.actions.show_results', ['count' => $results['total']]) }}
                     </flux:button>
                 </div>

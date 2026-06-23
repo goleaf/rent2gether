@@ -1,6 +1,11 @@
 <div class="space-y-5">
     <section class="space-y-2">
-        <flux:heading size="xl" level="1">{{ __('saved_searches.title') }}</flux:heading>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('saved_searches.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('saved_searches.helper') }}</flux:text>
     </section>
 
@@ -25,7 +30,12 @@
 
     <section class="space-y-3">
         <div class="flex items-center justify-between gap-3">
-            <flux:heading size="lg">{{ __('saved_searches.sections.all') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('saved_searches.sections.all') }}</span>
+                </span>
+            </flux:heading>
             <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" size="sm" variant="primary" icon="magnifying-glass" wire:navigate>
                 {{ __('saved_searches.empty.button') }}
             </flux:button>
@@ -41,10 +51,15 @@
                             <flux:icon name="bookmark" class="size-6" />
                         </div>
                         <div class="space-y-1">
-                            <flux:heading size="lg">{{ __('saved_searches.empty.title') }}</flux:heading>
+                            <flux:heading size="lg">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('saved_searches.empty.title') }}</span>
+                                </span>
+                            </flux:heading>
                             <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('saved_searches.empty.text') }}</flux:text>
                         </div>
-                        <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
+                        <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate icon="magnifying-glass">
                             {{ __('saved_searches.empty.button') }}
                         </flux:button>
                     </div>

@@ -9,7 +9,7 @@
                 </flux:heading>
                 <flux:text size="sm" class="truncate text-zinc-600 dark:text-zinc-400">{{ $card['location'] ?: __('saved_searches.no_location') }}</flux:text>
             </div>
-            <flux:badge size="sm" color="{{ $card['status'] === 'active' ? 'green' : ($card['status'] === 'paused' ? 'amber' : 'zinc') }}">
+            <flux:badge size="sm" color="{{ $card['status'] === 'active' ? 'green' : ($card['status'] === 'paused' ? 'amber' : 'zinc') }}" icon="exclamation-triangle">
                 {{ $card['status_label'] }}
             </flux:badge>
         </div>
@@ -26,9 +26,9 @@
         </div>
 
         <div class="flex flex-wrap gap-1.5">
-            <flux:badge size="sm">{{ trans_choice('saved_searches.counts.new_matches', $card['new_matches_count'], ['count' => $card['new_matches_count']]) }}</flux:badge>
-            <flux:badge size="sm" color="green">{{ trans_choice('saved_searches.counts.price_drops', $card['price_drops_count'], ['count' => $card['price_drops_count']]) }}</flux:badge>
-            <flux:badge size="sm" color="blue">{{ trans_choice('saved_searches.counts.available_again', $card['available_again_count'], ['count' => $card['available_again_count']]) }}</flux:badge>
+            <flux:badge size="sm" icon="heart">{{ trans_choice('saved_searches.counts.new_matches', $card['new_matches_count'], ['count' => $card['new_matches_count']]) }}</flux:badge>
+            <flux:badge size="sm" color="green" icon="check-circle">{{ trans_choice('saved_searches.counts.price_drops', $card['price_drops_count'], ['count' => $card['price_drops_count']]) }}</flux:badge>
+            <flux:badge size="sm" color="blue" icon="check-circle">{{ trans_choice('saved_searches.counts.available_again', $card['available_again_count'], ['count' => $card['available_again_count']]) }}</flux:badge>
         </div>
 
         <div class="flex items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-xs text-zinc-500 dark:border-zinc-800">
@@ -37,22 +37,22 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <flux:button href="{{ $card['href'] }}" size="sm" variant="primary" wire:navigate>
+            <flux:button href="{{ $card['href'] }}" size="sm" variant="primary" wire:navigate icon="magnifying-glass">
                 {{ __('saved_searches.open') }}
             </flux:button>
-            <flux:button type="button" size="sm" variant="ghost" wire:click="runNow">
+            <flux:button type="button" size="sm" variant="ghost" wire:click="runNow" icon="magnifying-glass">
                 {{ __('saved_searches.run_now') }}
             </flux:button>
             @if($card['status'] === 'active')
-                <flux:button type="button" size="sm" variant="ghost" wire:click="pause">
+                <flux:button type="button" size="sm" variant="ghost" wire:click="pause" icon="magnifying-glass">
                     {{ __('saved_searches.pause') }}
                 </flux:button>
             @else
-                <flux:button type="button" size="sm" variant="ghost" wire:click="resume">
+                <flux:button type="button" size="sm" variant="ghost" wire:click="resume" icon="magnifying-glass">
                     {{ __('saved_searches.resume') }}
                 </flux:button>
             @endif
-            <flux:button type="button" size="sm" variant="danger" wire:click="archive">
+            <flux:button type="button" size="sm" variant="danger" wire:click="archive" icon="trash">
                 {{ __('saved_searches.archive') }}
             </flux:button>
         </div>

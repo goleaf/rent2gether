@@ -57,23 +57,28 @@
 
                 <div class="rounded-lg border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div class="flex flex-wrap gap-1.5">
-                        <flux:badge size="sm">{{ __('saved_searches.result.match_score', ['score' => $card['match_score'] ?? 0]) }}</flux:badge>
-                        <flux:badge size="sm" color="{{ $card['availability_state'] === 'available_again' ? 'blue' : ($card['availability_state'] === 'unavailable' ? 'red' : 'green') }}">
+                        <flux:badge size="sm" icon="heart">{{ __('saved_searches.result.match_score', ['score' => $card['match_score'] ?? 0]) }}</flux:badge>
+                        <flux:badge size="sm" color="{{ $card['availability_state'] === 'available_again' ? 'blue' : ($card['availability_state'] === 'unavailable' ? 'red' : 'green') }}" icon="exclamation-triangle">
                             {{ __('saved_searches.availability.'.$card['availability_state']) }}
                         </flux:badge>
                         @if($card['price_state'] !== 'same')
-                            <flux:badge size="sm" color="{{ $card['price_state'] === 'dropped' ? 'green' : 'amber' }}">
+                            <flux:badge size="sm" color="{{ $card['price_state'] === 'dropped' ? 'green' : 'amber' }}" icon="exclamation-triangle">
                                 {{ __('saved_searches.price.'.$card['price_state'], ['amount' => $card['price_change']]) }}
                             </flux:badge>
                         @endif
-                        <flux:badge size="sm">{{ $card['rating'] }}</flux:badge>
+                        <flux:badge size="sm" icon="heart">{{ $card['rating'] }}</flux:badge>
                     </div>
                 </div>
             </div>
         @empty
             <flux:card class="sm:col-span-2">
                 <div class="space-y-2 text-center">
-                    <flux:heading size="lg">{{ __('saved_searches.no_results') }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.no_results') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('saved_searches.no_results_helper') }}</flux:text>
                 </div>
             </flux:card>
@@ -81,7 +86,7 @@
     </div>
 
     @if(count($this->cards) >= $visibleCount)
-        <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore">
+        <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore" icon="arrow-down">
             {{ __('saved_searches.load_more') }}
         </flux:button>
     @endif

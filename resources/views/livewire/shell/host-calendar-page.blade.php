@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ $page['eyebrow'] }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ $page['title'] }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $page['title'] }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">
                 {{ $page['helper'] }}
             </flux:text>
@@ -22,14 +27,19 @@
                     <flux:icon name="{{ $page['icon'] }}" class="size-5" />
                 </div>
                 <div class="min-w-0 space-y-1">
-                    <flux:heading size="lg">{{ $page['empty_title'] }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $page['empty_title'] }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text class="text-zinc-600 dark:text-zinc-400">{{ $page['empty_text'] }}</flux:text>
                 </div>
             </div>
             <div class="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
                 {{ $page['note'] }}
             </div>
-            <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate>
+            <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="primary" wire:navigate icon="home-modern">
                 {{ $page['action'] }}
             </flux:button>
         </flux:card>
@@ -57,7 +67,12 @@
 
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="sm">{{ __('availability.calendar.sections.filters') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('availability.calendar.sections.filters') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('availability.calendar.filters_helper') }}</flux:text>
             </div>
 
@@ -104,11 +119,16 @@
             <section class="space-y-4">
                 <flux:card class="space-y-4">
                     <div class="flex items-center justify-between gap-3">
-                        <flux:button type="button" size="sm" variant="ghost" icon="chevron-left" wire:click="previousMonth">
+                        <flux:button type="button" size="sm" variant="ghost" icon="arrow-left" wire:click="previousMonth">
                             {{ __('availability.calendar.actions.previous_month') }}
                         </flux:button>
-                        <flux:heading size="sm">{{ $monthLabel }}</flux:heading>
-                        <flux:button type="button" size="sm" variant="ghost" icon="chevron-right" wire:click="nextMonth">
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ $monthLabel }}</span>
+                            </span>
+                        </flux:heading>
+                        <flux:button type="button" size="sm" variant="ghost" icon="arrow-right" wire:click="nextMonth">
                             {{ __('availability.calendar.actions.next_month') }}
                         </flux:button>
                     </div>
@@ -126,7 +146,7 @@
                                     variant="outline"
                                     wire:click="selectDate('{{ $day['date'] }}')"
                                     class="h-auto min-h-20 w-full flex-col items-start justify-start whitespace-normal px-1 py-2 text-left text-xs data-loading:opacity-70 {{ $day['is_current_month'] ? '' : 'opacity-60' }}"
-                                >
+                                 icon="calendar-days">
                                     <span class="block font-medium {{ $day['is_today'] ? 'text-emerald-700 dark:text-emerald-300' : '' }}">{{ $day['day'] }}</span>
                                     <span class="mt-1 block truncate rounded bg-zinc-100 px-1 py-0.5 text-[10px] dark:bg-zinc-800">
                                         {{ $day['status_label'] }}
@@ -146,14 +166,19 @@
                         </div>
                     @else
                         <div class="space-y-2">
-                            <flux:heading size="sm">{{ __('availability.calendar.sections.date_list') }}</flux:heading>
+                            <flux:heading size="sm">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('availability.calendar.sections.date_list') }}</span>
+                                </span>
+                            </flux:heading>
                             @foreach($this->listDays as $day)
                                 <flux:button
                                     type="button"
                                     variant="outline"
                                     wire:click="selectDate('{{ $day['date'] }}')"
                                     class="h-auto w-full justify-start whitespace-normal px-3 py-3 text-left text-sm data-loading:opacity-70"
-                                >
+                                 icon="key">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
                                             <p class="font-medium">{{ \Carbon\CarbonImmutable::parse($day['date'])->translatedFormat('d M') }}</p>
@@ -169,7 +194,7 @@
                                             @endif
                                         </div>
                                         <div class="shrink-0 text-right">
-                                            <flux:badge size="sm" color="{{ $day['color'] }}">{{ $day['status_label'] }}</flux:badge>
+                                            <flux:badge size="sm" color="{{ $day['color'] }}" icon="user">{{ $day['status_label'] }}</flux:badge>
                                             @if($day['price_override'])
                                                 <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('availability.calendar.price_short', ['price' => $day['price_override']]) }}</p>
                                             @endif
@@ -183,7 +208,12 @@
 
                 <flux:card class="space-y-4">
                     <div class="space-y-1">
-                        <flux:heading size="sm">{{ __('availability.calendar.overview.title') }}</flux:heading>
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('availability.calendar.overview.title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('availability.calendar.overview.helper') }}</flux:text>
                     </div>
 
@@ -198,7 +228,7 @@
                                                 {{ __('availability.calendar.overview.property_line', ['rooms' => $property['rooms_count'], 'places' => $property['places_count']]) }}
                                             </p>
                                         </div>
-                                        <flux:badge size="sm" color="blue">
+                                        <flux:badge size="sm" color="blue" icon="home-modern">
                                             {{ __('availability.calendar.occupancy_value', ['percent' => $property['occupancy_percentage']]) }}
                                         </flux:badge>
                                     </div>
@@ -242,19 +272,24 @@
             <aside class="space-y-4">
                 <flux:card class="space-y-4">
                     <div class="space-y-1">
-                        <flux:heading size="sm">{{ __('availability.calendar.sections.range_actions') }}</flux:heading>
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('availability.calendar.sections.range_actions') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('availability.calendar.range_helper') }}</flux:text>
                     </div>
 
                     <div class="grid gap-3">
                         <flux:field>
                             <flux:label>{{ __('availability.calendar.fields.range_start') }}</flux:label>
-                            <flux:input type="date" wire:model.change="rangeStart" />
+                            <flux:input type="date" wire:model.change="rangeStart" icon="calendar-days" />
                             <flux:error name="rangeStart" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('availability.calendar.fields.range_end') }}</flux:label>
-                            <flux:input type="date" wire:model.change="rangeEnd" />
+                            <flux:input type="date" wire:model.change="rangeEnd" icon="calendar-days" />
                             <flux:error name="rangeEnd" />
                         </flux:field>
                         <flux:field>
@@ -268,18 +303,18 @@
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('availability.calendar.fields.price_override') }}</flux:label>
-                            <flux:input type="number" inputmode="decimal" step="0.01" wire:model.blur="priceOverride" />
+                            <flux:input type="number" inputmode="decimal" step="0.01" wire:model.blur="priceOverride" icon="banknotes" />
                             <flux:error name="priceOverride" />
                         </flux:field>
                         <div class="grid grid-cols-2 gap-3">
                             <flux:field>
                                 <flux:label>{{ __('availability.calendar.fields.min_nights_override') }}</flux:label>
-                                <flux:input type="number" inputmode="numeric" wire:model.blur="minNightsOverride" />
+                                <flux:input type="number" inputmode="numeric" wire:model.blur="minNightsOverride" icon="numbered-list" />
                                 <flux:error name="minNightsOverride" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('availability.calendar.fields.max_nights_override') }}</flux:label>
-                                <flux:input type="number" inputmode="numeric" wire:model.blur="maxNightsOverride" />
+                                <flux:input type="number" inputmode="numeric" wire:model.blur="maxNightsOverride" icon="numbered-list" />
                                 <flux:error name="maxNightsOverride" />
                             </flux:field>
                         </div>
@@ -289,34 +324,39 @@
                         </div>
                         <flux:field>
                             <flux:label>{{ __('availability.calendar.fields.note') }}</flux:label>
-                            <flux:input wire:model.blur="note" maxlength="160" />
+                            <flux:input wire:model.blur="note" maxlength="160" icon="pencil-square" />
                             <flux:error name="note" />
                         </flux:field>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
-                        <flux:button type="button" size="sm" variant="filled" wire:click="openRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="openRange" icon="calendar-days">
                             {{ __('availability.calendar.actions.open_dates') }}
                         </flux:button>
-                        <flux:button type="button" size="sm" variant="filled" wire:click="closeRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="closeRange" icon="x-mark">
                             {{ __('availability.calendar.actions.close_dates') }}
                         </flux:button>
-                        <flux:button type="button" size="sm" variant="filled" wire:click="markRepairRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="markRepairRange" icon="calendar-days">
                             {{ __('availability.calendar.actions.mark_repair') }}
                         </flux:button>
-                        <flux:button type="button" size="sm" variant="filled" wire:click="markCleaningRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="markCleaningRange" icon="calendar-days">
                             {{ __('availability.calendar.actions.mark_cleaning') }}
                         </flux:button>
                     </div>
 
-                    <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="applyRange">
+                    <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="applyRange" icon="calendar-days">
                         <span wire:loading.remove wire:target="applyRange">{{ __('availability.calendar.actions.apply') }}</span>
                         <span wire:loading wire:target="applyRange">{{ __('availability.calendar.actions.applying') }}</span>
                     </flux:button>
                 </flux:card>
 
                 <flux:card class="space-y-3">
-                    <flux:heading size="sm">{{ __('availability.calendar.sections.upcoming_checkins') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('availability.calendar.sections.upcoming_checkins') }}</span>
+                        </span>
+                    </flux:heading>
                     @forelse($this->upcomingCheckIns as $booking)
                         <div class="rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-700">
                             <p class="font-medium">{{ $booking['guest'] }}</p>
@@ -330,7 +370,12 @@
                 </flux:card>
 
                 <flux:card class="space-y-3">
-                    <flux:heading size="sm">{{ __('availability.calendar.sections.upcoming_checkouts') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('availability.calendar.sections.upcoming_checkouts') }}</span>
+                        </span>
+                    </flux:heading>
                     @forelse($this->upcomingCheckOuts as $booking)
                         <div class="rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-700">
                             <p class="font-medium">{{ $booking['guest'] }}</p>
@@ -350,10 +395,15 @@
                 <div class="space-y-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="space-y-1">
-                            <flux:heading size="sm">{{ __('availability.calendar.sheet.title') }}</flux:heading>
+                            <flux:heading size="sm">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('availability.calendar.sheet.title') }}</span>
+                                </span>
+                            </flux:heading>
                             <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('availability.calendar.sheet.helper') }}</flux:text>
                         </div>
-                        <flux:button type="button" size="sm" variant="ghost" wire:click="closeDateActions">
+                        <flux:button type="button" size="sm" variant="ghost" wire:click="closeDateActions" icon="x-mark">
                             {{ __('availability.calendar.actions.close_sheet') }}
                         </flux:button>
                     </div>
@@ -361,25 +411,25 @@
                     <div class="grid grid-cols-2 gap-3">
                         <flux:field>
                             <flux:label>{{ __('availability.calendar.fields.range_start') }}</flux:label>
-                            <flux:input type="date" wire:model.change="rangeStart" />
+                            <flux:input type="date" wire:model.change="rangeStart" icon="calendar-days" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('availability.calendar.fields.range_end') }}</flux:label>
-                            <flux:input type="date" wire:model.change="rangeEnd" />
+                            <flux:input type="date" wire:model.change="rangeEnd" icon="calendar-days" />
                         </flux:field>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
-                        <flux:button type="button" size="sm" variant="filled" wire:click="openRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="openRange" icon="calendar-days">
                             {{ __('availability.calendar.actions.open_dates') }}
                         </flux:button>
-                        <flux:button type="button" size="sm" variant="filled" wire:click="closeRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="closeRange" icon="x-mark">
                             {{ __('availability.calendar.actions.close_dates') }}
                         </flux:button>
-                        <flux:button type="button" size="sm" variant="filled" wire:click="markRepairRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="markRepairRange" icon="calendar-days">
                             {{ __('availability.calendar.actions.mark_repair') }}
                         </flux:button>
-                        <flux:button type="button" size="sm" variant="filled" wire:click="markCleaningRange">
+                        <flux:button type="button" size="sm" variant="filled" wire:click="markCleaningRange" icon="calendar-days">
                             {{ __('availability.calendar.actions.mark_cleaning') }}
                         </flux:button>
                     </div>

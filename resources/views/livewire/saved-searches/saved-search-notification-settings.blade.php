@@ -5,10 +5,15 @@
         <div class="space-y-4">
             <div class="flex items-start justify-between gap-3">
                 <div>
-                    <flux:heading size="lg">{{ __('saved_searches.notification_settings') }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="bell" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notification_settings') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('saved_searches.notification_settings_helper') }}</flux:text>
                 </div>
-                <flux:button type="button" variant="ghost" size="sm" wire:click="$dispatch('saved-search-updated')">
+                <flux:button type="button" variant="ghost" size="sm" wire:click="$dispatch('saved-search-updated')" icon="x-mark">
                     {{ __('saved_searches.close') }}
                 </flux:button>
             </div>
@@ -34,19 +39,19 @@
                 <div class="grid grid-cols-2 gap-3">
                     <flux:field>
                         <flux:label>{{ __('saved_searches.quiet_hours_start') }}</flux:label>
-                        <flux:input type="time" wire:model.change="quietHoursStart" />
+                        <flux:input type="time" wire:model.change="quietHoursStart" icon="clock" />
                         <flux:error name="quietHoursStart" />
                     </flux:field>
                     <flux:field>
                         <flux:label>{{ __('saved_searches.quiet_hours_end') }}</flux:label>
-                        <flux:input type="time" wire:model.change="quietHoursEnd" />
+                        <flux:input type="time" wire:model.change="quietHoursEnd" icon="clock" />
                         <flux:error name="quietHoursEnd" />
                     </flux:field>
                 </div>
             </div>
 
             <div class="sticky bottom-0 -mx-4 border-t border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="save">
+                <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70" wire:click="save" icon="magnifying-glass">
                     <span wire:loading.remove wire:target="save">{{ __('saved_searches.save_changes') }}</span>
                     <span wire:loading wire:target="save">{{ __('saved_searches.saving') }}</span>
                 </flux:button>

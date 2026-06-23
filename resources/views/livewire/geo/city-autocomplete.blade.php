@@ -1,8 +1,7 @@
 <div class="space-y-2">
     <flux:autocomplete
         :id="$inputId"
-        type="search"
-        icon="map-pin"
+        type="search" icon="map-pin"
         clearable
         wire:model.live.debounce.500ms="query"
         :label="__('search.city_autocomplete.label')"

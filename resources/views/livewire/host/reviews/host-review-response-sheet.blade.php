@@ -4,7 +4,7 @@
         <flux:textarea rows="3" wire:model.blur="responseText" />
     </flux:field>
 
-    <flux:button type="button" variant="primary" class="w-full sm:w-auto">
+    <flux:button type="button" variant="primary" class="w-full sm:w-auto" icon="eye">
         {{ __('reviews.actions.publish_response') }}
     </flux:button>
 </form>

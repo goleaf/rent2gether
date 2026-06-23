@@ -6,7 +6,7 @@
         wire:click="switchMode('{{ \App\Models\UserSetting::MODE_GUEST }}')"
         wire:loading.attr="disabled"
         class="min-h-8"
-    >
+     icon="user">
         <span wire:loading.remove wire:target="switchMode">{{ __('navigation.guest_mode') }}</span>
         <span wire:loading wire:target="switchMode">{{ __('account.actions.switching') }}</span>
     </flux:button>
@@ -18,7 +18,7 @@
         wire:click="switchMode('{{ \App\Models\UserSetting::MODE_HOST }}')"
         wire:loading.attr="disabled"
         class="min-h-8"
-    >
+     icon="user">
         <span wire:loading.remove wire:target="switchMode">{{ __('navigation.host_mode') }}</span>
         <span wire:loading wire:target="switchMode">{{ __('account.actions.switching') }}</span>
     </flux:button>

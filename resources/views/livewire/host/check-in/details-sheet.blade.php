@@ -10,7 +10,7 @@
                 </h2>
             </div>
 
-            <flux:badge color="{{ $status === 'checked_in' ? 'emerald' : ($status === 'problem_reported' || $status === 'host_unresponsive' ? 'amber' : 'zinc') }}">
+            <flux:badge color="{{ $status === 'checked_in' ? 'emerald' : ($status === 'problem_reported' || $status === 'host_unresponsive' ? 'amber' : 'zinc') }}" icon="exclamation-triangle">
                 {{ __('check_in.statuses.' . $status) }}
             </flux:badge>
         </div>
@@ -48,7 +48,7 @@
                 @foreach ($steps as $step)
                     <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <span class="min-w-0 text-zinc-700 dark:text-zinc-200">{{ __('check_in.step_keys.' . $step->step_key) }}</span>
-                        <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}">
+                        <flux:badge color="{{ $step->status === 'completed' ? 'emerald' : 'zinc' }}" icon="check-circle">
                             {{ __('check_in.item_statuses.' . $step->status) }}
                         </flux:badge>
                     </div>
@@ -69,13 +69,13 @@
         @endif
 
         @if ($variant === 'host_confirm_button' || $variant === 'host_details_sheet')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="key">
                 {{ __('check_in.actions.host_confirm_check_in') }}
             </flux:button>
         @endif
 
         @if ($variant === 'host_instruction_sender')
-            <flux:button type="button" variant="primary" class="w-full" wire:click="sendInstruction" wire:loading.attr="disabled">
+            <flux:button type="button" variant="primary" class="w-full" wire:click="sendInstruction" wire:loading.attr="disabled" icon="paper-airplane">
                 {{ __('check_in.actions.send_instruction') }}
             </flux:button>
         @endif

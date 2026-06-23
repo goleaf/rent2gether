@@ -1,6 +1,11 @@
 <flux:card class="space-y-3">
     <div class="space-y-1">
-        <flux:heading size="md">{{ __('occupants.title') }}</flux:heading>
+        <flux:heading size="md">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('occupants.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('occupants.messages.roommates_summary_private') }}</flux:text>
     </div>
 

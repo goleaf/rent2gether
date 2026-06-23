@@ -1,6 +1,11 @@
 <x-ui.page>
     <header class="space-y-1">
-        <flux:heading size="xl" level="1">{{ __('notifications.settings.title') }}</flux:heading>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="bell" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('notifications.settings.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ __('notifications.settings.helper') }}</flux:text>
     </header>
 
@@ -15,8 +20,8 @@
         <flux:card class="space-y-3">
             <flux:checkbox wire:model.change="quietHoursEnabled" label="{{ __('notifications.settings.quiet_hours') }}" />
             <div class="grid grid-cols-2 gap-3">
-                <flux:input wire:model.blur="quietHoursStart" label="{{ __('notifications.fields.quiet_hours_start') }}" />
-                <flux:input wire:model.blur="quietHoursEnd" label="{{ __('notifications.fields.quiet_hours_end') }}" />
+                <flux:input wire:model.blur="quietHoursStart" label="{{ __('notifications.fields.quiet_hours_start') }}" icon="clock" />
+                <flux:input wire:model.blur="quietHoursEnd" label="{{ __('notifications.fields.quiet_hours_end') }}" icon="clock" />
             </div>
         </flux:card>
 
@@ -34,7 +39,7 @@
             </flux:select>
         </flux:card>
 
-        <flux:button type="button" wire:click="save" variant="primary" class="w-full data-loading:opacity-70">
+        <flux:button type="button" wire:click="save" variant="primary" class="w-full data-loading:opacity-70" icon="bell">
             {{ __('notifications.actions.save_settings') }}
         </flux:button>
     </section>

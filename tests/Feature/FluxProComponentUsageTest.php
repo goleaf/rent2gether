@@ -165,6 +165,195 @@ class FluxProComponentUsageTest extends TestCase
         $this->assertFileDoesNotExist(resource_path('views/flux/button/index.blade.php'));
     }
 
+    public function test_interactive_flux_surfaces_have_icons(): void
+    {
+        $components = [
+            'flux:button',
+            'flux:tab',
+            'flux:menu.item',
+            'flux:navlist.item',
+            'flux:navbar.item',
+        ];
+        $missingIcons = [];
+        $invalidIcons = [];
+        $invalidIconVariants = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $contents = File::get($file->getPathname());
+            $relativePath = str($file->getPathname())
+                ->after(base_path().DIRECTORY_SEPARATOR)
+                ->toString();
+
+            foreach ($components as $component) {
+                foreach (self::findFluxComponentOccurrences($contents, $component) as $occurrence) {
+                    if (self::isFluxIconException($relativePath, $occurrence)) {
+                        continue;
+                    }
+
+                    if (! self::fluxOpeningTagHasIcon($occurrence['tag'])) {
+                        $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component);
+                    }
+
+                    self::collectInvalidFluxIcons($relativePath, $contents, $occurrence, $component, $invalidIcons, $invalidIconVariants);
+                }
+            }
+        }
+
+        $this->assertSame([], $missingIcons);
+        $this->assertSame([], $invalidIcons);
+        $this->assertSame([], $invalidIconVariants);
+    }
+
+    public function test_status_flux_surfaces_have_icons(): void
+    {
+        $components = [
+            'flux:badge',
+            'flux:callout',
+        ];
+        $missingIcons = [];
+        $invalidIcons = [];
+        $invalidIconVariants = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $contents = File::get($file->getPathname());
+            $relativePath = str($file->getPathname())
+                ->after(base_path().DIRECTORY_SEPARATOR)
+                ->toString();
+
+            foreach ($components as $component) {
+                foreach (self::findFluxComponentOccurrences($contents, $component) as $occurrence) {
+                    if (! self::fluxOpeningTagHasIcon($occurrence['tag'])) {
+                        $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component);
+                    }
+
+                    self::collectInvalidFluxIcons($relativePath, $contents, $occurrence, $component, $invalidIcons, $invalidIconVariants);
+                }
+            }
+        }
+
+        $this->assertSame([], $missingIcons);
+        $this->assertSame([], $invalidIcons);
+        $this->assertSame([], $invalidIconVariants);
+    }
+
+    public function test_text_entry_flux_surfaces_have_icons(): void
+    {
+        $components = [
+            'flux:input',
+            'flux:autocomplete',
+        ];
+        $missingIcons = [];
+        $invalidIcons = [];
+        $invalidIconVariants = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $contents = File::get($file->getPathname());
+            $relativePath = str($file->getPathname())
+                ->after(base_path().DIRECTORY_SEPARATOR)
+                ->toString();
+
+            foreach ($components as $component) {
+                foreach (self::findFluxComponentOccurrences($contents, $component) as $occurrence) {
+                    if (str_contains(strtolower($occurrence['tag']), 'type="hidden"')) {
+                        continue;
+                    }
+
+                    if (! self::fluxOpeningTagHasInputIcon($occurrence['tag'])) {
+                        $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component);
+                    }
+
+                    self::collectInvalidFluxIcons($relativePath, $contents, $occurrence, $component, $invalidIcons, $invalidIconVariants);
+                }
+            }
+        }
+
+        $this->assertSame([], $missingIcons);
+        $this->assertSame([], $invalidIcons);
+        $this->assertSame([], $invalidIconVariants);
+    }
+
+    public function test_structural_flux_surfaces_have_icons(): void
+    {
+        $missingIcons = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $contents = File::get($file->getPathname());
+            $relativePath = str($file->getPathname())
+                ->after(base_path().DIRECTORY_SEPARATOR)
+                ->toString();
+
+            foreach (self::findFluxComponentOccurrences($contents, 'flux:heading') as $occurrence) {
+                if (self::isFluxHeadingIconException($occurrence)) {
+                    continue;
+                }
+
+                if (! str_contains($occurrence['body'], '<flux:icon')) {
+                    $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, 'flux:heading');
+                }
+            }
+
+            foreach (self::findFluxComponentOccurrences($contents, 'flux:breadcrumbs.item') as $occurrence) {
+                if (! self::fluxOpeningTagHasIcon($occurrence['tag']) && ! str_contains($occurrence['body'], '<flux:icon')) {
+                    $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, 'flux:breadcrumbs.item');
+                }
+            }
+        }
+
+        $this->assertSame([], $missingIcons);
+    }
+
+    public function test_inline_flux_icons_use_valid_names_and_variants(): void
+    {
+        $invalidIcons = [];
+        $invalidIconVariants = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $contents = File::get($file->getPathname());
+            $relativePath = str($file->getPathname())
+                ->after(base_path().DIRECTORY_SEPARATOR)
+                ->toString();
+
+            preg_match_all('/<flux:icon\b[^>]*>/s', $contents, $matches, PREG_OFFSET_CAPTURE);
+
+            foreach ($matches[0] as [$tag, $start]) {
+                foreach (self::staticInlineFluxIconNames($tag) as $icon) {
+                    if (! File::exists(base_path("vendor/livewire/flux/stubs/resources/views/flux/icon/{$icon}.blade.php"))) {
+                        $invalidIcons[] = self::formatBladeTagOffender($relativePath, $contents, $start, $tag).' icon='.$icon;
+                    }
+                }
+
+                foreach (self::staticInlineFluxIconVariants($tag) as $iconVariant) {
+                    if (! in_array($iconVariant, ['outline', 'solid', 'mini', 'micro'], true)) {
+                        $invalidIconVariants[] = self::formatBladeTagOffender($relativePath, $contents, $start, $tag).' variant='.$iconVariant;
+                    }
+                }
+            }
+        }
+
+        $this->assertSame([], $invalidIcons);
+        $this->assertSame([], $invalidIconVariants);
+    }
+
     public function test_root_level_custom_rounded_panels_are_not_used_for_livewire_and_shared_components(): void
     {
         $offenders = collect([
@@ -187,5 +376,228 @@ class FluxProComponentUsageTest extends TestCase
             ->all();
 
         $this->assertSame([], $offenders);
+    }
+
+    /**
+     * @return array<int, array{start: int, tagEnd: int, closeEnd: int, tag: string, body: string}>
+     */
+    private static function findFluxComponentOccurrences(string $contents, string $component): array
+    {
+        $occurrences = [];
+        $needle = '<'.$component;
+        $position = 0;
+        $length = strlen($contents);
+
+        while (($start = strpos($contents, $needle, $position)) !== false) {
+            $next = $contents[$start + strlen($needle)] ?? '';
+
+            if ($next !== '' && ! ctype_space($next) && $next !== '>' && $next !== '/') {
+                $position = $start + strlen($needle);
+
+                continue;
+            }
+
+            $tagEnd = self::findFluxOpeningTagEnd($contents, $start, $length);
+
+            if ($tagEnd === null) {
+                break;
+            }
+
+            $tag = substr($contents, $start, $tagEnd - $start);
+            $closeEnd = $tagEnd;
+            $body = '';
+
+            if (preg_match('/\/\s*>$/', trim($tag)) !== 1) {
+                $closeNeedle = '</'.$component.'>';
+                $closeStart = strpos($contents, $closeNeedle, $tagEnd);
+
+                if ($closeStart === false) {
+                    $position = $tagEnd;
+
+                    continue;
+                }
+
+                $body = substr($contents, $tagEnd, $closeStart - $tagEnd);
+                $closeEnd = $closeStart + strlen($closeNeedle);
+            }
+
+            $occurrences[] = [
+                'start' => $start,
+                'tagEnd' => $tagEnd,
+                'closeEnd' => $closeEnd,
+                'tag' => $tag,
+                'body' => $body,
+            ];
+
+            $position = $closeEnd;
+        }
+
+        return $occurrences;
+    }
+
+    private static function findFluxOpeningTagEnd(string $contents, int $start, int $length): ?int
+    {
+        $quote = null;
+        $bladeEcho = false;
+
+        for ($index = $start; $index < $length; $index++) {
+            $char = $contents[$index];
+            $next = $contents[$index + 1] ?? '';
+
+            if ($bladeEcho) {
+                if ($char === '}' && $next === '}') {
+                    $bladeEcho = false;
+                    $index++;
+                }
+
+                continue;
+            }
+
+            if ($quote !== null) {
+                if ($char === $quote) {
+                    $quote = null;
+                }
+
+                continue;
+            }
+
+            if ($char === '{' && $next === '{') {
+                $bladeEcho = true;
+                $index++;
+
+                continue;
+            }
+
+            if ($char === '"' || $char === "'") {
+                $quote = $char;
+
+                continue;
+            }
+
+            if ($char === '>') {
+                return $index + 1;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array{start: int, tagEnd: int, closeEnd: int, tag: string, body: string}  $occurrence
+     */
+    private static function isFluxIconException(string $relativePath, array $occurrence): bool
+    {
+        $surface = strtolower($relativePath.' '.$occurrence['tag'].' '.$occurrence['body']);
+
+        return str_contains($surface, '<flux:icon')
+            || str_contains($surface, 'absolute inset-0')
+            || str_contains($surface, 'navigation.appearance.label');
+    }
+
+    private static function fluxOpeningTagHasIcon(string $tag): bool
+    {
+        return preg_match('/(?:^|\s):?icon(?:\:trailing)?\s*=/i', $tag) === 1;
+    }
+
+    private static function fluxOpeningTagHasInputIcon(string $tag): bool
+    {
+        return preg_match('/(?:^|\s):?icon(?:\:leading|\:trailing)?\s*=/i', $tag) === 1;
+    }
+
+    /**
+     * @param  array{start: int, tagEnd: int, closeEnd: int, tag: string, body: string}  $occurrence
+     */
+    private static function isFluxHeadingIconException(array $occurrence): bool
+    {
+        $tag = strtolower($occurrence['tag']);
+
+        return str_contains($tag, 'line-clamp') || str_contains($tag, 'truncate');
+    }
+
+    /**
+     * @param  array{start: int, tagEnd: int, closeEnd: int, tag: string, body: string}  $occurrence
+     * @param  array<int, string>  $invalidIcons
+     * @param  array<int, string>  $invalidIconVariants
+     */
+    private static function collectInvalidFluxIcons(
+        string $relativePath,
+        string $contents,
+        array $occurrence,
+        string $component,
+        array &$invalidIcons,
+        array &$invalidIconVariants,
+    ): void {
+        $validIconVariants = ['outline', 'solid', 'mini', 'micro'];
+
+        foreach (self::staticFluxIconNames($occurrence['tag']) as $icon) {
+            if (! File::exists(base_path("vendor/livewire/flux/stubs/resources/views/flux/icon/{$icon}.blade.php"))) {
+                $invalidIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component).' icon='.$icon;
+            }
+        }
+
+        foreach (self::staticFluxIconVariants($occurrence['tag']) as $iconVariant) {
+            if (! in_array($iconVariant, $validIconVariants, true)) {
+                $invalidIconVariants[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component).' icon:variant='.$iconVariant;
+            }
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function staticFluxIconNames(string $tag): array
+    {
+        preg_match_all('/(?:^|\s)icon\s*=\s*([\'"])([^\'"]+)\1/i', $tag, $matches);
+
+        return $matches[2] ?? [];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function staticFluxIconVariants(string $tag): array
+    {
+        preg_match_all('/(?:^|\s)icon\:variant\s*=\s*([\'"])([^\'"]+)\1/i', $tag, $matches);
+
+        return $matches[2] ?? [];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function staticInlineFluxIconNames(string $tag): array
+    {
+        preg_match_all('/(?:^|\s)(?:name|icon)\s*=\s*([\'"])([^\'"]+)\1/i', $tag, $matches);
+
+        return $matches[2] ?? [];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function staticInlineFluxIconVariants(string $tag): array
+    {
+        preg_match_all('/(?:^|\s)(?:variant|icon\:variant)\s*=\s*([\'"])([^\'"]+)\1/i', $tag, $matches);
+
+        return $matches[2] ?? [];
+    }
+
+    /**
+     * @param  array{start: int, tagEnd: int, closeEnd: int, tag: string, body: string}  $occurrence
+     */
+    private static function formatFluxComponentOffender(string $relativePath, string $contents, array $occurrence, string $component): string
+    {
+        $lineNumber = substr_count(substr($contents, 0, $occurrence['start']), "\n") + 1;
+        $tag = trim(preg_replace('/\s+/', ' ', $occurrence['tag']) ?? $occurrence['tag']);
+
+        return $relativePath.':'.$lineNumber.' '.$component.' '.$tag;
+    }
+
+    private static function formatBladeTagOffender(string $relativePath, string $contents, int $start, string $tag): string
+    {
+        $lineNumber = substr_count(substr($contents, 0, $start), "\n") + 1;
+        $tag = trim(preg_replace('/\s+/', ' ', $tag) ?? $tag);
+
+        return $relativePath.':'.$lineNumber.' '.$tag;
     }
 }

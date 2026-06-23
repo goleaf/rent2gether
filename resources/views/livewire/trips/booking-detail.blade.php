@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ __('booking.trips.detail.eyebrow') }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('booking.trips.detail.eyebrow') }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ $trip['title'] }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $trip['title'] }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.trips.detail.helper') }}
             </flux:text>
@@ -18,10 +23,15 @@
     <flux:card class="space-y-4">
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('booking.trips.detail.summary') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.trips.detail.summary') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('booking.trips.reference') }} {{ $booking->reference }}</flux:text>
             </div>
-            <flux:badge color="zinc">{{ $booking->status->label() }}</flux:badge>
+            <flux:badge color="zinc" icon="calendar-days">{{ $booking->status->label() }}</flux:badge>
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-sm">
@@ -61,7 +71,12 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="lg">{{ __('booking.trips.arrival') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.trips.arrival') }}</span>
+            </span>
+        </flux:heading>
         <div class="space-y-2 text-sm">
             <div class="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800">
                 <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('booking.payment_page.access.address') }}</div>
@@ -83,7 +98,12 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="lg">{{ __('booking.trips.rules') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.trips.rules') }}</span>
+            </span>
+        </flux:heading>
         @forelse($trip['rules'] as $rule)
             <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800">{{ $rule }}</div>
         @empty
@@ -93,7 +113,12 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('booking.trips.receipt') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.trips.receipt') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('booking.trips.receipt_helper') }}</flux:text>
         </div>
 
@@ -120,17 +145,17 @@
     <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
         <div class="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2 sm:grid-cols-3">
             @if($trip['actions']['message'])
-                <flux:button href="{{ route('messages.index', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                <flux:button href="{{ route('messages.index', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full" icon="chat-bubble-left-right">
                     {{ __('booking.trips.actions.message_host') }}
                 </flux:button>
             @endif
             @if($trip['actions']['payment'])
-                <flux:button href="{{ route('guest.bookings.payment', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('guest.bookings.payment', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full" icon="credit-card">
                     {{ __('booking.payment_page.actions.open_payment') }}
                 </flux:button>
             @endif
             @if($trip['actions']['check_in'])
-                <flux:button href="{{ route('bookings.checkin', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('bookings.checkin', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full" icon="key">
                     {{ __('booking.trips.actions.check_in') }}
                 </flux:button>
             @endif
@@ -140,22 +165,22 @@
                 </x-ui.report-problem-button>
             @endif
             @if($trip['actions']['extend'])
-                <flux:button href="{{ route('bookings.extend', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                <flux:button href="{{ route('bookings.extend', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full" icon="calendar-days">
                     {{ __('booking.trips.actions.extend') }}
                 </flux:button>
             @endif
             @if($trip['actions']['cancel'])
-                <flux:button href="{{ route('guest.bookings.cancel', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="danger" class="w-full">
+                <flux:button href="{{ route('guest.bookings.cancel', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="danger" class="w-full" icon="x-mark">
                     {{ __('booking.trips.actions.cancel') }}
                 </flux:button>
             @endif
             @if($trip['actions']['check_out'])
-                <flux:button href="{{ route('bookings.checkout', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('bookings.checkout', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full" icon="clipboard-document-check">
                     {{ __('booking.trips.actions.check_out') }}
                 </flux:button>
             @endif
             @if($trip['actions']['review'])
-                <flux:button href="{{ route('reviews.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('reviews.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full" icon="eye">
                     {{ __('booking.trips.actions.review') }}
                 </flux:button>
             @endif

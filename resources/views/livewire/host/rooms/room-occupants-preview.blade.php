@@ -1,6 +1,11 @@
 <flux:card class="space-y-4">
     <div class="space-y-1">
-        <flux:heading size="lg">{{ __('occupants.host_preview.title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="star" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('occupants.host_preview.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('occupants.host_preview.helper') }}</flux:text>
     </div>
 
@@ -11,7 +16,7 @@
     @if($summary['badges'] !== [])
         <div class="flex flex-wrap gap-2">
             @foreach(array_slice($summary['badges'], 0, 8) as $badge)
-                <flux:badge color="zinc">{{ $badge }}</flux:badge>
+                <flux:badge color="zinc" icon="home-modern">{{ $badge }}</flux:badge>
             @endforeach
         </div>
     @endif

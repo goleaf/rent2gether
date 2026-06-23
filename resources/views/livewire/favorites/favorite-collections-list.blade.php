@@ -27,7 +27,12 @@
     @empty
         <flux:card class="min-w-[18rem] sm:min-w-0 sm:col-span-2 lg:col-span-3">
             <div class="space-y-1 text-center">
-                <flux:heading size="sm">{{ __('favorites.collections_empty.title') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('favorites.collections_empty.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('favorites.collections_empty.text') }}</flux:text>
             </div>
         </flux:card>

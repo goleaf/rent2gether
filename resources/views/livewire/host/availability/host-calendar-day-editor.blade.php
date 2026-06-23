@@ -1,13 +1,18 @@
 <flux:card class="space-y-4">
     <div class="space-y-1">
-        <flux:heading size="sm">{{ __('calendar.day_editor.title') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('calendar.day_editor.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm">{{ __('calendar.day_editor.helper') }}</flux:text>
     </div>
 
     <div class="space-y-3">
         <flux:field>
             <flux:label>{{ __('calendar.fields.date') }}</flux:label>
-            <flux:input type="date" wire:model.change="date" />
+            <flux:input type="date" wire:model.change="date" icon="calendar-days" />
             <flux:error name="date" />
         </flux:field>
 
@@ -31,7 +36,7 @@
         </flux:field>
     </div>
 
-    <flux:button type="button" variant="primary" class="w-full" wire:click="save">
+    <flux:button type="button" variant="primary" class="w-full" wire:click="save" icon="calendar-days">
         {{ __('calendar.actions.save_day') }}
     </flux:button>
 </flux:card>

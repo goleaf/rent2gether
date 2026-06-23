@@ -1,7 +1,12 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:badge color="emerald">{{ __('decision.waitlist.eyebrow') }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ __('decision.waitlist.title') }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ __('decision.waitlist.eyebrow') }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('decision.waitlist.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ __('decision.waitlist.helper') }}</flux:text>
     </section>
 
@@ -13,42 +18,52 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('decision.waitlist.create_title') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('decision.waitlist.create_title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('decision.waitlist.form_helper') }}</flux:text>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
             <flux:field>
                 <flux:label>{{ __('decision.waitlist.fields.sleeping_place') }}</flux:label>
-                <flux:input type="number" min="1" inputmode="numeric" wire:model.blur="sleepingPlaceId" placeholder="{{ __('decision.waitlist.place_placeholder') }}" />
+                <flux:input type="number" min="1" inputmode="numeric" wire:model.blur="sleepingPlaceId" placeholder="{{ __('decision.waitlist.place_placeholder') }}" icon="home-modern" />
                 <flux:error name="sleepingPlaceId" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('decision.waitlist.fields.max_price') }}</flux:label>
-                <flux:input type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="maxPrice" />
+                <flux:input type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="maxPrice" icon="banknotes" />
                 <flux:error name="maxPrice" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('decision.waitlist.fields.desired_check_in') }}</flux:label>
-                <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="desiredCheckIn" />
+                <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="desiredCheckIn" icon="calendar-days" />
                 <flux:error name="desiredCheckIn" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('decision.waitlist.fields.desired_check_out') }}</flux:label>
-                <flux:input type="date" min="{{ $desiredCheckIn ?: now()->toDateString() }}" wire:model.change="desiredCheckOut" />
+                <flux:input type="date" min="{{ $desiredCheckIn ?: now()->toDateString() }}" wire:model.change="desiredCheckOut" icon="calendar-days" />
                 <flux:error name="desiredCheckOut" />
             </flux:field>
         </div>
 
         @if($favoriteOptions->isNotEmpty())
             <div class="space-y-2">
-                <flux:heading size="sm">{{ __('decision.waitlist.favorite_places') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('decision.waitlist.favorite_places') }}</span>
+                    </span>
+                </flux:heading>
                 <div class="flex gap-2 overflow-x-auto pb-1">
                     @foreach($favoriteOptions as $option)
-                        <flux:button type="button" size="sm" variant="ghost" wire:click="$set('sleepingPlaceId', {{ $option['id'] }})">
+                        <flux:button type="button" size="sm" variant="ghost" wire:click="$set('sleepingPlaceId', {{ $option['id'] }})" icon="home-modern">
                             {{ $option['title'] }}
                         </flux:button>
                     @endforeach
@@ -71,14 +86,19 @@
                 wire:click="save"
                 wire:loading.attr="disabled"
                 wire:target="save"
-            >
+             icon="clock">
                 {{ __('decision.waitlist.create_action') }}
             </flux:button>
         </div>
     </flux:card>
 
     <section class="space-y-3" aria-labelledby="waitlist-items-title">
-        <flux:heading id="waitlist-items-title" size="lg">{{ __('decision.waitlist.list_title') }}</flux:heading>
+        <flux:heading id="waitlist-items-title" size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('decision.waitlist.list_title') }}</span>
+            </span>
+        </flux:heading>
 
         <div wire:loading.delay wire:target="save,remove" class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
             {{ __('decision.common.updating') }}
@@ -101,7 +121,7 @@
                             type="button"
                             size="sm"
                             variant="ghost"
-                            icon="x-mark"
+                            icon="clock"
                             wire:click="remove({{ $card['item']->id }})"
                             wire:confirm="{{ __('decision.waitlist.remove_confirmation') }}"
                             aria-label="{{ __('decision.waitlist.remove') }}"
@@ -109,10 +129,10 @@
                     </div>
 
                     <div class="flex flex-wrap gap-1">
-                        <flux:badge size="sm">{{ $card['room_type'] }}</flux:badge>
-                        <flux:badge size="sm">{{ $card['sleeping_place_type'] }}</flux:badge>
+                        <flux:badge size="sm" icon="home-modern">{{ $card['room_type'] }}</flux:badge>
+                        <flux:badge size="sm" icon="home-modern">{{ $card['sleeping_place_type'] }}</flux:badge>
                         @if($card['item']->auto_request)
-                            <flux:badge size="sm" color="blue">{{ __('decision.waitlist.auto_request_badge') }}</flux:badge>
+                            <flux:badge size="sm" color="blue" icon="information-circle">{{ __('decision.waitlist.auto_request_badge') }}</flux:badge>
                         @endif
                     </div>
 
@@ -137,17 +157,22 @@
 
                     <div class="flex flex-wrap gap-2">
                         @if($card['item']->notify_available)
-                            <flux:badge color="green">{{ __('decision.waitlist.notify_available_badge') }}</flux:badge>
+                            <flux:badge color="green" icon="check-circle">{{ __('decision.waitlist.notify_available_badge') }}</flux:badge>
                         @endif
                         @if($card['item']->notify_price_drop)
-                            <flux:badge color="green">{{ __('decision.waitlist.notify_price_badge') }}</flux:badge>
+                            <flux:badge color="green" icon="check-circle">{{ __('decision.waitlist.notify_price_badge') }}</flux:badge>
                         @endif
                     </div>
                 </flux:card>
             @empty
                 <flux:card>
                     <div class="space-y-2 text-center">
-                        <flux:heading size="lg">{{ __('decision.waitlist.empty_title') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('decision.waitlist.empty_title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('decision.waitlist.empty_helper') }}</flux:text>
                     </div>
                 </flux:card>

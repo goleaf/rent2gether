@@ -1,7 +1,10 @@
 <flux:card class="space-y-4">
     <div class="space-y-1">
         <flux:heading size="lg">
-            {{ $summary['confirmed'] ? __('occupants.confirmed_title') : __('occupants.title') }}
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ $summary['confirmed'] ? __('occupants.confirmed_title') : __('occupants.title') }}</span>
+            </span>
         </flux:heading>
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('occupants.helper') }}</flux:text>
     </div>
@@ -17,7 +20,7 @@
     @if($summary['badges'] !== [])
         <div class="flex flex-wrap gap-2">
             @foreach(array_slice($summary['badges'], 0, 8) as $badge)
-                <flux:badge color="zinc">{{ $badge }}</flux:badge>
+                <flux:badge color="zinc" icon="home-modern">{{ $badge }}</flux:badge>
             @endforeach
         </div>
     @endif
@@ -25,7 +28,7 @@
     @if($summary['warnings'] !== [])
         <div class="space-y-2">
             @foreach($summary['warnings'] as $warning)
-                <flux:badge color="amber">{{ $warning['message'] }}</flux:badge>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ $warning['message'] }}</flux:badge>
             @endforeach
         </div>
     @endif
@@ -44,14 +47,14 @@
                             @endif
                         </div>
                         @if($card['roommate_rating'])
-                            <flux:badge color="green">{{ __('occupants.roommate_rating') }}: {{ number_format($card['roommate_rating'], 1) }}</flux:badge>
+                            <flux:badge color="green" icon="check-circle">{{ __('occupants.roommate_rating') }}: {{ number_format($card['roommate_rating'], 1) }}</flux:badge>
                         @endif
                     </div>
 
                     @if($card['badges'] !== [])
                         <div class="mt-2 flex flex-wrap gap-2">
                             @foreach($card['badges'] as $badge)
-                                <flux:badge color="zinc">{{ $badge }}</flux:badge>
+                                <flux:badge color="zinc" icon="home-modern">{{ $badge }}</flux:badge>
                             @endforeach
                         </div>
                     @endif

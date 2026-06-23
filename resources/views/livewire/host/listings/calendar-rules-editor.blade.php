@@ -1,6 +1,11 @@
 <flux:card class="space-y-4">
     <div class="space-y-1">
-        <flux:heading size="md">{{ __('listing_calendar.rules_title') }}</flux:heading>
+        <flux:heading size="md">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('listing_calendar.rules_title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing_calendar.rules_helper') }}</flux:text>
     </div>
 
@@ -18,31 +23,31 @@
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.default_price') }}</flux:label>
-                <flux:input type="number" step="0.01" wire:model.blur="defaultPrice" />
+                <flux:input type="number" step="0.01" wire:model.blur="defaultPrice" icon="banknotes" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.min_nights') }}</flux:label>
-                <flux:input type="number" min="1" wire:model.blur="minNights" />
+                <flux:input type="number" min="1" wire:model.blur="minNights" icon="numbered-list" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.max_nights') }}</flux:label>
-                <flux:input type="number" min="1" wire:model.blur="maxNights" />
+                <flux:input type="number" min="1" wire:model.blur="maxNights" icon="numbered-list" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.cleaning_gap_hours') }}</flux:label>
-                <flux:input type="number" min="0" wire:model.blur="cleaningGapHours" />
+                <flux:input type="number" min="0" wire:model.blur="cleaningGapHours" icon="numbered-list" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.cleaning_gap_days') }}</flux:label>
-                <flux:input type="number" min="0" wire:model.blur="cleaningGapDays" />
+                <flux:input type="number" min="0" wire:model.blur="cleaningGapDays" icon="numbered-list" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.check_in_time_from') }}</flux:label>
-                <flux:input type="time" wire:model.change="checkInTimeFrom" />
+                <flux:input type="time" wire:model.change="checkInTimeFrom" icon="calendar-days" />
             </flux:field>
             <flux:field>
                 <flux:label>{{ __('listing_calendar.fields.check_out_time_until') }}</flux:label>
-                <flux:input type="time" wire:model.change="checkOutTimeUntil" />
+                <flux:input type="time" wire:model.change="checkOutTimeUntil" icon="calendar-days" />
             </flux:field>
         </div>
 
@@ -64,7 +69,7 @@
             </div>
         </div>
 
-        <flux:button type="button" variant="primary" wire:click="saveSettings" wire:loading.attr="disabled">
+        <flux:button type="button" variant="primary" wire:click="saveSettings" wire:loading.attr="disabled" icon="calendar-days">
             {{ __('listing_calendar.actions.save_settings') }}
         </flux:button>
     @else

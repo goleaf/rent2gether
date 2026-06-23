@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('host_unresponsive.components.host_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('host_unresponsive.host_title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('host_unresponsive.components.host_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host_unresponsive.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('host_unresponsive.messages.host_intro') }}
                 </flux:text>
             </div>
 
             @if ($case)
-                <flux:badge color="red">{{ __('host_unresponsive.statuses.' . $case->status) }}</flux:badge>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('host_unresponsive.statuses.' . $case->status) }}</flux:badge>
             @endif
         </div>
 
@@ -37,22 +42,22 @@
             <div class="mt-4 grid gap-3">
                 <flux:textarea wire:model.blur="hostMessage" :label="__('host_unresponsive.fields.host_response')" rows="3" />
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <flux:button wire:click="markAvailable" wire:loading.attr="disabled">
+                    <flux:button wire:click="markAvailable" wire:loading.attr="disabled" icon="check">
                         {{ __('host_unresponsive.host_response_types.i_am_available') }}
                     </flux:button>
-                    <flux:button wire:click="sendInstruction" wire:loading.attr="disabled">
+                    <flux:button wire:click="sendInstruction" wire:loading.attr="disabled" icon="paper-airplane">
                         {{ __('host_unresponsive.actions.send_instruction') }}
                     </flux:button>
-                    <flux:button wire:click="sendAccessDetails" wire:loading.attr="disabled">
+                    <flux:button wire:click="sendAccessDetails" wire:loading.attr="disabled" icon="paper-airplane">
                         {{ __('host_unresponsive.actions.send_access_details') }}
                     </flux:button>
-                    <flux:button wire:click="markAccessResolved" wire:loading.attr="disabled">
+                    <flux:button wire:click="markAccessResolved" wire:loading.attr="disabled" icon="key">
                         {{ __('host_unresponsive.actions.mark_access_resolved') }}
                     </flux:button>
-                    <flux:button wire:click="denyUnresponsive" wire:loading.attr="disabled">
+                    <flux:button wire:click="denyUnresponsive" wire:loading.attr="disabled" icon="x-mark">
                         {{ __('host_unresponsive.host_response_types.deny_unresponsive') }}
                     </flux:button>
-                    <flux:button variant="danger" wire:click="confirmUnresolved" wire:loading.attr="disabled">
+                    <flux:button variant="danger" wire:click="confirmUnresolved" wire:loading.attr="disabled" icon="check">
                         {{ __('host_unresponsive.actions.confirm_unresolved') }}
                     </flux:button>
                 </div>
@@ -80,7 +85,12 @@
             </div>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('host_unresponsive.fields.contact_attempts') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host_unresponsive.fields.contact_attempts') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($case->contactAttempts as $attempt)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('host_unresponsive.attempt_types.' . $attempt->attempt_type) }}</p>
@@ -106,7 +116,7 @@
                             {{ $item->sleepingPlace?->display_name ?? $item->sleepingPlace?->title ?? __('host_unresponsive.empty.unknown_place') }}
                         </p>
                     </div>
-                    <flux:badge>{{ __('host_unresponsive.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="user">{{ __('host_unresponsive.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

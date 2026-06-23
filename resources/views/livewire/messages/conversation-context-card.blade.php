@@ -6,6 +6,6 @@
                 {{ __('messages.conversation_types.'.$conversation->conversation_type) }}
             </flux:text>
         </div>
-        <flux:badge size="sm">{{ $conversation->booking?->booking_number ?: $conversation->booking?->reference }}</flux:badge>
+        <flux:badge size="sm" icon="calendar-days">{{ $conversation->booking?->booking_number ?: $conversation->booking?->reference }}</flux:badge>
     </div>
 </flux:card>

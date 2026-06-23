@@ -13,8 +13,13 @@
 
         <div class="min-w-0 flex-1 space-y-1">
             <div class="flex flex-wrap items-center gap-2">
-                <flux:heading size="sm">{{ $displayName }}</flux:heading>
-                <flux:badge :color="$profile?->verified_at ? 'green' : 'zinc'" size="sm">
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $displayName }}</span>
+                    </span>
+                </flux:heading>
+                <flux:badge :color="$profile?->verified_at ? 'green' : 'zinc'" size="sm" icon="check-circle">
                     {{ $profile?->verified_at ? __('host.profile.public_card.verified') : __('host.profile.public_card.not_verified') }}
                 </flux:badge>
             </div>

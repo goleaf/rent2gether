@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('booking_relocations.components.host_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('booking_relocations.host_title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('booking_relocations.components.host_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_relocations.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('booking_relocations.messages.old_place_not_released_until_checked') }}
                 </flux:text>
             </div>
 
             @if ($relocation)
-                <flux:badge color="blue">{{ __('booking_relocations.statuses.' . $relocation->status) }}</flux:badge>
+                <flux:badge color="blue" icon="calendar-days">{{ __('booking_relocations.statuses.' . $relocation->status) }}</flux:badge>
             @endif
         </div>
 
@@ -57,10 +62,10 @@
             <div class="mt-4 grid gap-3">
                 <flux:textarea wire:model.blur="hostMessage" :label="__('booking_relocations.fields.host_comment')" rows="3" />
                 <div class="grid grid-cols-2 gap-2">
-                    <flux:button variant="primary" wire:click="approve" wire:loading.attr="disabled">
+                    <flux:button variant="primary" wire:click="approve" wire:loading.attr="disabled" icon="calendar-days">
                         {{ __('booking_relocations.actions.approve') }}
                     </flux:button>
-                    <flux:button variant="danger" wire:click="reject" wire:loading.attr="disabled">
+                    <flux:button variant="danger" wire:click="reject" wire:loading.attr="disabled" icon="x-mark">
                         {{ __('booking_relocations.actions.reject') }}
                     </flux:button>
                 </div>
@@ -80,7 +85,7 @@
                             {{ $item->currentSleepingPlace?->display_name ?? $item->currentSleepingPlace?->title ?? __('booking_relocations.empty.unknown_place') }}
                         </p>
                     </div>
-                    <flux:badge>{{ __('booking_relocations.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="calendar-days">{{ __('booking_relocations.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

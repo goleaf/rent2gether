@@ -3,18 +3,23 @@
         <div class="space-y-2">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 space-y-1">
-                    <flux:badge color="emerald">{{ __('guest_intake.badge') }}</flux:badge>
-                    <flux:heading id="guest-intake-title" size="lg">{{ __('guest_intake.title') }}</flux:heading>
+                    <flux:badge color="emerald" icon="check-circle">{{ __('guest_intake.badge') }}</flux:badge>
+                    <flux:heading id="guest-intake-title" size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.title') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.helper') }}</flux:text>
                 </div>
-                <flux:badge color="zinc">{{ __('guest_intake.progress', ['current' => $step, 'total' => 6]) }}</flux:badge>
+                <flux:badge color="zinc" icon="calendar-days">{{ __('guest_intake.progress', ['current' => $step, 'total' => 6]) }}</flux:badge>
             </div>
 
             <flux:progress value="{{ (int) round(($step / 6) * 100) }}" />
         </div>
 
         @if($statusMessage)
-            <flux:callout color="emerald" icon="check-circle">
+            <flux:callout color="emerald" icon="chat-bubble-left-right">
                 <flux:callout.text>{{ $statusMessage }}</flux:callout.text>
             </flux:callout>
         @endif
@@ -26,7 +31,12 @@
         @if($step === 1)
             <div class="space-y-4">
                 <div class="space-y-1">
-                    <flux:heading size="sm">{{ __('guest_intake.steps.trip_purpose') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.steps.trip_purpose') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.step_helpers.trip_purpose') }}</flux:text>
                 </div>
 
@@ -50,7 +60,7 @@
                 @endif
 
                 @if($tripPurpose === 'medical')
-                    <flux:callout color="amber" icon="shield-check">
+                    <flux:callout color="amber" icon="exclamation-triangle">
                         <flux:callout.heading>{{ __('guest_intake.privacy.medical_title') }}</flux:callout.heading>
                         <flux:callout.text>{{ __('guest_intake.privacy.medical_helper') }}</flux:callout.text>
                     </flux:callout>
@@ -69,19 +79,24 @@
         @elseif($step === 2)
             <div class="space-y-4">
                 <div class="space-y-1">
-                    <flux:heading size="sm">{{ __('guest_intake.steps.arrival_departure') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.steps.arrival_departure') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.step_helpers.arrival_departure') }}</flux:text>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <flux:field>
                         <flux:label>{{ __('guest_intake.fields.planned_arrival_date') }}</flux:label>
-                        <flux:input type="date" wire:model.change="plannedArrivalDate" />
+                        <flux:input type="date" wire:model.change="plannedArrivalDate" icon="calendar-days" />
                         <flux:error name="plannedArrivalDate" />
                     </flux:field>
                     <flux:field>
                         <flux:label>{{ __('guest_intake.fields.planned_arrival_time') }}</flux:label>
-                        <flux:input type="time" wire:model.change="plannedArrivalTime" />
+                        <flux:input type="time" wire:model.change="plannedArrivalTime" icon="clock" />
                         <flux:error name="plannedArrivalTime" />
                     </flux:field>
                 </div>
@@ -90,14 +105,14 @@
 
                 <flux:field>
                     <flux:label>{{ __('guest_intake.fields.planned_arrival_window') }}</flux:label>
-                    <flux:input wire:model.blur="plannedArrivalWindow" maxlength="100" />
+                    <flux:input wire:model.blur="plannedArrivalWindow" maxlength="100" icon="clock" />
                     <flux:error name="plannedArrivalWindow" />
                 </flux:field>
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <flux:field>
                         <flux:label>{{ __('guest_intake.fields.planned_departure_time') }}</flux:label>
-                        <flux:input type="time" wire:model.change="plannedDepartureTime" />
+                        <flux:input type="time" wire:model.change="plannedDepartureTime" icon="clock" />
                         <flux:error name="plannedDepartureTime" />
                     </flux:field>
                     <div class="space-y-3 pt-1">
@@ -111,14 +126,14 @@
                         <flux:checkbox wire:model.change="earlyCheckInRequested" label="{{ __('guest_intake.fields.early_check_in_requested') }}" />
                         <flux:field>
                             <flux:label>{{ __('guest_intake.fields.requested_early_check_in_time') }}</flux:label>
-                            <flux:input type="time" wire:model.change="requestedEarlyCheckInTime" />
+                            <flux:input type="time" wire:model.change="requestedEarlyCheckInTime" icon="calendar-days" />
                         </flux:field>
                     </div>
                     <div class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
                         <flux:checkbox wire:model.change="lateCheckOutRequested" label="{{ __('guest_intake.fields.late_check_out_requested') }}" />
                         <flux:field>
                             <flux:label>{{ __('guest_intake.fields.requested_late_check_out_time') }}</flux:label>
-                            <flux:input type="time" wire:model.change="requestedLateCheckOutTime" />
+                            <flux:input type="time" wire:model.change="requestedLateCheckOutTime" icon="calendar-days" />
                         </flux:field>
                     </div>
                 </div>
@@ -126,7 +141,12 @@
         @elseif($step === 3)
             <div class="space-y-4">
                 <div class="space-y-1">
-                    <flux:heading size="sm">{{ __('guest_intake.steps.baggage_pets_smoking') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.steps.baggage_pets_smoking') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.step_helpers.baggage_pets_smoking') }}</flux:text>
                 </div>
 
@@ -142,7 +162,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>{{ __('guest_intake.fields.baggage_count') }}</flux:label>
-                        <flux:input type="number" min="0" max="20" inputmode="numeric" wire:model.change="baggageCount" />
+                        <flux:input type="number" min="0" max="20" inputmode="numeric" wire:model.change="baggageCount" icon="numbered-list" />
                     </flux:field>
                 </div>
 
@@ -156,7 +176,7 @@
                 @if($hasSpecialBaggage)
                     <flux:field>
                         <flux:label>{{ __('guest_intake.fields.special_baggage_type') }}</flux:label>
-                        <flux:input wire:model.blur="specialBaggageType" maxlength="100" />
+                        <flux:input wire:model.blur="specialBaggageType" maxlength="100" icon="pencil-square" />
                     </flux:field>
                 @endif
 
@@ -198,7 +218,12 @@
         @elseif($step === 4)
             <div class="space-y-4">
                 <div class="space-y-1">
-                    <flux:heading size="sm">{{ __('guest_intake.steps.comfort_work') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.steps.comfort_work') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.step_helpers.comfort_work') }}</flux:text>
                 </div>
 
@@ -225,7 +250,12 @@
         @elseif($step === 5)
             <div class="space-y-4">
                 <div class="space-y-1">
-                    <flux:heading size="sm">{{ __('guest_intake.steps.documents_special_requests') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.steps.documents_special_requests') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.step_helpers.documents_special_requests') }}</flux:text>
                 </div>
 
@@ -239,7 +269,7 @@
 
                 <flux:field>
                     <flux:label>{{ __('guest_intake.fields.company_name') }}</flux:label>
-                    <flux:input wire:model.blur="companyName" maxlength="255" />
+                    <flux:input wire:model.blur="companyName" maxlength="255" icon="user" />
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('guest_intake.fields.document_notes') }}</flux:label>
@@ -254,16 +284,21 @@
         @else
             <div class="space-y-4">
                 <div class="space-y-1">
-                    <flux:heading size="sm">{{ __('guest_intake.steps.host_message') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.steps.host_message') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('guest_intake.step_helpers.host_message') }}</flux:text>
                 </div>
 
                 <div class="flex flex-wrap gap-2">
-                    <flux:button type="button" size="sm" variant="ghost" icon="sparkles" wire:click="generateHostMessage">
+                    <flux:button type="button" size="sm" variant="ghost" icon="chat-bubble-left-right" wire:click="generateHostMessage">
                         {{ __('guest_intake.actions.generate_message') }}
                     </flux:button>
                     @foreach($templates as $template)
-                        <flux:button type="button" size="sm" variant="ghost" wire:click="$set('hostMessage', @js($template))">
+                        <flux:button type="button" size="sm" variant="ghost" wire:click="$set('hostMessage', @js($template))" icon="chat-bubble-left-right">
                             {{ $template }}
                         </flux:button>
                     @endforeach
@@ -297,7 +332,7 @@
             </flux:button>
 
             <div class="flex gap-2">
-                <flux:button type="button" variant="ghost" wire:click="saveCurrentStep" wire:loading.attr="disabled" wire:target="saveCurrentStep,nextStep,complete">
+                <flux:button type="button" variant="ghost" wire:click="saveCurrentStep" wire:loading.attr="disabled" wire:target="saveCurrentStep,nextStep,complete" icon="bookmark">
                     {{ __('guest_intake.actions.save_draft') }}
                 </flux:button>
 

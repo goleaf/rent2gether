@@ -2,7 +2,12 @@
 
 <flux:card {{ $attributes->merge(['class' => 'space-y-3']) }}>
     @if($section)
-        <flux:heading size="lg">{{ $section['title'] }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ $section['title'] }}</span>
+            </span>
+        </flux:heading>
 
         <div class="grid gap-2 text-sm sm:grid-cols-2">
             @forelse($section['items'] as $item)

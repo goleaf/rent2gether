@@ -1,6 +1,11 @@
 <form wire:submit="save" class="space-y-5">
     <div class="space-y-1">
-        <flux:heading size="lg">{{ __('compatibility.profile_title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="scale" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('compatibility.profile_title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('compatibility.profile_helper') }}</flux:text>
     </div>
 
@@ -68,7 +73,7 @@
                 <div class="grid gap-3">
                     <flux:checkbox wire:model.change="wantsPrivateRoom" label="{{ __('compatibility.fields.wants_private_room') }}" />
                     <flux:checkbox wire:model.change="comfortableWithSharedRoom" label="{{ __('compatibility.fields.comfortable_with_shared_room') }}" />
-                    <flux:input type="number" min="1" max="12" inputmode="numeric" wire:model.change="maxPeopleInRoom" label="{{ __('compatibility.fields.max_people_in_room') }}" />
+                    <flux:input type="number" min="1" max="12" inputmode="numeric" wire:model.change="maxPeopleInRoom" label="{{ __('compatibility.fields.max_people_in_room') }}" icon="users" />
                     <flux:checkbox wire:model.change="comfortableWithMixedRoom" label="{{ __('compatibility.fields.comfortable_with_mixed_room') }}" />
                 </div>
             @elseif($step === 'sleeping_place')

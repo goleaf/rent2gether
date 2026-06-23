@@ -6,9 +6,14 @@
                     {{ __('messages.thread.back') }}
                 </flux:button>
                 <div class="min-w-0 space-y-1">
-                    <flux:heading size="lg" level="1">{{ $otherUser?->name ?: __('messages.inbox.unknown_user') }}</flux:heading>
+                    <flux:heading size="lg" level="1">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $otherUser?->name ?: __('messages.inbox.unknown_user') }}</span>
+                        </span>
+                    </flux:heading>
                     <div class="flex flex-wrap items-center gap-2">
-                        <flux:badge size="sm">{{ __('statuses.message_thread_type.'.$threadType) }}</flux:badge>
+                        <flux:badge size="sm" icon="check-circle">{{ __('statuses.message_thread_type.'.$threadType) }}</flux:badge>
                         @if($placeTitle)
                             <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $placeTitle }}</flux:text>
                         @endif
@@ -89,14 +94,14 @@
     <section class="mt-4 space-y-3 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
         <div class="flex gap-2 overflow-x-auto pb-1">
             @foreach($this->quickTemplates as $key => $template)
-                <flux:button type="button" size="sm" variant="ghost" wire:click="applyTemplate('{{ $key }}')" class="shrink-0">
+                <flux:button type="button" size="sm" variant="ghost" wire:click="applyTemplate('{{ $key }}')" class="shrink-0" icon="chat-bubble-left-right">
                     {{ $template }}
                 </flux:button>
             @endforeach
         </div>
 
         @error('body')
-            <flux:callout color="amber" icon="information-circle">
+            <flux:callout color="amber" icon="exclamation-triangle">
                 <flux:callout.text>{{ $message }}</flux:callout.text>
             </flux:callout>
         @enderror
@@ -132,7 +137,7 @@
                 </div>
             </div>
 
-            <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70">
+            <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" icon="paper-airplane">
                 <span wire:loading.remove wire:target="send">{{ __('messages.thread.actions.send') }}</span>
                 <span wire:loading wire:target="send">{{ __('messages.thread.actions.sending') }}</span>
             </flux:button>

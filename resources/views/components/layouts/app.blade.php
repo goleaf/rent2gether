@@ -82,8 +82,18 @@
             </a>
 
             <flux:breadcrumbs class="hidden lg:flex">
-                <flux:breadcrumbs.item href="{{ route('home', ['locale' => app()->getLocale()]) }}" wire:navigate>rent2gether</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item>{{ $title ?? __('navigation.home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ route('home', ['locale' => app()->getLocale()]) }}" wire:navigate>
+                    <span class="inline-flex items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span>rent2gether</span>
+                    </span>
+                </flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>
+                    <span class="inline-flex items-center gap-1.5">
+                        <flux:icon name="map-pin" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span>{{ $title ?? __('navigation.home') }}</span>
+                    </span>
+                </flux:breadcrumbs.item>
             </flux:breadcrumbs>
 
             <flux:spacer />
@@ -118,7 +128,7 @@
                 </flux:menu>
             </flux:dropdown>
             @else
-            <flux:button size="sm" href="{{ route('auth.login') }}" wire:navigate>{{ __('navigation.login') }}</flux:button>
+            <flux:button size="sm" href="{{ route('auth.login') }}" wire:navigate icon="arrow-right-end-on-rectangle">{{ __('navigation.login') }}</flux:button>
             @endauth
         </flux:header>
 

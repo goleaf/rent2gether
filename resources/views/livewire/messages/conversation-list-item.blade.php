@@ -2,9 +2,9 @@
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0 space-y-1">
             <div class="flex flex-wrap items-center gap-2">
-                <flux:badge size="sm">{{ __('messages.conversation_types.'.$conversation->conversation_type) }}</flux:badge>
+                <flux:badge size="sm" icon="user">{{ __('messages.conversation_types.'.$conversation->conversation_type) }}</flux:badge>
                 @if($conversation->has_urgent_messages)
-                    <flux:badge color="red" size="sm">{{ __('messages.sections.urgent') }}</flux:badge>
+                    <flux:badge color="red" size="sm" icon="exclamation-triangle">{{ __('messages.sections.urgent') }}</flux:badge>
                 @endif
             </div>
 

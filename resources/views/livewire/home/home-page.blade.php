@@ -1,22 +1,27 @@
 <x-ui.page class="text-zinc-950 dark:text-white">
     <x-ui.section>
         <div class="space-y-2">
-            <flux:badge color="lime">{{ __('domain.entities.sleeping_place') }}</flux:badge>
-            <flux:heading size="xl">{{ __('common.home.title') }}</flux:heading>
+            <flux:badge color="lime" icon="home-modern">{{ __('domain.entities.sleeping_place') }}</flux:badge>
+            <flux:heading size="xl">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('common.home.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-300">{{ __('common.home.helper') }}</flux:text>
         </div>
 
         <x-ui.surface class="grid gap-3">
-            <flux:input wire:model.live.debounce.500ms="destination" :label="__('common.home.destination')" :placeholder="__('common.home.destination_placeholder')" />
+            <flux:input wire:model.live.debounce.500ms="destination" :label="__('common.home.destination')" :placeholder="__('common.home.destination_placeholder')" icon="pencil-square" />
 
             <div class="grid grid-cols-2 gap-3">
-                <flux:input type="date" :label="__('common.home.check_in')" />
-                <flux:input type="date" :label="__('common.home.check_out')" />
+                <flux:input type="date" :label="__('common.home.check_in')" icon="calendar-days" />
+                <flux:input type="date" :label="__('common.home.check_out')" icon="calendar-days" />
             </div>
 
-            <flux:input type="number" min="1" :label="__('common.home.guests')" />
+            <flux:input type="number" min="1" :label="__('common.home.guests')" icon="user" />
 
-            <flux:button variant="primary" class="w-full" data-loading wire:loading.attr="disabled">
+            <flux:button variant="primary" class="w-full" data-loading wire:loading.attr="disabled" icon="magnifying-glass">
                 {{ __('common.actions.find_sleeping_place') }}
             </flux:button>
         </x-ui.surface>

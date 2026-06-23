@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ __('host.income.eyebrow') }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('host.income.eyebrow') }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ __('host.income.title') }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('host.income.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">
                 {{ __('host.income.helper') }}
             </flux:text>
@@ -11,7 +16,12 @@
 
     <flux:card class="space-y-4">
         <div class="space-y-1">
-            <flux:heading size="sm">{{ __('host.income.filters.title') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('host.income.filters.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('host.income.filters.helper') }}</flux:text>
         </div>
 
@@ -28,18 +38,18 @@
 
             <flux:field>
                 <flux:label>{{ __('host.income.filters.start') }}</flux:label>
-                <flux:input type="date" wire:model.change="customStart" />
+                <flux:input type="date" wire:model.change="customStart" icon="calendar-days" />
                 <flux:error name="customStart" />
             </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('host.income.filters.end') }}</flux:label>
-                <flux:input type="date" wire:model.change="customEnd" />
+                <flux:input type="date" wire:model.change="customEnd" icon="calendar-days" />
                 <flux:error name="customEnd" />
             </flux:field>
         </div>
 
-        <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70 sm:w-auto" wire:click="applyFilters">
+        <flux:button type="button" variant="primary" class="w-full data-loading:opacity-70 sm:w-auto" wire:click="applyFilters" icon="funnel">
             <span wire:loading.remove wire:target="applyFilters">{{ __('host.income.filters.apply') }}</span>
             <span wire:loading wire:target="applyFilters">{{ __('host.income.filters.applying') }}</span>
         </flux:button>
@@ -89,10 +99,15 @@
     <flux:card class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('host.income.payouts.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host.income.payouts.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('host.income.payouts.helper') }}</flux:text>
             </div>
-            <flux:badge color="zinc">{{ __($summary['payout_placeholder']['label_key']) }}</flux:badge>
+            <flux:badge color="zinc" icon="banknotes">{{ __($summary['payout_placeholder']['label_key']) }}</flux:badge>
         </div>
         <div class="rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
             {{ __('host.income.payouts.text', ['amount' => $this->money($summary['payout_placeholder']['amount'], $summary['payout_placeholder']['currency'])]) }}
@@ -106,7 +121,12 @@
             ['title' => __('host.income.breakdown.sleeping_places'), 'items' => $summary['by_sleeping_place']],
         ] as $section)
             <flux:card class="space-y-3">
-                <flux:heading size="lg">{{ $section['title'] }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $section['title'] }}</span>
+                    </span>
+                </flux:heading>
                 @forelse($section['items'] as $item)
                     <div class="flex items-start justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
                         <div class="min-w-0">
@@ -123,7 +143,12 @@
     </div>
 
     <flux:card class="space-y-3">
-        <flux:heading size="lg">{{ __('host.income.receipts.title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="banknotes" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host.income.receipts.title') }}</span>
+            </span>
+        </flux:heading>
         @forelse($summary['receipts'] as $receipt)
             <div class="rounded-lg border border-zinc-200 px-3 py-3 text-sm dark:border-zinc-700">
                 <div class="flex items-start justify-between gap-3">
@@ -131,7 +156,7 @@
                         <div class="truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $receipt['reference'] }}</div>
                         <div class="text-xs text-zinc-500">{{ __('host.income.receipts.line', ['guest' => $receipt['guest'], 'place' => $receipt['place'], 'date' => $receipt['date']]) }}</div>
                     </div>
-                    <flux:badge size="sm" color="blue">{{ $receipt['payment_status'] }}</flux:badge>
+                    <flux:badge size="sm" color="blue" icon="banknotes">{{ $receipt['payment_status'] }}</flux:badge>
                 </div>
                 <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                     <div>

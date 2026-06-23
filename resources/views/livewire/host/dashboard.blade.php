@@ -1,5 +1,10 @@
 <x-ui.page class="space-y-6">
-    <flux:heading size="xl">{{ __('host.dashboard') }}</flux:heading>
+    <flux:heading size="xl">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('host.dashboard') }}</span>
+        </span>
+    </flux:heading>
 
     <livewire:host.hints.host-hints-panel lazy />
 
@@ -24,7 +29,12 @@
 
     @if($this->pendingRequests->isNotEmpty())
         <div class="space-y-3">
-            <flux:heading size="lg">{{ __('host.pending_requests') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="clock" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('host.pending_requests') }}</span>
+                </span>
+            </flux:heading>
             @foreach($this->pendingRequests as $booking)
                 <flux:card class="flex items-center justify-between">
                     <div>
@@ -35,7 +45,7 @@
                             &middot; &euro;{{ number_format($booking->total, 2) }}
                         </flux:text>
                     </div>
-                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate>
+                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate icon="eye">
                         {{ __('app.actions.review') }}
                     </flux:button>
                 </flux:card>
@@ -45,14 +55,19 @@
 
     @if($this->upcomingCheckIns->isNotEmpty())
         <div class="space-y-3">
-            <flux:heading size="lg">{{ __('host.upcoming_checkins') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('host.upcoming_checkins') }}</span>
+                </span>
+            </flux:heading>
             @foreach($this->upcomingCheckIns as $booking)
                 <flux:card class="flex items-center justify-between">
                     <div>
                         <flux:text class="font-medium">{{ $booking->guest->name }}</flux:text>
                         <flux:text size="sm" class="text-zinc-500">{{ $booking->bed->title }} &middot; {{ $booking->check_in->translatedFormat('d M') }}</flux:text>
                     </div>
-                    <flux:badge color="blue">{{ $booking->check_in->diffForHumans() }}</flux:badge>
+                    <flux:badge color="blue" icon="calendar-days">{{ $booking->check_in->diffForHumans() }}</flux:badge>
                 </flux:card>
             @endforeach
         </div>
@@ -60,14 +75,19 @@
 
     @if($this->activeGuests->isNotEmpty())
         <div class="space-y-3">
-            <flux:heading size="lg">{{ __('host.active_guests') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('host.active_guests') }}</span>
+                </span>
+            </flux:heading>
             @foreach($this->activeGuests as $booking)
                 <flux:card class="flex items-center justify-between">
                     <div>
                         <flux:text class="font-medium">{{ $booking->guest->name }}</flux:text>
                         <flux:text size="sm" class="text-zinc-500">{{ $booking->bed->title }} &middot; {{ __('host.checkout') }}: {{ $booking->check_out->translatedFormat('d M') }}</flux:text>
                     </div>
-                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate>
+                    <flux:button size="sm" href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate icon="eye">
                         {{ __('app.actions.manage') }}
                     </flux:button>
                 </flux:card>
@@ -76,7 +96,12 @@
     @endif
 
     <div class="space-y-3">
-        <flux:heading size="lg">{{ __('host.properties') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host.properties') }}</span>
+            </span>
+        </flux:heading>
         @forelse($this->properties as $property)
             <flux:card class="flex items-center justify-between">
                 <div>

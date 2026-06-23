@@ -2,8 +2,13 @@
     <section class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-                <flux:badge color="emerald">{{ __('host.rooms.eyebrow') }}</flux:badge>
-                <flux:heading size="xl" level="1">{{ $this->propertyDisplay['title'] }}</flux:heading>
+                <flux:badge color="emerald" icon="check-circle">{{ __('host.rooms.eyebrow') }}</flux:badge>
+                <flux:heading size="xl" level="1">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $this->propertyDisplay['title'] }}</span>
+                    </span>
+                </flux:heading>
                 @if($this->propertyDisplay['location'])
                     <flux:text class="text-zinc-600 dark:text-zinc-400">{{ $this->propertyDisplay['location'] }}</flux:text>
                 @endif
@@ -12,7 +17,7 @@
             <flux:button
                 size="sm"
                 href="{{ route('host.listings.create', ['locale' => app()->getLocale(), 'propertyId' => $propertyId]) }}"
-                icon="pencil"
+                icon="plus"
                 wire:navigate
             >
                 {{ __('app.actions.edit') }}
@@ -48,8 +53,13 @@
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 space-y-1">
                         <div class="flex flex-wrap items-center gap-2">
-                            <flux:heading size="sm">{{ $room['title'] }}</flux:heading>
-                            <flux:badge size="sm">{{ $room['status_label'] }}</flux:badge>
+                            <flux:heading size="sm">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ $room['title'] }}</span>
+                                </span>
+                            </flux:heading>
+                            <flux:badge size="sm" icon="home-modern">{{ $room['status_label'] }}</flux:badge>
                         </div>
                         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                             {{ $room['type_label'] }} · {{ $room['gender_label'] }} · {{ __('host.room_wizard.fields.max_guests') }}: {{ $room['max_guests'] }}
@@ -74,7 +84,12 @@
 
                 <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
                     <div class="flex items-center justify-between gap-3">
-                        <flux:heading size="sm">{{ __('host.room_wizard.readiness.title') }}</flux:heading>
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host.room_wizard.readiness.title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text size="sm" class="text-zinc-500">
                             {{ __('host.rooms.sleeping_places_count', ['count' => $room['sleeping_places_count'], 'target' => $room['beds_count']]) }}
                         </flux:text>
@@ -85,9 +100,9 @@
                             <div class="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
                                 <span>{{ $item['label'] }}</span>
                                 @if($item['done'])
-                                    <flux:badge size="sm" color="green">{{ __('host.room_wizard.readiness.done') }}</flux:badge>
+                                    <flux:badge size="sm" color="green" icon="check-circle">{{ __('host.room_wizard.readiness.done') }}</flux:badge>
                                 @else
-                                    <flux:badge size="sm">{{ __('host.room_wizard.readiness.later') }}</flux:badge>
+                                    <flux:badge size="sm" icon="check-circle">{{ __('host.room_wizard.readiness.later') }}</flux:badge>
                                 @endif
                             </div>
                         @endforeach
@@ -98,7 +113,7 @@
                     <flux:button
                         size="sm"
                         href="{{ route('host.rooms.edit', ['locale' => app()->getLocale(), 'property' => $propertyId, 'room' => $room['id']]) }}"
-                        icon="pencil"
+                        icon="home-modern"
                         wire:navigate
                     >
                         {{ __('app.actions.edit') }}
@@ -109,7 +124,7 @@
                         href="{{ route('host.sleeping-places.index', ['locale' => app()->getLocale(), 'room' => $room['id']]) }}"
                         variant="ghost"
                         wire:navigate
-                    >
+                     icon="eye">
                         {{ __('host.rooms.actions.manage_places') }}
                     </flux:button>
 
@@ -119,7 +134,7 @@
                         variant="ghost"
                         wire:click="duplicateRoom({{ $room['id'] }})"
                         class="data-loading:opacity-70"
-                    >
+                     icon="map-pin">
                         {{ __('host.rooms.actions.duplicate') }}
                     </flux:button>
 
@@ -130,7 +145,7 @@
                             variant="ghost"
                             wire:click="generateSleepingPlaces({{ $room['id'] }})"
                             class="data-loading:opacity-70"
-                        >
+                         icon="sparkles">
                             {{ __('host.rooms.actions.generate_places') }}
                         </flux:button>
                     @endif
@@ -152,7 +167,12 @@
             </flux:card>
         @empty
             <flux:card class="space-y-3 text-center">
-                <flux:heading size="sm">{{ __('host.rooms.empty_title') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host.rooms.empty_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('host.empty_rooms') }}</flux:text>
                 <flux:button
                     href="{{ route('host.rooms.create', ['locale' => app()->getLocale(), 'property' => $propertyId]) }}"
@@ -166,7 +186,7 @@
         @endforelse
     </div>
 
-    <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
+    <flux:button href="{{ route('host.properties.index', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate icon="arrow-left">
         {{ __('host.back_to_properties') }}
     </flux:button>
 </x-ui.page>

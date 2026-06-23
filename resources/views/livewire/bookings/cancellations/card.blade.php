@@ -2,17 +2,22 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="red">{{ __('cancellations.components.guest_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('cancellations.title') }}</flux:heading>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('cancellations.components.guest_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('cancellations.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('cancellations.messages.refund_preview_notice') }}
                 </flux:text>
             </div>
 
             @if ($cancellation)
-                <flux:badge color="blue">{{ __('cancellations.statuses.' . $cancellation->status) }}</flux:badge>
+                <flux:badge color="blue" icon="calendar-days">{{ __('cancellations.statuses.' . $cancellation->status) }}</flux:badge>
             @elseif ($preview)
-                <flux:badge color="amber">{{ __('cancellations.preview_statuses.' . $preview->status) }}</flux:badge>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('cancellations.preview_statuses.' . $preview->status) }}</flux:badge>
             @endif
         </div>
 
@@ -44,7 +49,7 @@
 
                 <flux:textarea wire:model.blur="comment" :label="__('cancellations.fields.comment')" rows="3" />
 
-                <flux:button variant="primary" wire:click="createPreview" wire:loading.attr="disabled">
+                <flux:button variant="primary" wire:click="createPreview" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('cancellations.actions.create_preview') }}
                 </flux:button>
             </div>
@@ -80,7 +85,7 @@
                 </div>
             </div>
 
-            <flux:button class="mt-4 w-full" variant="danger" wire:click="confirmCancellation" wire:loading.attr="disabled">
+            <flux:button class="mt-4 w-full" variant="danger" wire:click="confirmCancellation" wire:loading.attr="disabled" icon="x-mark">
                 {{ __('cancellations.actions.confirm_cancellation') }}
             </flux:button>
         @endif
@@ -117,7 +122,7 @@
                         <p class="font-medium text-zinc-950 dark:text-white">{{ $item->cancellation_number }}</p>
                         <p class="text-zinc-600 dark:text-zinc-300">{{ __('cancellations.reasons.' . $item->reason_key) }}</p>
                     </div>
-                    <flux:badge>{{ __('cancellations.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="calendar-days">{{ __('cancellations.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

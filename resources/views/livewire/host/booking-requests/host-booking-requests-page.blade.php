@@ -1,12 +1,17 @@
 <div class="space-y-4">
     <div class="space-y-1">
-        <flux:heading>{{ __('booking_requests.host_page.title') }}</flux:heading>
+        <flux:heading>
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking_requests.host_page.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text>{{ __('booking_requests.host_page.helper') }}</flux:text>
     </div>
 
     <div class="flex gap-2 overflow-x-auto pb-1">
         @foreach($filters as $filterName)
-            <flux:button type="button" size="sm" variant="{{ $filter === $filterName ? 'primary' : 'outline' }}" wire:click="setFilter('{{ $filterName }}')">
+            <flux:button type="button" size="sm" variant="{{ $filter === $filterName ? 'primary' : 'outline' }}" wire:click="setFilter('{{ $filterName }}')" icon="funnel">
                 {{ __('booking_requests.filters.'.$filterName) }}
             </flux:button>
         @endforeach
@@ -23,7 +28,7 @@
     </div>
 
     @if($requests->count() >= $perPage)
-        <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore">
+        <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore" icon="arrow-down">
             {{ __('booking_requests.actions.load_more') }}
         </flux:button>
     @endif

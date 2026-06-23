@@ -1,6 +1,11 @@
 <x-ui.page class="space-y-0 flex min-h-screen flex-col gap-5">
     <div class="space-y-2">
-        <flux:heading size="lg">{{ __('rooms.edit.title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('rooms.edit.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-300">{{ __('rooms.edit.helper') }}</flux:text>
     </div>
 

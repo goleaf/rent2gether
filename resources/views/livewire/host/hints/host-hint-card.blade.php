@@ -4,7 +4,7 @@
             <flux:badge
                 size="sm"
                 color="{{ ($hint['importance'] ?? '') === 'critical' ? 'red' : (($hint['importance'] ?? '') === 'high' ? 'amber' : 'zinc') }}"
-            >
+             icon="exclamation-triangle">
                 {{ __('host_hints.importance.'.($hint['importance'] ?? 'medium')) }}
             </flux:badge>
             <span class="font-medium text-zinc-900 dark:text-zinc-100">{{ $hint['text'] ?? '' }}</span>

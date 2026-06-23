@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="amber">{{ __('booking.complaint.detail_eyebrow') }}</flux:badge>
+        <flux:badge color="amber" icon="exclamation-triangle">{{ __('booking.complaint.detail_eyebrow') }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ __('booking.complaint.detail_title') }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.complaint.detail_title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.complaint.detail_helper') }}
             </flux:text>
@@ -19,13 +24,16 @@
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
                 <flux:heading size="lg">
-                    {{ __('booking.complaint.reference', ['reference' => $complaint->complaint_number ?: $complaint->reference]) }}
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.reference', ['reference' => $complaint->complaint_number ?: $complaint->reference]) }}</span>
+                    </span>
                 </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ $complaint->type->label() }}
                 </flux:text>
             </div>
-            <flux:badge color="zinc">{{ $complaint->status->label() }}</flux:badge>
+            <flux:badge color="zinc" icon="exclamation-triangle">{{ $complaint->status->label() }}</flux:badge>
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-sm">
@@ -49,7 +57,12 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="lg">{{ __('booking.complaint.description_title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.complaint.description_title') }}</span>
+            </span>
+        </flux:heading>
         <p class="whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">{{ $complaint->description }}</p>
 
         @if($complaint->desired_resolution)
@@ -61,10 +74,10 @@
 
         <div class="flex flex-wrap gap-2">
             @if($complaint->refund_requested)
-                <flux:badge color="blue">{{ __('booking.complaint.fields.refund_requested') }}</flux:badge>
+                <flux:badge color="blue" icon="exclamation-triangle">{{ __('booking.complaint.fields.refund_requested') }}</flux:badge>
             @endif
             @if($complaint->deposit_hold_requested)
-                <flux:badge color="amber">{{ __('booking.complaint.fields.deposit_hold_requested') }}</flux:badge>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('booking.complaint.fields.deposit_hold_requested') }}</flux:badge>
             @endif
         </div>
 
@@ -83,7 +96,12 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="lg">{{ __('booking.complaint.other_side_response_title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.complaint.other_side_response_title') }}</span>
+            </span>
+        </flux:heading>
 
         @if($complaint->other_side_response ?: $complaint->respondent_reply)
             <p class="whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">{{ $complaint->other_side_response ?: $complaint->respondent_reply }}</p>
@@ -95,7 +113,7 @@
                     rows="5"
                     :error="$errors->first('otherSideResponse')"
                 />
-                <flux:button type="submit" wire:loading.attr="disabled" data-loading variant="primary" class="w-full">
+                <flux:button type="submit" wire:loading.attr="disabled" data-loading variant="primary" class="w-full" icon="calendar-days">
                     <span wire:loading.remove>{{ __('booking.complaint.actions.respond') }}</span>
                     <span wire:loading>{{ __('booking.complaint.actions.responding') }}</span>
                 </flux:button>
@@ -108,7 +126,12 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="lg">{{ __('booking.complaint.timeline.title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.complaint.timeline.title') }}</span>
+            </span>
+        </flux:heading>
         <div class="space-y-3">
             @foreach($timeline as $item)
                 <div class="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800">
@@ -129,7 +152,7 @@
 
     <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
         <div class="mx-auto w-full max-w-5xl">
-            <flux:button href="{{ in_array((int) auth()->id(), [(int) $complaint->booking?->host_user_id, (int) $complaint->booking?->host_id], true) ? route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $complaint->booking]) : route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $complaint->booking]) }}" wire:navigate variant="ghost" class="w-full">
+            <flux:button href="{{ in_array((int) auth()->id(), [(int) $complaint->booking?->host_user_id, (int) $complaint->booking?->host_id], true) ? route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $complaint->booking]) : route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $complaint->booking]) }}" wire:navigate variant="ghost" class="w-full" icon="arrow-left">
                 {{ __('booking.complaint.actions.back_to_booking') }}
             </flux:button>
         </div>

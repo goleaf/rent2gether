@@ -1,5 +1,5 @@
 <div class="space-y-3">
-    <flux:button type="button" variant="ghost" icon="information-circle" wire:click="show">
+    <flux:button type="button" variant="ghost" icon="eye" wire:click="show">
         {{ __('compatibility.actions.open_details') }}
     </flux:button>
 
@@ -8,7 +8,12 @@
             <div class="max-h-[78vh] space-y-4 overflow-y-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <flux:heading size="lg">{{ __('compatibility.details_title') }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="scale" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('compatibility.details_title') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('compatibility.details_helper') }}</flux:text>
                     </div>
 
@@ -31,8 +36,8 @@
                         @endforeach
 
                         <div class="grid gap-2">
-                            <flux:button variant="primary" icon="adjustments-horizontal">{{ __('compatibility.suggestions.change_filter') }}</flux:button>
-                            <flux:button variant="ghost" icon="chat-bubble-left-right">{{ __('compatibility.suggestions.ask_host') }}</flux:button>
+                            <flux:button variant="primary" icon="funnel">{{ __('compatibility.suggestions.change_filter') }}</flux:button>
+                            <flux:button variant="ghost" icon="check">{{ __('compatibility.suggestions.ask_host') }}</flux:button>
                         </div>
                     </div>
                 @else

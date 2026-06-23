@@ -1,6 +1,11 @@
 <flux:card class="space-y-4">
     <div>
-        <flux:heading size="lg">{{ __('property.completion.title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('property.completion.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
             {{ __('property.completion.helper') }}
         </flux:text>
@@ -27,7 +32,7 @@
             </ul>
         </div>
     @else
-        <flux:callout color="emerald" icon="check-circle">
+        <flux:callout color="emerald" icon="information-circle">
             <flux:callout.text>{{ __('property.completion.ready') }}</flux:callout.text>
         </flux:callout>
     @endif

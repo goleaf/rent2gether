@@ -1,17 +1,22 @@
 <div class="space-y-4">
     @if(session('co_living_status'))
-        <flux:badge color="green">{{ session('co_living_status') }}</flux:badge>
+        <flux:badge color="green" icon="check-circle">{{ session('co_living_status') }}</flux:badge>
     @endif
 
     <form wire:submit="save" class="space-y-4">
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('occupants.profile.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('occupants.profile.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('occupants.profile.helper') }}</flux:text>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
-                <flux:input wire:model.blur="publicAlias" label="{{ __('occupants.fields.public_alias') }}" :error="$errors->first('publicAlias')" />
+                <flux:input wire:model.blur="publicAlias" label="{{ __('occupants.fields.public_alias') }}" :error="$errors->first('publicAlias')" icon="user" />
                 <flux:select wire:model.change="ageRange" label="{{ __('occupants.fields.age_range') }}">
                     <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
                     <flux:select.option value="18-24">{{ __('occupants.options.age_ranges.18_24') }}</flux:select.option>
@@ -20,7 +25,7 @@
                     <flux:select.option value="45-54">{{ __('occupants.options.age_ranges.45_54') }}</flux:select.option>
                     <flux:select.option value="55+">{{ __('occupants.options.age_ranges.55_plus') }}</flux:select.option>
                 </flux:select>
-                <flux:input wire:model.blur="languages" label="{{ __('occupants.fields.languages') }}" placeholder="{{ __('occupants.placeholders.languages') }}" />
+                <flux:input wire:model.blur="languages" label="{{ __('occupants.fields.languages') }}" placeholder="{{ __('occupants.placeholders.languages') }}" icon="language" />
                 <flux:select wire:model.change="genderForRoomPolicy" label="{{ __('occupants.fields.gender_for_room_policy') }}">
                     <flux:select.option value="">{{ __('occupants.options.not_set') }}</flux:select.option>
                     <flux:select.option value="female">{{ __('occupants.options.gender.female') }}</flux:select.option>
@@ -47,7 +52,12 @@
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('occupants.profile.lifestyle') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('occupants.profile.lifestyle') }}</span>
+                </span>
+            </flux:heading>
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:select wire:model.change="sleepSchedule" label="{{ __('occupants.fields.sleep_schedule') }}">
@@ -91,7 +101,7 @@
             </div>
         </flux:card>
 
-        <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
+        <flux:button type="submit" variant="primary" wire:loading.attr="disabled" icon="check">
             <span wire:loading.remove>{{ __('occupants.actions.save_profile') }}</span>
             <span wire:loading>{{ __('occupants.actions.saving') }}</span>
         </flux:button>

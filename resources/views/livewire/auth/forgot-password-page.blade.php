@@ -1,6 +1,11 @@
 <flux:card class="space-y-6">
     <div>
-        <flux:heading size="lg">{{ __('auth.forgot.heading') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="shield-check" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('auth.forgot.heading') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="mt-1 text-zinc-500">{{ __('auth.forgot.helper') }}</flux:text>
     </div>
 
@@ -17,7 +22,7 @@
             <flux:error name="email" />
         </flux:field>
 
-        <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70">
+        <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" icon="paper-airplane">
             <span wire:loading.remove wire:target="sendResetLink">{{ __('auth.forgot.submit') }}</span>
             <span wire:loading wire:target="sendResetLink">{{ __('account.actions.sending') }}</span>
         </flux:button>

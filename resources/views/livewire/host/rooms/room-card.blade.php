@@ -2,7 +2,12 @@
     @if($this->card)
         <div class="space-y-3">
             <div>
-                <flux:heading size="sm">{{ $this->card['title'] }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $this->card['title'] }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-300">{{ $this->card['type'] }}</flux:text>
             </div>
 
@@ -17,7 +22,7 @@
                 </div>
             </div>
 
-            <flux:badge>{{ __('domain.statuses.'.$this->card['status']) }}</flux:badge>
+            <flux:badge icon="home-modern">{{ __('domain.statuses.'.$this->card['status']) }}</flux:badge>
         </div>
     @else
         <flux:text>{{ __('rooms.empty.not_found') }}</flux:text>

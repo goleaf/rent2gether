@@ -3,7 +3,7 @@
         <div class="min-w-0 space-y-1">
             <div class="flex flex-wrap items-center gap-2">
                 <flux:heading size="lg" class="truncate">{{ $property['title'] }}</flux:heading>
-                <flux:badge color="{{ $property['status_color'] }}">{{ $property['status_label'] }}</flux:badge>
+                <flux:badge color="{{ $property['status_color'] }}" icon="home-modern">{{ $property['status_label'] }}</flux:badge>
             </div>
 
             @if($property['location'])
@@ -41,11 +41,11 @@
     </div>
 
     <div class="flex flex-wrap gap-2">
-        <flux:badge color="emerald">{{ __('host.listings.metrics.active_count', ['count' => $property['counts']['active_places']]) }}</flux:badge>
-        <flux:badge color="amber">{{ __('host.listings.metrics.draft_count', ['count' => $property['counts']['draft_places']]) }}</flux:badge>
-        <flux:badge color="zinc">{{ __('host.listings.metrics.hidden_count', ['count' => $property['counts']['hidden_places']]) }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('host.listings.metrics.active_count', ['count' => $property['counts']['active_places']]) }}</flux:badge>
+        <flux:badge color="amber" icon="exclamation-triangle">{{ __('host.listings.metrics.draft_count', ['count' => $property['counts']['draft_places']]) }}</flux:badge>
+        <flux:badge color="zinc" icon="x-circle">{{ __('host.listings.metrics.hidden_count', ['count' => $property['counts']['hidden_places']]) }}</flux:badge>
         @if($property['counts']['pending_requests'] > 0)
-            <flux:badge color="sky">{{ __('host.listings.metrics.pending_count', ['count' => $property['counts']['pending_requests']]) }}</flux:badge>
+            <flux:badge color="sky" icon="clock">{{ __('host.listings.metrics.pending_count', ['count' => $property['counts']['pending_requests']]) }}</flux:badge>
         @endif
     </div>
 
@@ -53,7 +53,7 @@
         @foreach($property['checks'] as $check)
             <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800">
                 <span>{{ __($check['label_key']) }}</span>
-                <flux:badge size="sm" color="{{ $check['done'] ? 'emerald' : 'zinc' }}">
+                <flux:badge size="sm" color="{{ $check['done'] ? 'emerald' : 'zinc' }}" icon="check-circle">
                     {{ $check['done'] ? __('host.listings.readiness.done') : __('host.listings.readiness.later') }}
                 </flux:badge>
             </div>
@@ -74,13 +74,13 @@
     @endif
 
     <div class="grid gap-2 sm:grid-cols-3">
-        <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $property['id']]) }}" variant="primary" wire:navigate>
+        <flux:button href="{{ route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $property['id']]) }}" variant="primary" wire:navigate icon="eye">
             {{ __('host.listings.actions.open_property') }}
         </flux:button>
-        <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale(), 'propertyId' => $property['id']]) }}" variant="ghost" wire:navigate>
+        <flux:button href="{{ route('host.listings.create', ['locale' => app()->getLocale(), 'propertyId' => $property['id']]) }}" variant="ghost" wire:navigate icon="plus">
             {{ __('app.actions.edit') }}
         </flux:button>
-        <flux:button href="{{ route('host.calendar', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate>
+        <flux:button href="{{ route('host.calendar', ['locale' => app()->getLocale()]) }}" variant="ghost" wire:navigate icon="calendar-days">
             {{ __('host.listings.actions.open_calendar') }}
         </flux:button>
     </div>

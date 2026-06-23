@@ -81,7 +81,7 @@
             <div class="flex flex-wrap gap-1.5">
                 <x-listings.card-badges :badges="array_slice($card['badges'], 3, 3)" />
                 @if($card['rating_average'])
-                    <flux:badge size="sm">
+                    <flux:badge size="sm" icon="star">
                         {{ __('listing_card.rating_summary', ['rating' => number_format((float) $card['rating_average'], 1), 'count' => $card['reviews_count']]) }}
                     </flux:badge>
                 @endif
@@ -93,7 +93,7 @@
         @if(! empty($card['hints']))
             <div class="flex flex-wrap gap-1.5" aria-label="{{ __('guest_hints.title') }}">
                 @forelse(array_slice($card['hints'], 0, $isCompact ? 2 : 3) as $hint)
-                    <flux:badge size="sm" color="{{ $hintColor($hint) }}">
+                    <flux:badge size="sm" color="{{ $hintColor($hint) }}" icon="home-modern">
                         {{ $hint['text'] }}
                     </flux:badge>
                 @empty
@@ -106,7 +106,7 @@
                 <flux:badge
                     size="sm"
                     color="{{ ($card['fit_status'] ?? null) === 'not_suitable' ? 'red' : (in_array(($card['fit_status'] ?? null), ['attention', 'uncomfortable'], true) ? 'yellow' : 'green') }}"
-                >
+                 icon="exclamation-triangle">
                     {{ __('compatibility.title') }} · {{ __('compatibility.badge_short', ['score' => $card['compatibility_score']]) }}
                 </flux:badge>
 
@@ -133,7 +133,7 @@
 
         @if($showActions)
             <div class="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800 sm:flex sm:flex-wrap">
-                <flux:button href="{{ $card['url'] }}" size="sm" variant="primary" icon="arrow-right" wire:navigate>
+                <flux:button href="{{ $card['url'] }}" size="sm" variant="primary" icon="eye" wire:navigate>
                     {{ __('listing_card.view_place') }}
                 </flux:button>
 

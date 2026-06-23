@@ -1,8 +1,13 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ __('booking.trips.eyebrow') }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('booking.trips.eyebrow') }}</flux:badge>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ __('booking.trips.current.title') }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.trips.current.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">
                 {{ __('booking.trips.current.helper') }}
             </flux:text>
@@ -10,16 +15,16 @@
     </section>
 
     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <flux:button href="{{ route('trips.index', ['locale' => app()->getLocale()]) }}" wire:navigate size="sm" variant="ghost" class="justify-center">
+        <flux:button href="{{ route('trips.index', ['locale' => app()->getLocale()]) }}" wire:navigate size="sm" variant="ghost" class="justify-center" icon="calendar-days">
             {{ __('booking.trips.tabs.upcoming') }}
         </flux:button>
-        <flux:button href="{{ route('trips.current', ['locale' => app()->getLocale()]) }}" wire:navigate size="sm" variant="primary" class="justify-center">
+        <flux:button href="{{ route('trips.current', ['locale' => app()->getLocale()]) }}" wire:navigate size="sm" variant="primary" class="justify-center" icon="calendar-days">
             {{ __('booking.trips.tabs.current') }}
         </flux:button>
-        <flux:button href="{{ route('trips.scope', ['locale' => app()->getLocale(), 'scope' => 'past']) }}" wire:navigate size="sm" variant="ghost" class="justify-center">
+        <flux:button href="{{ route('trips.scope', ['locale' => app()->getLocale(), 'scope' => 'past']) }}" wire:navigate size="sm" variant="ghost" class="justify-center" icon="calendar-days">
             {{ __('booking.trips.tabs.past') }}
         </flux:button>
-        <flux:button href="{{ route('trips.scope', ['locale' => app()->getLocale(), 'scope' => 'cancelled']) }}" wire:navigate size="sm" variant="ghost" class="justify-center">
+        <flux:button href="{{ route('trips.scope', ['locale' => app()->getLocale(), 'scope' => 'cancelled']) }}" wire:navigate size="sm" variant="ghost" class="justify-center" icon="x-mark">
             {{ __('booking.trips.tabs.cancelled') }}
         </flux:button>
     </div>
@@ -27,7 +32,12 @@
     @if($stay)
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ $stay['title'] }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $stay['title'] }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text class="text-zinc-600 dark:text-zinc-400">
                     {{ $stay['address'] ?: __('booking.trips.address_hidden') }}
                 </flux:text>
@@ -54,7 +64,12 @@
         </flux:card>
 
         <flux:card class="space-y-3">
-            <flux:heading size="lg">{{ __('booking.trips.current.stay_help') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.trips.current.stay_help') }}</span>
+                </span>
+            </flux:heading>
             <div class="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
                 <div><span class="text-zinc-500 dark:text-zinc-400">{{ __('booking.trips.host_contact') }}:</span> {{ $stay['host_name'] }} · {{ $stay['host_contact'] }}</div>
                 <div><span class="text-zinc-500 dark:text-zinc-400">{{ __('booking.trips.instructions') }}:</span> {{ $stay['instructions'] }}</div>
@@ -62,7 +77,12 @@
         </flux:card>
 
         <flux:card class="space-y-3">
-            <flux:heading size="lg">{{ __('booking.trips.rules') }}</flux:heading>
+            <flux:heading size="lg">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.trips.rules') }}</span>
+                </span>
+            </flux:heading>
             @forelse($stay['rules'] as $rule)
                 <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800">{{ $rule }}</div>
             @empty
@@ -74,13 +94,13 @@
 
         <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">
             <div class="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2 sm:grid-cols-3">
-                <flux:button href="{{ route('bookings.extend', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('bookings.extend', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="primary" class="w-full" icon="calendar-days">
                     {{ __('booking.trips.actions.extend') }}
                 </flux:button>
                 <x-ui.report-problem-button href="{{ route('complaints.create', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate class="w-full">
                     {{ __('booking.trips.actions.report_problem') }}
                 </x-ui.report-problem-button>
-                <flux:button href="{{ route('bookings.checkout', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full col-span-2 sm:col-span-1">
+                <flux:button href="{{ route('bookings.checkout', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full col-span-2 sm:col-span-1" icon="clipboard-document-check">
                     {{ __('booking.trips.actions.check_out') }}
                 </flux:button>
             </div>
@@ -92,14 +112,19 @@
                     <flux:icon name="home" class="size-5" />
                 </div>
                 <div class="space-y-1">
-                    <flux:heading size="lg">{{ __('booking.trips.current.empty_title') }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.trips.current.empty_title') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text class="text-zinc-600 dark:text-zinc-400">
                         {{ __('booking.trips.current.empty_text') }}
                     </flux:text>
                 </div>
             </div>
 
-            <flux:button href="{{ route('trips.index', ['locale' => app()->getLocale()]) }}" wire:navigate variant="primary" class="w-full">
+            <flux:button href="{{ route('trips.index', ['locale' => app()->getLocale()]) }}" wire:navigate variant="primary" class="w-full" icon="calendar-days">
                 {{ __('booking.trips.tabs.upcoming') }}
             </flux:button>
         </flux:card>

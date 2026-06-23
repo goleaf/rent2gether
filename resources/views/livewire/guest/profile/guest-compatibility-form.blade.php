@@ -1,6 +1,11 @@
 <form wire:submit="save" class="space-y-4">
     <div class="space-y-1">
-        <flux:heading size="md">{{ __('guest_profile.compatibility.title') }}</flux:heading>
+        <flux:heading size="md">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('guest_profile.compatibility.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-300">{{ __('guest_profile.compatibility.helper') }}</flux:text>
     </div>
 
@@ -10,7 +15,7 @@
     <flux:checkbox wire:model.change="iAcceptLivingWithStrangers" :label="__('guest_profile.compatibility.i_accept_living_with_strangers')" />
     <flux:checkbox wire:model.change="iNeedLateEntry" :label="__('guest_profile.compatibility.i_need_late_entry')" />
 
-    <flux:button type="submit" variant="primary" class="w-full" wire:loading.class="opacity-50">
+    <flux:button type="submit" variant="primary" class="w-full" wire:loading.class="opacity-50" icon="check">
         {{ __('common.actions.save') }}
     </flux:button>
 </form>

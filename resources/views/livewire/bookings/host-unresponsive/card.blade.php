@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('host_unresponsive.components.guest_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('host_unresponsive.title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('host_unresponsive.components.guest_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host_unresponsive.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('host_unresponsive.messages.guest_intro') }}
                 </flux:text>
             </div>
 
             @if ($case)
-                <flux:badge color="red">{{ __('host_unresponsive.statuses.' . $case->status) }}</flux:badge>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('host_unresponsive.statuses.' . $case->status) }}</flux:badge>
             @endif
         </div>
 
@@ -40,22 +45,22 @@
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <flux:button wire:click="markAtAddress" wire:loading.attr="disabled">
+                <flux:button wire:click="markAtAddress" wire:loading.attr="disabled" icon="check">
                     {{ __('host_unresponsive.actions.mark_at_address') }}
                 </flux:button>
-                <flux:button wire:click="markWaitingOutside" wire:loading.attr="disabled">
+                <flux:button wire:click="markWaitingOutside" wire:loading.attr="disabled" icon="clock">
                     {{ __('host_unresponsive.actions.mark_waiting_outside') }}
                 </flux:button>
-                <flux:button wire:click="markFeelsUnsafe" wire:loading.attr="disabled">
+                <flux:button wire:click="markFeelsUnsafe" wire:loading.attr="disabled" icon="check">
                     {{ __('host_unresponsive.actions.mark_feels_unsafe') }}
                 </flux:button>
-                <flux:button wire:click="continueWaiting" wire:loading.attr="disabled">
+                <flux:button wire:click="continueWaiting" wire:loading.attr="disabled" icon="arrow-right">
                     {{ __('host_unresponsive.actions.continue_waiting') }}
                 </flux:button>
-                <flux:button wire:click="requestCancellation" wire:loading.attr="disabled">
+                <flux:button wire:click="requestCancellation" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('host_unresponsive.actions.request_cancellation') }}
                 </flux:button>
-                <flux:button wire:click="requestRelocation" wire:loading.attr="disabled">
+                <flux:button wire:click="requestRelocation" wire:loading.attr="disabled" icon="plus">
                     {{ __('host_unresponsive.actions.request_relocation') }}
                 </flux:button>
             </div>
@@ -82,12 +87,17 @@
                 <p class="mt-3 text-xs text-zinc-600 dark:text-zinc-300">{{ __('host_unresponsive.messages.guest_friendly_refund_notice') }}</p>
             </div>
 
-            <flux:button class="mt-4 w-full" variant="danger" wire:click="openDispute" wire:loading.attr="disabled">
+            <flux:button class="mt-4 w-full" variant="danger" wire:click="openDispute" wire:loading.attr="disabled" icon="exclamation-triangle">
                 {{ __('host_unresponsive.actions.open_dispute') }}
             </flux:button>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('host_unresponsive.fields.guest_actions') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host_unresponsive.fields.guest_actions') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($case->guestActions as $action)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('host_unresponsive.guest_action_types.' . $action->action_type) }}</p>
@@ -116,7 +126,7 @@
                 <flux:textarea wire:model.blur="message" :label="__('host_unresponsive.fields.guest_comment')" rows="3" />
                 <flux:textarea wire:model.blur="locationNote" :label="__('host_unresponsive.fields.guest_location_note')" rows="2" />
 
-                <flux:button variant="danger" wire:click="reportHostNotAnswering" wire:loading.attr="disabled">
+                <flux:button variant="danger" wire:click="reportHostNotAnswering" wire:loading.attr="disabled" icon="chat-bubble-left-right">
                     {{ __('host_unresponsive.actions.report_host_not_answering') }}
                 </flux:button>
             </div>
@@ -131,7 +141,7 @@
                         <p class="font-medium text-zinc-950 dark:text-white">{{ $item->case_number }}</p>
                         <p class="text-zinc-600 dark:text-zinc-300">{{ __('host_unresponsive.reasons.' . $item->reason_key) }}</p>
                     </div>
-                    <flux:badge>{{ __('host_unresponsive.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="calendar-days">{{ __('host_unresponsive.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

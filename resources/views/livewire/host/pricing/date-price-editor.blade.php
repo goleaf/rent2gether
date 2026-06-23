@@ -1,28 +1,33 @@
 <flux:card class="space-y-4">
-    <flux:heading size="sm">{{ __('pricing.sections.date_prices') }}</flux:heading>
+    <flux:heading size="sm">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('pricing.sections.date_prices') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="grid gap-3 sm:grid-cols-3">
         <flux:field>
             <flux:label>{{ __('pricing.fields.date') }}</flux:label>
-            <flux:input type="date" wire:model.blur="date" />
+            <flux:input type="date" wire:model.blur="date" icon="calendar-days" />
             <flux:error name="date" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.date_override_price') }}</flux:label>
-            <flux:input type="number" step="0.01" wire:model.blur="price" />
+            <flux:input type="number" step="0.01" wire:model.blur="price" icon="banknotes" />
             <flux:error name="price" />
         </flux:field>
 
         <flux:field>
             <flux:label>{{ __('pricing.fields.price_type') }}</flux:label>
-            <flux:input wire:model.blur="priceType" />
+            <flux:input wire:model.blur="priceType" icon="banknotes" />
             <flux:error name="priceType" />
         </flux:field>
     </div>
 
     <div class="flex justify-end">
-        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled" icon="calendar-days">
             {{ __('pricing.actions.add_date_price') }}
         </flux:button>
     </div>
@@ -37,14 +42,14 @@
                 <flux:text size="sm" class="font-medium">{{ $price['price'] }}</flux:text>
             </div>
         @empty
-            <flux:callout color="zinc">
+            <flux:callout color="zinc" icon="information-circle">
                 <flux:callout.heading>{{ __('pricing.empty.date_prices') }}</flux:callout.heading>
             </flux:callout>
         @endforelse
     </div>
 
     @if ($savedMessageKey)
-        <flux:callout color="green">
+        <flux:callout color="green" icon="check-circle">
             <flux:callout.heading>{{ __($savedMessageKey) }}</flux:callout.heading>
         </flux:callout>
     @endif

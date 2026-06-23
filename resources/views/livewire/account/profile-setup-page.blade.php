@@ -1,6 +1,11 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:heading size="xl" level="1">{{ __('account.profile_setup.heading') }}</flux:heading>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="cog-6-tooth" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('account.profile_setup.heading') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('account.profile_setup.helper') }}</flux:text>
     </section>
 
@@ -11,12 +16,17 @@
     @endif
 
     <flux:card class="space-y-3">
-        <flux:heading size="sm">{{ __('account.profile_setup.checklist.title') }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('account.profile_setup.checklist.title') }}</span>
+            </span>
+        </flux:heading>
         <div class="grid gap-2 sm:grid-cols-2">
             @foreach($checklist as $item)
                 <div class="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
                     <span>{{ $item['label'] }}</span>
-                    <flux:badge :color="$item['done'] ? 'green' : 'zinc'" size="sm">
+                    <flux:badge :color="$item['done'] ? 'green' : 'zinc'" size="sm" icon="check-circle">
                         {{ $item['done'] ? __('account.profile_setup.checklist.done') : __('account.profile_setup.checklist.later') }}
                     </flux:badge>
                 </div>
@@ -27,7 +37,12 @@
 
     <form wire:submit="save" class="space-y-5">
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('account.profile_setup.photo') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="photo" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('account.profile_setup.photo') }}</span>
+                </span>
+            </flux:heading>
             <div class="flex items-center gap-4">
                 <div class="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                     @if($avatar && str_starts_with((string) $avatar->getMimeType(), 'image/'))
@@ -60,16 +75,21 @@
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('account.profile_setup.personal') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('account.profile_setup.personal') }}</span>
+                </span>
+            </flux:heading>
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
                     <flux:label>{{ __('account.fields.display_name') }}</flux:label>
-                    <flux:input wire:model.blur="displayName" />
+                    <flux:input wire:model.blur="displayName" icon="user" />
                     <flux:error name="displayName" />
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('account.fields.phone') }}</flux:label>
-                    <flux:input wire:model.blur="phone" inputmode="tel" />
+                    <flux:input wire:model.blur="phone" inputmode="tel" icon="phone" />
                     <flux:error name="phone" />
                 </flux:field>
                 <div class="sm:col-span-2">
@@ -81,12 +101,12 @@
                 </div>
                 <flux:field>
                     <flux:label>{{ __('account.fields.languages') }}</flux:label>
-                    <flux:input wire:model.blur="languages" placeholder="{{ __('account.fields.languages_placeholder') }}" />
+                    <flux:input wire:model.blur="languages" placeholder="{{ __('account.fields.languages_placeholder') }}" icon="language" />
                     <flux:error name="languages" />
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('account.fields.date_of_birth') }}</flux:label>
-                    <flux:input type="date" wire:model.change="dateOfBirth" />
+                    <flux:input type="date" wire:model.change="dateOfBirth" icon="calendar-days" />
                     <flux:error name="dateOfBirth" />
                 </flux:field>
                 <flux:field>
@@ -101,7 +121,7 @@
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('account.fields.occupation') }}</flux:label>
-                    <flux:input wire:model.blur="occupation" />
+                    <flux:input wire:model.blur="occupation" icon="briefcase" />
                     <flux:error name="occupation" />
                 </flux:field>
             </div>
@@ -113,7 +133,12 @@
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('account.profile_setup.lifestyle') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('account.profile_setup.lifestyle') }}</span>
+                </span>
+            </flux:heading>
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
                     <flux:label>{{ __('account.fields.travel_purpose') }}</flux:label>
@@ -150,7 +175,7 @@
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('account.fields.allergies') }}</flux:label>
-                    <flux:input wire:model.blur="allergies" />
+                    <flux:input wire:model.blur="allergies" icon="heart" />
                     <flux:error name="allergies" />
                 </flux:field>
             </div>
@@ -162,7 +187,12 @@
         </flux:card>
 
         <flux:card class="space-y-4">
-            <flux:heading size="sm">{{ __('account.profile_setup.account_type') }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('account.profile_setup.account_type') }}</span>
+                </span>
+            </flux:heading>
             <flux:select wire:model.change="accountRole">
                 <flux:select.option value="guest">{{ __('account.roles.guest') }}</flux:select.option>
                 <flux:select.option value="host">{{ __('account.roles.host') }}</flux:select.option>
@@ -172,7 +202,7 @@
         </flux:card>
 
         <div class="sticky bottom-20 z-10 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-            <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70">
+            <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" icon="check">
                 <span wire:loading.remove wire:target="save">{{ __('account.profile_setup.save') }}</span>
                 <span wire:loading wire:target="save">{{ __('account.actions.saving') }}</span>
             </flux:button>

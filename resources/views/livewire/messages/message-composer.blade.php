@@ -7,7 +7,7 @@
 
     <div class="flex items-center justify-between gap-3">
         <flux:checkbox wire:model.change="important" label="{{ __('messages.fields.is_important') }}" />
-        <flux:button type="submit" variant="primary">
+        <flux:button type="submit" variant="primary" icon="paper-airplane">
             <span wire:loading.remove wire:target="send">{{ __('messages.actions.send') }}</span>
             <span wire:loading wire:target="send">{{ __('messages.thread.actions.sending') }}</span>
         </flux:button>

@@ -1,7 +1,12 @@
 <x-ui.page>
     <x-ui.section>
         <div class="space-y-2">
-            <flux:heading size="xl" level="1">{{ __('search.title') }}</flux:heading>
+            <flux:heading size="xl" level="1">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="magnifying-glass" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('search.title') }}</span>
+                </span>
+            </flux:heading>
             <flux:text class="max-w-2xl text-zinc-600 dark:text-zinc-400">{{ __('search.helper') }}</flux:text>
         </div>
     </x-ui.section>
@@ -18,17 +23,17 @@
 
                 <flux:field class="min-w-36">
                     <flux:label>{{ __('search.check_in') }}</flux:label>
-                    <flux:input type="date" wire:model.change="checkIn" :min="now()->toDateString()" />
+                    <flux:input type="date" wire:model.change="checkIn" :min="now()->toDateString()" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
                     <flux:label>{{ __('search.check_out') }}</flux:label>
-                    <flux:input type="date" wire:model.change="checkOut" :min="$checkIn ?: now()->addDay()->toDateString()" />
+                    <flux:input type="date" wire:model.change="checkOut" :min="$checkIn ?: now()->addDay()->toDateString()" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field class="min-w-28">
                     <flux:label>{{ __('search.max_price') }}</flux:label>
-                    <flux:input type="number" wire:model.blur="priceMax" :placeholder="__('search.any_gender')" min="1" />
+                    <flux:input type="number" wire:model.blur="priceMax" :placeholder="__('search.any_gender')" min="1" icon="banknotes" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
@@ -49,7 +54,12 @@
         <aside class="hidden lg:block w-56 shrink-0">
             <flux:card class="sticky top-28 space-y-5">
 
-                <flux:heading size="sm">{{ __('search.filters') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('search.filters') }}</span>
+                    </span>
+                </flux:heading>
 
                 <flux:field>
                     <flux:label>{{ __('search.bed_type') }}</flux:label>
@@ -83,7 +93,7 @@
                     <flux:button
                         variant="ghost" size="sm" class="w-full"
                         wire:click="$set('city', ''), $set('checkIn', ''), $set('checkOut', ''), $set('priceMax', ''), $set('bedType', ''), $set('genderType', ''), $set('instantOnly', false), $set('hasLocker', false), $set('hasWifi', false)"
-                    >
+                     icon="x-mark">
                         {{ __('search.clear_all') }}
                     </flux:button>
                 @endif
@@ -102,7 +112,7 @@
                 </flux:text>
 
                 @if($this->nights > 0)
-                    <flux:badge color="blue" size="sm">
+                    <flux:badge color="blue" size="sm" icon="calendar-days">
                         {{ $checkIn }} → {{ $checkOut }}
                     </flux:badge>
                 @endif
@@ -111,7 +121,12 @@
             @if($this->beds->isEmpty())
                 <div class="text-center py-20">
                     <flux:icon name="magnifying-glass" class="mx-auto size-12 text-zinc-300 mb-4" />
-                    <flux:heading size="lg">{{ __('search.no_results') }}</flux:heading>
+                    <flux:heading size="lg">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="magnifying-glass" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.no_results') }}</span>
+                        </span>
+                    </flux:heading>
                     <flux:text class="text-zinc-500 mt-2">{{ __('search.no_results_text') }}</flux:text>
                 </div>
             @else

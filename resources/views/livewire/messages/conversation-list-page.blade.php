@@ -1,6 +1,11 @@
 <x-ui.page class="space-y-4">
     <header class="space-y-1">
-        <flux:heading size="xl" level="1">{{ __('messages.title') }}</flux:heading>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('messages.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ __('messages.inbox.helper') }}</flux:text>
     </header>
 

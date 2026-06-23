@@ -1,6 +1,11 @@
 <flux:card class="space-y-4">
     <div>
-        <flux:heading size="lg">{{ __('sleeping_place.completion.title') }}</flux:heading>
+        <flux:heading size="lg">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('sleeping_place.completion.title') }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('sleeping_place.completion.helper') }}</flux:text>
     </div>
 
@@ -18,7 +23,7 @@
         @forelse($items as $item)
             <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
                 <span>{{ $item['label'] }}</span>
-                <flux:badge color="{{ $item['complete'] ? 'emerald' : 'zinc' }}">
+                <flux:badge color="{{ $item['complete'] ? 'emerald' : 'zinc' }}" icon="check-circle">
                     {{ $item['complete'] ? __('sleeping_place.completion.complete') : __('sleeping_place.completion.missing') }}
                 </flux:badge>
             </div>

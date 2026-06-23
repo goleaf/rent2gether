@@ -1,5 +1,10 @@
 <flux:card class="space-y-3">
-    <flux:heading size="sm">{{ __('pricing.sections.fees') }}</flux:heading>
+    <flux:heading size="sm">
+        <span class="inline-flex min-w-0 items-center gap-2">
+            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+            <span class="min-w-0">{{ __('pricing.sections.fees') }}</span>
+        </span>
+    </flux:heading>
 
     <div class="space-y-2">
         @forelse ($lines as $line)
@@ -8,7 +13,7 @@
                 <flux:text size="sm" class="font-medium">{{ $line['amount'] }}</flux:text>
             </div>
         @empty
-            <flux:callout color="zinc">
+            <flux:callout color="zinc" icon="information-circle">
                 <flux:callout.heading>{{ __('pricing.empty.fees') }}</flux:callout.heading>
             </flux:callout>
         @endforelse

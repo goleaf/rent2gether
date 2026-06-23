@@ -2,15 +2,20 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <flux:badge color="amber">{{ __('listing_mismatch.components.host_' . $variant) }}</flux:badge>
-                <flux:heading size="lg" class="mt-3">{{ __('listing_mismatch.host_title') }}</flux:heading>
+                <flux:badge color="amber" icon="exclamation-triangle">{{ __('listing_mismatch.components.host_' . $variant) }}</flux:badge>
+                <flux:heading size="lg" class="mt-3">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing_mismatch.host_title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="mt-1 text-zinc-600 dark:text-zinc-300">
                     {{ __('listing_mismatch.messages.host_intro') }}
                 </flux:text>
             </div>
 
             @if ($report)
-                <flux:badge color="red">{{ __('listing_mismatch.statuses.' . $report->status) }}</flux:badge>
+                <flux:badge color="red" icon="exclamation-triangle">{{ __('listing_mismatch.statuses.' . $report->status) }}</flux:badge>
             @endif
         </div>
 
@@ -34,34 +39,34 @@
 
             <div class="mt-4 grid gap-3">
                 <flux:textarea wire:model.blur="hostMessage" :label="__('listing_mismatch.fields.host_response')" rows="3" />
-                <flux:input type="number" step="0.01" wire:model.blur="amount" :label="__('listing_mismatch.fields.amount')" />
+                <flux:input type="number" step="0.01" wire:model.blur="amount" :label="__('listing_mismatch.fields.amount')" icon="banknotes" />
 
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <flux:button wire:click="acceptProblem" wire:loading.attr="disabled">
+                    <flux:button wire:click="acceptProblem" wire:loading.attr="disabled" icon="check">
                         {{ __('listing_mismatch.actions.accept_problem') }}
                     </flux:button>
-                    <flux:button wire:click="denyProblem" wire:loading.attr="disabled">
+                    <flux:button wire:click="denyProblem" wire:loading.attr="disabled" icon="x-mark">
                         {{ __('listing_mismatch.actions.deny_problem') }}
                     </flux:button>
-                    <flux:button wire:click="askMoreEvidence" wire:loading.attr="disabled">
+                    <flux:button wire:click="askMoreEvidence" wire:loading.attr="disabled" icon="camera">
                         {{ __('listing_mismatch.actions.ask_more_evidence') }}
                     </flux:button>
-                    <flux:button wire:click="offerFix" wire:loading.attr="disabled">
+                    <flux:button wire:click="offerFix" wire:loading.attr="disabled" icon="wrench">
                         {{ __('listing_mismatch.actions.offer_fix') }}
                     </flux:button>
-                    <flux:button wire:click="offerCleaning" wire:loading.attr="disabled">
+                    <flux:button wire:click="offerCleaning" wire:loading.attr="disabled" icon="paint-brush">
                         {{ __('listing_mismatch.actions.offer_cleaning') }}
                     </flux:button>
-                    <flux:button wire:click="offerRepair" wire:loading.attr="disabled">
+                    <flux:button wire:click="offerRepair" wire:loading.attr="disabled" icon="wrench">
                         {{ __('listing_mismatch.actions.offer_repair') }}
                     </flux:button>
-                    <flux:button wire:click="offerRelocation" wire:loading.attr="disabled">
+                    <flux:button wire:click="offerRelocation" wire:loading.attr="disabled" icon="arrows-right-left">
                         {{ __('listing_mismatch.actions.offer_relocation') }}
                     </flux:button>
-                    <flux:button wire:click="offerRefund" wire:loading.attr="disabled">
+                    <flux:button wire:click="offerRefund" wire:loading.attr="disabled" icon="banknotes">
                         {{ __('listing_mismatch.actions.offer_refund') }}
                     </flux:button>
-                    <flux:button wire:click="offerCompensation" wire:loading.attr="disabled">
+                    <flux:button wire:click="offerCompensation" wire:loading.attr="disabled" icon="banknotes">
                         {{ __('listing_mismatch.actions.offer_compensation') }}
                     </flux:button>
                 </div>
@@ -89,7 +94,12 @@
             </div>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('listing_mismatch.fields.items') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing_mismatch.fields.items') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($report->items as $item)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('listing_mismatch.item_keys.' . $item->item_key) }}</p>
@@ -101,7 +111,12 @@
             </div>
 
             <div class="mt-4 space-y-3">
-                <flux:heading size="sm">{{ __('listing_mismatch.fields.media') }}</flux:heading>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing_mismatch.fields.media') }}</span>
+                    </span>
+                </flux:heading>
                 @forelse ($report->media as $media)
                     <div class="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800">
                         <p class="font-medium text-zinc-950 dark:text-white">{{ __('listing_mismatch.media_roles.' . $media->media_role) }}</p>
@@ -124,7 +139,7 @@
                             {{ $item->sleepingPlace?->display_name ?? $item->sleepingPlace?->title ?? __('listing_mismatch.empty.unknown_place') }}
                         </p>
                     </div>
-                    <flux:badge>{{ __('listing_mismatch.statuses.' . $item->status) }}</flux:badge>
+                    <flux:badge icon="exclamation-triangle">{{ __('listing_mismatch.statuses.' . $item->status) }}</flux:badge>
                 </div>
             </div>
         @empty

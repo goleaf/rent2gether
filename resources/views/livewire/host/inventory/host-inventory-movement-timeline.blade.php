@@ -1,6 +1,11 @@
 <section>
     <flux:card class="space-y-2">
-        <flux:heading size="base">{{ __('inventory.panels.movement_timeline') }}</flux:heading>
+        <flux:heading size="base">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('inventory.panels.movement_timeline') }}</span>
+            </span>
+        </flux:heading>
         @forelse ($movements as $movement)
             <div class="space-y-1">
                 <flux:text>{{ __('inventory.movement_types.'.$movement->movement_type) }}</flux:text>

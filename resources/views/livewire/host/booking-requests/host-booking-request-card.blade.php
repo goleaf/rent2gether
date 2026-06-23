@@ -1,20 +1,35 @@
 <flux:card class="space-y-3">
     <div class="flex items-start justify-between gap-3">
         <div class="space-y-1">
-            <flux:heading size="sm">{{ $request->guest?->name }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $request->guest?->name }}</span>
+                </span>
+            </flux:heading>
             <flux:text size="sm">{{ $request->sleepingPlace?->display_name ?: $request->sleepingPlace?->title }}</flux:text>
         </div>
-        <flux:badge>{{ $statusLabel }}</flux:badge>
+        <flux:badge icon="calendar-days">{{ $statusLabel }}</flux:badge>
     </div>
 
     <div class="grid gap-2 sm:grid-cols-2">
         <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
             <flux:text size="sm">{{ __('booking_requests.fields.check_in_date') }}</flux:text>
-            <flux:heading size="sm">{{ $request->check_in_date?->toDateString() }} · {{ $request->check_out_date?->toDateString() }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $request->check_in_date?->toDateString() }} · {{ $request->check_out_date?->toDateString() }}</span>
+                </span>
+            </flux:heading>
         </div>
         <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
             <flux:text size="sm">{{ __('booking_requests.fields.total_amount') }}</flux:text>
-            <flux:heading size="sm">{{ $total }}</flux:heading>
+            <flux:heading size="sm">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $total }}</span>
+                </span>
+            </flux:heading>
         </div>
     </div>
 

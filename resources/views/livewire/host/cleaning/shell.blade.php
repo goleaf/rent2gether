@@ -2,10 +2,15 @@
     <flux:card class="space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div class="space-y-1">
-                <flux:badge color="zinc">{{ __('cleaning.title') }}</flux:badge>
-                <flux:heading size="lg">{{ __('cleaning.sections.'.$section) }}</flux:heading>
+                <flux:badge color="zinc" icon="user">{{ __('cleaning.title') }}</flux:badge>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="wrench-screwdriver" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('cleaning.sections.'.$section) }}</span>
+                    </span>
+                </flux:heading>
             </div>
-            <flux:badge color="zinc">{{ __('cleaning.statuses.'.($task?->status ?? 'planned')) }}</flux:badge>
+            <flux:badge color="zinc" icon="user">{{ __('cleaning.statuses.'.($task?->status ?? 'planned')) }}</flux:badge>
         </div>
 
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
@@ -34,8 +39,13 @@
 
     <flux:card class="space-y-3">
         <div class="flex items-center justify-between gap-3">
-            <flux:heading size="base">{{ __('cleaning.sections.task_card') }}</flux:heading>
-            <flux:badge color="zinc">{{ __('cleaning.fields.priority') }}</flux:badge>
+            <flux:heading size="base">
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('cleaning.sections.task_card') }}</span>
+                </span>
+            </flux:heading>
+            <flux:badge color="zinc" icon="heart">{{ __('cleaning.fields.priority') }}</flux:badge>
         </div>
 
         @if ($task)
@@ -56,12 +66,17 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="base">{{ __('cleaning.fields.tasks') }}</flux:heading>
+        <flux:heading size="base">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('cleaning.fields.tasks') }}</span>
+            </span>
+        </flux:heading>
 
         @forelse (($task?->items ?? collect())->sortBy('sort_order') as $item)
             <div class="flex items-center justify-between gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
                 <flux:text size="sm">{{ __($item->label_key) }}</flux:text>
-                <flux:badge color="zinc">{{ __('cleaning.item_statuses.'.$item->status) }}</flux:badge>
+                <flux:badge color="zinc" icon="user">{{ __('cleaning.item_statuses.'.$item->status) }}</flux:badge>
             </div>
         @empty
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
@@ -71,20 +86,25 @@
     </flux:card>
 
     <flux:card class="space-y-3">
-        <flux:heading size="base">{{ __('cleaning.sections.flags') }}</flux:heading>
+        <flux:heading size="base">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('cleaning.sections.flags') }}</span>
+            </span>
+        </flux:heading>
         <div class="flex flex-wrap gap-2">
             @foreach (['has_before_photos', 'has_after_photos', 'has_damage_found', 'has_forgotten_items', 'needs_repair', 'place_ready_after_cleaning'] as $flag)
-                <flux:badge color="zinc">{{ __('cleaning.flags.'.$flag) }}</flux:badge>
+                <flux:badge color="zinc" icon="user">{{ __('cleaning.flags.'.$flag) }}</flux:badge>
             @endforeach
         </div>
     </flux:card>
 
     <div class="sticky bottom-0 -mx-4 border-t border-zinc-200 bg-white/95 p-4 dark:border-zinc-800 dark:bg-zinc-950/95">
         <div class="flex gap-2">
-            <flux:button variant="ghost" class="flex-1" wire:click="startTask" wire:loading.attr="disabled">
+            <flux:button variant="ghost" class="flex-1" wire:click="startTask" wire:loading.attr="disabled" icon="plus">
                 {{ __('cleaning.actions.start') }}
             </flux:button>
-            <flux:button variant="primary" class="flex-1" wire:click="completeTask" wire:loading.attr="disabled">
+            <flux:button variant="primary" class="flex-1" wire:click="completeTask" wire:loading.attr="disabled" icon="check">
                 {{ __('cleaning.actions.complete') }}
             </flux:button>
         </div>

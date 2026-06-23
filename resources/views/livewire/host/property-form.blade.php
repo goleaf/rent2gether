@@ -1,7 +1,12 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:badge color="emerald">{{ __('host.property_wizard.eyebrow') }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ __('host.property_wizard.heading') }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ __('host.property_wizard.eyebrow') }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host.property_wizard.heading') }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('host.property_wizard.helper') }}</flux:text>
     </section>
 
@@ -17,7 +22,7 @@
                 {{ __('host.property_wizard.progress', ['current' => $step, 'total' => 9]) }}
             </flux:text>
             @if($propertyId)
-                <flux:badge size="sm">{{ __('statuses.property.draft') }}</flux:badge>
+                <flux:badge size="sm" icon="clock">{{ __('statuses.property.draft') }}</flux:badge>
             @endif
         </div>
 
@@ -35,7 +40,7 @@
                     class="shrink-0"
                     tooltip="{{ $wizardStep['title'] }}"
                     aria-current="{{ $step === $wizardStep['number'] ? 'step' : 'false' }}"
-                >
+                 icon="cursor-arrow-rays">
                     {{ $wizardStep['number'] }}
                 </flux:button>
             @endforeach
@@ -45,7 +50,12 @@
     <form wire:submit="publish" class="space-y-5">
         <flux:card class="space-y-5">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('host.property_wizard.steps.'.$step.'.title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host.property_wizard.steps.'.$step.'.title') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                     {{ __('host.property_wizard.steps.'.$step.'.helper') }}
                 </flux:text>
@@ -61,6 +71,7 @@
                                 wire:click="$set('rentalUnitType', '{{ $value }}')"
                                 class="h-auto min-h-14 w-full justify-between whitespace-normal px-4 py-3 text-left"
                                 aria-pressed="{{ $rentalUnitType === $value ? 'true' : 'false' }}"
+                                icon="home-modern"
                             >
                                 <span class="font-medium">{{ $label }}</span>
                                 @if($rentalUnitType === $value)
@@ -81,6 +92,7 @@
                                 wire:click="$set('propertyType', '{{ $value }}')"
                                 class="h-auto min-h-14 w-full justify-between whitespace-normal px-4 py-3 text-left"
                                 aria-pressed="{{ $propertyType === $value ? 'true' : 'false' }}"
+                                icon="home-modern"
                             >
                                 <span class="font-medium">{{ $label }}</span>
                                 @if($propertyType === $value)
@@ -107,10 +119,10 @@
                         @if($countryQuery !== '' || $cityQuery !== '')
                             <div class="flex flex-wrap gap-2">
                                 @if($countryQuery !== '')
-                                    <flux:badge size="sm">{{ $countryQuery }}</flux:badge>
+                                    <flux:badge size="sm" icon="home-modern">{{ $countryQuery }}</flux:badge>
                                 @endif
                                 @if($cityQuery !== '')
-                                    <flux:badge size="sm">{{ $cityQuery }}</flux:badge>
+                                    <flux:badge size="sm" icon="home-modern">{{ $cityQuery }}</flux:badge>
                                 @endif
                             </div>
                         @endif
@@ -118,37 +130,37 @@
                         <div class="grid gap-4 sm:grid-cols-2">
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.region') }}</flux:label>
-                                <flux:input wire:model.blur="regionName" />
+                                <flux:input wire:model.blur="regionName" icon="user" />
                                 <flux:error name="regionName" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.district') }}</flux:label>
-                                <flux:input wire:model.blur="district" />
+                                <flux:input wire:model.blur="district" icon="map-pin" />
                                 <flux:error name="district" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.street') }}</flux:label>
-                                <flux:input wire:model.blur="street" />
+                                <flux:input wire:model.blur="street" icon="map-pin" />
                                 <flux:error name="street" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.house_number') }}</flux:label>
-                                <flux:input wire:model.blur="houseNumber" />
+                                <flux:input wire:model.blur="houseNumber" icon="pencil-square" />
                                 <flux:error name="houseNumber" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.apartment_number') }}</flux:label>
-                                <flux:input wire:model.blur="apartmentNumber" />
+                                <flux:input wire:model.blur="apartmentNumber" icon="pencil-square" />
                                 <flux:error name="apartmentNumber" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.floor') }}</flux:label>
-                                <flux:input type="number" inputmode="numeric" wire:model.blur="floor" />
+                                <flux:input type="number" inputmode="numeric" wire:model.blur="floor" icon="home-modern" />
                                 <flux:error name="floor" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('host.property_wizard.fields.total_floors') }}</flux:label>
-                                <flux:input type="number" inputmode="numeric" wire:model.blur="totalFloors" />
+                                <flux:input type="number" inputmode="numeric" wire:model.blur="totalFloors" icon="home-modern" />
                                 <flux:error name="totalFloors" />
                             </flux:field>
                         </div>
@@ -165,37 +177,37 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.total_area') }}</flux:label>
-                            <flux:input type="number" inputmode="decimal" step="0.1" wire:model.blur="totalArea" />
+                            <flux:input type="number" inputmode="decimal" step="0.1" wire:model.blur="totalArea" icon="home-modern" />
                             <flux:error name="totalArea" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.rooms_count') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="roomsCount" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="roomsCount" icon="home-modern" />
                             <flux:error name="roomsCount" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.bathrooms_count') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="bathroomsCount" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="bathroomsCount" icon="home-modern" />
                             <flux:error name="bathroomsCount" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.showers_count') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="showersCount" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="showersCount" icon="numbered-list" />
                             <flux:error name="showersCount" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.kitchens_count') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="kitchensCount" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="kitchensCount" icon="numbered-list" />
                             <flux:error name="kitchensCount" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.balconies_count') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="balconiesCount" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="balconiesCount" icon="numbered-list" />
                             <flux:error name="balconiesCount" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('host.property_wizard.fields.max_guests') }}</flux:label>
-                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" />
+                            <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" icon="users" />
                             <flux:error name="maxGuests" />
                         </flux:field>
                     </div>
@@ -220,10 +232,15 @@
                     <div class="grid gap-5">
                         @foreach($this->contentLocales() as $locale)
                             <div class="space-y-4 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                                <flux:heading size="sm">{{ $locale['name'] }}</flux:heading>
+                                <flux:heading size="sm">
+                                    <span class="inline-flex min-w-0 items-center gap-2">
+                                        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ $locale['name'] }}</span>
+                                    </span>
+                                </flux:heading>
                                 <flux:field>
                                     <flux:label>{{ __('host.property_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
-                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" />
+                                    <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
@@ -311,7 +328,12 @@
                 @default
                     <div class="space-y-4">
                         <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                            <flux:heading size="sm">{{ __('host.property_wizard.review.basics') }}</flux:heading>
+                            <flux:heading size="sm">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <flux:icon name="star" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.property_wizard.review.basics') }}</span>
+                                </span>
+                            </flux:heading>
                             <dl class="mt-3 grid gap-2 text-sm">
                                 <div class="flex justify-between gap-3">
                                     <dt class="text-zinc-500">{{ __('host.property_wizard.fields.rental_unit_type') }}</dt>
@@ -334,7 +356,7 @@
                             </dl>
                         </div>
 
-                        <flux:callout icon="information-circle">
+                        <flux:callout icon="chat-bubble-left-right">
                             <flux:callout.text>{{ __('host.property_wizard.review.helper') }}</flux:callout.text>
                         </flux:callout>
                     </div>
@@ -343,17 +365,17 @@
 
         <div class="sticky bottom-20 z-10 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/95 lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
             <div class="grid grid-cols-2 gap-3">
-                <flux:button type="button" variant="ghost" wire:click="previousStep" :disabled="$step === 1">
+                <flux:button type="button" variant="ghost" wire:click="previousStep" :disabled="$step === 1" icon="arrow-left">
                     {{ __('host.property_wizard.actions.back') }}
                 </flux:button>
 
                 @if($step < 9)
-                    <flux:button type="button" variant="primary" wire:click="nextStep" class="data-loading:opacity-70">
+                    <flux:button type="button" variant="primary" wire:click="nextStep" class="data-loading:opacity-70" icon="arrow-right">
                         <span wire:loading.remove wire:target="nextStep">{{ __('host.property_wizard.actions.save_and_continue') }}</span>
                         <span wire:loading wire:target="nextStep">{{ __('account.actions.saving') }}</span>
                     </flux:button>
                 @else
-                    <flux:button type="submit" variant="primary" class="data-loading:opacity-70">
+                    <flux:button type="submit" variant="primary" class="data-loading:opacity-70" icon="eye">
                         <span wire:loading.remove wire:target="publish">{{ __('host.property_wizard.actions.review_and_save') }}</span>
                         <span wire:loading wire:target="publish">{{ __('account.actions.saving') }}</span>
                     </flux:button>

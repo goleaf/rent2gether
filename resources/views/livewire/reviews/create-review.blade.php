@@ -1,9 +1,12 @@
 <x-ui.page>
     <section class="space-y-3">
-        <flux:badge color="emerald">{{ __('booking.review.eyebrow') }}</flux:badge>
+        <flux:badge color="emerald" icon="check-circle">{{ __('booking.review.eyebrow') }}</flux:badge>
         <div class="space-y-2">
             <flux:heading size="xl" level="1">
-                {{ $isHostReview ? __('booking.review.host_title') : __('booking.review.guest_title') }}
+                <span class="inline-flex min-w-0 items-center gap-2">
+                    <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $isHostReview ? __('booking.review.host_title') : __('booking.review.guest_title') }}</span>
+                </span>
             </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">
                 {{ $isHostReview ? __('booking.review.host_helper') : __('booking.review.guest_helper') }}
@@ -12,7 +15,12 @@
     </section>
 
     <flux:card class="space-y-2">
-        <flux:heading size="sm">{{ $placeTitle }}</flux:heading>
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="star" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ $placeTitle }}</span>
+            </span>
+        </flux:heading>
         <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
             {{ $booking->check_in_date?->translatedFormat('d M Y') }} - {{ $booking->check_out_date?->translatedFormat('d M Y') }}
         </flux:text>
@@ -38,7 +46,12 @@
     <form wire:submit="submit" class="space-y-5">
         <flux:card class="space-y-4">
             <div class="space-y-1">
-                <flux:heading size="lg">{{ __('booking.review.ratings') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.review.ratings') }}</span>
+                    </span>
+                </flux:heading>
                 <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
                     {{ __('booking.review.rating_helper') }}
                 </flux:text>
@@ -61,7 +74,12 @@
 
         @if($isHostReview)
             <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('booking.review.host_comment_title') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.review.host_comment_title') }}</span>
+                    </span>
+                </flux:heading>
 
                 <flux:field>
                     <flux:label>{{ __('booking.review.fields.host_comment') }}</flux:label>
@@ -73,7 +91,12 @@
             </flux:card>
         @else
             <flux:card class="space-y-4">
-                <flux:heading size="lg">{{ __('booking.review.comments') }}</flux:heading>
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.review.comments') }}</span>
+                    </span>
+                </flux:heading>
 
                 <flux:field>
                     <flux:label>{{ __('booking.review.fields.liked_text') }}</flux:label>
@@ -122,17 +145,17 @@
 
         <div class="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95 sm:static sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
             <div class="mx-auto flex w-full max-w-5xl gap-2">
-                <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" wire:target="submit,photos">
+                <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" wire:target="submit,photos" icon="eye">
                     <span wire:loading.remove wire:target="submit">{{ __('booking.review.submit') }}</span>
                     <span wire:loading wire:target="submit">{{ __('booking.review.submitting') }}</span>
                 </flux:button>
 
                 @if($isHostReview)
-                    <flux:button href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                    <flux:button href="{{ route('host.bookings.manage', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full" icon="arrow-left">
                         {{ __('app.actions.back') }}
                     </flux:button>
                 @else
-                    <flux:button href="{{ route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full">
+                    <flux:button href="{{ route('guest.bookings.show', ['locale' => app()->getLocale(), 'booking' => $booking]) }}" wire:navigate variant="ghost" class="w-full" icon="arrow-left">
                         {{ __('app.actions.back') }}
                     </flux:button>
                 @endif

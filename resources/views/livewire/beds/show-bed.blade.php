@@ -2,9 +2,24 @@
 
         {{-- Breadcrumb --}}
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('home', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.search') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ $bed->title }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('home', ['locale' => app()->getLocale()]) }}" wire:navigate>
+                <span class="inline-flex items-center gap-1.5">
+                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span>{{ __('navigation.home') }}</span>
+                </span>
+            </flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate>
+                <span class="inline-flex items-center gap-1.5">
+                    <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span>{{ __('navigation.search') }}</span>
+                </span>
+            </flux:breadcrumbs.item>
+            <flux:breadcrumbs.item>
+                <span class="inline-flex items-center gap-1.5">
+                    <flux:icon name="home" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span>{{ $bed->title }}</span>
+                </span>
+            </flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -29,7 +44,12 @@
 
                 {{-- Title & location --}}
                 <div>
-                    <flux:heading size="xl">{{ $bed->title }}</flux:heading>
+                    <flux:heading size="xl">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $bed->title }}</span>
+                        </span>
+                    </flux:heading>
 
                     <div class="flex items-center gap-2 mt-1 text-zinc-500 dark:text-zinc-400">
                         <flux:icon name="map-pin" variant="mini" class="size-4 shrink-0" />
@@ -45,14 +65,19 @@
                     <flux:card class="space-y-4">
                         <div class="flex items-start justify-between gap-3">
                             <div class="space-y-1">
-                                <flux:heading size="sm">{{ __('compatibility.listing.title') }}</flux:heading>
+                                <flux:heading size="sm">
+                                    <span class="inline-flex min-w-0 items-center gap-2">
+                                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('compatibility.listing.title') }}</span>
+                                    </span>
+                                </flux:heading>
                                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
                                     {{ __('compatibility.listing.helper') }}
                                 </flux:text>
                             </div>
                             <div class="shrink-0 text-right">
                                 <div class="text-2xl font-semibold text-zinc-950 dark:text-white">{{ $compatibilityResult['score'] }}%</div>
-                                <flux:badge size="sm" color="{{ $compatibilityResult['score'] >= 70 ? 'green' : ($compatibilityResult['score'] >= 45 ? 'yellow' : 'red') }}">
+                                <flux:badge size="sm" color="{{ $compatibilityResult['score'] >= 70 ? 'green' : ($compatibilityResult['score'] >= 45 ? 'yellow' : 'red') }}" icon="exclamation-triangle">
                                     {{ __('compatibility.fit_levels.'.$compatibilityResult['fit_level']) }}
                                 </flux:badge>
                             </div>
@@ -60,7 +85,12 @@
 
                         <div class="grid gap-3 sm:grid-cols-2">
                             <div class="space-y-2">
-                                <flux:heading size="xs">{{ __('compatibility.listing.why_fits') }}</flux:heading>
+                                <flux:heading size="xs">
+                                    <span class="inline-flex min-w-0 items-center gap-2">
+                                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('compatibility.listing.why_fits') }}</span>
+                                    </span>
+                                </flux:heading>
                                 @forelse($compatibilityResult['positive_reasons'] as $reason)
                                     <div class="flex gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-950 dark:bg-emerald-400/10 dark:text-emerald-100">
                                         <flux:icon name="check-circle" class="mt-0.5 size-4 shrink-0" />
@@ -72,7 +102,12 @@
                             </div>
 
                             <div class="space-y-2">
-                                <flux:heading size="xs">{{ __('compatibility.listing.pay_attention') }}</flux:heading>
+                                <flux:heading size="xs">
+                                    <span class="inline-flex min-w-0 items-center gap-2">
+                                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('compatibility.listing.pay_attention') }}</span>
+                                    </span>
+                                </flux:heading>
                                 @forelse($compatibilityResult['warning_reasons'] as $reason)
                                     <div class="flex gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:bg-amber-400/10 dark:text-amber-100">
                                         <flux:icon name="exclamation-triangle" class="mt-0.5 size-4 shrink-0" />
@@ -90,7 +125,12 @@
 
                 {{-- Room & property info --}}
                 <div class="space-y-2">
-                    <flux:heading size="sm">{{ __('listing.bed.room_property') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.bed.room_property') }}</span>
+                        </span>
+                    </flux:heading>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-3">
                             <flux:text size="xs" class="text-zinc-400 uppercase tracking-wide">{{ __('listing.bed.bed_type') }}</flux:text>
@@ -125,7 +165,12 @@
 
                 {{-- Amenities --}}
                 <div class="space-y-3">
-                    <flux:heading size="sm">{{ __('listing.bed.offers') }}</flux:heading>
+                    <flux:heading size="sm">
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.bed.offers') }}</span>
+                        </span>
+                    </flux:heading>
                     <div class="flex flex-wrap gap-2">
                         @if($bed->has_locker)   <flux:badge icon="lock-closed"      color="zinc">{{ __('listing.bed.personal_locker') }}</flux:badge>   @endif
                         @if($bed->has_outlet)   <flux:badge icon="bolt"             color="zinc">{{ __('listing.bed.power_outlet') }}</flux:badge>      @endif
@@ -142,7 +187,12 @@
                 @if($bed->description)
                     <flux:separator />
                     <div class="space-y-2">
-                        <flux:heading size="sm">{{ __('listing.bed.description') }}</flux:heading>
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing.bed.description') }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="whitespace-pre-line text-zinc-700 dark:text-zinc-300">{{ $bed->description }}</flux:text>
                     </div>
                 @endif
@@ -151,10 +201,15 @@
                 @if($propertyAmenityLabels)
                     <flux:separator />
                     <div class="space-y-3">
-                        <flux:heading size="sm">{{ __('listing.bed.property_amenities') }}</flux:heading>
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing.bed.property_amenities') }}</span>
+                            </span>
+                        </flux:heading>
                         <div class="flex flex-wrap gap-2">
                             @foreach($propertyAmenityLabels as $amenityLabel)
-                                <flux:badge color="blue" size="sm">
+                                <flux:badge color="blue" size="sm" icon="tag">
                                     {{ $amenityLabel }}
                                 </flux:badge>
                             @endforeach
@@ -166,7 +221,12 @@
                 @if($bed->room->beds->isNotEmpty())
                     <flux:separator />
                     <div class="space-y-3">
-                        <flux:heading size="sm">{{ __('listing.bed.other_beds') }}</flux:heading>
+                        <flux:heading size="sm">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing.bed.other_beds') }}</span>
+                            </span>
+                        </flux:heading>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($bed->room->beds as $sibling)
                                 <a href="{{ route('beds.show', ['locale' => app()->getLocale(), 'bed' => $sibling]) }}"
@@ -199,10 +259,10 @@
                     @if($bed->discount_weekly > 0 || $bed->discount_monthly > 0)
                         <div class="flex flex-wrap gap-2">
                             @if($bed->discount_weekly > 0)
-                                <flux:badge color="green" size="sm">{{ __('listing.bed.weekly_discount', ['percent' => $bed->discount_weekly]) }}</flux:badge>
+                                <flux:badge color="green" size="sm" icon="check-circle">{{ __('listing.bed.weekly_discount', ['percent' => $bed->discount_weekly]) }}</flux:badge>
                             @endif
                             @if($bed->discount_monthly > 0)
-                                <flux:badge color="green" size="sm">{{ __('listing.bed.monthly_discount', ['percent' => $bed->discount_monthly]) }}</flux:badge>
+                                <flux:badge color="green" size="sm" icon="check-circle">{{ __('listing.bed.monthly_discount', ['percent' => $bed->discount_monthly]) }}</flux:badge>
                             @endif
                         </div>
                     @endif
@@ -212,15 +272,15 @@
                     <div class="space-y-3">
                         <flux:field>
                             <flux:label>{{ __('search.check_in') }}</flux:label>
-                            <flux:input type="date" id="check_in" :min="now()->toDateString()" />
+                            <flux:input type="date" id="check_in" :min="now()->toDateString()" icon="calendar-days" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('search.check_out') }}</flux:label>
-                            <flux:input type="date" id="check_out" :min="now()->addDay()->toDateString()" />
+                            <flux:input type="date" id="check_out" :min="now()->addDay()->toDateString()" icon="calendar-days" />
                         </flux:field>
                     </div>
 
-                    <flux:button variant="primary" class="w-full" href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate>
+                    <flux:button variant="primary" class="w-full" href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate icon="magnifying-glass">
                         {{ $bed->instant_book ? __('listing.bed.book_instantly') : __('listing.bed.request_to_book') }}
                     </flux:button>
 

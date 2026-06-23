@@ -1,7 +1,12 @@
 <x-ui.page>
     <section class="space-y-2">
-        <flux:badge color="emerald">{{ $page['eyebrow'] }}</flux:badge>
-        <flux:heading size="xl" level="1">{{ $page['title'] }}</flux:heading>
+        <flux:badge color="emerald" icon="check-circle">{{ $page['eyebrow'] }}</flux:badge>
+        <flux:heading size="xl" level="1">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ $page['title'] }}</span>
+            </span>
+        </flux:heading>
         <flux:text class="text-zinc-600 dark:text-zinc-400">
             {{ $page['helper'] }}
         </flux:text>
@@ -19,7 +24,7 @@
                             <div class="min-w-0 space-y-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <flux:text class="font-medium text-zinc-950 dark:text-zinc-50">{{ $card['other_name'] }}</flux:text>
-                                    <flux:badge size="sm">{{ __('statuses.message_thread_type.'.$card['thread_type']) }}</flux:badge>
+                                    <flux:badge size="sm" icon="check-circle">{{ __('statuses.message_thread_type.'.$card['thread_type']) }}</flux:badge>
                                 </div>
                                 @if($card['place_title'])
                                     <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $card['place_title'] }}</flux:text>
@@ -32,7 +37,7 @@
 
                         <div class="shrink-0 space-y-2 text-right">
                             @if($card['thread']->unread_count > 0)
-                                <flux:badge color="red" size="sm">{{ $card['thread']->unread_count }}</flux:badge>
+                                <flux:badge color="red" size="sm" icon="exclamation-triangle">{{ $card['thread']->unread_count }}</flux:badge>
                             @endif
                             @if($card['last_message_time'])
                                 <flux:text size="sm" class="text-zinc-400">{{ $card['last_message_time'] }}</flux:text>
@@ -48,14 +53,19 @@
                         <flux:icon name="chat-bubble-left-right" class="size-5" />
                     </div>
                     <div class="space-y-1">
-                        <flux:heading size="lg">{{ $page['empty_title'] }}</flux:heading>
+                        <flux:heading size="lg">
+                            <span class="inline-flex min-w-0 items-center gap-2">
+                                <flux:icon name="chat-bubble-left-right" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ $page['empty_title'] }}</span>
+                            </span>
+                        </flux:heading>
                         <flux:text class="text-zinc-600 dark:text-zinc-400">
                             {{ $page['empty_text'] }}
                         </flux:text>
                     </div>
                 </div>
 
-                <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate variant="primary" class="w-full">
+                <flux:button href="{{ route('search.index', ['locale' => app()->getLocale()]) }}" wire:navigate variant="primary" class="w-full" icon="magnifying-glass">
                     {{ $page['action'] }}
                 </flux:button>
             </flux:card>
