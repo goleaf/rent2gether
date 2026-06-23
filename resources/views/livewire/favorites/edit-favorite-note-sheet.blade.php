@@ -14,7 +14,12 @@
 
         <form wire:submit="save" class="space-y-4">
             <flux:field>
-                <flux:label>{{ __('favorites.personal_note') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.personal_note') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="5" wire:model.blur="note" placeholder="{{ __('favorites.personal_note_placeholder') }}" />
                 <flux:error name="note" />
             </flux:field>

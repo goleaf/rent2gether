@@ -87,17 +87,116 @@
             </div>
 
             <div class="grid gap-3 sm:grid-cols-2">
-                <flux:checkbox wire:model.change="tourist" label="{{ __('occupants.tourist') }}" />
-                <flux:checkbox wire:model.change="student" label="{{ __('occupants.student') }}" />
-                <flux:checkbox wire:model.change="working" label="{{ __('occupants.working') }}" />
-                <flux:checkbox wire:model.change="remoteWorker" label="{{ __('occupants.remote_worker') }}" />
-                <flux:checkbox wire:model.change="longTermGuest" label="{{ __('occupants.long_term_guest') }}" />
-                <flux:checkbox wire:model.change="shortTermGuest" label="{{ __('occupants.short_term_guest') }}" />
-                <flux:checkbox wire:model.change="smokes" label="{{ __('occupants.smokes') }}" />
-                <flux:checkbox wire:model.change="hasPet" label="{{ __('occupants.fields.has_pet') }}" />
-                <flux:checkbox wire:model.change="prefersQuiet" label="{{ __('occupants.quiet') }}" />
-                <flux:checkbox wire:model.change="participatesInCleaning" label="{{ __('occupants.fields.participates_in_cleaning') }}" />
-                <flux:checkbox wire:model.change="respectsPersonalSpace" label="{{ __('occupants.fields.respects_personal_space') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="tourist" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.tourist') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="tourist" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="student" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.student') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="student" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="working" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.working') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="working" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="remoteWorker" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.remote_worker') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="remoteWorker" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="longTermGuest" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.long_term_guest') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="longTermGuest" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="shortTermGuest" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.short_term_guest') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="shortTermGuest" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="smokes" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.smokes') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="smokes" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasPet" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.fields.has_pet') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasPet" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="prefersQuiet" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.quiet') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="prefersQuiet" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="participatesInCleaning" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.fields.participates_in_cleaning') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="participatesInCleaning" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="respectsPersonalSpace" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('occupants.fields.respects_personal_space') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="respectsPersonalSpace" />
+                </flux:field>
             </div>
         </flux:card>
 

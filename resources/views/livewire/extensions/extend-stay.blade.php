@@ -48,13 +48,23 @@
         @if(! $extension || $extension->status === \App\Enums\BookingExtensionStatus::AwaitingHostApproval || $extension->status === \App\Enums\BookingExtensionStatus::AwaitingPayment)
             <div class="space-y-4">
                 <flux:field>
-                    <flux:label>{{ __('booking.extension.fields.requested_new_checkout') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.extension.fields.requested_new_checkout') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" wire:model.change="requestedNewCheckout" icon="calendar-days" />
                     <flux:error name="requestedNewCheckout" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('booking.extension.fields.guest_message') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.extension.fields.guest_message') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="3" wire:model.blur="guestMessage" />
                     <flux:description>{{ __('booking.extension.guest_message_helper') }}</flux:description>
                     <flux:error name="guestMessage" />

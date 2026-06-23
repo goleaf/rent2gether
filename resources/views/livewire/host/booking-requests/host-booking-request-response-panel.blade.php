@@ -7,7 +7,12 @@
     </flux:heading>
 
     <flux:field>
-        <flux:label>{{ __('booking_requests.fields.host_response') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.host_response') }}</span>
+    </span>
+</flux:label>
         <flux:textarea rows="3" wire:model.blur="message" />
         <flux:error name="message" />
     </flux:field>
@@ -19,11 +24,21 @@
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
-            <flux:label>{{ __('booking_requests.fields.proposed_check_in_time') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.proposed_check_in_time') }}</span>
+    </span>
+</flux:label>
             <flux:input type="time" wire:model.change="proposedCheckInTime" icon="calendar-days" />
         </flux:field>
         <flux:field>
-            <flux:label>{{ __('booking_requests.fields.proposed_check_out_time') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.proposed_check_out_time') }}</span>
+    </span>
+</flux:label>
             <flux:input type="time" wire:model.change="proposedCheckOutTime" icon="calendar-days" />
         </flux:field>
     </div>
@@ -31,18 +46,33 @@
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
-            <flux:label>{{ __('booking_requests.fields.proposed_check_in_date') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.proposed_check_in_date') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" wire:model.change="proposedCheckInDate" icon="calendar-days" />
         </flux:field>
         <flux:field>
-            <flux:label>{{ __('booking_requests.fields.proposed_check_out_date') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.proposed_check_out_date') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" wire:model.change="proposedCheckOutDate" icon="calendar-days" />
         </flux:field>
     </div>
     <flux:button type="button" variant="outline" class="w-full" wire:click="proposeDateChange" icon="calendar-days">{{ __('booking_requests.actions.propose_date_change') }}</flux:button>
 
     <flux:field>
-        <flux:label>{{ __('booking_requests.fields.rejection_reason') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.rejection_reason') }}</span>
+    </span>
+</flux:label>
         <flux:select wire:model.change="rejectionReason">
             <flux:select.option value="dates_unavailable">{{ __('booking_requests.rejection_reasons.dates_unavailable') }}</flux:select.option>
             <flux:select.option value="place_not_ready">{{ __('booking_requests.rejection_reasons.place_not_ready') }}</flux:select.option>

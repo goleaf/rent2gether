@@ -25,17 +25,32 @@
                     </span>
                 </flux:heading>
                 <flux:field>
-                    <flux:label>{{ __('room.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.translation_fields.title', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('room.translation_fields.short_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.translation_fields.short_description', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="translations.{{ $locale['code'] }}.short_description" icon="language" />
                     <flux:error name="translations.{{ $locale['code'] }}.short_description" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('room.translation_fields.full_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.translation_fields.full_description', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.full_description" />
                     <flux:error name="translations.{{ $locale['code'] }}.full_description" />
                 </flux:field>
@@ -45,7 +60,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach(['roomNumber', 'internalName'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="{{ $field }}" icon="pencil-square" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
@@ -54,7 +74,12 @@
 
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
-                <flux:label>{{ __('room.fields.room_type') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.room_type') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="roomType">
                     @foreach(\App\Enums\RoomType::cases() as $type)
                         <flux:select.option value="{{ $type->value }}">{{ __('room.room_types.'.$type->value) }}</flux:select.option>
@@ -64,7 +89,12 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('room.fields.gender_policy') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.gender_policy') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="genderPolicy">
                     @foreach(\App\Enums\GenderType::cases() as $gender)
                         <flux:select.option value="{{ $gender->value }}">{{ __('room.gender_policies.'.$gender->value) }}</flux:select.option>
@@ -74,7 +104,12 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('room.fields.living_format') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.living_format') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="livingFormat">
                     <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
                     @foreach(['long_stay', 'short_stay', 'student', 'worker', 'tourist', 'remote_work'] as $format)
@@ -87,17 +122,32 @@
 
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
-                <flux:label>{{ __('room.fields.sleeping_places_count') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.sleeping_places_count') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="sleepingPlacesCount" icon="home-modern" />
                 <flux:error name="sleepingPlacesCount" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('room.fields.max_guests') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.max_guests') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" icon="users" />
                 <flux:error name="maxGuests" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('room.fields.status') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.status') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="status">
                     @foreach(\App\Enums\RoomStatus::cases() as $roomStatus)
                         <flux:select.option value="{{ $roomStatus->value }}">{{ __('room.statuses.'.$roomStatus->value) }}</flux:select.option>
@@ -109,7 +159,16 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['isPrivate', 'isShared', 'isPassThrough', 'isForOnePerson', 'isForCouples', 'isForGroups', 'isForLongStay', 'isForShortStay', 'canBookEntireRoom', 'canBookIndividualPlaces'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
     </flux:card>

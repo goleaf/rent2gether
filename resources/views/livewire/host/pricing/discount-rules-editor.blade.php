@@ -8,28 +8,57 @@
 
     <div class="grid gap-3 sm:grid-cols-4">
         <flux:field>
-            <flux:label>{{ __('pricing.fields.discount_type') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('pricing.fields.discount_type') }}</span>
+    </span>
+</flux:label>
             <flux:input wire:model.blur="discountType" icon="pencil-square" />
             <flux:error name="discountType" />
         </flux:field>
         <flux:field>
-            <flux:label>{{ __('pricing.fields.name') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('pricing.fields.name') }}</span>
+    </span>
+</flux:label>
             <flux:input wire:model.blur="name" icon="user" />
             <flux:error name="name" />
         </flux:field>
         <flux:field>
-            <flux:label>{{ __('pricing.fields.discount_amount') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('pricing.fields.discount_amount') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" step="0.01" wire:model.blur="value" icon="numbered-list" />
             <flux:error name="value" />
         </flux:field>
         <flux:field>
-            <flux:label>{{ __('pricing.fields.min_nights') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('pricing.fields.min_nights') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" wire:model.blur="minNights" icon="numbered-list" />
             <flux:error name="minNights" />
         </flux:field>
     </div>
 
-    <flux:switch wire:model.change="allowStacking" label="{{ __('pricing.fields.allow_stacking') }}" />
+        <flux:field variant="inline">
+        <flux:label>
+            <span class="inline-flex min-w-0 items-center gap-1.5">
+                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('pricing.fields.allow_stacking') }}</span>
+            </span>
+        </flux:label>
+        <flux:switch wire:model.change="allowStacking" />
+        <flux:error name="allowStacking" />
+    </flux:field>
 
     <div class="flex justify-end">
         <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled" icon="check">

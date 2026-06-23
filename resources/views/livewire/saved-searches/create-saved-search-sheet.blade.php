@@ -19,19 +19,34 @@
             </div>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.search_name') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.search_name') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="title" icon="tag" />
                 <flux:error name="title" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.description') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.description') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="3" wire:model.blur="description" />
                 <flux:error name="description" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.notification_frequency') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.notification_frequency') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="notificationFrequency">
                     @foreach(['on_visit', 'instant', 'daily', 'weekly', 'important_only'] as $frequency)
                         <flux:select.option value="{{ $frequency }}">{{ __('saved_searches.frequency.'.$frequency) }}</flux:select.option>
@@ -40,9 +55,36 @@
             </flux:field>
 
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="notifyNewMatches" label="{{ __('saved_searches.notify_new_matches') }}" />
-                <flux:checkbox wire:model.change="notifyPriceDrops" label="{{ __('saved_searches.notify_price_drops') }}" />
-                <flux:checkbox wire:model.change="notifyAvailableAgain" label="{{ __('saved_searches.notify_available_again') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyNewMatches" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_new_matches') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyNewMatches" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyPriceDrops" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_price_drops') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyPriceDrops" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyAvailableAgain" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_available_again') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyAvailableAgain" />
+                </flux:field>
             </div>
 
             <div class="sticky bottom-0 -mx-4 border-t border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">

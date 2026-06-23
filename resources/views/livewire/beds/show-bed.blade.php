@@ -271,11 +271,21 @@
 
                     <div class="space-y-3">
                         <flux:field>
-                            <flux:label>{{ __('search.check_in') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.check_in') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="date" id="check_in" :min="now()->toDateString()" icon="calendar-days" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('search.check_out') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.check_out') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="date" id="check_out" :min="now()->addDay()->toDateString()" icon="calendar-days" />
                         </flux:field>
                     </div>

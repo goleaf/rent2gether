@@ -145,7 +145,12 @@
 
                 <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem]">
                     <flux:field>
-                        <flux:label>{{ __('decision.favorites.personal_note') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.favorites.personal_note') }}</span>
+    </span>
+</flux:label>
                         <flux:textarea
                             rows="2"
                             wire:change="updateNote({{ $card['favorite']->id }}, $event.target.value)"
@@ -154,7 +159,12 @@
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>{{ __('decision.favorites.priority') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.favorites.priority') }}</span>
+    </span>
+</flux:label>
                         <flux:input
                             type="number"
                             min="0"
@@ -166,11 +176,17 @@
                 </div>
 
                 <div class="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-                    <flux:checkbox
-                        wire:click="toggleCompare({{ $card['place_id'] }})"
-                        :checked="in_array($card['place_id'], $selectedForCompare, true)"
-                        label="{{ __('decision.compare.select_place') }}"
-                    />
+                                        <flux:field variant="inline">
+                        <flux:checkbox
+                            wire:click="toggleCompare({{ $card['place_id'] }})"
+                            :checked="in_array($card['place_id'], $selectedForCompare, true)" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('decision.compare.select_place') }}</span>
+                            </span>
+                        </flux:label>
+                    </flux:field>
 
                     <flux:button href="{{ $card['url'] }}" size="sm" variant="ghost" icon="heart" wire:navigate>
                         {{ __('decision.favorites.open_place') }}

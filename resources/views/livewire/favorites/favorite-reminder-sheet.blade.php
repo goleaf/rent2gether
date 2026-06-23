@@ -20,13 +20,23 @@
 
         <form wire:submit="save" class="space-y-4">
             <flux:field>
-                <flux:label>{{ __('favorites.fields.remind_at') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.fields.remind_at') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="datetime-local" wire:model.change="remindAt" icon="calendar-days" />
                 <flux:error name="remindAt" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('favorites.fields.reminder_text') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.fields.reminder_text') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="3" wire:model.blur="reminderText" />
                 <flux:error name="reminderText" />
             </flux:field>

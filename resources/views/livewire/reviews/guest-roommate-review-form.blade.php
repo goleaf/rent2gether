@@ -11,7 +11,16 @@
 
     <div class="space-y-3">
         @foreach(['quiet_roommates', 'clean_roommates', 'friendly_roommates', 'roommates_disturbed_sleep', 'conflict_happened'] as $field)
-            <flux:checkbox :label="__('reviews.roommate_fields.'.$field)" wire:model.change="roommateFlags.{{ $field }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="roommateFlags.{{ $field }}" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="star" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('reviews.roommate_fields.'.$field) }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="roommateFlags.{{ $field }}" />
+            </flux:field>
         @endforeach
     </div>
 

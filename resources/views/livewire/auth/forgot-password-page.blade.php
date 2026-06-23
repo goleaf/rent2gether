@@ -17,7 +17,12 @@
 
     <form wire:submit="sendResetLink" class="space-y-4">
         <flux:field>
-            <flux:label>{{ __('auth.email') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('auth.email') }}</span>
+    </span>
+</flux:label>
             <flux:input type="email" wire:model.blur="email" autocomplete="email" icon="envelope" autofocus />
             <flux:error name="email" />
         </flux:field>

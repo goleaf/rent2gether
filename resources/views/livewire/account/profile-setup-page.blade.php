@@ -83,12 +83,22 @@
             </flux:heading>
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('account.fields.display_name') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.display_name') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="displayName" icon="user" />
                     <flux:error name="displayName" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.phone') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.phone') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="phone" inputmode="tel" icon="phone" />
                     <flux:error name="phone" />
                 </flux:field>
@@ -100,17 +110,32 @@
                     ])
                 </div>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.languages') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.languages') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="languages" placeholder="{{ __('account.fields.languages_placeholder') }}" icon="language" />
                     <flux:error name="languages" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.date_of_birth') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.date_of_birth') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" wire:model.change="dateOfBirth" icon="calendar-days" />
                     <flux:error name="dateOfBirth" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.gender') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.gender') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="gender">
                         <flux:select.option value="">{{ __('account.options.not_specified') }}</flux:select.option>
                         <flux:select.option value="male">{{ __('account.options.male') }}</flux:select.option>
@@ -120,13 +145,23 @@
                     <flux:error name="gender" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.occupation') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.occupation') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="occupation" icon="briefcase" />
                     <flux:error name="occupation" />
                 </flux:field>
             </div>
             <flux:field>
-                <flux:label>{{ __('account.fields.about') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.about') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea wire:model.blur="about" rows="4" />
                 <flux:error name="about" />
             </flux:field>
@@ -141,7 +176,12 @@
             </flux:heading>
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('account.fields.travel_purpose') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.travel_purpose') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="travelPurpose">
                         <flux:select.option value="">{{ __('account.options.not_specified') }}</flux:select.option>
                         <flux:select.option value="tourism">{{ __('account.options.tourism') }}</flux:select.option>
@@ -153,7 +193,12 @@
                     <flux:error name="travelPurpose" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.sleep_schedule') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.sleep_schedule') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="sleepSchedule">
                         <flux:select.option value="">{{ __('account.options.not_specified') }}</flux:select.option>
                         <flux:select.option value="early_bird">{{ __('account.options.early_bird') }}</flux:select.option>
@@ -164,7 +209,12 @@
                     <flux:error name="sleepSchedule" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.social_level') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.social_level') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="socialLevel">
                         <flux:select.option value="">{{ __('account.options.not_specified') }}</flux:select.option>
                         <flux:select.option value="quiet">{{ __('account.options.quiet') }}</flux:select.option>
@@ -174,15 +224,47 @@
                     <flux:error name="socialLevel" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('account.fields.allergies') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.allergies') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="allergies" icon="heart" />
                     <flux:error name="allergies" />
                 </flux:field>
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
-                <flux:checkbox wire:model.change="smokes" label="{{ __('account.fields.smokes') }}" />
-                <flux:checkbox wire:model.change="hasPets" label="{{ __('account.fields.has_pets') }}" />
-                <flux:checkbox wire:model.change="prefersQuiet" label="{{ __('account.fields.prefers_quiet') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="smokes" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.fields.smokes') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="smokes" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasPets" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.fields.has_pets') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasPets" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="prefersQuiet" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.fields.prefers_quiet') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="prefersQuiet" />
+                </flux:field>
             </div>
         </flux:card>
 

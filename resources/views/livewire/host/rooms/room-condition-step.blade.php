@@ -19,7 +19,12 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['conditionState', 'repairState', 'cleanlinessLevel', 'floorCondition', 'wallsCondition', 'ceilingCondition', 'windowCondition', 'doorCondition', 'lockCondition', 'furnitureCondition'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="{{ $field }}">
                         <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
                         @foreach(['bad', 'basic', 'normal', 'good', 'high', 'needs_update'] as $level)
@@ -33,14 +38,28 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['hasDust', 'hasBadSmell', 'hasDampMarks', 'hasMold', 'hasInsects', 'hasDamage', 'needsRepair', 'recentlyRenovated'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
 
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['lastCleanedAt', 'lastCheckedAt', 'lastRepairedAt'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" wire:model.change="{{ $field }}" icon="calendar-days" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>

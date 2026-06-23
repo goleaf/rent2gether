@@ -27,7 +27,12 @@
                     </flux:heading>
                     @foreach(['room_rules_text', 'quiet_hours_text', 'food_rules_text', 'conflict_instructions', 'special_notes'] as $field)
                         <flux:field>
-                            <flux:label>{{ __('room.rule_translation_fields.'.$field, ['language' => $locale['name']]) }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.rule_translation_fields.'.$field, ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                             <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.{{ $field }}" />
                             <flux:error name="translations.{{ $locale['code'] }}.{{ $field }}" />
                         </flux:field>

@@ -12,49 +12,120 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('booking_dates.fields.check_in_date') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.check_in_date') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkInDate" icon="calendar-days" />
                 <flux:error name="checkInDate" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('booking_dates.fields.check_out_date') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.check_out_date') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="date" min="{{ $checkInDate ?: now()->toDateString() }}" wire:model.change="checkOutDate" icon="calendar-days" />
                 <flux:error name="checkOutDate" />
             </flux:field>
         </div>
 
         <flux:field>
-            <flux:label>{{ __('booking_dates.fields.guests_count') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.guests_count') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
         </flux:field>
 
         <div class="grid gap-3 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('booking_dates.fields.check_in_time') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.check_in_time') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="time" wire:model.change="checkInTime" icon="calendar-days" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('booking_dates.fields.check_out_time') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.check_out_time') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="time" wire:model.change="checkOutTime" icon="calendar-days" />
             </flux:field>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
-            <flux:switch wire:model.change="earlyCheckInRequested" :label="__('booking_dates.fields.early_check_in')" />
-            <flux:switch wire:model.change="lateCheckOutRequested" :label="__('booking_dates.fields.late_check_out')" />
-            <flux:switch wire:model.change="flexibleCheckIn" :label="__('booking_dates.fields.flexible_check_in')" />
-            <flux:switch wire:model.change="flexibleCheckOut" :label="__('booking_dates.fields.flexible_check_out')" />
+                        <flux:field variant="inline">
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_dates.fields.early_check_in') }}</span>
+                    </span>
+                </flux:label>
+                <flux:switch wire:model.change="earlyCheckInRequested" />
+                <flux:error name="earlyCheckInRequested" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_dates.fields.late_check_out') }}</span>
+                    </span>
+                </flux:label>
+                <flux:switch wire:model.change="lateCheckOutRequested" />
+                <flux:error name="lateCheckOutRequested" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_dates.fields.flexible_check_in') }}</span>
+                    </span>
+                </flux:label>
+                <flux:switch wire:model.change="flexibleCheckIn" />
+                <flux:error name="flexibleCheckIn" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_dates.fields.flexible_check_out') }}</span>
+                    </span>
+                </flux:label>
+                <flux:switch wire:model.change="flexibleCheckOut" />
+                <flux:error name="flexibleCheckOut" />
+            </flux:field>
         </div>
 
         <flux:field>
-            <flux:label>{{ __('booking_dates.fields.check_in_comment') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.check_in_comment') }}</span>
+    </span>
+</flux:label>
             <flux:textarea rows="2" wire:model.blur="checkInComment" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('booking_dates.fields.check_out_comment') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_dates.fields.check_out_comment') }}</span>
+    </span>
+</flux:label>
             <flux:textarea rows="2" wire:model.blur="checkOutComment" />
         </flux:field>
 

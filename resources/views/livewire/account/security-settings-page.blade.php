@@ -30,19 +30,34 @@
 
         <form wire:submit="save" class="space-y-4">
             <flux:field>
-                <flux:label>{{ __('account.security.current_password') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.security.current_password') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="password" wire:model.blur="currentPassword" autocomplete="current-password" icon="lock-closed" />
                 <flux:error name="currentPassword" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('account.security.new_password') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.security.new_password') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="password" wire:model.blur="password" autocomplete="new-password" icon="lock-closed" />
                 <flux:error name="password" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('account.security.confirm_password') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.security.confirm_password') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="password" wire:model.blur="passwordConfirmation" autocomplete="new-password" icon="lock-closed" />
                 <flux:error name="passwordConfirmation" />
             </flux:field>

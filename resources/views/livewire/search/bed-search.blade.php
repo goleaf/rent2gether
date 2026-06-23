@@ -17,27 +17,52 @@
             <div class="flex flex-wrap gap-3 items-end">
 
                 <flux:field class="flex-1 min-w-40">
-                    <flux:label>{{ __('search.city') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.city') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.live.debounce.500ms="city" placeholder="{{ __('search.city_placeholder') }}" icon="map-pin" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
-                    <flux:label>{{ __('search.check_in') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.check_in') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" wire:model.change="checkIn" :min="now()->toDateString()" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
-                    <flux:label>{{ __('search.check_out') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.check_out') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" wire:model.change="checkOut" :min="$checkIn ?: now()->addDay()->toDateString()" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field class="min-w-28">
-                    <flux:label>{{ __('search.max_price') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.max_price') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" wire:model.blur="priceMax" :placeholder="__('search.any_gender')" min="1" icon="banknotes" />
                 </flux:field>
 
                 <flux:field class="min-w-36">
-                    <flux:label>{{ __('search.sort') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.sort') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="sort">
                         <flux:select.option value="price_asc">{{ __('search.sort_price_asc') }}</flux:select.option>
                         <flux:select.option value="price_desc">{{ __('search.sort_price_desc') }}</flux:select.option>
@@ -62,7 +87,12 @@
                 </flux:heading>
 
                 <flux:field>
-                    <flux:label>{{ __('search.bed_type') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.bed_type') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="bedType">
                         <flux:select.option value="">{{ __('search.any_type') }}</flux:select.option>
                         @foreach($this->bedTypeOptions() as $value => $label)
@@ -72,7 +102,12 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('search.room_gender') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.room_gender') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="genderType">
                         <flux:select.option value="">{{ __('search.any_gender') }}</flux:select.option>
                         @foreach($this->genderOptions() as $value => $label)
@@ -84,9 +119,36 @@
                 <flux:separator />
 
                 <div class="space-y-3">
-                    <flux:checkbox wire:model.change="instantOnly" label="{{ __('search.instant_only') }}" />
-                    <flux:checkbox wire:model.change="hasLocker" label="{{ __('search.locker_only') }}" />
-                    <flux:checkbox wire:model.change="hasWifi" label="{{ __('search.wifi_only') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="instantOnly" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.instant_only') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="instantOnly" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="hasLocker" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.locker_only') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="hasLocker" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="hasWifi" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.wifi_only') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="hasWifi" />
+                    </flux:field>
                 </div>
 
                 @if($city || $checkIn || $checkOut || $priceMax || $bedType || $genderType || $instantOnly || $hasLocker || $hasWifi)

@@ -19,28 +19,48 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['basePricePerNight', 'weeklyPrice', 'monthlyPrice', 'weekendPrice', 'holidayPrice', 'cleaningFee', 'depositAmount', 'secondGuestFee'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" step="0.01" inputmode="decimal" wire:model.blur="{{ $field }}" icon="numbered-list" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
             @endforeach
 
             <flux:field>
-                <flux:label>{{ __('sleeping_place.fields.currency') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('sleeping_place.fields.currency') }}</span>
+    </span>
+</flux:label>
                 <flux:input maxlength="3" wire:model.blur="currency" icon="banknotes" />
                 <flux:error name="currency" />
             </flux:field>
 
             @foreach(['minNights', 'maxNights'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" inputmode="numeric" wire:model.blur="{{ $field }}" icon="numbered-list" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
             @endforeach
 
             <flux:field>
-                <flux:label>{{ __('sleeping_place.fields.cancellation_policy') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('sleeping_place.fields.cancellation_policy') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="cancellationPolicy" icon="pencil-square" />
                 <flux:error name="cancellationPolicy" />
             </flux:field>
@@ -48,7 +68,16 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['instantBookingEnabled', 'requiresHostApproval', 'canExtend', 'earlyCheckInAllowed', 'lateCheckOutAllowed', 'secondGuestAllowed'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
     </flux:card>

@@ -65,19 +65,34 @@
                 @case(1)
                     <div class="grid gap-4 sm:grid-cols-2">
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.room_number') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.room_number') }}</span>
+    </span>
+</flux:label>
                             <flux:input wire:model.blur="roomNumber" icon="home-modern" />
                             <flux:error name="roomNumber" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.title') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.title') }}</span>
+    </span>
+</flux:label>
                             <flux:input wire:model.blur="title" icon="tag" />
                             <flux:error name="title" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.room_type') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.room_type') }}</span>
+    </span>
+</flux:label>
                             <flux:select wire:model.change="roomType">
                                 @foreach($this->roomTypeOptions() as $value => $label)
                                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -87,7 +102,12 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.gender_policy') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.gender_policy') }}</span>
+    </span>
+</flux:label>
                             <flux:select wire:model.change="genderPolicy">
                                 @foreach($this->genderPolicyOptions() as $value => $label)
                                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -97,7 +117,12 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.status') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.status') }}</span>
+    </span>
+</flux:label>
                             <flux:select wire:model.change="status">
                                 @foreach($this->statusOptions() as $value => $label)
                                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -108,50 +133,187 @@
                     </div>
 
                     <div class="grid gap-3">
-                        <flux:checkbox wire:model.change="isPrivate" label="{{ __('host.room_wizard.fields.is_private') }}" />
-                        <flux:checkbox wire:model.change="isPassThrough" label="{{ __('host.room_wizard.fields.is_pass_through') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="isPrivate" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.is_private') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="isPrivate" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="isPassThrough" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.is_pass_through') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="isPassThrough" />
+                        </flux:field>
                     </div>
                     @break
 
                 @case(2)
                     <div class="grid gap-4 sm:grid-cols-2">
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.area') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.area') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="decimal" step="0.1" wire:model.blur="area" icon="home-modern" />
                             <flux:error name="area" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.floor') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.floor') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="floor" icon="home-modern" />
                             <flux:error name="floor" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.windows_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.windows_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="windowsCount" icon="home-modern" />
                             <flux:error name="windowsCount" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.window_view') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.window_view') }}</span>
+    </span>
+</flux:label>
                             <flux:input wire:model.blur="windowView" icon="home-modern" />
                             <flux:error name="windowView" />
                         </flux:field>
                     </div>
 
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <flux:checkbox wire:model.change="hasLock" label="{{ __('host.room_wizard.fields.has_lock') }}" />
-                        <flux:checkbox wire:model.change="hasWindow" label="{{ __('host.room_wizard.fields.has_window') }}" />
-                        <flux:checkbox wire:model.change="hasWardrobe" label="{{ __('host.room_wizard.fields.has_wardrobe') }}" />
-                        <flux:checkbox wire:model.change="hasDesk" label="{{ __('host.room_wizard.fields.has_desk') }}" />
-                        <flux:checkbox wire:model.change="hasChair" label="{{ __('host.room_wizard.fields.has_chair') }}" />
-                        <flux:checkbox wire:model.change="hasMirror" label="{{ __('host.room_wizard.fields.has_mirror') }}" />
-                        <flux:checkbox wire:model.change="hasHeating" label="{{ __('host.room_wizard.fields.has_heating') }}" />
-                        <flux:checkbox wire:model.change="hasAirConditioning" label="{{ __('host.room_wizard.fields.has_air_conditioning') }}" />
-                        <flux:checkbox wire:model.change="hasBalcony" label="{{ __('host.room_wizard.fields.has_balcony') }}" />
-                        <flux:checkbox wire:model.change="hasCurtains" label="{{ __('host.room_wizard.fields.has_curtains') }}" />
-                        <flux:checkbox wire:model.change="hasBlackoutCurtains" label="{{ __('host.room_wizard.fields.has_blackout_curtains') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasLock" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="key" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_lock') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasLock" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasWindow" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_window') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasWindow" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasWardrobe" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_wardrobe') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasWardrobe" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasDesk" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_desk') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasDesk" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasChair" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_chair') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasChair" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasMirror" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_mirror') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasMirror" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasHeating" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_heating') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasHeating" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasAirConditioning" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_air_conditioning') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasAirConditioning" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasBalcony" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_balcony') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasBalcony" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasCurtains" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_curtains') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasCurtains" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="hasBlackoutCurtains" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.has_blackout_curtains') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="hasBlackoutCurtains" />
+                        </flux:field>
                     </div>
                     @break
 
@@ -159,7 +321,12 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         @foreach(['noiseLevel' => 'noise_level', 'lightLevel' => 'light_level', 'ventilationLevel' => 'ventilation_level'] as $property => $field)
                             <flux:field>
-                                <flux:label>{{ __('host.room_wizard.fields.'.$field) }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.'.$field) }}</span>
+    </span>
+</flux:label>
                                 <flux:select wire:model.change="{{ $property }}">
                                     <flux:select.option value="">{{ __('host.room_wizard.options.not_specified') }}</flux:select.option>
                                     @foreach($this->levelOptions($field) as $value => $label)
@@ -171,42 +338,107 @@
                         @endforeach
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.max_guests') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.max_guests') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" icon="users" />
                             <flux:error name="maxGuests" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.beds_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.beds_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="bedsCount" icon="users" />
                             <flux:error name="bedsCount" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.min_guest_age') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.min_guest_age') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="minGuestAge" icon="user" />
                             <flux:error name="minGuestAge" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.max_guest_age') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.max_guest_age') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuestAge" icon="user" />
                             <flux:error name="maxGuestAge" />
                         </flux:field>
                     </div>
 
                     <div class="grid gap-3">
-                        <flux:checkbox wire:model.change="canEat" label="{{ __('host.room_wizard.fields.can_eat') }}" />
-                        <flux:checkbox wire:model.change="canWorkAtNight" label="{{ __('host.room_wizard.fields.can_work_at_night') }}" />
-                        <flux:checkbox wire:model.change="canUseLightAtNight" label="{{ __('host.room_wizard.fields.can_use_light_at_night') }}" />
-                        <flux:checkbox wire:model.change="canTalkAtNight" label="{{ __('host.room_wizard.fields.can_talk_at_night') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="canEat" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.can_eat') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="canEat" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="canWorkAtNight" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.can_work_at_night') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="canWorkAtNight" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="canUseLightAtNight" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.can_use_light_at_night') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="canUseLightAtNight" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="canTalkAtNight" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.can_talk_at_night') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="canTalkAtNight" />
+                        </flux:field>
                     </div>
 
                     @if((int) $bedsCount > 0)
                         <flux:callout icon="information-circle">
                             <flux:callout.text>{{ __('host.room_wizard.generate_offer', ['count' => (int) $bedsCount]) }}</flux:callout.text>
                         </flux:callout>
-                        <flux:checkbox wire:model.change="generateSleepingPlacesAfterSave" label="{{ __('host.room_wizard.fields.generate_sleeping_places') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="generateSleepingPlacesAfterSave" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('host.room_wizard.fields.generate_sleeping_places') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="generateSleepingPlacesAfterSave" />
+                        </flux:field>
                     @endif
                     @break
 
@@ -221,17 +453,32 @@
                                     </span>
                                 </flux:heading>
                                 <flux:field>
-                                    <flux:label>{{ __('host.room_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.translation_fields.title', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.room_wizard.translation_fields.description', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.translation_fields.description', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.description" />
                                     <flux:error name="translations.{{ $locale['code'] }}.description" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.room_wizard.translation_fields.notes', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.translation_fields.notes', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.notes" />
                                     <flux:error name="translations.{{ $locale['code'] }}.notes" />
                                 </flux:field>
@@ -243,7 +490,12 @@
                 @case(5)
                     <div class="space-y-4">
                         <flux:field>
-                            <flux:label>{{ __('host.room_wizard.fields.room_rules_text') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.room_wizard.fields.room_rules_text') }}</span>
+    </span>
+</flux:label>
                             <flux:textarea rows="3" wire:model.blur="roomRulesText" />
                             <flux:error name="roomRulesText" />
                         </flux:field>

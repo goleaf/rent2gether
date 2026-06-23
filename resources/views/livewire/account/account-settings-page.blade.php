@@ -19,7 +19,12 @@
         <flux:card class="space-y-4">
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('account.settings.locale') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.settings.locale') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="locale">
                         @foreach(config('localization.supported_locales') as $supportedLocale)
                             <flux:select.option value="{{ $supportedLocale }}">
@@ -31,7 +36,12 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('account.settings.currency') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.settings.currency') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="currency">
                         <flux:select.option value="EUR">EUR</flux:select.option>
                         <flux:select.option value="USD">USD</flux:select.option>
@@ -49,9 +59,36 @@
                 </span>
             </flux:heading>
             <div class="grid gap-3">
-                <flux:checkbox wire:model.change="emailMessages" label="{{ __('account.settings.email_messages') }}" />
-                <flux:checkbox wire:model.change="emailBookings" label="{{ __('account.settings.email_bookings') }}" />
-                <flux:checkbox wire:model.change="productUpdates" label="{{ __('account.settings.product_updates') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="emailMessages" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.settings.email_messages') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="emailMessages" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="emailBookings" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.settings.email_bookings') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="emailBookings" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="productUpdates" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.settings.product_updates') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="productUpdates" />
+                </flux:field>
             </div>
         </flux:card>
 
@@ -63,9 +100,36 @@
                 </span>
             </flux:heading>
             <div class="grid gap-3">
-                <flux:checkbox wire:model.change="showProfile" label="{{ __('account.settings.show_profile') }}" />
-                <flux:checkbox wire:model.change="showLanguages" label="{{ __('account.settings.show_languages') }}" />
-                <flux:checkbox wire:model.change="showReviews" label="{{ __('account.settings.show_reviews') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showProfile" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.settings.show_profile') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showProfile" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showLanguages" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.settings.show_languages') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showLanguages" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showReviews" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.settings.show_reviews') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showReviews" />
+                </flux:field>
             </div>
         </flux:card>
 

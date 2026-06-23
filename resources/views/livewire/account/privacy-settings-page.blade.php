@@ -28,15 +28,96 @@
             </div>
 
             <div class="grid gap-3">
-                <flux:checkbox wire:model.change="showDisplayNamePublicly" label="{{ __('account.privacy.guest_profile.show_display_name_publicly') }}" />
-                <flux:checkbox wire:model.change="showAvatar" label="{{ __('account.privacy.guest_profile.show_avatar') }}" />
-                <flux:checkbox wire:model.change="showAge" label="{{ __('account.privacy.guest_profile.show_age') }}" />
-                <flux:checkbox wire:model.change="showAgeRange" label="{{ __('account.privacy.guest_profile.show_age_range') }}" />
-                <flux:checkbox wire:model.change="showCity" label="{{ __('account.privacy.guest_profile.show_city') }}" />
-                <flux:checkbox wire:model.change="showLanguages" label="{{ __('account.privacy.guest_profile.show_languages') }}" />
-                <flux:checkbox wire:model.change="showOccupation" label="{{ __('account.privacy.guest_profile.show_occupation') }}" />
-                <flux:checkbox wire:model.change="showReviews" label="{{ __('account.privacy.guest_profile.show_reviews') }}" />
-                <flux:checkbox wire:model.change="showVerificationStatus" label="{{ __('account.privacy.guest_profile.show_verification_status') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showDisplayNamePublicly" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_display_name_publicly') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showDisplayNamePublicly" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showAvatar" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_avatar') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showAvatar" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showAge" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_age') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showAge" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showAgeRange" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_age_range') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showAgeRange" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showCity" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_city') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showCity" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showLanguages" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_languages') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showLanguages" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showOccupation" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_occupation') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showOccupation" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showReviews" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_reviews') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showReviews" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showVerificationStatus" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_profile.show_verification_status') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showVerificationStatus" />
+                </flux:field>
             </div>
         </flux:card>
 
@@ -52,8 +133,26 @@
             </div>
 
             <div class="grid gap-3">
-                <flux:checkbox wire:model.change="showFullNameToConfirmedHostsOnly" label="{{ __('account.privacy.guest_contact.show_full_name_to_confirmed_hosts_only') }}" />
-                <flux:checkbox wire:model.change="showPhoneAfterConfirmedBooking" label="{{ __('account.privacy.guest_contact.show_phone_after_confirmed_booking') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showFullNameToConfirmedHostsOnly" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_contact.show_full_name_to_confirmed_hosts_only') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showFullNameToConfirmedHostsOnly" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showPhoneAfterConfirmedBooking" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.guest_contact.show_phone_after_confirmed_booking') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showPhoneAfterConfirmedBooking" />
+                </flux:field>
             </div>
         </flux:card>
 
@@ -69,11 +168,56 @@
             </div>
 
             <div class="grid gap-3">
-                <flux:checkbox wire:model.change="showExactAddressBeforeBooking" label="{{ __('account.privacy.host_listing.show_exact_address_before_booking') }}" />
-                <flux:checkbox wire:model.change="showApproximateAreaBeforeBooking" label="{{ __('account.privacy.host_listing.show_approximate_area_before_booking') }}" />
-                <flux:checkbox wire:model.change="showHostPhoneAfterConfirmedBooking" label="{{ __('account.privacy.host_listing.show_phone_after_confirmed_booking') }}" />
-                <flux:checkbox wire:model.change="showCheckInInstructionsAfterConfirmation" label="{{ __('account.privacy.host_listing.show_checkin_instructions_after_confirmation') }}" />
-                <flux:checkbox wire:model.change="hideSensitivePublicListingInfo" label="{{ __('account.privacy.host_listing.hide_sensitive_public_listing_info') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showExactAddressBeforeBooking" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.host_listing.show_exact_address_before_booking') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showExactAddressBeforeBooking" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showApproximateAreaBeforeBooking" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.host_listing.show_approximate_area_before_booking') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showApproximateAreaBeforeBooking" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showHostPhoneAfterConfirmedBooking" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.host_listing.show_phone_after_confirmed_booking') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showHostPhoneAfterConfirmedBooking" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="showCheckInInstructionsAfterConfirmation" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.host_listing.show_checkin_instructions_after_confirmation') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="showCheckInInstructionsAfterConfirmation" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hideSensitivePublicListingInfo" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('account.privacy.host_listing.hide_sensitive_public_listing_info') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hideSensitivePublicListingInfo" />
+                </flux:field>
             </div>
         </flux:card>
 

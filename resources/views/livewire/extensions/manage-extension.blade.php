@@ -71,13 +71,23 @@
         @if($extension->status === \App\Enums\BookingExtensionStatus::AwaitingHostApproval)
             <div class="space-y-4">
                 <flux:field>
-                    <flux:label>{{ __('booking.extension.fields.host_response') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.extension.fields.host_response') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="3" wire:model.blur="hostResponse" />
                     <flux:error name="hostResponse" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('booking.extension.fields.decline_reason') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.extension.fields.decline_reason') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="declineReason">
                         <flux:select.option value="">{{ __('booking.extension.fields.choose_decline_reason') }}</flux:select.option>
                         @foreach($declineReasons as $value => $label)

@@ -1,6 +1,11 @@
 <form wire:submit="send" class="space-y-3">
     <flux:field>
-        <flux:label>{{ __('messages.fields.message') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('messages.fields.message') }}</span>
+    </span>
+</flux:label>
         <flux:textarea rows="3" wire:model="body" placeholder="{{ __('messages.messages.type_message') }}" />
         <flux:error name="body" />
     </flux:field>

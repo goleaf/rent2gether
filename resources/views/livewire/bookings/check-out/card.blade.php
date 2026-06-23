@@ -126,10 +126,46 @@
 
         @if ($variant === 'inspection_panel')
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="roomChecked" :label="__('check_out.fields.room_checked')" />
-                <flux:checkbox wire:model.change="sleepingPlaceChecked" :label="__('check_out.fields.sleeping_place_free')" />
-                <flux:checkbox wire:model.change="hasDamage" :label="__('check_out.fields.has_damage')" />
-                <flux:checkbox wire:model.change="hasExtraDirty" :label="__('check_out.fields.has_extra_dirty')" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="roomChecked" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.room_checked') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="roomChecked" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="sleepingPlaceChecked" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.sleeping_place_free') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="sleepingPlaceChecked" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasDamage" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.has_damage') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasDamage" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasExtraDirty" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.has_extra_dirty') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasExtraDirty" />
+                </flux:field>
                 <flux:button type="button" variant="primary" class="w-full" wire:click="completeInspection" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.create_inspection') }}
                 </flux:button>
@@ -149,7 +185,16 @@
                     @endforeach
                 </flux:select>
                 <flux:textarea wire:model.blur="description" :label="__('check_out.fields.issue_description')" />
-                <flux:checkbox wire:model.change="depositRelated" :label="__('check_out.fields.needs_deposit_deduction')" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="depositRelated" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.needs_deposit_deduction') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="depositRelated" />
+                </flux:field>
                 <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.report_issue') }}
                 </flux:button>

@@ -138,10 +138,46 @@
                 <flux:textarea wire:model.blur="guestDescription" :label="__('listing_mismatch.fields.guest_description')" rows="3" />
 
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <flux:checkbox wire:model.change="guestWantsFix" :label="__('listing_mismatch.fields.guest_wants_fix')" />
-                    <flux:checkbox wire:model.change="guestWantsRelocation" :label="__('listing_mismatch.fields.guest_wants_relocation')" />
-                    <flux:checkbox wire:model.change="guestWantsCancellation" :label="__('listing_mismatch.fields.guest_wants_cancellation')" />
-                    <flux:checkbox wire:model.change="guestWantsRefund" :label="__('listing_mismatch.fields.guest_wants_refund')" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="guestWantsFix" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing_mismatch.fields.guest_wants_fix') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="guestWantsFix" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="guestWantsRelocation" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing_mismatch.fields.guest_wants_relocation') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="guestWantsRelocation" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="guestWantsCancellation" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing_mismatch.fields.guest_wants_cancellation') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="guestWantsCancellation" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="guestWantsRefund" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('listing_mismatch.fields.guest_wants_refund') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="guestWantsRefund" />
+                    </flux:field>
                 </div>
 
                 <flux:button variant="danger" wire:click="reportMismatch" wire:loading.attr="disabled" icon="exclamation-triangle">

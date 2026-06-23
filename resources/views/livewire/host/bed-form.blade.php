@@ -57,7 +57,16 @@
                 <flux:input type="number" wire:model="minNights" label="{{ __('listing.form.min_nights') }}" min="1" :error="$errors->first('minNights')" icon="numbered-list" />
                 <flux:input type="number" wire:model="maxNights" label="{{ __('listing.form.max_nights') }}" icon="numbered-list" />
             </div>
-            <flux:checkbox wire:model="instantBook" label="{{ __('listing.form.instant_booking') }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model="instantBook" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing.form.instant_booking') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="instantBook" />
+            </flux:field>
             <flux:select wire:model="cancellationPolicy" label="{{ __('listing.form.cancellation_policy') }}">
                 @foreach($this->cancellationPolicies() as $value => $label)
                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -73,14 +82,86 @@
                 </span>
             </flux:heading>
             <div class="grid grid-cols-2 gap-3">
-                <flux:checkbox wire:model="hasLocker" label="{{ __('listing.form.locker') }}" />
-                <flux:checkbox wire:model="hasOutlet" label="{{ __('listing.form.power_outlet') }}" />
-                <flux:checkbox wire:model="hasLamp" label="{{ __('listing.form.reading_lamp') }}" />
-                <flux:checkbox wire:model="hasCurtain" label="{{ __('listing.form.privacy_curtain') }}" />
-                <flux:checkbox wire:model="hasShelf" label="{{ __('listing.form.shelf') }}" />
-                <flux:checkbox wire:model="hasLuggageSpace" label="{{ __('listing.form.luggage_space') }}" />
-                <flux:checkbox wire:model="hasLinen" label="{{ __('listing.form.bed_linen') }}" />
-                <flux:checkbox wire:model="hasTowel" label="{{ __('listing.form.towel') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasLocker" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.locker') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasLocker" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasOutlet" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.power_outlet') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasOutlet" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasLamp" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.reading_lamp') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasLamp" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasCurtain" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.privacy_curtain') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasCurtain" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasShelf" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.shelf') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasShelf" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasLuggageSpace" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.luggage_space') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasLuggageSpace" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasLinen" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.bed_linen') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasLinen" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model="hasTowel" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.towel') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasTowel" />
+                </flux:field>
             </div>
         </flux:card>
 

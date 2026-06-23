@@ -45,22 +45,42 @@
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <flux:field>
-                    <flux:label>{{ __('search.fields.check_in') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.fields.check_in') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkIn" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('search.fields.check_out') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.fields.check_out') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" min="{{ $checkIn ?: now()->addDay()->toDateString() }}" wire:model.change="checkOut" icon="calendar-days" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('search.fields.guests') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.fields.guests') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('search.fields.sort') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('search.fields.sort') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="sort">
                         @foreach($this->sortOptions() as $value => $label)
                             <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>

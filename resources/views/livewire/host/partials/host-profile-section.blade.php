@@ -34,13 +34,23 @@
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('host.profile.fields.display_name') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.display_name') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="displayName" autocomplete="name" icon="user" />
                     <flux:error name="displayName" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('host.profile.fields.languages') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.languages') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="languages" placeholder="{{ __('host.profile.helpers.languages_placeholder') }}" icon="language" />
                     <flux:description>{{ __('host.profile.helpers.languages') }}</flux:description>
                     <flux:error name="languages" />
@@ -48,7 +58,12 @@
             </div>
 
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.about') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.about') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea wire:model.blur="about" rows="4" />
                 <flux:description>{{ __('host.profile.helpers.about') }}</flux:description>
                 <flux:error name="about" />
@@ -59,7 +74,12 @@
     @case('style')
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.response_style') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.response_style') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="responseStyle">
                     <flux:select.option value="friendly">{{ __('host.profile.options.response_style.friendly') }}</flux:select.option>
                     <flux:select.option value="quick">{{ __('host.profile.options.response_style.quick') }}</flux:select.option>
@@ -69,7 +89,12 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.hosting_experience') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.hosting_experience') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="hostingExperience">
                     <flux:select.option value="">{{ __('host.profile.options.not_specified') }}</flux:select.option>
                     <flux:select.option value="new_host">{{ __('host.profile.options.hosting_experience.new_host') }}</flux:select.option>
@@ -80,10 +105,46 @@
             </flux:field>
 
             <div class="grid gap-3 sm:col-span-2">
-                <flux:checkbox wire:model.change="livesInProperty" label="{{ __('host.profile.fields.lives_in_property') }}" />
-                <flux:checkbox wire:model.change="livesNearby" label="{{ __('host.profile.fields.lives_nearby') }}" />
-                <flux:checkbox wire:model.change="canHelpWithCheckIn" label="{{ __('host.profile.fields.can_help_with_check_in') }}" />
-                <flux:checkbox wire:model.change="emergencyContactAvailable" label="{{ __('host.profile.fields.emergency_contact_available') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="livesInProperty" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host.profile.fields.lives_in_property') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="livesInProperty" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="livesNearby" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host.profile.fields.lives_nearby') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="livesNearby" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="canHelpWithCheckIn" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host.profile.fields.can_help_with_check_in') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="canHelpWithCheckIn" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="emergencyContactAvailable" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host.profile.fields.emergency_contact_available') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="emergencyContactAvailable" />
+                </flux:field>
             </div>
         </div>
         @break
@@ -91,19 +152,34 @@
     @case('defaults')
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.default_check_in_time') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.default_check_in_time') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="time" wire:model.change="defaultCheckInTime" icon="calendar-days" />
                 <flux:error name="defaultCheckInTime" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.default_check_out_time') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.default_check_out_time') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="time" wire:model.change="defaultCheckOutTime" icon="calendar-days" />
                 <flux:error name="defaultCheckOutTime" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.default_cancellation_policy') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.default_cancellation_policy') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="defaultCancellationPolicy">
                     <flux:select.option value="flexible">{{ __('host.profile.options.cancellation_policy.flexible') }}</flux:select.option>
                     <flux:select.option value="moderate">{{ __('host.profile.options.cancellation_policy.moderate') }}</flux:select.option>
@@ -114,7 +190,12 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('host.profile.fields.default_deposit_setting') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.default_deposit_setting') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="defaultDepositSetting">
                     <flux:select.option value="none">{{ __('host.profile.options.deposit_setting.none') }}</flux:select.option>
                     <flux:select.option value="small">{{ __('host.profile.options.deposit_setting.small') }}</flux:select.option>
@@ -125,7 +206,12 @@
             </flux:field>
 
             <flux:field class="sm:col-span-2">
-                <flux:label>{{ __('host.profile.fields.default_house_rules') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.profile.fields.default_house_rules') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea wire:model.blur="defaultHouseRules" rows="4" />
                 <flux:description>{{ __('host.profile.helpers.default_house_rules') }}</flux:description>
                 <flux:error name="defaultHouseRules" />

@@ -19,20 +19,35 @@
 
         <form wire:submit="create" class="space-y-4">
             <flux:field>
-                <flux:label>{{ __('favorites.fields.title') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.fields.title') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="title" maxlength="120" icon="tag" />
                 <flux:error name="title" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('favorites.fields.description') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.fields.description') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="3" wire:model.blur="description" />
                 <flux:error name="description" />
             </flux:field>
 
             <div class="grid grid-cols-2 gap-3">
                 <flux:field>
-                    <flux:label>{{ __('favorites.fields.icon') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.fields.icon') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="icon">
                         @foreach(['heart', 'tag', 'briefcase', 'academic-cap', 'calendar-days', 'star', 'bookmark'] as $iconOption)
                             <flux:select.option value="{{ $iconOption }}">{{ __('favorites.icons.'.$iconOption) }}</flux:select.option>
@@ -41,7 +56,12 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('favorites.fields.color') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.fields.color') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="color">
                         @foreach(['emerald', 'blue', 'violet', 'amber', 'zinc'] as $colorOption)
                             <flux:select.option value="{{ $colorOption }}">{{ __('favorites.colors.'.$colorOption) }}</flux:select.option>

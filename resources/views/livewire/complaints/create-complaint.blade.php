@@ -76,8 +76,26 @@
             </div>
 
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="refundRequested" label="{{ __('booking.complaint.fields.refund_requested') }}" />
-                <flux:checkbox wire:model.change="depositHoldRequested" label="{{ __('booking.complaint.fields.deposit_hold_requested') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="refundRequested" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.complaint.fields.refund_requested') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="refundRequested" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="depositHoldRequested" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.complaint.fields.deposit_hold_requested') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="depositHoldRequested" />
+                </flux:field>
             </div>
         </flux:card>
 

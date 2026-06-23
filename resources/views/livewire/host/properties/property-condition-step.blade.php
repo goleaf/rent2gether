@@ -19,7 +19,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach(['repairState', 'cleanlinessLevel', 'smellLevel', 'humidityLevel', 'winterTemperatureLevel', 'summerTemperatureLevel', 'indoorNoiseLevel', 'lightLevel'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="{{ $field }}">
                         <flux:select.option value="">{{ __('property.options.not_specified') }}</flux:select.option>
                         @foreach(['low', 'moderate', 'good', 'high', 'normal'] as $level)
@@ -32,17 +37,67 @@
         </div>
 
         <div class="space-y-3">
-            <flux:checkbox wire:model.change="hasHeating" label="{{ __('property.fields.has_heating') }}" />
-            <flux:checkbox wire:model.change="hasAirConditioning" label="{{ __('property.fields.has_air_conditioning') }}" />
-            <flux:checkbox wire:model.change="hasHotWater" label="{{ __('property.fields.has_hot_water') }}" />
-            <flux:checkbox wire:model.change="hasInsects" label="{{ __('property.fields.has_insects') }}" />
-            <flux:checkbox wire:model.change="hasMold" label="{{ __('property.fields.has_mold') }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="hasHeating" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.has_heating') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="hasHeating" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="hasAirConditioning" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.has_air_conditioning') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="hasAirConditioning" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="hasHotWater" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.has_hot_water') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="hasHotWater" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="hasInsects" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.has_insects') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="hasInsects" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="hasMold" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.has_mold') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="hasMold" />
+            </flux:field>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach(['furnitureCondition', 'plumbingCondition', 'kitchenCondition', 'floorCondition', 'wallsCondition'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="{{ $field }}" icon="pencil-square" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
@@ -52,7 +107,12 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['lastCleanedAt', 'lastRepairedAt', 'lastCheckedAt'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="wrench-screwdriver" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="date" wire:model.change="{{ $field }}" icon="calendar-days" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>

@@ -7,13 +7,23 @@
     </flux:heading>
 
     <flux:field>
-        <flux:label>{{ __('waitlist.max_total_price') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.max_total_price') }}</span>
+    </span>
+</flux:label>
         <flux:input type="number" min="0" step="0.01" wire:model.blur="maxTotalPrice" icon="banknotes" />
         <flux:error name="maxTotalPrice" />
     </flux:field>
 
     <flux:field>
-        <flux:label>{{ __('waitlist.guest_message') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.guest_message') }}</span>
+    </span>
+</flux:label>
         <flux:textarea rows="3" wire:model.blur="guestMessage" />
         <flux:error name="guestMessage" />
     </flux:field>

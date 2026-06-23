@@ -18,14 +18,28 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['hasHeating', 'hasAirConditioning', 'hasFan', 'canOpenWindow', 'canCloseWindow', 'hasCurtains', 'hasBlackoutCurtains', 'canTurnLightAtNight', 'canUsePersonalLampAtNight', 'quietHoursEnabled'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
 
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['winterTemperatureLevel', 'summerTemperatureLevel', 'ventilationLevel', 'lightLevel', 'noiseLevel', 'soundproofingLevel'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="{{ $field }}">
                         <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
                         @foreach(['none', 'low', 'moderate', 'normal', 'good', 'high', 'quiet', 'bright', 'warm'] as $level)
@@ -40,7 +54,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach(['quietHoursStart', 'quietHoursEnd'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="time" wire:model.change="{{ $field }}" icon="clock" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>

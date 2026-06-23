@@ -11,31 +11,56 @@
 
     <form wire:submit="register" class="space-y-4">
         <flux:field>
-            <flux:label>{{ __('account.fields.display_name') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.fields.display_name') }}</span>
+    </span>
+</flux:label>
             <flux:input wire:model.blur="displayName" autocomplete="name" icon="user" autofocus />
             <flux:error name="displayName" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('auth.email') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('auth.email') }}</span>
+    </span>
+</flux:label>
             <flux:input type="email" wire:model.blur="email" autocomplete="email" icon="envelope" />
             <flux:error name="email" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('auth.password_label') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('auth.password_label') }}</span>
+    </span>
+</flux:label>
             <flux:input type="password" wire:model.blur="password" autocomplete="new-password" icon="lock-closed" />
             <flux:error name="password" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('auth.register.confirm_password') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('auth.register.confirm_password') }}</span>
+    </span>
+</flux:label>
             <flux:input type="password" wire:model.blur="passwordConfirmation" autocomplete="new-password" icon="lock-closed" />
             <flux:error name="passwordConfirmation" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('account.roles.label') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('account.roles.label') }}</span>
+    </span>
+</flux:label>
             <flux:select wire:model.change="accountRole">
                 <flux:select.option value="guest">{{ __('account.roles.guest') }}</flux:select.option>
                 <flux:select.option value="host">{{ __('account.roles.host') }}</flux:select.option>

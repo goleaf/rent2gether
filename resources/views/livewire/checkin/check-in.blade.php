@@ -48,13 +48,76 @@
             </div>
 
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="propertyFound" label="{{ __('booking.checkin.property_found') }}" />
-                <flux:checkbox wire:model.change="keysReceived" label="{{ __('booking.checkin.keys_received') }}" />
-                <flux:checkbox wire:model.change="codeReceived" label="{{ __('booking.checkin.code_received') }}" />
-                <flux:checkbox wire:model.change="roomSeen" label="{{ __('booking.checkin.room_seen') }}" />
-                <flux:checkbox wire:model.change="sleepingPlaceShown" label="{{ __('booking.checkin.sleeping_place_shown') }}" />
-                <flux:checkbox wire:model.change="rulesSeen" label="{{ __('booking.checkin.rules_seen') }}" />
-                <flux:checkbox wire:model.change="everythingOk" label="{{ __('booking.checkin.everything_ok') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="propertyFound" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.property_found') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="propertyFound" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="keysReceived" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.keys_received') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="keysReceived" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="codeReceived" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.code_received') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="codeReceived" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="roomSeen" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.room_seen') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="roomSeen" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="sleepingPlaceShown" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.sleeping_place_shown') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="sleepingPlaceShown" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="rulesSeen" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.rules_seen') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="rulesSeen" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="everythingOk" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkin.everything_ok') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="everythingOk" />
+                </flux:field>
             </div>
 
             @error('keys_received')

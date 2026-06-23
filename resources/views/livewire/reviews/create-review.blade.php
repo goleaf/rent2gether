@@ -60,7 +60,12 @@
             @foreach($isHostReview ? $hostRatings : $guestRatings as $property => $labelKey)
                 <flux:field>
                     <div class="flex items-center justify-between gap-3">
-                        <flux:label>{{ __('booking.review.fields.'.$labelKey) }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.review.fields.'.$labelKey) }}</span>
+    </span>
+</flux:label>
                         <flux:select wire:model.change="{{ $property }}" class="w-24">
                             @foreach($ratingOptions as $option)
                                 <flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>
@@ -82,12 +87,26 @@
                 </flux:heading>
 
                 <flux:field>
-                    <flux:label>{{ __('booking.review.fields.host_comment') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.review.fields.host_comment') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea wire:model.blur="hostComment" rows="4" />
                     <flux:error name="hostComment" />
                 </flux:field>
 
-                <flux:checkbox wire:model.change="recommendGuest" label="{{ __('booking.review.fields.recommend_guest') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="recommendGuest" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.review.fields.recommend_guest') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="recommendGuest" />
+                </flux:field>
             </flux:card>
         @else
             <flux:card class="space-y-4">
@@ -99,24 +118,48 @@
                 </flux:heading>
 
                 <flux:field>
-                    <flux:label>{{ __('booking.review.fields.liked_text') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.review.fields.liked_text') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea wire:model.blur="likedText" rows="3" />
                     <flux:error name="likedText" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('booking.review.fields.improvement_text') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.review.fields.improvement_text') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea wire:model.blur="improvementText" rows="3" />
                     <flux:error name="improvementText" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('booking.review.fields.advice_text') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking.review.fields.advice_text') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea wire:model.blur="adviceText" rows="3" />
                     <flux:error name="adviceText" />
                 </flux:field>
 
-                <flux:checkbox wire:model.change="recommend" label="{{ __('booking.review.fields.recommend') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="recommend" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.review.fields.recommend') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="recommend" />
+                </flux:field>
             </flux:card>
 
             <flux:card class="space-y-3">

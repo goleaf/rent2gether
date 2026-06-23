@@ -27,7 +27,12 @@
 
         <div class="grid gap-3 sm:grid-cols-3">
             <flux:field>
-                <flux:label>{{ __('host.income.filters.period') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.income.filters.period') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="datePreset">
                     <flux:select.option value="this_month">{{ __('host.income.filters.this_month') }}</flux:select.option>
                     <flux:select.option value="last_month">{{ __('host.income.filters.last_month') }}</flux:select.option>
@@ -37,13 +42,23 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('host.income.filters.start') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.income.filters.start') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="date" wire:model.change="customStart" icon="calendar-days" />
                 <flux:error name="customStart" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('host.income.filters.end') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.income.filters.end') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="date" wire:model.change="customEnd" icon="calendar-days" />
                 <flux:error name="customEnd" />
             </flux:field>

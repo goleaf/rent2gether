@@ -19,7 +19,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach(['totalArea', 'livingArea', 'roomsCount', 'bedroomsCount', 'sharedRoomsCount', 'passThroughRoomsCount', 'bathroomsCount', 'showersCount', 'kitchensCount', 'balconiesCount', 'maxResidents'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" inputmode="decimal" wire:model.blur="{{ $field }}" icon="numbered-list" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
@@ -27,9 +32,36 @@
         </div>
 
         <div class="space-y-3">
-            <flux:checkbox wire:model.change="canBookWholeProperty" label="{{ __('property.fields.can_book_whole_property') }}" />
-            <flux:checkbox wire:model.change="canBookPrivateRoom" label="{{ __('property.fields.can_book_private_room') }}" />
-            <flux:checkbox wire:model.change="canBookSleepingPlace" label="{{ __('property.fields.can_book_sleeping_place') }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="canBookWholeProperty" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.can_book_whole_property') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="canBookWholeProperty" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="canBookPrivateRoom" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.can_book_private_room') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="canBookPrivateRoom" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="canBookSleepingPlace" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.can_book_sleeping_place') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="canBookSleepingPlace" />
+            </flux:field>
         </div>
     </flux:card>
 

@@ -19,25 +19,45 @@
             </div>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.search_name') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.search_name') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="title" icon="tag" />
                 <flux:error name="title" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.description') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.description') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="3" wire:model.blur="description" />
                 <flux:error name="description" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.budget') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.budget') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" min="0" inputmode="decimal" wire:model.blur="budgetMax" icon="banknotes" />
                 <flux:error name="budgetMax" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.notification_frequency') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.notification_frequency') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="notificationFrequency">
                     @foreach(['on_visit', 'instant', 'daily', 'weekly', 'important_only'] as $frequency)
                         <flux:select.option value="{{ $frequency }}">{{ __('saved_searches.frequency.'.$frequency) }}</flux:select.option>

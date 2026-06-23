@@ -19,7 +19,12 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['lengthCm', 'widthCm', 'heightCm', 'heightFromFloorCm', 'clearanceAboveCm', 'safetyRailHeightCm', 'maxWeightKg'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" inputmode="numeric" wire:model.blur="{{ $field }}" icon="numbered-list" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
@@ -29,7 +34,12 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['ladderComfortLevel', 'frameMaterial', 'frameStabilityLevel', 'squeakLevel'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="{{ $field }}" icon="pencil-square" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
@@ -38,7 +48,16 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['ladderAvailable', 'safetyRailAvailable', 'suitableForTallPerson', 'suitableForHeavyPerson', 'suitableForElderly', 'suitableForLimitedMobility', 'notSuitableForLimitedMobility'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('sleeping_place.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
     </flux:card>

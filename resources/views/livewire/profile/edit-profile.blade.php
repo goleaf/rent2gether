@@ -59,11 +59,56 @@
                 </flux:select>
             </div>
             <div class="flex flex-wrap gap-4">
-                <flux:checkbox wire:model.change="isSmoker" label="{{ __('app.profile.smoker') }}" />
-                <flux:checkbox wire:model.change="hasPets" label="{{ __('app.profile.has_pets') }}" />
-                <flux:checkbox wire:model.change="hasAllergies" label="{{ __('app.profile.has_allergies') }}" />
-                <flux:checkbox wire:model.change="prefersQuiet" label="{{ __('app.profile.prefers_quiet') }}" />
-                <flux:checkbox wire:model.change="willingToShareRoom" label="{{ __('app.profile.share_room') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="isSmoker" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('app.profile.smoker') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="isSmoker" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasPets" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('app.profile.has_pets') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasPets" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasAllergies" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('app.profile.has_allergies') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasAllergies" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="prefersQuiet" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('app.profile.prefers_quiet') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="prefersQuiet" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="willingToShareRoom" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('app.profile.share_room') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="willingToShareRoom" />
+                </flux:field>
             </div>
         </flux:card>
 
@@ -74,11 +119,25 @@
                     <span class="min-w-0">{{ __('app.profile.host_profile') }}</span>
                 </span>
             </flux:heading>
-            <flux:checkbox wire:model.change="isHost" label="{{ __('app.profile.is_host') }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="isHost" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('app.profile.is_host') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="isHost" />
+            </flux:field>
             @if($this->isHost)
                 <flux:textarea wire:model.blur="hostDescription" label="{{ __('app.profile.host_description') }}" rows="3" />
                 <flux:field>
-                    <flux:label>{{ __('app.profile.experience_started_year') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="star" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('app.profile.experience_started_year') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="hostExperienceStartedYear">
                         <flux:select.option value="">{{ __('app.profile.experience_started_year_placeholder') }}</flux:select.option>
                         @foreach($this->hostExperienceYearOptions as $year)
@@ -94,7 +153,16 @@
                     </flux:description>
                     <flux:error name="hostExperienceStartedYear" />
                 </flux:field>
-                <flux:checkbox wire:model.change="hostLivesOnSite" label="{{ __('app.profile.lives_on_site') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hostLivesOnSite" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('app.profile.lives_on_site') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hostLivesOnSite" />
+                </flux:field>
             @endif
         </flux:card>
 

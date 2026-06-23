@@ -11,13 +11,23 @@
 
     <div class="space-y-3">
         <flux:field>
-            <flux:label>{{ __('calendar.fields.date') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('calendar.fields.date') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" wire:model.change="date" icon="calendar-days" />
             <flux:error name="date" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('calendar.fields.status') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('calendar.fields.status') }}</span>
+    </span>
+</flux:label>
             <flux:select wire:model.change="status">
                 <flux:select.option value="available">{{ __('availability.statuses.available') }}</flux:select.option>
                 <flux:select.option value="closed_by_host">{{ __('availability.statuses.closed_by_host') }}</flux:select.option>
@@ -30,7 +40,12 @@
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('calendar.fields.note') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('calendar.fields.note') }}</span>
+    </span>
+</flux:label>
             <flux:textarea wire:model.blur="note" />
             <flux:error name="note" />
         </flux:field>

@@ -13,7 +13,12 @@
         <flux:accordion transition>
             @foreach(collect($hints)->groupBy('category') as $category => $items)
                 <flux:accordion.item :expanded="$loop->first">
-                    <flux:accordion.heading>{{ __('guest_hints.categories.'.$category) }}</flux:accordion.heading>
+                    <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_hints.categories.'.$category) }}</span>
+    </span>
+</flux:accordion.heading>
 
                     <flux:accordion.content>
                         <div class="space-y-2">

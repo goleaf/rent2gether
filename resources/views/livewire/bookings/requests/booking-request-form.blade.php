@@ -29,7 +29,12 @@
             </div>
 
             <flux:field>
-                <flux:label>{{ __('booking_requests.fields.request_type') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.request_type') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="requestType">
                     <flux:select.option value="host_approval">{{ __('booking_requests.request_types.host_approval') }}</flux:select.option>
                     <flux:select.option value="stay_request">{{ __('booking_requests.request_types.stay_request') }}</flux:select.option>
@@ -41,7 +46,12 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('booking_requests.fields.trip_purpose') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.trip_purpose') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="tripPurpose">
                     <flux:select.option value="">{{ __('booking_requests.empty.choose_trip_purpose') }}</flux:select.option>
                     <flux:select.option value="work">{{ __('booking_requests.trip_purposes.work') }}</flux:select.option>
@@ -53,36 +63,141 @@
 
             <div class="grid gap-3 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('booking_requests.fields.planned_arrival_time') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.planned_arrival_time') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="time" wire:model.change="plannedArrivalTime" icon="clock" />
                     <flux:error name="plannedArrivalTime" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('booking_requests.fields.planned_departure_time') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.planned_departure_time') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="time" wire:model.change="plannedDepartureTime" icon="clock" />
                 </flux:field>
             </div>
 
             <div class="grid gap-3 sm:grid-cols-2">
-                <flux:checkbox wire:model.change="hasBaggage" :label="__('booking_requests.fields.has_baggage')" />
-                <flux:checkbox wire:model.change="needsLuggageStorage" :label="__('booking_requests.fields.needs_luggage_storage')" />
-                <flux:checkbox wire:model.change="needsEarlyCheckIn" :label="__('booking_requests.fields.needs_early_check_in')" />
-                <flux:checkbox wire:model.change="needsLateCheckout" :label="__('booking_requests.fields.needs_late_checkout')" />
-                <flux:checkbox wire:model.change="needsResidenceRegistration" :label="__('booking_requests.fields.needs_residence_registration')" />
-                <flux:checkbox wire:model.change="needsReportingDocuments" :label="__('booking_requests.fields.needs_reporting_documents')" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="hasBaggage" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.has_baggage') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="hasBaggage" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="needsLuggageStorage" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.needs_luggage_storage') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="needsLuggageStorage" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="needsEarlyCheckIn" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.needs_early_check_in') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="needsEarlyCheckIn" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="needsLateCheckout" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.needs_late_checkout') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="needsLateCheckout" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="needsResidenceRegistration" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.needs_residence_registration') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="needsResidenceRegistration" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="needsReportingDocuments" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.needs_reporting_documents') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="needsReportingDocuments" />
+                </flux:field>
             </div>
 
             <flux:field>
-                <flux:label>{{ __('booking_requests.fields.message_to_host') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('booking_requests.fields.message_to_host') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="4" wire:model.blur="guestMessage" />
                 <flux:error name="guestMessage" />
             </flux:field>
 
             <div class="space-y-2">
-                <flux:checkbox wire:model.change="guestAgreedToRules" :label="__('booking_requests.fields.guest_agreed_to_rules')" />
-                <flux:checkbox wire:model.change="guestAgreedToCancellationPolicy" :label="__('booking_requests.fields.guest_agreed_to_cancellation_policy')" />
-                <flux:checkbox wire:model.change="guestAgreedToDepositPolicy" :label="__('booking_requests.fields.guest_agreed_to_deposit_policy')" />
-                <flux:checkbox wire:model.change="holdDates" :label="__('booking_requests.fields.hold_dates')" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="guestAgreedToRules" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.guest_agreed_to_rules') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="guestAgreedToRules" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="guestAgreedToCancellationPolicy" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.guest_agreed_to_cancellation_policy') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="guestAgreedToCancellationPolicy" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="guestAgreedToDepositPolicy" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.guest_agreed_to_deposit_policy') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="guestAgreedToDepositPolicy" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="holdDates" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_requests.fields.hold_dates') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="holdDates" />
+                </flux:field>
             </div>
 
             <flux:button type="button" variant="primary" class="w-full" wire:click="submit" wire:loading.attr="disabled" icon="paper-airplane">

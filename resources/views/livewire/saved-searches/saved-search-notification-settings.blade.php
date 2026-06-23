@@ -19,14 +19,55 @@
             </div>
 
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="notifyNewMatches" label="{{ __('saved_searches.notify_new_matches') }}" />
-                <flux:checkbox wire:model.change="notifyPriceDrops" label="{{ __('saved_searches.notify_price_drops') }}" />
-                <flux:checkbox wire:model.change="notifyAvailableAgain" label="{{ __('saved_searches.notify_available_again') }}" />
-                <flux:checkbox wire:model.change="notifyBetterMatch" label="{{ __('saved_searches.notify_better_match') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyNewMatches" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_new_matches') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyNewMatches" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyPriceDrops" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_price_drops') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyPriceDrops" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyAvailableAgain" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_available_again') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyAvailableAgain" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="notifyBetterMatch" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.notify_better_match') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="notifyBetterMatch" />
+                </flux:field>
             </div>
 
             <flux:field>
-                <flux:label>{{ __('saved_searches.notification_frequency') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.notification_frequency') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="notificationFrequency">
                     @foreach(['on_visit', 'instant', 'daily', 'weekly', 'important_only'] as $frequency)
                         <flux:select.option value="{{ $frequency }}">{{ __('saved_searches.frequency.'.$frequency) }}</flux:select.option>
@@ -35,15 +76,34 @@
             </flux:field>
 
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="quietHoursEnabled" label="{{ __('saved_searches.quiet_hours_enabled') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="quietHoursEnabled" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('saved_searches.quiet_hours_enabled') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="quietHoursEnabled" />
+                </flux:field>
                 <div class="grid grid-cols-2 gap-3">
                     <flux:field>
-                        <flux:label>{{ __('saved_searches.quiet_hours_start') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.quiet_hours_start') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="time" wire:model.change="quietHoursStart" icon="clock" />
                         <flux:error name="quietHoursStart" />
                     </flux:field>
                     <flux:field>
-                        <flux:label>{{ __('saved_searches.quiet_hours_end') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('saved_searches.quiet_hours_end') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="time" wire:model.change="quietHoursEnd" icon="clock" />
                         <flux:error name="quietHoursEnd" />
                     </flux:field>

@@ -158,17 +158,32 @@
 
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                     <flux:field>
-                        <flux:label>{{ __('listing.detail.booking.check_in') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('listing.detail.booking.check_in') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="checkIn" icon="calendar-days" />
                     </flux:field>
                     <flux:field>
-                        <flux:label>{{ __('listing.detail.booking.check_out') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('listing.detail.booking.check_out') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="date" min="{{ $checkIn ?: now()->toDateString() }}" wire:model.change="checkOut" icon="calendar-days" />
                     </flux:field>
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('listing.detail.booking.guests') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('listing.detail.booking.guests') }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
                 </flux:field>
 
@@ -323,7 +338,12 @@
                     </div>
 
                     <flux:field>
-                        <flux:label>{{ __('listing.detail.contact.message_label') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('listing.detail.contact.message_label') }}</span>
+    </span>
+</flux:label>
                         <flux:textarea rows="4" wire:model.blur="messageBody" />
                         <flux:error name="messageBody" />
                     </flux:field>
@@ -377,7 +397,12 @@
                     <flux:accordion transition>
                         @foreach($sleepingPlaceProfile['sections'] as $section)
                             <flux:accordion.item :expanded="$section['open']">
-                                <flux:accordion.heading>{{ $section['title'] }}</flux:accordion.heading>
+                                <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ $section['title'] }}</span>
+    </span>
+</flux:accordion.heading>
 
                                 <flux:accordion.content>
                                     <div class="grid gap-2 text-sm sm:grid-cols-2">
@@ -476,7 +501,12 @@
                         <flux:accordion transition>
                             @foreach($roomDetails['profile']['sections'] as $section)
                                 <flux:accordion.item :expanded="$section['open']">
-                                    <flux:accordion.heading>{{ $section['title'] }}</flux:accordion.heading>
+                                    <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ $section['title'] }}</span>
+    </span>
+</flux:accordion.heading>
 
                                     <flux:accordion.content>
                                         <div class="grid gap-2 text-sm sm:grid-cols-2">
@@ -587,7 +617,12 @@
                         <flux:accordion transition>
                             @foreach($propertyDetails['profile']['sections'] as $section)
                                 <flux:accordion.item :expanded="$loop->first">
-                                    <flux:accordion.heading>{{ $section['title'] }}</flux:accordion.heading>
+                                    <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ $section['title'] }}</span>
+    </span>
+</flux:accordion.heading>
 
                                     <flux:accordion.content>
                                         <div class="grid gap-2 text-sm sm:grid-cols-2">
@@ -619,7 +654,12 @@
                     <flux:accordion transition>
                         @foreach($amenityGroups as $group)
                             <flux:accordion.item :expanded="$loop->first">
-                                <flux:accordion.heading>{{ $group['title'] }}</flux:accordion.heading>
+                                <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ $group['title'] }}</span>
+    </span>
+</flux:accordion.heading>
 
                                 <flux:accordion.content>
                                     @if($group['items'])
@@ -652,7 +692,12 @@
                     <flux:accordion transition>
                         @foreach($rulesByGroup as $category => $rules)
                             <flux:accordion.item :expanded="$loop->first">
-                                <flux:accordion.heading>{{ __('listing.detail.rules.categories.'.$category) }}</flux:accordion.heading>
+                                <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('listing.detail.rules.categories.'.$category) }}</span>
+    </span>
+</flux:accordion.heading>
 
                                 <flux:accordion.content>
                                     <div class="grid gap-2">
@@ -842,7 +887,12 @@
                     <flux:accordion transition exclusive>
                         @foreach($faqItems as $item)
                             <flux:accordion.item :expanded="$loop->first">
-                                <flux:accordion.heading>{{ $item['question'] }}</flux:accordion.heading>
+                                <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ $item['question'] }}</span>
+    </span>
+</flux:accordion.heading>
                                 <flux:accordion.content>
                                     <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $item['answer'] }}</p>
                                 </flux:accordion.content>

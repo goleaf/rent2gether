@@ -78,7 +78,12 @@
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <flux:field>
-                    <flux:label>{{ __('availability.calendar.fields.property') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.property') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="selectedPropertyId">
                         @foreach($this->properties as $property)
                             <flux:select.option value="{{ $property['id'] }}">{{ $property['label'] }}</flux:select.option>
@@ -87,7 +92,12 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('availability.calendar.fields.room') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.room') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="selectedRoomId">
                         @foreach($this->rooms as $room)
                             <flux:select.option value="{{ $room['id'] }}">{{ $room['label'] }}</flux:select.option>
@@ -96,7 +106,12 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('availability.calendar.fields.sleeping_place') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.sleeping_place') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="selectedSleepingPlaceId">
                         @foreach($this->sleepingPlaces as $place)
                             <flux:select.option value="{{ $place['id'] }}">{{ $place['label'] }}</flux:select.option>
@@ -106,7 +121,12 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('availability.calendar.fields.view_mode') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.view_mode') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="viewMode">
                         <flux:select.option value="list">{{ __('availability.calendar.view_modes.list') }}</flux:select.option>
                         <flux:select.option value="month">{{ __('availability.calendar.view_modes.month') }}</flux:select.option>
@@ -221,7 +241,9 @@
                         @foreach($this->hierarchyOverview as $property)
                             <flux:accordion.item :expanded="(int) $property['id'] === (int) $selectedPropertyId">
                                 <flux:accordion.heading>
-                                    <div class="flex items-start justify-between gap-3">
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0"><div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
                                             <p class="truncate font-medium">{{ $property['label'] }}</p>
                                             <p class="text-xs text-zinc-500 dark:text-zinc-400">
@@ -231,8 +253,9 @@
                                         <flux:badge size="sm" color="blue" icon="home-modern">
                                             {{ __('availability.calendar.occupancy_value', ['percent' => $property['occupancy_percentage']]) }}
                                         </flux:badge>
-                                    </div>
-                                </flux:accordion.heading>
+                                    </div></span>
+    </span>
+</flux:accordion.heading>
 
                                 <flux:accordion.content>
                                     <div class="space-y-2">
@@ -283,17 +306,32 @@
 
                     <div class="grid gap-3">
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.range_start') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.range_start') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="date" wire:model.change="rangeStart" icon="calendar-days" />
                             <flux:error name="rangeStart" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.range_end') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.range_end') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="date" wire:model.change="rangeEnd" icon="calendar-days" />
                             <flux:error name="rangeEnd" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.status') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.status') }}</span>
+    </span>
+</flux:label>
                             <flux:select wire:model.change="bulkStatus">
                                 @foreach($this->statusOptions() as $value => $label)
                                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -302,28 +340,66 @@
                             <flux:error name="bulkStatus" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.price_override') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.price_override') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="decimal" step="0.01" wire:model.blur="priceOverride" icon="banknotes" />
                             <flux:error name="priceOverride" />
                         </flux:field>
                         <div class="grid grid-cols-2 gap-3">
                             <flux:field>
-                                <flux:label>{{ __('availability.calendar.fields.min_nights_override') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.min_nights_override') }}</span>
+    </span>
+</flux:label>
                                 <flux:input type="number" inputmode="numeric" wire:model.blur="minNightsOverride" icon="numbered-list" />
                                 <flux:error name="minNightsOverride" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('availability.calendar.fields.max_nights_override') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.max_nights_override') }}</span>
+    </span>
+</flux:label>
                                 <flux:input type="number" inputmode="numeric" wire:model.blur="maxNightsOverride" icon="numbered-list" />
                                 <flux:error name="maxNightsOverride" />
                             </flux:field>
                         </div>
                         <div class="grid gap-2">
-                            <flux:checkbox wire:model.change="checkInAllowed" label="{{ __('availability.calendar.fields.check_in_allowed') }}" />
-                            <flux:checkbox wire:model.change="checkOutAllowed" label="{{ __('availability.calendar.fields.check_out_allowed') }}" />
+                                                        <flux:field variant="inline">
+                                <flux:checkbox wire:model.change="checkInAllowed" />
+                                <flux:label>
+                                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('availability.calendar.fields.check_in_allowed') }}</span>
+                                    </span>
+                                </flux:label>
+                                <flux:error name="checkInAllowed" />
+                            </flux:field>
+                                                        <flux:field variant="inline">
+                                <flux:checkbox wire:model.change="checkOutAllowed" />
+                                <flux:label>
+                                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('availability.calendar.fields.check_out_allowed') }}</span>
+                                    </span>
+                                </flux:label>
+                                <flux:error name="checkOutAllowed" />
+                            </flux:field>
                         </div>
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.note') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.note') }}</span>
+    </span>
+</flux:label>
                             <flux:input wire:model.blur="note" maxlength="160" icon="pencil-square" />
                             <flux:error name="note" />
                         </flux:field>
@@ -410,11 +486,21 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.range_start') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.range_start') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="date" wire:model.change="rangeStart" icon="calendar-days" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('availability.calendar.fields.range_end') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('availability.calendar.fields.range_end') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="date" wire:model.change="rangeEnd" icon="calendar-days" />
                         </flux:field>
                     </div>

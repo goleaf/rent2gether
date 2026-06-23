@@ -41,17 +41,32 @@
 
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_count') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_count') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="bulkCount" icon="numbered-list" />
                 <flux:error name="bulkCount" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_title_prefix') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_title_prefix') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="bulkTitlePrefix" icon="tag" />
                 <flux:error name="bulkTitlePrefix" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_type') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_type') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="bulkType">
                     @foreach($this->typeOptions() as $value => $label)
                         <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -60,22 +75,42 @@
                 <flux:error name="bulkType" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_base_price') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_base_price') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="decimal" step="0.01" wire:model.blur="bulkBasePrice" icon="banknotes" />
                 <flux:error name="bulkBasePrice" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_currency') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_currency') }}</span>
+    </span>
+</flux:label>
                 <flux:input maxlength="3" wire:model.blur="bulkCurrency" icon="banknotes" />
                 <flux:error name="bulkCurrency" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_min_nights') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_min_nights') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="bulkMinNights" icon="numbered-list" />
                 <flux:error name="bulkMinNights" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('host.sleeping_places.fields.bulk_max_guests') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.sleeping_places.fields.bulk_max_guests') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="bulkMaxGuests" icon="users" />
                 <flux:error name="bulkMaxGuests" />
             </flux:field>

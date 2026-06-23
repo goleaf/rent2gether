@@ -18,23 +18,47 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['hasDoor', 'hasLock', 'hasKey', 'keyGivenToGuest', 'canLockFromInside', 'canLockFromOutside', 'hasWardrobe', 'hasSharedWardrobe', 'hasPersonalLockers', 'lockersHaveLocks', 'hasLuggageSpace', 'hasDesk', 'hasChairs', 'hasMirror', 'canStoreFood'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="key" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
 
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
-                <flux:label>{{ __('room.fields.personal_lockers_count') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cube" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.personal_lockers_count') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="personalLockersCount" icon="numbered-list" />
                 <flux:error name="personalLockersCount" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('room.fields.chairs_count') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.chairs_count') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="chairsCount" icon="numbered-list" />
                 <flux:error name="chairsCount" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('room.fields.privacy_level') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.privacy_level') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="privacyLevel">
                     <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
                     @foreach(['shared', 'moderate', 'private'] as $level)
@@ -46,7 +70,12 @@
         </div>
 
         <flux:field>
-            <flux:label>{{ __('room.fields.food_storage_allowed_type') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.food_storage_allowed_type') }}</span>
+    </span>
+</flux:label>
             <flux:select wire:model.change="foodStorageAllowedType">
                 <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
                 @foreach(['none', 'dry_food_only', 'kitchen_only', 'small_snacks'] as $type)

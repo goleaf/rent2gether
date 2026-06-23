@@ -19,7 +19,12 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach(['area', 'lengthMeters', 'widthMeters', 'ceilingHeightMeters', 'windowsCount'] as $field)
                 <flux:field>
-                    <flux:label>{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+    </span>
+</flux:label>
                     <flux:input type="number" step="0.01" inputmode="decimal" wire:model.blur="{{ $field }}" icon="numbered-list" />
                     <flux:error name="{{ $field }}" />
                 </flux:field>
@@ -28,17 +33,32 @@
 
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
-                <flux:label>{{ __('room.fields.window_size') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.window_size') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="windowSize" icon="home-modern" />
                 <flux:error name="windowSize" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('room.fields.window_view') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.window_view') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="windowView" icon="home-modern" />
                 <flux:error name="windowView" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('room.fields.cardinal_direction') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.cardinal_direction') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="cardinalDirection">
                     <flux:select.option value="">{{ __('room.options.not_specified') }}</flux:select.option>
                     @foreach(['north', 'south', 'east', 'west'] as $direction)
@@ -51,7 +71,16 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach(['hasBalcony', 'balconyAccessible', 'hasFreePassageSpace', 'narrowPassages'] as $field)
-                <flux:checkbox wire:model.change="{{ $field }}" label="{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $field }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
             @endforeach
         </div>
     </flux:card>

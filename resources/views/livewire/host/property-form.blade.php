@@ -129,46 +129,108 @@
 
                         <div class="grid gap-4 sm:grid-cols-2">
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.region') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.region') }}</span>
+    </span>
+</flux:label>
                                 <flux:input wire:model.blur="regionName" icon="user" />
                                 <flux:error name="regionName" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.district') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.district') }}</span>
+    </span>
+</flux:label>
                                 <flux:input wire:model.blur="district" icon="map-pin" />
                                 <flux:error name="district" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.street') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.street') }}</span>
+    </span>
+</flux:label>
                                 <flux:input wire:model.blur="street" icon="map-pin" />
                                 <flux:error name="street" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.house_number') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.house_number') }}</span>
+    </span>
+</flux:label>
                                 <flux:input wire:model.blur="houseNumber" icon="pencil-square" />
                                 <flux:error name="houseNumber" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.apartment_number') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.apartment_number') }}</span>
+    </span>
+</flux:label>
                                 <flux:input wire:model.blur="apartmentNumber" icon="pencil-square" />
                                 <flux:error name="apartmentNumber" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.floor') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.floor') }}</span>
+    </span>
+</flux:label>
                                 <flux:input type="number" inputmode="numeric" wire:model.blur="floor" icon="home-modern" />
                                 <flux:error name="floor" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.total_floors') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.total_floors') }}</span>
+    </span>
+</flux:label>
                                 <flux:input type="number" inputmode="numeric" wire:model.blur="totalFloors" icon="home-modern" />
                                 <flux:error name="totalFloors" />
                             </flux:field>
                         </div>
 
                         <div class="grid gap-3">
-                            <flux:checkbox wire:model.change="hasElevator" label="{{ __('host.property_wizard.fields.has_elevator') }}" />
-                            <flux:checkbox wire:model.change="useApproximatePublicLocation" label="{{ __('host.property_wizard.fields.approximate_public_location') }}" />
-                            <flux:checkbox wire:model.change="hideExactAddressUntilBooking" label="{{ __('host.property_wizard.fields.hide_exact_address') }}" />
+                                                        <flux:field variant="inline">
+                                <flux:checkbox wire:model.change="hasElevator" />
+                                <flux:label>
+                                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                                        <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('host.property_wizard.fields.has_elevator') }}</span>
+                                    </span>
+                                </flux:label>
+                                <flux:error name="hasElevator" />
+                            </flux:field>
+                                                        <flux:field variant="inline">
+                                <flux:checkbox wire:model.change="useApproximatePublicLocation" />
+                                <flux:label>
+                                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                                        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('host.property_wizard.fields.approximate_public_location') }}</span>
+                                    </span>
+                                </flux:label>
+                                <flux:error name="useApproximatePublicLocation" />
+                            </flux:field>
+                                                        <flux:field variant="inline">
+                                <flux:checkbox wire:model.change="hideExactAddressUntilBooking" />
+                                <flux:label>
+                                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                        <span class="min-w-0">{{ __('host.property_wizard.fields.hide_exact_address') }}</span>
+                                    </span>
+                                </flux:label>
+                                <flux:error name="hideExactAddressUntilBooking" />
+                            </flux:field>
                         </div>
                     </div>
                     @break
@@ -176,37 +238,72 @@
                 @case(4)
                     <div class="grid gap-4 sm:grid-cols-2">
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.total_area') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.total_area') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="decimal" step="0.1" wire:model.blur="totalArea" icon="home-modern" />
                             <flux:error name="totalArea" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.rooms_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.rooms_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="roomsCount" icon="home-modern" />
                             <flux:error name="roomsCount" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.bathrooms_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.bathrooms_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="bathroomsCount" icon="home-modern" />
                             <flux:error name="bathroomsCount" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.showers_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.showers_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="showersCount" icon="numbered-list" />
                             <flux:error name="showersCount" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.kitchens_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.kitchens_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="kitchensCount" icon="numbered-list" />
                             <flux:error name="kitchensCount" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.balconies_count') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.balconies_count') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="balconiesCount" icon="numbered-list" />
                             <flux:error name="balconiesCount" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('host.property_wizard.fields.max_guests') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.max_guests') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" icon="users" />
                             <flux:error name="maxGuests" />
                         </flux:field>
@@ -215,7 +312,12 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         @foreach(['repairState' => 'repair_state', 'noiseLevel' => 'noise_level', 'cleanlinessLevel' => 'cleanliness_level', 'safetyLevel' => 'safety_level'] as $property => $field)
                             <flux:field>
-                                <flux:label>{{ __('host.property_wizard.fields.'.$field) }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.fields.'.$field) }}</span>
+    </span>
+</flux:label>
                                 <flux:select wire:model.change="{{ $property }}">
                                     <flux:select.option value="">{{ __('host.property_wizard.options.not_specified') }}</flux:select.option>
                                     @foreach($this->levelOptions($field) as $value => $label)
@@ -239,32 +341,62 @@
                                     </span>
                                 </flux:heading>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.translation_fields.title', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.translation_fields.summary', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.translation_fields.summary', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="2" wire:model.blur="translations.{{ $locale['code'] }}.summary" />
                                     <flux:error name="translations.{{ $locale['code'] }}.summary" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.translation_fields.description', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.translation_fields.description', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="4" wire:model.blur="translations.{{ $locale['code'] }}.description" />
                                     <flux:error name="translations.{{ $locale['code'] }}.description" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.translation_fields.what_to_know', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.translation_fields.what_to_know', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.what_to_know" />
                                     <flux:error name="translations.{{ $locale['code'] }}.what_to_know" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.translation_fields.suitable_for', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.translation_fields.suitable_for', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="2" wire:model.blur="translations.{{ $locale['code'] }}.suitable_for" />
                                     <flux:error name="translations.{{ $locale['code'] }}.suitable_for" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('host.property_wizard.translation_fields.not_suitable_for', ['language' => $locale['name']]) }}</flux:label>
+                                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('host.property_wizard.translation_fields.not_suitable_for', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                                     <flux:textarea rows="2" wire:model.blur="translations.{{ $locale['code'] }}.not_suitable_for" />
                                     <flux:error name="translations.{{ $locale['code'] }}.not_suitable_for" />
                                 </flux:field>

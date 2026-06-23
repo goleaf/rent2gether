@@ -17,52 +17,132 @@
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
-            <flux:label>{{ __('waitlist.check_in') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.check_in') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" min="{{ now()->toDateString() }}" wire:model.change="desiredCheckIn" icon="calendar-days" />
             <flux:error name="desiredCheckIn" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('waitlist.check_out') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.check_out') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" min="{{ $desiredCheckIn ?: now()->toDateString() }}" wire:model.change="desiredCheckOut" icon="calendar-days" />
             <flux:error name="desiredCheckOut" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('waitlist.guests_count') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.guests_count') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" min="1" inputmode="numeric" wire:model.change="guestsCount" icon="users" />
             <flux:error name="guestsCount" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('waitlist.max_price') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.max_price') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxPricePerNight" icon="banknotes" />
             <flux:error name="maxPricePerNight" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('waitlist.max_total_price') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.max_total_price') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxTotalPrice" icon="banknotes" />
             <flux:error name="maxTotalPrice" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('waitlist.max_deposit') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.max_deposit') }}</span>
+    </span>
+</flux:label>
             <flux:input type="number" min="0" step="0.01" inputmode="decimal" wire:model.blur="maxDeposit" icon="banknotes" />
             <flux:error name="maxDeposit" />
         </flux:field>
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <flux:checkbox wire:model.change="flexibleDates" label="{{ __('waitlist.flexible_dates') }}" />
-        <flux:checkbox wire:model.change="readyToBookImmediately" label="{{ __('waitlist.ready_to_book') }}" />
-        <flux:checkbox wire:model.change="autoSendRequest" label="{{ __('waitlist.auto_send_request') }}" />
-        <flux:checkbox wire:model.change="notifyAvailable" label="{{ __('waitlist.notify_available') }}" />
-        <flux:checkbox wire:model.change="notifyPriceDrop" label="{{ __('waitlist.notify_price_drop') }}" />
+                <flux:field variant="inline">
+            <flux:checkbox wire:model.change="flexibleDates" />
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('waitlist.flexible_dates') }}</span>
+                </span>
+            </flux:label>
+            <flux:error name="flexibleDates" />
+        </flux:field>
+                <flux:field variant="inline">
+            <flux:checkbox wire:model.change="readyToBookImmediately" />
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="check-circle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('waitlist.ready_to_book') }}</span>
+                </span>
+            </flux:label>
+            <flux:error name="readyToBookImmediately" />
+        </flux:field>
+                <flux:field variant="inline">
+            <flux:checkbox wire:model.change="autoSendRequest" />
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="check-circle" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('waitlist.auto_send_request') }}</span>
+                </span>
+            </flux:label>
+            <flux:error name="autoSendRequest" />
+        </flux:field>
+                <flux:field variant="inline">
+            <flux:checkbox wire:model.change="notifyAvailable" />
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('waitlist.notify_available') }}</span>
+                </span>
+            </flux:label>
+            <flux:error name="notifyAvailable" />
+        </flux:field>
+                <flux:field variant="inline">
+            <flux:checkbox wire:model.change="notifyPriceDrop" />
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('waitlist.notify_price_drop') }}</span>
+                </span>
+            </flux:label>
+            <flux:error name="notifyPriceDrop" />
+        </flux:field>
     </div>
 
     <flux:field>
-        <flux:label>{{ __('waitlist.guest_message') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('waitlist.guest_message') }}</span>
+    </span>
+</flux:label>
         <flux:textarea rows="3" wire:model.blur="guestMessage" />
         <flux:error name="guestMessage" />
     </flux:field>

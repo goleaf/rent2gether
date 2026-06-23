@@ -41,7 +41,12 @@
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.trip_purpose') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.trip_purpose') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="tripPurpose">
                         <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                         @foreach($tripPurposes as $purpose)
@@ -53,7 +58,12 @@
 
                 @if($tripPurpose === 'other')
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.trip_purpose_other') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.trip_purpose_other') }}</span>
+    </span>
+</flux:label>
                         <flux:textarea rows="2" wire:model.blur="tripPurposeOther" />
                         <flux:error name="tripPurposeOther" />
                     </flux:field>
@@ -67,7 +77,12 @@
                 @endif
 
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.trip_purpose_visibility') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.trip_purpose_visibility') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="tripPurposeVisibility">
                         <flux:select.option value="safe">{{ __('guest_intake.visibility.safe') }}</flux:select.option>
                         <flux:select.option value="exact">{{ __('guest_intake.visibility.exact') }}</flux:select.option>
@@ -90,49 +105,124 @@
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.planned_arrival_date') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.planned_arrival_date') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="date" wire:model.change="plannedArrivalDate" icon="calendar-days" />
                         <flux:error name="plannedArrivalDate" />
                     </flux:field>
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.planned_arrival_time') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.planned_arrival_time') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="time" wire:model.change="plannedArrivalTime" icon="clock" />
                         <flux:error name="plannedArrivalTime" />
                     </flux:field>
                 </div>
 
-                <flux:checkbox wire:model.change="arrivalTimeUnknown" label="{{ __('guest_intake.fields.arrival_time_unknown') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="arrivalTimeUnknown" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.fields.arrival_time_unknown') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="arrivalTimeUnknown" />
+                </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.planned_arrival_window') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.planned_arrival_window') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="plannedArrivalWindow" maxlength="100" icon="clock" />
                     <flux:error name="plannedArrivalWindow" />
                 </flux:field>
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.planned_departure_time') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.planned_departure_time') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="time" wire:model.change="plannedDepartureTime" icon="clock" />
                         <flux:error name="plannedDepartureTime" />
                     </flux:field>
                     <div class="space-y-3 pt-1">
-                        <flux:checkbox wire:model.change="departureTimeUnknown" label="{{ __('guest_intake.fields.departure_time_unknown') }}" />
-                        <flux:checkbox wire:model.change="canAdjustArrivalTime" label="{{ __('guest_intake.fields.can_adjust_arrival_time') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="departureTimeUnknown" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('guest_intake.fields.departure_time_unknown') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="departureTimeUnknown" />
+                        </flux:field>
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="canAdjustArrivalTime" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('guest_intake.fields.can_adjust_arrival_time') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="canAdjustArrivalTime" />
+                        </flux:field>
                     </div>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                        <flux:checkbox wire:model.change="earlyCheckInRequested" label="{{ __('guest_intake.fields.early_check_in_requested') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="earlyCheckInRequested" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('guest_intake.fields.early_check_in_requested') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="earlyCheckInRequested" />
+                        </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('guest_intake.fields.requested_early_check_in_time') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.requested_early_check_in_time') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="time" wire:model.change="requestedEarlyCheckInTime" icon="calendar-days" />
                         </flux:field>
                     </div>
                     <div class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                        <flux:checkbox wire:model.change="lateCheckOutRequested" label="{{ __('guest_intake.fields.late_check_out_requested') }}" />
+                                                <flux:field variant="inline">
+                            <flux:checkbox wire:model.change="lateCheckOutRequested" />
+                            <flux:label>
+                                <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                    <span class="min-w-0">{{ __('guest_intake.fields.late_check_out_requested') }}</span>
+                                </span>
+                            </flux:label>
+                            <flux:error name="lateCheckOutRequested" />
+                        </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('guest_intake.fields.requested_late_check_out_time') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.requested_late_check_out_time') }}</span>
+    </span>
+</flux:label>
                             <flux:input type="time" wire:model.change="requestedLateCheckOutTime" icon="calendar-days" />
                         </flux:field>
                     </div>
@@ -152,7 +242,12 @@
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.baggage_level') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.baggage_level') }}</span>
+    </span>
+</flux:label>
                         <flux:select wire:model.change="baggageLevel">
                             <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                             @foreach($baggageLevels as $level)
@@ -161,31 +256,91 @@
                         </flux:select>
                     </flux:field>
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.baggage_count') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.baggage_count') }}</span>
+    </span>
+</flux:label>
                         <flux:input type="number" min="0" max="20" inputmode="numeric" wire:model.change="baggageCount" icon="numbered-list" />
                     </flux:field>
                 </div>
 
                 <div class="grid gap-2 sm:grid-cols-2">
-                    <flux:checkbox wire:model.change="hasLargeSuitcase" label="{{ __('guest_intake.fields.has_large_suitcase') }}" />
-                    <flux:checkbox wire:model.change="hasSpecialBaggage" label="{{ __('guest_intake.fields.has_special_baggage') }}" />
-                    <flux:checkbox wire:model.change="needsLuggageStorageBeforeCheckin" label="{{ __('guest_intake.fields.needs_luggage_storage_before_checkin') }}" />
-                    <flux:checkbox wire:model.change="needsLuggageStorageAfterCheckout" label="{{ __('guest_intake.fields.needs_luggage_storage_after_checkout') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="hasLargeSuitcase" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.has_large_suitcase') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="hasLargeSuitcase" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="hasSpecialBaggage" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.has_special_baggage') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="hasSpecialBaggage" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsLuggageStorageBeforeCheckin" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_luggage_storage_before_checkin') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsLuggageStorageBeforeCheckin" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsLuggageStorageAfterCheckout" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_luggage_storage_after_checkout') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsLuggageStorageAfterCheckout" />
+                    </flux:field>
                 </div>
 
                 @if($hasSpecialBaggage)
                     <flux:field>
-                        <flux:label>{{ __('guest_intake.fields.special_baggage_type') }}</flux:label>
+                        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.special_baggage_type') }}</span>
+    </span>
+</flux:label>
                         <flux:input wire:model.blur="specialBaggageType" maxlength="100" icon="pencil-square" />
                     </flux:field>
                 @endif
 
                 <div class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                    <flux:checkbox wire:model.change="hasPet" label="{{ __('guest_intake.fields.has_pet') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="hasPet" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.has_pet') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="hasPet" />
+                    </flux:field>
                     @if($hasPet)
                         <div class="grid gap-3 sm:grid-cols-2">
                             <flux:field>
-                                <flux:label>{{ __('guest_intake.fields.pet_type') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.pet_type') }}</span>
+    </span>
+</flux:label>
                                 <flux:select wire:model.change="petType">
                                     <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                                     @foreach($petTypes as $type)
@@ -194,7 +349,12 @@
                                 </flux:select>
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('guest_intake.fields.pet_size') }}</flux:label>
+                                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.pet_size') }}</span>
+    </span>
+</flux:label>
                                 <flux:select wire:model.change="petSize">
                                     <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                                     @foreach($petSizes as $size)
@@ -204,15 +364,38 @@
                             </flux:field>
                         </div>
                         <flux:field>
-                            <flux:label>{{ __('guest_intake.fields.pet_notes') }}</flux:label>
+                            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.pet_notes') }}</span>
+    </span>
+</flux:label>
                             <flux:textarea rows="2" wire:model.blur="petNotes" />
                         </flux:field>
                     @endif
                 </div>
 
                 <div class="grid gap-2 sm:grid-cols-2">
-                    <flux:checkbox wire:model.change="smokes" label="{{ __('guest_intake.fields.smokes') }}" />
-                    <flux:checkbox wire:model.change="acceptsSmokingRules" label="{{ __('guest_intake.fields.accepts_smoking_rules') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="smokes" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.smokes') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="smokes" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="acceptsSmokingRules" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.accepts_smoking_rules') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="acceptsSmokingRules" />
+                    </flux:field>
                 </div>
             </div>
         @elseif($step === 4)
@@ -228,17 +411,85 @@
                 </div>
 
                 <div class="grid gap-2 sm:grid-cols-2">
-                    <flux:checkbox wire:model.change="needsQuiet" label="{{ __('guest_intake.fields.needs_quiet') }}" />
-                    <flux:checkbox wire:model.change="needsWorkspace" label="{{ __('guest_intake.fields.needs_workspace') }}" />
-                    <flux:checkbox wire:model.change="needsFastWifi" label="{{ __('guest_intake.fields.needs_fast_wifi') }}" />
-                    <flux:checkbox wire:model.change="needsPowerSocket" label="{{ __('guest_intake.fields.needs_power_socket') }}" />
-                    <flux:checkbox wire:model.change="needsOnlineCalls" label="{{ __('guest_intake.fields.needs_online_calls') }}" />
-                    <flux:checkbox wire:model.change="needsLateEntry" label="{{ __('guest_intake.fields.needs_late_entry') }}" />
-                    <flux:checkbox wire:model.change="needsSelfCheckIn" label="{{ __('guest_intake.fields.needs_self_check_in') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsQuiet" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_quiet') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsQuiet" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsWorkspace" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_workspace') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsWorkspace" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsFastWifi" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_fast_wifi') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsFastWifi" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsPowerSocket" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_power_socket') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsPowerSocket" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsOnlineCalls" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_online_calls') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsOnlineCalls" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsLateEntry" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_late_entry') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsLateEntry" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsSelfCheckIn" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_self_check_in') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsSelfCheckIn" />
+                    </flux:field>
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.noise_sensitivity_level') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.noise_sensitivity_level') }}</span>
+    </span>
+</flux:label>
                     <flux:select wire:model.change="noiseSensitivityLevel">
                         <flux:select.option value="">{{ __('guest_intake.placeholders.choose') }}</flux:select.option>
                         @foreach($noiseLevels as $level)
@@ -260,24 +511,84 @@
                 </div>
 
                 <div class="grid gap-2 sm:grid-cols-2">
-                    <flux:checkbox wire:model.change="needsRegistration" label="{{ __('guest_intake.fields.needs_registration') }}" />
-                    <flux:checkbox wire:model.change="needsWorkDocuments" label="{{ __('guest_intake.fields.needs_work_documents') }}" />
-                    <flux:checkbox wire:model.change="needsInvoice" label="{{ __('guest_intake.fields.needs_invoice') }}" />
-                    <flux:checkbox wire:model.change="needsReceipt" label="{{ __('guest_intake.fields.needs_receipt') }}" />
-                    <flux:checkbox wire:model.change="needsContract" label="{{ __('guest_intake.fields.needs_contract') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsRegistration" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_registration') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsRegistration" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsWorkDocuments" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_work_documents') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsWorkDocuments" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsInvoice" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_invoice') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsInvoice" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsReceipt" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_receipt') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsReceipt" />
+                    </flux:field>
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="needsContract" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('guest_intake.fields.needs_contract') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="needsContract" />
+                    </flux:field>
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.company_name') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.company_name') }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="companyName" maxlength="255" icon="user" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.document_notes') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.document_notes') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="2" wire:model.blur="documentNotes" />
                     <flux:description>{{ __('guest_intake.privacy.document_notes_helper') }}</flux:description>
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.special_requests') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.special_requests') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="3" wire:model.blur="specialRequests" />
                 </flux:field>
             </div>
@@ -305,7 +616,12 @@
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('guest_intake.fields.host_message') }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('guest_intake.fields.host_message') }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="4" wire:model.blur="hostMessage" />
                     <flux:error name="hostMessage" />
                 </flux:field>
@@ -321,7 +637,16 @@
                     </div>
                 @endif
 
-                <flux:checkbox wire:model.change="rulesAccepted" label="{{ __('guest_intake.fields.rules_accepted') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="rulesAccepted" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('guest_intake.fields.rules_accepted') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="rulesAccepted" />
+                </flux:field>
                 <flux:error name="rules_accepted" />
             </div>
         @endif

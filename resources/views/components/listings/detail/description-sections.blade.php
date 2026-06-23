@@ -20,7 +20,12 @@
             <flux:accordion transition>
                 @foreach($sections as $section)
                     <flux:accordion.item :expanded="$section['open_by_default']">
-                        <flux:accordion.heading>{{ __($section['title_key']) }}</flux:accordion.heading>
+                        <flux:accordion.heading>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cube" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __($section['title_key']) }}</span>
+    </span>
+</flux:accordion.heading>
 
                         <flux:accordion.content>
                             <div class="space-y-3">

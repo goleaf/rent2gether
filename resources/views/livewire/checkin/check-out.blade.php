@@ -48,10 +48,46 @@
             </div>
 
             <div class="space-y-3">
-                <flux:checkbox wire:model.change="keysReturned" label="{{ __('booking.checkout.keys_returned') }}" />
-                <flux:checkbox wire:model.change="belongingsRemoved" label="{{ __('booking.checkout.belongings_removed') }}" />
-                <flux:checkbox wire:model.change="lockerEmptied" label="{{ __('booking.checkout.locker_emptied') }}" />
-                <flux:checkbox wire:model.change="placeClean" label="{{ __('booking.checkout.place_clean') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="keysReturned" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkout.keys_returned') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="keysReturned" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="belongingsRemoved" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkout.belongings_removed') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="belongingsRemoved" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="lockerEmptied" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkout.locker_emptied') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="lockerEmptied" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="placeClean" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.checkout.place_clean') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="placeClean" />
+                </flux:field>
             </div>
 
             @error('booking')

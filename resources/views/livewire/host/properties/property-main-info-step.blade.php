@@ -25,17 +25,32 @@
                     </span>
                 </flux:heading>
                 <flux:field>
-                    <flux:label>{{ __('property.translation_fields.title', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.translation_fields.title', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="translations.{{ $locale['code'] }}.title" icon="language" />
                     <flux:error name="translations.{{ $locale['code'] }}.title" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('property.translation_fields.short_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.translation_fields.short_description', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="3" wire:model.blur="translations.{{ $locale['code'] }}.short_description" />
                     <flux:error name="translations.{{ $locale['code'] }}.short_description" />
                 </flux:field>
                 <flux:field>
-                    <flux:label>{{ __('property.translation_fields.full_description', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="language" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.translation_fields.full_description', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:textarea rows="5" wire:model.blur="translations.{{ $locale['code'] }}.full_description" />
                     <flux:error name="translations.{{ $locale['code'] }}.full_description" />
                 </flux:field>
@@ -43,7 +58,12 @@
         @endforeach
 
         <flux:field>
-            <flux:label>{{ __('property.fields.property_type') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.property_type') }}</span>
+    </span>
+</flux:label>
             <flux:select wire:model.change="propertyType">
                 <flux:select.option value="">{{ __('property.options.not_specified') }}</flux:select.option>
                 @foreach(\App\Enums\PropertyType::cases() as $type)
@@ -55,12 +75,22 @@
 
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('property.fields.property_subtype') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.property_subtype') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="propertySubtype" icon="home-modern" />
                 <flux:error name="propertySubtype" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('property.fields.district') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.district') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="district" icon="map-pin" />
                 <flux:error name="district" />
             </flux:field>
@@ -68,12 +98,22 @@
 
         <div class="grid gap-4 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('property.fields.street') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.street') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="street" icon="map-pin" />
                 <flux:error name="street" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('property.fields.house_number') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.house_number') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="houseNumber" icon="pencil-square" />
                 <flux:error name="houseNumber" />
             </flux:field>
@@ -81,28 +121,88 @@
 
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:field>
-                <flux:label>{{ __('property.fields.apartment_number') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.apartment_number') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="apartmentNumber" icon="pencil-square" />
                 <flux:error name="apartmentNumber" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('property.fields.floor') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.floor') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="floor" icon="home-modern" />
                 <flux:error name="floor" />
             </flux:field>
             <flux:field>
-                <flux:label>{{ __('property.fields.total_floors') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('property.fields.total_floors') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" inputmode="numeric" wire:model.blur="totalFloors" icon="home-modern" />
                 <flux:error name="totalFloors" />
             </flux:field>
         </div>
 
         <div class="space-y-3">
-            <flux:checkbox wire:model.change="hasElevator" label="{{ __('property.fields.has_elevator') }}" />
-            <flux:checkbox wire:model.change="showExactAddressBeforeBooking" label="{{ __('property.fields.show_exact_address_before_booking') }}" />
-            <flux:checkbox wire:model.change="showExactAddressAfterConfirmation" label="{{ __('property.fields.show_exact_address_after_confirmation') }}" />
-            <flux:checkbox wire:model.change="showExactAddressAfterPayment" label="{{ __('property.fields.show_exact_address_after_payment') }}" />
-            <flux:checkbox wire:model.change="showOnlyApproximateLocation" label="{{ __('property.fields.show_only_approximate_location') }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="hasElevator" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="sparkles" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.has_elevator') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="hasElevator" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="showExactAddressBeforeBooking" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.show_exact_address_before_booking') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="showExactAddressBeforeBooking" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="showExactAddressAfterConfirmation" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.show_exact_address_after_confirmation') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="showExactAddressAfterConfirmation" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="showExactAddressAfterPayment" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.show_exact_address_after_payment') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="showExactAddressAfterPayment" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="showOnlyApproximateLocation" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="shield-check" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.show_only_approximate_location') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="showOnlyApproximateLocation" />
+            </flux:field>
         </div>
     </flux:card>
 

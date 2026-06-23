@@ -31,5 +31,14 @@
         </div>
     @endforelse
 
-    <flux:checkbox wire:model.change="accepted" label="{{ __('booking.flow.fields.rules_accepted') }}" />
+        <flux:field variant="inline">
+        <flux:checkbox wire:model.change="accepted" />
+        <flux:label>
+            <span class="inline-flex min-w-0 items-center gap-1.5">
+                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('booking.flow.fields.rules_accepted') }}</span>
+            </span>
+        </flux:label>
+        <flux:error name="accepted" />
+    </flux:field>
 </flux:card>

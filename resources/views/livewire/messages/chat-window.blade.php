@@ -108,7 +108,12 @@
 
         <form wire:submit="send" class="space-y-3">
             <flux:field>
-                <flux:label>{{ __('messages.thread.fields.body') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('messages.thread.fields.body') }}</span>
+    </span>
+</flux:label>
                 <flux:textarea rows="3" wire:model="body" placeholder="{{ __('messages.thread.placeholders.body') }}" />
                 <flux:error name="body" />
             </flux:field>
@@ -133,7 +138,16 @@
                 </div>
 
                 <div class="flex items-end">
-                    <flux:checkbox wire:model.change="important" label="{{ __('messages.thread.fields.important') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model.change="important" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('messages.thread.fields.important') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="important" />
+                    </flux:field>
                 </div>
             </div>
 

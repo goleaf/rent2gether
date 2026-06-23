@@ -37,13 +37,23 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.name') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.name') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="name" placeholder="{{ __('decision.saved.placeholders.name') }}" icon="user" />
                 <flux:error name="name" />
             </flux:field>
 
             <flux:field class="relative">
-                <flux:label>{{ __('decision.saved.fields.city') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.city') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.live.debounce.500ms="cityQuery" placeholder="{{ __('decision.saved.placeholders.city') }}" icon="map-pin" />
                 <flux:error name="cityQuery" />
 
@@ -67,47 +77,113 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.district') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.district') }}</span>
+    </span>
+</flux:label>
                 <flux:input wire:model.blur="district" placeholder="{{ __('decision.saved.placeholders.district') }}" icon="map-pin" />
                 <flux:error name="district" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.currency') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.currency') }}</span>
+    </span>
+</flux:label>
                 <flux:input maxlength="3" wire:model.blur="currency" icon="banknotes" />
                 <flux:error name="currency" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.check_in') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.check_in') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="date" wire:model.change="checkIn" min="{{ now()->toDateString() }}" icon="calendar-days" />
                 <flux:error name="checkIn" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.check_out') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.check_out') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="date" wire:model.change="checkOut" min="{{ $checkIn ?: now()->toDateString() }}" icon="calendar-days" />
                 <flux:error name="checkOut" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.price_min') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.price_min') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="priceMin" icon="banknotes" />
                 <flux:error name="priceMin" />
             </flux:field>
 
             <flux:field>
-                <flux:label>{{ __('decision.saved.fields.price_max') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('decision.saved.fields.price_max') }}</span>
+    </span>
+</flux:label>
                 <flux:input type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="priceMax" icon="banknotes" />
                 <flux:error name="priceMax" />
             </flux:field>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
-            <flux:checkbox wire:model.change="flexibleDates" label="{{ __('decision.saved.fields.flexible_dates') }}" />
-            <flux:checkbox wire:model.change="notifyNewMatches" label="{{ __('decision.saved.fields.notify_new_matches') }}" />
-            <flux:checkbox wire:model.change="notifyPriceDrop" label="{{ __('decision.saved.fields.notify_price_drop') }}" />
-            <flux:checkbox wire:model.change="notifyAvailability" label="{{ __('decision.saved.fields.notify_availability') }}" />
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="flexibleDates" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('decision.saved.fields.flexible_dates') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="flexibleDates" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="notifyNewMatches" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('decision.saved.fields.notify_new_matches') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="notifyNewMatches" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="notifyPriceDrop" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('decision.saved.fields.notify_price_drop') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="notifyPriceDrop" />
+            </flux:field>
+                        <flux:field variant="inline">
+                <flux:checkbox wire:model.change="notifyAvailability" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="bell" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('decision.saved.fields.notify_availability') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="notifyAvailability" />
+            </flux:field>
         </div>
 
         <div class="space-y-2">
@@ -118,10 +194,46 @@
                 </span>
             </flux:heading>
             <div class="grid gap-2 sm:grid-cols-2">
-                <flux:checkbox wire:model.change="filters.wifi" label="{{ __('search.filters_flags.wifi') }}" />
-                <flux:checkbox wire:model.change="filters.kitchen" label="{{ __('search.filters_flags.kitchen') }}" />
-                <flux:checkbox wire:model.change="filters.locker" label="{{ __('search.filters_flags.locker') }}" />
-                <flux:checkbox wire:model.change="filters.quiet_hours" label="{{ __('search.filters_flags.quiet_hours') }}" />
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="filters.wifi" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.filters_flags.wifi') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="filters.wifi" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="filters.kitchen" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.filters_flags.kitchen') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="filters.kitchen" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="filters.locker" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.filters_flags.locker') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="filters.locker" />
+                </flux:field>
+                                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="filters.quiet_hours" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.filters_flags.quiet_hours') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="filters.quiet_hours" />
+                </flux:field>
             </div>
         </div>
 

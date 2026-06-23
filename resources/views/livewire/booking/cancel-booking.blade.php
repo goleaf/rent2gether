@@ -114,7 +114,16 @@
             maxlength="500"
         />
 
-        <flux:checkbox wire:model.change="confirmed" label="{{ __('booking.cancellation.confirm.label') }}" />
+                <flux:field variant="inline">
+            <flux:checkbox wire:model.change="confirmed" />
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.cancellation.confirm.label') }}</span>
+                </span>
+            </flux:label>
+            <flux:error name="confirmed" />
+        </flux:field>
     </flux:card>
 
     <div class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 sm:static sm:rounded-lg sm:border sm:backdrop-blur-none">

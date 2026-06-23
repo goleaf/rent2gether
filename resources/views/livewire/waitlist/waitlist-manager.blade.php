@@ -22,7 +22,16 @@
                     <flux:input type="date" wire:model="desiredCheckIn" label="{{ __('search.waitlist.desired_check_in') }}" :error="$errors->first('desiredCheckIn')" icon="calendar-days" />
                     <flux:input type="date" wire:model="desiredCheckOut" label="{{ __('search.waitlist.desired_check_out') }}" :error="$errors->first('desiredCheckOut')" icon="calendar-days" />
                     <flux:input type="number" wire:model="maxPrice" label="{{ __('search.waitlist.max_price') }}" step="0.01" icon="banknotes" />
-                    <flux:checkbox wire:model="autoRequest" label="{{ __('search.waitlist.auto_request_when_available') }}" />
+                                        <flux:field variant="inline">
+                        <flux:checkbox wire:model="autoRequest" />
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.waitlist.auto_request_when_available') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:error name="autoRequest" />
+                    </flux:field>
                     <div class="flex gap-3">
                         <flux:button type="submit" variant="primary" size="sm" icon="check">{{ __('app.actions.join') }}</flux:button>
                         <flux:button wire:click="$set('showForm', false)" variant="ghost" size="sm" icon="x-mark">{{ __('app.actions.cancel') }}</flux:button>

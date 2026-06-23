@@ -12,11 +12,25 @@
     <livewire:reviews.review-score-group group="guest" />
 
     <flux:field>
-        <flux:label>{{ __('reviews.fields.public_comment') }}</flux:label>
+        <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('reviews.fields.public_comment') }}</span>
+    </span>
+</flux:label>
         <flux:textarea rows="3" wire:model.blur="comment" />
     </flux:field>
 
-    <flux:checkbox :label="__('reviews.fields.recommend')" wire:model.change="recommend" />
+        <flux:field variant="inline">
+        <flux:checkbox wire:model.change="recommend" />
+        <flux:label>
+            <span class="inline-flex min-w-0 items-center gap-1.5">
+                <flux:icon name="star" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('reviews.fields.recommend') }}</span>
+            </span>
+        </flux:label>
+        <flux:error name="recommend" />
+    </flux:field>
 
     <flux:button type="button" variant="primary" class="w-full sm:w-auto" icon="eye">
         {{ __('reviews.actions.submit_review') }}

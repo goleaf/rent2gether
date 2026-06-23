@@ -46,7 +46,12 @@
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach($this->contentLocales() as $locale)
                 <flux:field wire:key="media-caption-{{ $locale['code'] }}">
-                    <flux:label>{{ __('media.manager.caption', ['language' => $locale['name']]) }}</flux:label>
+                    <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="photo" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('media.manager.caption', ['language' => $locale['name']]) }}</span>
+    </span>
+</flux:label>
                     <flux:input wire:model.blur="captions.{{ $locale['code'] }}" maxlength="160" icon="language" />
                     <flux:error name="captions.{{ $locale['code'] }}" />
                 </flux:field>

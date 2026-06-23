@@ -11,12 +11,22 @@
 
     <div class="grid gap-3 sm:grid-cols-2">
         <flux:field>
-            <flux:label>{{ __('calendar.fields.from') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('calendar.fields.from') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" wire:model.change="from" icon="calendar-days" />
         </flux:field>
 
         <flux:field>
-            <flux:label>{{ __('calendar.fields.to') }}</flux:label>
+            <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('calendar.fields.to') }}</span>
+    </span>
+</flux:label>
             <flux:input type="date" wire:model.change="to" icon="calendar-days" />
         </flux:field>
     </div>

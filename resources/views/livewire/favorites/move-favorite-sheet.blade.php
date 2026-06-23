@@ -14,7 +14,12 @@
 
         <form wire:submit="move" class="space-y-4">
             <flux:field>
-                <flux:label>{{ __('favorites.collections') }}</flux:label>
+                <flux:label>
+    <span class="inline-flex min-w-0 items-center gap-1.5">
+        <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('favorites.collections') }}</span>
+    </span>
+</flux:label>
                 <flux:select wire:model.change="collectionId">
                     <flux:select.option value="">{{ __('favorites.choose_collection') }}</flux:select.option>
                     @foreach($collections as $collection)

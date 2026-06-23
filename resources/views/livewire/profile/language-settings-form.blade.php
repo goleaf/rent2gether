@@ -13,7 +13,16 @@
         <flux:select.option value="intermediate">{{ __('profiles.language_levels.intermediate') }}</flux:select.option>
         <flux:select.option value="basic">{{ __('profiles.language_levels.basic') }}</flux:select.option>
     </flux:select>
-    <flux:checkbox wire:model.change="isPrimary" :label="__('profiles.fields.is_primary_language')" />
+        <flux:field variant="inline">
+        <flux:checkbox wire:model.change="isPrimary" />
+        <flux:label>
+            <span class="inline-flex min-w-0 items-center gap-1.5">
+                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('profiles.fields.is_primary_language') }}</span>
+            </span>
+        </flux:label>
+        <flux:error name="isPrimary" />
+    </flux:field>
 
     <flux:button type="submit" variant="primary" class="w-full" wire:loading.class="opacity-50" icon="language">
         {{ __('common.actions.save') }}
