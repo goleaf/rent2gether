@@ -5,6 +5,15 @@
 
     RewriteEngine On
 
+    # Block framework internals when the project root is the web directory.
+    RewriteRule (^|/)\. - [F,L]
+    RewriteRule ^(?:app|bootstrap|config|database|docs|lang|node_modules|resources|routes|scripts|tests|vendor)(?:/|$) - [F,L]
+    RewriteRule ^(?:artisan|composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit\.xml|postcss\.config\.mjs|vite\.config\.js|AGENTS\.md|CLAUDE\.md|README\.md|boost\.json|opencode\.json)$ - [F,L]
+
+    # Keep public storage URLs stable without replacing the internal storage directory.
+    RewriteRule ^storage/(?:app|framework|logs)(?:/|$) - [F,L]
+    RewriteRule ^storage/(.+)$ storage/app/public/$1 [END]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
