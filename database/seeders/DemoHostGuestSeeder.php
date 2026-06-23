@@ -115,7 +115,7 @@ class DemoHostGuestSeeder extends Seeder
             'email' => 'guest@example.com',
         ], [
             'name' => 'Demo Guest',
-            'password' => 'example',
+            'password' => 'password',
             'email_verified_at' => now(),
             'role_mode' => 'guest',
             'preferred_locale' => 'en',

@@ -190,7 +190,8 @@ class AutomaticHostHintsFeatureTest extends TestCase
         Livewire::actingAs($listing['host'])
             ->test(HostHintsPanel::class)
             ->assertSee(__('host_hints.dashboard_title'))
-            ->assertSee(__('host_hints.messages.add_main_sleeping_place_photo'));
+            ->assertSee(__('host_hints.messages.add_main_sleeping_place_photo'))
+            ->assertDontSeeLivewire(DismissHostHintButton::class);
 
         Livewire::actingAs($listing['host'])
             ->test(HostWizardHints::class, [

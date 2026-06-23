@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\BookingStatus;
+use App\Livewire\Auth\LoginPage;
 use App\Models\AvailabilityDay;
 use App\Models\Booking;
 use App\Models\BookingCheckIn;
@@ -36,6 +37,7 @@ use App\Models\WaitlistItem;
 use Database\Seeders\DemoHostGuestSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DemoHostGuestSeederTest extends TestCase
@@ -51,7 +53,7 @@ class DemoHostGuestSeederTest extends TestCase
         $guest = User::query()->where('email', 'guest@example.com')->firstOrFail();
 
         $this->assertTrue(Hash::check('password', $host->password));
-        $this->assertTrue(Hash::check('example', $guest->password));
+        $this->assertTrue(Hash::check('password', $guest->password));
         $this->assertTrue((bool) $host->is_host);
         $this->assertTrue((bool) $guest->is_guest);
 
@@ -103,5 +105,21 @@ class DemoHostGuestSeederTest extends TestCase
         $this->assertGreaterThanOrEqual(2, SavedSearch::query()->where('user_id', $guest->id)->count());
         $this->assertGreaterThanOrEqual(2, WaitlistItem::query()->where('user_id', $guest->id)->count());
         $this->assertGreaterThanOrEqual(10, Notification::query()->whereIn('user_id', [$host->id, $guest->id])->count());
+    }
+
+    public function test_demo_guest_can_login_with_shared_demo_password(): void
+    {
+        $this->seed(DemoHostGuestSeeder::class);
+
+        $guest = User::query()->where('email', 'guest@example.com')->firstOrFail();
+
+        Livewire::test(LoginPage::class)
+            ->set('email', 'guest@example.com')
+            ->set('password', 'password')
+            ->call('login')
+            ->assertHasNoErrors()
+            ->assertRedirect(route('home', ['locale' => 'en']));
+
+        $this->assertAuthenticatedAs($guest);
     }
 }

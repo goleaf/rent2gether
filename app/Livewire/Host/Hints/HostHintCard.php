@@ -12,10 +12,13 @@ class HostHintCard extends Component
 
     public string $context = 'dashboard';
 
-    public function mount(array $hint = [], string $context = 'dashboard'): void
+    public bool $showDismiss = true;
+
+    public function mount(array $hint = [], string $context = 'dashboard', bool $showDismiss = true): void
     {
         $this->hint = $hint;
         $this->context = $context;
+        $this->showDismiss = $showDismiss;
     }
 
     public function render(): View

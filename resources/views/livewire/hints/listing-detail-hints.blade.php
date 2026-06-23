@@ -13,23 +13,13 @@
                     <flux:accordion.content>
                         <div class="space-y-2">
                             @forelse($items as $hint)
-                                <div class="flex items-start justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
+                                <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
                                     <div class="min-w-0">
                                         <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $hint['text'] }}</div>
                                         @if(! empty($hint['source']))
                                             <div class="mt-1 text-xs text-zinc-500">{{ __('guest_hints.source', ['source' => __('guest_hints.sources.'.$hint['source'])]) }}</div>
                                         @endif
                                     </div>
-
-                                    @if($hint['dismissible'])
-                                        <livewire:hints.dismiss-hint-button
-                                            :hint-key="$hint['key']"
-                                            :sleeping-place-id="$sleepingPlaceId"
-                                            context="detail"
-                                            :critical="$hint['critical_before_booking']"
-                                            :key="'hint-dismiss-detail-'.$hint['key'].'-'.$sleepingPlaceId"
-                                        />
-                                    @endif
                                 </div>
                             @empty
                             @endforelse

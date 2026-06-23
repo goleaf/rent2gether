@@ -233,7 +233,8 @@ class AutomaticGuestHintsFeatureTest extends TestCase
                 'checkOut' => '2026-07-13',
             ])
             ->assertSee(__('guest_hints.important_to_know'))
-            ->assertSee(__('guest_hints.categories.trust'));
+            ->assertSee(__('guest_hints.categories.trust'))
+            ->assertDontSeeLivewire(DismissHintButton::class);
 
         Livewire::actingAs($guest)
             ->test(BeforeBookingHints::class, [

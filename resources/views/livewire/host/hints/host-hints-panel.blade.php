@@ -16,6 +16,7 @@
                                 <livewire:host.hints.host-hint-card
                                     :hint="$hint"
                                     context="dashboard"
+                                    :show-dismiss="false"
                                     :key="'host-dashboard-hint-'.$hint['id']"
                                 />
                             @empty
