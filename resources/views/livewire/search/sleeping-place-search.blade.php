@@ -12,15 +12,21 @@
 
         <flux:card class="space-y-4">
             <div class="space-y-3">
-                <flux:autocomplete
-                    type="search" icon="map-pin"
-                    clearable
-                    wire:model.live.debounce.500ms="cityQuery"
-                    label="{{ __('search.fields.city') }}"
-                    description="{{ __('search.city_autocomplete.helper') }}"
-                    placeholder="{{ __('search.placeholders.city') }}"
-                    container:class="max-h-80"
-                >
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.fields.city') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:description>{{ __('search.city_autocomplete.helper') }}</flux:description>
+                    <flux:autocomplete
+                        type="search" icon="map-pin"
+                        clearable
+                        wire:model.live.debounce.500ms="cityQuery"
+                        placeholder="{{ __('search.placeholders.city') }}"
+                        container:class="max-h-80"
+                        >
                     @foreach($this->cityOptions as $cityOption)
                         <flux:autocomplete.item
                             wire:key="search-city-{{ $cityOption['id'] }}"
@@ -30,6 +36,8 @@
                         </flux:autocomplete.item>
                     @endforeach
                 </flux:autocomplete>
+                    <flux:error name="cityQuery" />
+                </flux:field>
 
                 <div wire:loading.delay wire:target="cityQuery" class="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
                     {{ __('search.city_autocomplete.loading') }}

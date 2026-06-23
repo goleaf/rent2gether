@@ -313,9 +313,43 @@ class FluxProComponentUsageTest extends TestCase
                     $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, 'flux:breadcrumbs.item');
                 }
             }
+
+            foreach (['flux:label', 'flux:accordion.heading'] as $component) {
+                foreach (self::findFluxComponentOccurrences($contents, $component) as $occurrence) {
+                    if (! str_contains($occurrence['body'], '<flux:icon')) {
+                        $missingIcons[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component);
+                    }
+                }
+            }
         }
 
         $this->assertSame([], $missingIcons);
+    }
+
+    public function test_form_controls_do_not_use_non_icon_label_shorthand(): void
+    {
+        $offenders = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $contents = File::get($file->getPathname());
+            $relativePath = str($file->getPathname())
+                ->after(base_path().DIRECTORY_SEPARATOR)
+                ->toString();
+
+            foreach (['flux:autocomplete', 'flux:checkbox', 'flux:input', 'flux:select', 'flux:switch', 'flux:textarea'] as $component) {
+                foreach (self::findFluxComponentOccurrences($contents, $component) as $occurrence) {
+                    if (preg_match('/(?:^|\s):?label\s*=/i', $occurrence['tag']) === 1) {
+                        $offenders[] = self::formatFluxComponentOffender($relativePath, $contents, $occurrence, $component);
+                    }
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders);
     }
 
     public function test_inline_flux_icons_use_valid_names_and_variants(): void

@@ -1,14 +1,20 @@
 <div class="space-y-2">
-    <flux:autocomplete
-        :id="$inputId"
-        type="search" icon="map-pin"
-        clearable
-        wire:model.live.debounce.500ms="query"
-        :label="__('search.city_autocomplete.label')"
-        :description="__('search.city_autocomplete.helper')"
-        :placeholder="__('search.city_autocomplete.placeholder')"
-        container:class="max-h-80"
-    >
+        <flux:field>
+        <flux:label>
+            <span class="inline-flex min-w-0 items-center gap-1.5">
+                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.city_autocomplete.label') }}</span>
+            </span>
+        </flux:label>
+        <flux:description>{{ __('search.city_autocomplete.helper') }}</flux:description>
+        <flux:autocomplete
+            :id="$inputId"
+            type="search" icon="map-pin"
+            clearable
+            wire:model.live.debounce.500ms="query"
+            :placeholder="__('search.city_autocomplete.placeholder')"
+            container:class="max-h-80"
+            >
         @foreach($results as $result)
             <flux:autocomplete.item
                 wire:key="city-result-{{ $result['id'] }}"
@@ -18,6 +24,8 @@
             </flux:autocomplete.item>
         @endforeach
     </flux:autocomplete>
+        <flux:error name="query" />
+    </flux:field>
 
     <div
         wire:loading.delay

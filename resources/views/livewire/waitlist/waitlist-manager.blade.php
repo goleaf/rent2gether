@@ -19,9 +19,36 @@
                     </span>
                 </flux:heading>
                 <form wire:submit="join" class="space-y-3">
-                    <flux:input type="date" wire:model="desiredCheckIn" label="{{ __('search.waitlist.desired_check_in') }}" :error="$errors->first('desiredCheckIn')" icon="calendar-days" />
-                    <flux:input type="date" wire:model="desiredCheckOut" label="{{ __('search.waitlist.desired_check_out') }}" :error="$errors->first('desiredCheckOut')" icon="calendar-days" />
-                    <flux:input type="number" wire:model="maxPrice" label="{{ __('search.waitlist.max_price') }}" step="0.01" icon="banknotes" />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.waitlist.desired_check_in') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="date" wire:model="desiredCheckIn" :error="$errors->first('desiredCheckIn')" icon="calendar-days" />
+                        <flux:error name="desiredCheckIn" />
+                    </flux:field>
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.waitlist.desired_check_out') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="date" wire:model="desiredCheckOut" :error="$errors->first('desiredCheckOut')" icon="calendar-days" />
+                        <flux:error name="desiredCheckOut" />
+                    </flux:field>
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('search.waitlist.max_price') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="number" wire:model="maxPrice" step="0.01" icon="banknotes" />
+                        <flux:error name="maxPrice" />
+                    </flux:field>
                                         <flux:field variant="inline">
                         <flux:checkbox wire:model="autoRequest" />
                         <flux:label>

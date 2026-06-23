@@ -33,33 +33,65 @@
 
     <form wire:submit="submit" class="space-y-4">
         <flux:card class="space-y-4">
-            <flux:select wire:model.change="type" label="{{ __('booking.complaint.fields.type') }}" :error="$errors->first('type')">
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.fields.type') }}</span>
+                    </span>
+                </flux:label>
+                <flux:select wire:model.change="type" :error="$errors->first('type')">
                 <flux:select.option value="">{{ __('booking.complaint.select_type') }}</flux:select.option>
                 @foreach($this->complaintTypes() as $value => $label)
                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
+                <flux:error name="type" />
+            </flux:field>
 
-            <flux:select wire:model.change="priority" label="{{ __('booking.complaint.fields.priority') }}" :error="$errors->first('priority')">
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.fields.priority') }}</span>
+                    </span>
+                </flux:label>
+                <flux:select wire:model.change="priority" :error="$errors->first('priority')">
                 <flux:select.option value="low">{{ __('booking.complaint.priority.low') }}</flux:select.option>
                 <flux:select.option value="normal">{{ __('booking.complaint.priority.normal') }}</flux:select.option>
                 <flux:select.option value="high">{{ __('booking.complaint.priority.high') }}</flux:select.option>
                 <flux:select.option value="critical">{{ __('booking.complaint.priority.critical') }}</flux:select.option>
             </flux:select>
+                <flux:error name="priority" />
+            </flux:field>
 
-            <flux:textarea
-                wire:model.blur="description"
-                label="{{ __('booking.complaint.fields.description') }}"
-                rows="5"
-                :error="$errors->first('description')"
-            />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.fields.description') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea
+                    wire:model.blur="description"
+                    rows="5"
+                    :error="$errors->first('description')" />
+                <flux:error name="description" />
+            </flux:field>
 
-            <flux:textarea
-                wire:model.blur="desiredResolution"
-                label="{{ __('booking.complaint.fields.desired_resolution') }}"
-                rows="3"
-                :error="$errors->first('desiredResolution')"
-            />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.complaint.fields.desired_resolution') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea
+                    wire:model.blur="desiredResolution"
+                    rows="3"
+                    :error="$errors->first('desiredResolution')" />
+                <flux:error name="desiredResolution" />
+            </flux:field>
         </flux:card>
 
         <flux:card class="space-y-4">

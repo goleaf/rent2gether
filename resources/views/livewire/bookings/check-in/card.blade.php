@@ -153,17 +153,44 @@
 
         @if ($variant === 'problem_sheet')
             <form wire:submit="report" class="space-y-3">
-                <flux:select wire:model.change="problemType" :label="__('check_in.fields.problem_type')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_type') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="problemType">
                     @foreach (array_keys(__('check_in.problems')) as $problemType)
                         <flux:select.option value="{{ $problemType }}">{{ __('check_in.problems.' . $problemType) }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:select wire:model.change="severity" :label="__('check_in.fields.problem_severity')">
+                    <flux:error name="problemType" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_severity') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="severity">
                     @foreach (array_keys(__('check_in.severities')) as $severityKey)
                         <flux:select.option value="{{ $severityKey }}">{{ __('check_in.severities.' . $severityKey) }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:textarea wire:model.blur="description" :label="__('check_in.fields.problem_description')" />
+                    <flux:error name="severity" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_description') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="description" />
+                    <flux:error name="description" />
+                </flux:field>
                 <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="key">
                     {{ __('check_in.actions.problem') }}
                 </flux:button>
@@ -178,13 +205,40 @@
 
         @if ($variant === 'media_uploader')
             <form wire:submit="record" class="space-y-3">
-                <flux:select wire:model.change="mediaRole" :label="__('check_in.fields.media_role')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.media_role') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="mediaRole">
                     @foreach (array_keys(__('check_in.media_roles')) as $mediaRole)
                         <flux:select.option value="{{ $mediaRole }}">{{ __('check_in.media_roles.' . $mediaRole) }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:input wire:model.blur="path" :label="__('check_in.fields.media_path')" icon="calendar-days" />
-                <flux:textarea wire:model.blur="caption" :label="__('check_in.fields.media_caption')" />
+                    <flux:error name="mediaRole" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.media_path') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input wire:model.blur="path" icon="calendar-days" />
+                    <flux:error name="path" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.media_caption') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="caption" />
+                    <flux:error name="caption" />
+                </flux:field>
                 <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="camera">
                     {{ __('check_in.actions.upload_media') }}
                 </flux:button>

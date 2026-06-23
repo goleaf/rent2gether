@@ -26,12 +26,19 @@
 
     <form wire:submit="submit" class="space-y-4">
         <flux:card class="space-y-4">
-            <flux:textarea
-                wire:model.blur="problemDescription"
-                label="{{ __('booking.problem_report.description') }}"
-                rows="5"
-                :error="$errors->first('problemDescription')"
-            />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking.problem_report.description') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea
+                    wire:model.blur="problemDescription"
+                    rows="5"
+                    :error="$errors->first('problemDescription')" />
+                <flux:error name="problemDescription" />
+            </flux:field>
 
             <div class="space-y-2">
                 <flux:file-upload

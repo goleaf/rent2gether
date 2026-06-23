@@ -123,19 +123,46 @@
             </div>
         @else
             <div class="mt-4 grid gap-3">
-                <flux:select wire:model.change="mismatchType" :label="__('listing_mismatch.fields.mismatch_type')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing_mismatch.fields.mismatch_type') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="mismatchType">
                     @foreach ($types as $type)
                         <flux:select.option value="{{ $type }}">{{ __('listing_mismatch.types.' . $type) }}</flux:select.option>
                     @endforeach
                 </flux:select>
+                    <flux:error name="mismatchType" />
+                </flux:field>
 
-                <flux:select wire:model.change="severity" :label="__('listing_mismatch.fields.severity')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing_mismatch.fields.severity') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="severity">
                     @foreach ($severities as $severity)
                         <flux:select.option value="{{ $severity }}">{{ __('listing_mismatch.severities.' . $severity) }}</flux:select.option>
                     @endforeach
                 </flux:select>
+                    <flux:error name="severity" />
+                </flux:field>
 
-                <flux:textarea wire:model.blur="guestDescription" :label="__('listing_mismatch.fields.guest_description')" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing_mismatch.fields.guest_description') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="guestDescription" rows="3" />
+                    <flux:error name="guestDescription" />
+                </flux:field>
 
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                         <flux:field variant="inline">

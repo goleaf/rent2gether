@@ -33,7 +33,16 @@
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:textarea wire:model.blur="hostComment" :label="__('no_show.fields.host_comment')" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('no_show.fields.host_comment') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="hostComment" rows="3" />
+                    <flux:error name="hostComment" />
+                </flux:field>
                 <flux:button variant="danger" wire:click="reportNoShow" wire:loading.attr="disabled" icon="eye">
                     {{ __('no_show.actions.report_no_show') }}
                 </flux:button>

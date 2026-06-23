@@ -12,14 +12,47 @@
         </div>
 
         <x-ui.surface class="grid gap-3">
-            <flux:input wire:model.live.debounce.500ms="destination" :label="__('common.home.destination')" :placeholder="__('common.home.destination_placeholder')" icon="pencil-square" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('common.home.destination') }}</span>
+                    </span>
+                </flux:label>
+                <flux:input wire:model.live.debounce.500ms="destination" :placeholder="__('common.home.destination_placeholder')" icon="pencil-square" />
+                <flux:error name="destination" />
+            </flux:field>
 
             <div class="grid grid-cols-2 gap-3">
-                <flux:input type="date" :label="__('common.home.check_in')" icon="calendar-days" />
-                <flux:input type="date" :label="__('common.home.check_out')" icon="calendar-days" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('common.home.check_in') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="date" icon="calendar-days" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('common.home.check_out') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="date" icon="calendar-days" />
+                </flux:field>
             </div>
 
-            <flux:input type="number" min="1" :label="__('common.home.guests')" icon="user" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('common.home.guests') }}</span>
+                    </span>
+                </flux:label>
+                <flux:input type="number" min="1" icon="user" />
+            </flux:field>
 
             <flux:button variant="primary" class="w-full" data-loading wire:loading.attr="disabled" icon="magnifying-glass">
                 {{ __('common.actions.find_sleeping_place') }}

@@ -111,20 +111,56 @@
             </div>
         @else
             <div class="mt-4 grid gap-3">
-                <flux:select wire:model.change="caseType" :label="__('host_unresponsive.fields.case_type')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host_unresponsive.fields.case_type') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="caseType">
                     @foreach ($caseTypes as $type)
                         <flux:select.option value="{{ $type }}">{{ __('host_unresponsive.case_types.' . $type) }}</flux:select.option>
                     @endforeach
                 </flux:select>
+                    <flux:error name="caseType" />
+                </flux:field>
 
-                <flux:select wire:model.change="reasonKey" :label="__('host_unresponsive.fields.reason')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host_unresponsive.fields.reason') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="reasonKey">
                     @foreach ($reasons as $reason)
                         <flux:select.option value="{{ $reason }}">{{ __('host_unresponsive.reasons.' . $reason) }}</flux:select.option>
                     @endforeach
                 </flux:select>
+                    <flux:error name="reasonKey" />
+                </flux:field>
 
-                <flux:textarea wire:model.blur="message" :label="__('host_unresponsive.fields.guest_comment')" rows="3" />
-                <flux:textarea wire:model.blur="locationNote" :label="__('host_unresponsive.fields.guest_location_note')" rows="2" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host_unresponsive.fields.guest_comment') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="message" rows="3" />
+                    <flux:error name="message" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host_unresponsive.fields.guest_location_note') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="locationNote" rows="2" />
+                    <flux:error name="locationNote" />
+                </flux:field>
 
                 <flux:button variant="danger" wire:click="reportHostNotAnswering" wire:loading.attr="disabled" icon="chat-bubble-left-right">
                     {{ __('host_unresponsive.actions.report_host_not_answering') }}

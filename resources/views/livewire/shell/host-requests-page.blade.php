@@ -245,18 +245,33 @@
                 </flux:card>
 
                 <flux:card class="space-y-4">
-                    <flux:textarea
-                        wire:model.blur="acceptMessage"
-                        rows="3"
-                        label="{{ __('host.requests.fields.accept_message') }}"
-                        placeholder="{{ __('host.requests.placeholders.accept_message') }}"
-                    />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host.requests.fields.accept_message') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:textarea
+                            wire:model.blur="acceptMessage"
+                            rows="3"
+                            placeholder="{{ __('host.requests.placeholders.accept_message') }}" />
+                        <flux:error name="acceptMessage" />
+                    </flux:field>
 
-                    <flux:input
-                        type="datetime-local"
-                        wire:model.change="expiryAt"
-                        label="{{ __('host.requests.fields.expiry') }}"
-                        :error="$errors->first('expiryAt') ?: $errors->first('paymentDeadline')" icon="calendar-days" />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host.requests.fields.expiry') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input
+                            type="datetime-local"
+                            wire:model.change="expiryAt"
+                            :error="$errors->first('expiryAt') ?: $errors->first('paymentDeadline')" icon="calendar-days" />
+                        <flux:error name="expiryAt" />
+                    </flux:field>
 
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <flux:button wire:click="acceptSelected" variant="primary" class="data-loading:opacity-70" icon="check">
@@ -270,13 +285,20 @@
                 </flux:card>
 
                 <flux:card class="space-y-4">
-                    <flux:textarea
-                        wire:model.blur="hostMessage"
-                        rows="3"
-                        label="{{ __('host.requests.fields.message') }}"
-                        placeholder="{{ __('host.requests.placeholders.message') }}"
-                        :error="$errors->first('hostMessage')"
-                    />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host.requests.fields.message') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:textarea
+                            wire:model.blur="hostMessage"
+                            rows="3"
+                            placeholder="{{ __('host.requests.placeholders.message') }}"
+                            :error="$errors->first('hostMessage')" />
+                        <flux:error name="hostMessage" />
+                    </flux:field>
 
                     <flux:button wire:click="sendMessage" variant="filled" class="w-full data-loading:opacity-70" icon="paper-airplane">
                         {{ __('host.requests.actions.send_message') }}
@@ -284,24 +306,39 @@
                 </flux:card>
 
                 <flux:card class="space-y-4">
-                    <flux:select
-                        wire:model.change="declineReason"
-                        label="{{ __('host.requests.fields.decline_reason') }}"
-                        :error="$errors->first('declineReason')"
-                    >
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host.requests.fields.decline_reason') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:select
+                            wire:model.change="declineReason"
+                            :error="$errors->first('declineReason')"
+                            >
                         <flux:select.option value="">{{ __('host.requests.placeholders.decline_reason') }}</flux:select.option>
                         @foreach ($declineReasons as $reasonKey => $reasonLabel)
                             <flux:select.option value="{{ $reasonKey }}">{{ $reasonLabel }}</flux:select.option>
                         @endforeach
                     </flux:select>
+                        <flux:error name="declineReason" />
+                    </flux:field>
 
-                    <flux:textarea
-                        wire:model.blur="declineMessage"
-                        rows="3"
-                        label="{{ __('host.requests.fields.decline_message') }}"
-                        placeholder="{{ __('host.requests.placeholders.decline_message') }}"
-                        :error="$errors->first('declineMessage')"
-                    />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host.requests.fields.decline_message') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:textarea
+                            wire:model.blur="declineMessage"
+                            rows="3"
+                            placeholder="{{ __('host.requests.placeholders.decline_message') }}"
+                            :error="$errors->first('declineMessage')" />
+                        <flux:error name="declineMessage" />
+                    </flux:field>
 
                     <flux:button wire:click="declineSelected" variant="danger" class="w-full data-loading:opacity-70" icon="x-mark">
                         {{ __('host.requests.actions.decline') }}

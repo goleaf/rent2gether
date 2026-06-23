@@ -1,14 +1,20 @@
 <div class="grid gap-4">
     <div class="space-y-2">
-        <flux:autocomplete
-            type="search"
-            clearable icon="map-pin"
-            wire:model.live.debounce.500ms="countryQuery"
-            label="{{ $countryLabel ?? __('geo.fields.country') }}"
-            description="{{ $countryDescription ?? __('geo.helpers.country') }}"
-            placeholder="{{ $countryPlaceholder ?? __('geo.placeholders.country') }}"
-            container:class="max-h-80"
-        >
+                <flux:field>
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $countryLabel ?? __('geo.fields.country') }}</span>
+                </span>
+            </flux:label>
+            <flux:description>{{ $countryDescription ?? __('geo.helpers.country') }}</flux:description>
+            <flux:autocomplete
+                type="search"
+                clearable icon="map-pin"
+                wire:model.live.debounce.500ms="countryQuery"
+                placeholder="{{ $countryPlaceholder ?? __('geo.placeholders.country') }}"
+                container:class="max-h-80"
+                >
             @foreach($this->countryResults as $result)
                 <flux:autocomplete.item
                     wire:key="{{ $autocompleteKey ?? 'geo' }}-country-{{ $result['id'] }}"
@@ -18,6 +24,8 @@
                 </flux:autocomplete.item>
             @endforeach
         </flux:autocomplete>
+            <flux:error name="countryQuery" />
+        </flux:field>
         <flux:error name="countryId" />
 
         <div
@@ -40,17 +48,23 @@
     </div>
 
     <div class="space-y-2">
-        <flux:autocomplete
-            type="search"
-            clearable icon="map-pin"
-            wire:key="{{ $autocompleteKey ?? 'geo' }}-city-{{ $countryId ?: 'none' }}"
-            wire:model.live.debounce.500ms="cityQuery"
-            label="{{ $cityLabel ?? __('geo.fields.city') }}"
-            description="{{ $cityDescription ?? ($this->cityAutocompleteDisabled ? __('geo.helpers.city_disabled') : __('geo.helpers.city')) }}"
-            placeholder="{{ $cityPlaceholder ?? ($this->cityAutocompleteDisabled ? __('geo.placeholders.city_disabled') : __('geo.placeholders.city')) }}"
-            :disabled="$this->cityAutocompleteDisabled"
-            container:class="max-h-80"
-        >
+                <flux:field>
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ $cityLabel ?? __('geo.fields.city') }}</span>
+                </span>
+            </flux:label>
+            <flux:description>{{ $cityDescription ?? ($this->cityAutocompleteDisabled ? __('geo.helpers.city_disabled') : __('geo.helpers.city')) }}</flux:description>
+            <flux:autocomplete
+                type="search"
+                clearable icon="map-pin"
+                wire:key="{{ $autocompleteKey ?? 'geo' }}-city-{{ $countryId ?: 'none' }}"
+                wire:model.live.debounce.500ms="cityQuery"
+                placeholder="{{ $cityPlaceholder ?? ($this->cityAutocompleteDisabled ? __('geo.placeholders.city_disabled') : __('geo.placeholders.city')) }}"
+                :disabled="$this->cityAutocompleteDisabled"
+                container:class="max-h-80"
+                >
             @foreach($this->cityResults as $result)
                 <flux:autocomplete.item
                     wire:key="{{ $autocompleteKey ?? 'geo' }}-city-result-{{ $result['id'] }}"
@@ -60,6 +74,8 @@
                 </flux:autocomplete.item>
             @endforeach
         </flux:autocomplete>
+            <flux:error name="cityQuery" />
+        </flux:field>
         <flux:error name="cityId" />
 
         <div

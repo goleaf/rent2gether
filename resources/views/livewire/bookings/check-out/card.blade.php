@@ -174,17 +174,44 @@
 
         @if ($variant === 'issue_sheet')
             <form wire:submit="report" class="space-y-3">
-                <flux:select wire:model.change="issueType" :label="__('check_out.fields.issue_type')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.issue_type') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="issueType">
                     @foreach (array_keys(__('check_out.issues')) as $issueType)
                         <flux:select.option value="{{ $issueType }}">{{ __('check_out.issues.' . $issueType) }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:select wire:model.change="severity" :label="__('check_out.fields.issue_severity')">
+                    <flux:error name="issueType" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.issue_severity') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="severity">
                     @foreach (array_keys(__('check_out.severities')) as $severityKey)
                         <flux:select.option value="{{ $severityKey }}">{{ __('check_out.severities.' . $severityKey) }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:textarea wire:model.blur="description" :label="__('check_out.fields.issue_description')" />
+                    <flux:error name="severity" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.issue_description') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="description" />
+                    <flux:error name="description" />
+                </flux:field>
                                 <flux:field variant="inline">
                     <flux:checkbox wire:model.change="depositRelated" />
                     <flux:label>
@@ -203,9 +230,36 @@
 
         @if ($variant === 'forgotten_items')
             <form wire:submit="createItem" class="space-y-3">
-                <flux:input wire:model.blur="itemName" :label="__('check_out.fields.forgotten_item_name')" icon="calendar-days" />
-                <flux:input wire:model.blur="storageLocation" :label="__('check_out.fields.storage_location')" icon="calendar-days" />
-                <flux:input type="date" wire:model.change="keepUntil" :label="__('check_out.fields.keep_until')" icon="calendar-days" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.forgotten_item_name') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input wire:model.blur="itemName" icon="calendar-days" />
+                    <flux:error name="itemName" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.storage_location') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input wire:model.blur="storageLocation" icon="calendar-days" />
+                    <flux:error name="storageLocation" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.keep_until') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="date" wire:model.change="keepUntil" icon="calendar-days" />
+                    <flux:error name="keepUntil" />
+                </flux:field>
                 <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.add_forgotten_item') }}
                 </flux:button>
@@ -217,8 +271,26 @@
                 <flux:button type="button" variant="primary" class="w-full" wire:click="returnFull" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.return_deposit') }}
                 </flux:button>
-                <flux:input wire:model.blur="deductionAmount" :label="__('check_out.fields.deposit_deduction_amount')" icon="calendar-days" />
-                <flux:textarea wire:model.blur="deductionReason" :label="__('check_out.fields.deposit_deduction_reason')" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.deposit_deduction_amount') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input wire:model.blur="deductionAmount" icon="calendar-days" />
+                    <flux:error name="deductionAmount" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_out.fields.deposit_deduction_reason') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="deductionReason" />
+                    <flux:error name="deductionReason" />
+                </flux:field>
                 <flux:button type="button" variant="danger" class="w-full" wire:click="requestDeduction" wire:loading.attr="disabled" icon="clipboard-document-check">
                     {{ __('check_out.actions.deduct_deposit') }}
                 </flux:button>

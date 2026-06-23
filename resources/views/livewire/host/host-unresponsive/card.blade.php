@@ -40,7 +40,16 @@
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:textarea wire:model.blur="hostMessage" :label="__('host_unresponsive.fields.host_response')" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host_unresponsive.fields.host_response') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="hostMessage" rows="3" />
+                    <flux:error name="hostMessage" />
+                </flux:field>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <flux:button wire:click="markAvailable" wire:loading.attr="disabled" icon="check">
                         {{ __('host_unresponsive.host_response_types.i_am_available') }}

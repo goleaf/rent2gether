@@ -100,19 +100,35 @@
             </flux:text>
         </div>
 
-        <flux:select wire:model.change="reason" label="{{ __('booking.cancellation.reason.label') }}">
+                <flux:field>
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.cancellation.reason.label') }}</span>
+                </span>
+            </flux:label>
+            <flux:select wire:model.change="reason">
             <flux:select.option value="">{{ __('booking.cancellation.reason.placeholder') }}</flux:select.option>
             @foreach($reasons as $value => $label)
                 <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
             @endforeach
         </flux:select>
+            <flux:error name="reason" />
+        </flux:field>
 
-        <flux:textarea
-            wire:model.blur="details"
-            label="{{ __('booking.cancellation.reason.details') }}"
-            rows="3"
-            maxlength="500"
-        />
+                <flux:field>
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('booking.cancellation.reason.details') }}</span>
+                </span>
+            </flux:label>
+            <flux:textarea
+                wire:model.blur="details"
+                rows="3"
+                maxlength="500" />
+            <flux:error name="details" />
+        </flux:field>
 
                 <flux:field variant="inline">
             <flux:checkbox wire:model.change="confirmed" />

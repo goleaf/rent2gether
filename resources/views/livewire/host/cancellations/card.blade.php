@@ -33,12 +33,30 @@
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:select wire:model.change="reasonKey" :label="__('cancellations.fields.reason')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('cancellations.fields.reason') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="reasonKey">
                     <flux:select.option value="maintenance">{{ __('cancellations.reasons.maintenance') }}</flux:select.option>
                     <flux:select.option value="housing_problem">{{ __('cancellations.reasons.housing_problem') }}</flux:select.option>
                     <flux:select.option value="other">{{ __('cancellations.reasons.other') }}</flux:select.option>
                 </flux:select>
-                <flux:textarea wire:model.blur="hostComment" :label="__('cancellations.fields.comment')" rows="3" />
+                    <flux:error name="reasonKey" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('cancellations.fields.comment') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="hostComment" rows="3" />
+                    <flux:error name="hostComment" />
+                </flux:field>
                 <flux:button variant="danger" wire:click="cancelBooking" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('cancellations.actions.cancel_booking') }}
                 </flux:button>

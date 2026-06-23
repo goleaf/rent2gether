@@ -38,14 +38,41 @@
         @endif
 
         <div class="mt-4 grid gap-3">
-            <flux:select wire:model.change="reason" :label="__('booking_relocations.fields.reason')">
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_relocations.fields.reason') }}</span>
+                    </span>
+                </flux:label>
+                <flux:select wire:model.change="reason">
                 @foreach (['noisy_neighbors', 'uncomfortable_bed', 'conflict_with_occupant', 'breakdown', 'guest_wants_more_private_room', 'guest_wants_cheaper', 'guest_wants_more_comfort', 'other'] as $reasonKey)
                     <flux:select.option value="{{ $reasonKey }}">{{ __('booking_relocations.reasons.' . $reasonKey) }}</flux:select.option>
                 @endforeach
             </flux:select>
+                <flux:error name="reason" />
+            </flux:field>
 
-            <flux:input type="date" wire:model.change="relocationDate" :label="__('booking_relocations.fields.relocation_date')" icon="calendar-days" />
-            <flux:textarea wire:model.blur="guestComment" :label="__('booking_relocations.fields.guest_comment')" rows="3" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_relocations.fields.relocation_date') }}</span>
+                    </span>
+                </flux:label>
+                <flux:input type="date" wire:model.change="relocationDate" icon="calendar-days" />
+                <flux:error name="relocationDate" />
+            </flux:field>
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('booking_relocations.fields.guest_comment') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea wire:model.blur="guestComment" rows="3" />
+                <flux:error name="guestComment" />
+            </flux:field>
 
             <flux:button variant="primary" wire:click="requestRelocation" wire:loading.attr="disabled" icon="calendar-days">
                 {{ __('booking_relocations.actions.request_relocation') }}

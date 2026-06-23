@@ -38,8 +38,26 @@
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:textarea wire:model.blur="hostMessage" :label="__('listing_mismatch.fields.host_response')" rows="3" />
-                <flux:input type="number" step="0.01" wire:model.blur="amount" :label="__('listing_mismatch.fields.amount')" icon="banknotes" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="chat-bubble-left-right" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing_mismatch.fields.host_response') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="hostMessage" rows="3" />
+                    <flux:error name="hostMessage" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing_mismatch.fields.amount') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" step="0.01" wire:model.blur="amount" icon="banknotes" />
+                    <flux:error name="amount" />
+                </flux:field>
 
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <flux:button wire:click="acceptProblem" wire:loading.attr="disabled" icon="check">

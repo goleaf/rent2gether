@@ -15,16 +15,52 @@
                     <span class="min-w-0">{{ __('listing.form.basic_info') }}</span>
                 </span>
             </flux:heading>
-            <flux:input wire:model="title" label="{{ __('listing.form.title') }}" :error="$errors->first('title')" icon="tag" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing.form.title') }}</span>
+                    </span>
+                </flux:label>
+                <flux:input wire:model="title" :error="$errors->first('title')" icon="tag" />
+                <flux:error name="title" />
+            </flux:field>
             <div class="grid grid-cols-2 gap-4">
-                <flux:select wire:model="type" label="{{ __('listing.form.type') }}">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.type') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model="type">
                     @foreach($this->bedTypes() as $value => $label)
                         <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:input type="number" wire:model="maxGuests" label="{{ __('listing.form.max_guests') }}" min="1" icon="users" />
+                    <flux:error name="type" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.max_guests') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="maxGuests" min="1" icon="users" />
+                    <flux:error name="maxGuests" />
+                </flux:field>
             </div>
-            <flux:textarea wire:model.blur="description" label="{{ __('listing.form.description') }}" rows="2" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing.form.description') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea wire:model.blur="description" rows="2" />
+                <flux:error name="description" />
+            </flux:field>
         </flux:card>
 
         <flux:card class="space-y-4">
@@ -35,14 +71,86 @@
                 </span>
             </flux:heading>
             <div class="grid grid-cols-2 gap-4">
-                <flux:input type="number" wire:model="pricePerNight" label="{{ __('listing.form.price_per_night') }}" step="0.01" :error="$errors->first('pricePerNight')" icon="banknotes" />
-                <flux:input type="number" wire:model="priceWeekend" label="{{ __('listing.form.weekend_price') }}" step="0.01" icon="banknotes" />
-                <flux:input type="number" wire:model="priceWeekly" label="{{ __('listing.form.weekly_price') }}" step="0.01" icon="banknotes" />
-                <flux:input type="number" wire:model="priceMonthly" label="{{ __('listing.form.monthly_price') }}" step="0.01" icon="banknotes" />
-                <flux:input type="number" wire:model="cleaningFee" label="{{ __('listing.form.cleaning_fee') }}" step="0.01" icon="banknotes" />
-                <flux:input type="number" wire:model="deposit" label="{{ __('listing.form.deposit') }}" step="0.01" icon="banknotes" />
-                <flux:input type="number" wire:model="discountWeekly" label="{{ __('listing.form.weekly_discount') }}" step="0.1" icon="numbered-list" />
-                <flux:input type="number" wire:model="discountMonthly" label="{{ __('listing.form.monthly_discount') }}" step="0.1" icon="numbered-list" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.price_per_night') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="pricePerNight" step="0.01" :error="$errors->first('pricePerNight')" icon="banknotes" />
+                    <flux:error name="pricePerNight" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.weekend_price') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="priceWeekend" step="0.01" icon="banknotes" />
+                    <flux:error name="priceWeekend" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.weekly_price') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="priceWeekly" step="0.01" icon="banknotes" />
+                    <flux:error name="priceWeekly" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.monthly_price') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="priceMonthly" step="0.01" icon="banknotes" />
+                    <flux:error name="priceMonthly" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.cleaning_fee') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="cleaningFee" step="0.01" icon="banknotes" />
+                    <flux:error name="cleaningFee" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.deposit') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="deposit" step="0.01" icon="banknotes" />
+                    <flux:error name="deposit" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.weekly_discount') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="discountWeekly" step="0.1" icon="numbered-list" />
+                    <flux:error name="discountWeekly" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.monthly_discount') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="discountMonthly" step="0.1" icon="numbered-list" />
+                    <flux:error name="discountMonthly" />
+                </flux:field>
             </div>
         </flux:card>
 
@@ -54,8 +162,26 @@
                 </span>
             </flux:heading>
             <div class="grid grid-cols-2 gap-4">
-                <flux:input type="number" wire:model="minNights" label="{{ __('listing.form.min_nights') }}" min="1" :error="$errors->first('minNights')" icon="numbered-list" />
-                <flux:input type="number" wire:model="maxNights" label="{{ __('listing.form.max_nights') }}" icon="numbered-list" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.min_nights') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="minNights" min="1" :error="$errors->first('minNights')" icon="numbered-list" />
+                    <flux:error name="minNights" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('listing.form.max_nights') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model="maxNights" icon="numbered-list" />
+                    <flux:error name="maxNights" />
+                </flux:field>
             </div>
                         <flux:field variant="inline">
                 <flux:checkbox wire:model="instantBook" />
@@ -67,11 +193,20 @@
                 </flux:label>
                 <flux:error name="instantBook" />
             </flux:field>
-            <flux:select wire:model="cancellationPolicy" label="{{ __('listing.form.cancellation_policy') }}">
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="key" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing.form.cancellation_policy') }}</span>
+                    </span>
+                </flux:label>
+                <flux:select wire:model="cancellationPolicy">
                 @foreach($this->cancellationPolicies() as $value => $label)
                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
+                <flux:error name="cancellationPolicy" />
+            </flux:field>
         </flux:card>
 
         <flux:card class="space-y-3">

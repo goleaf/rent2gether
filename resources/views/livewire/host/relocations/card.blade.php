@@ -60,7 +60,16 @@
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:textarea wire:model.blur="hostMessage" :label="__('booking_relocations.fields.host_comment')" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_relocations.fields.host_comment') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="hostMessage" rows="3" />
+                    <flux:error name="hostMessage" />
+                </flux:field>
                 <div class="grid grid-cols-2 gap-2">
                     <flux:button variant="primary" wire:click="approve" wire:loading.attr="disabled" icon="calendar-days">
                         {{ __('booking_relocations.actions.approve') }}

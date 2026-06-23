@@ -107,12 +107,19 @@
             <p class="whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">{{ $complaint->other_side_response ?: $complaint->respondent_reply }}</p>
         @elseif($canRespond)
             <form wire:submit="respond" class="space-y-3">
-                <flux:textarea
-                    wire:model.blur="otherSideResponse"
-                    label="{{ __('booking.complaint.fields.other_side_response') }}"
-                    rows="5"
-                    :error="$errors->first('otherSideResponse')"
-                />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.complaint.fields.other_side_response') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea
+                        wire:model.blur="otherSideResponse"
+                        rows="5"
+                        :error="$errors->first('otherSideResponse')" />
+                    <flux:error name="otherSideResponse" />
+                </flux:field>
                 <flux:button type="submit" wire:loading.attr="disabled" data-loading variant="primary" class="w-full" icon="calendar-days">
                     <span wire:loading.remove>{{ __('booking.complaint.actions.respond') }}</span>
                     <span wire:loading>{{ __('booking.complaint.actions.responding') }}</span>

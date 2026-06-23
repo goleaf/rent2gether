@@ -85,7 +85,16 @@
                     <flux:button type="button" variant="danger" class="w-full" wire:click="reject" wire:loading.attr="disabled" icon="x-mark">
                         {{ __('booking_extensions.actions.reject') }}
                     </flux:button>
-                    <flux:input type="date" wire:model.change="proposedNewCheckOutDate" :label="__('booking_extensions.fields.proposed_new_check_out_date')" icon="calendar-days" />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('booking_extensions.fields.proposed_new_check_out_date') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="date" wire:model.change="proposedNewCheckOutDate" icon="calendar-days" />
+                        <flux:error name="proposedNewCheckOutDate" />
+                    </flux:field>
                     <flux:button type="button" class="w-full" wire:click="proposeNewCheckout" wire:loading.attr="disabled" icon="clipboard-document-check">
                         {{ __('booking_extensions.actions.propose_new_checkout') }}
                     </flux:button>

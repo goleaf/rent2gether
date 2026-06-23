@@ -68,8 +68,26 @@
             </div>
 
             <div class="mt-4 grid gap-3">
-                <flux:input wire:model.blur="newArrivalTime" :label="__('no_show.fields.new_arrival_time')" icon="clock" />
-                <flux:textarea wire:model.blur="message" :label="__('no_show.fields.message')" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('no_show.fields.new_arrival_time') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input wire:model.blur="newArrivalTime" icon="clock" />
+                    <flux:error name="newArrivalTime" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('no_show.fields.message') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="message" rows="3" />
+                    <flux:error name="message" />
+                </flux:field>
             </div>
 
             <div class="mt-4 rounded-md bg-zinc-50 p-3 dark:bg-zinc-900">

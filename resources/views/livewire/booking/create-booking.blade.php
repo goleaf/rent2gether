@@ -23,10 +23,46 @@
             </flux:card>
 
             <form wire:submit="book" class="space-y-4">
-                <flux:input type="date" wire:model.change="checkIn" label="{{ __('booking.check_in') }}" :error="$errors->first('checkIn')" icon="calendar-days" />
-                <flux:input type="date" wire:model.change="checkOut" label="{{ __('booking.check_out') }}" :error="$errors->first('checkOut')" icon="calendar-days" />
-                <flux:input type="number" wire:model.change="guestCount" label="{{ __('booking.guests') }}" min="1" :error="$errors->first('guestCount')" icon="user" />
-                <flux:textarea wire:model.blur="guestMessage" label="{{ __('booking.message_to_host') }}" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.check_in') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="date" wire:model.change="checkIn" :error="$errors->first('checkIn')" icon="calendar-days" />
+                    <flux:error name="checkIn" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.check_out') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="date" wire:model.change="checkOut" :error="$errors->first('checkOut')" icon="calendar-days" />
+                    <flux:error name="checkOut" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.guests') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="number" wire:model.change="guestCount" min="1" :error="$errors->first('guestCount')" icon="user" />
+                    <flux:error name="guestCount" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking.message_to_host') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="guestMessage" rows="3" />
+                    <flux:error name="guestMessage" />
+                </flux:field>
 
                 @if($errors->has('availability'))
                     <flux:badge color="red" icon="exclamation-triangle">{{ $errors->first('availability') }}</flux:badge>

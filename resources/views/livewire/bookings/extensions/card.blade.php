@@ -73,8 +73,26 @@
 
         @if (in_array($variant, ['guest_page', 'form'], true))
             <form wire:submit="requestExtension" class="space-y-3">
-                <flux:input type="date" wire:model.change="newCheckOutDate" :label="__('booking_extensions.fields.new_check_out_date')" icon="calendar-days" />
-                <flux:textarea rows="3" wire:model.blur="guestMessage" :label="__('booking_extensions.fields.guest_message')" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_extensions.fields.new_check_out_date') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="date" wire:model.change="newCheckOutDate" icon="calendar-days" />
+                    <flux:error name="newCheckOutDate" />
+                </flux:field>
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('booking_extensions.fields.guest_message') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea rows="3" wire:model.blur="guestMessage" />
+                    <flux:error name="guestMessage" />
+                </flux:field>
 
                 <flux:button type="submit" variant="primary" class="w-full data-loading:opacity-70" wire:loading.attr="disabled" icon="calendar-days">
                     <span wire:loading.remove wire:target="requestExtension">{{ __('booking_extensions.actions.request_extension') }}</span>

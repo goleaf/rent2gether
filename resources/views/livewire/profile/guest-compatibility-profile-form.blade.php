@@ -17,11 +17,20 @@
 
     <div class="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="space-y-4">
-            <flux:select wire:model.change="step" label="{{ __('compatibility.fields.current_step') }}">
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('compatibility.fields.current_step') }}</span>
+                    </span>
+                </flux:label>
+                <flux:select wire:model.change="step">
                 @foreach(['smoking_pets', 'sleep_schedule', 'work_study', 'social_quiet', 'cleanliness', 'room_people', 'sleeping_place', 'entry'] as $section)
                     <flux:select.option value="{{ $section }}">{{ __('compatibility.sections.'.$section) }}</flux:select.option>
                 @endforeach
             </flux:select>
+                <flux:error name="step" />
+            </flux:field>
 
             @if($step === 'smoking_pets')
                 <div class="grid gap-3">
@@ -214,21 +223,39 @@
                         </flux:label>
                         <flux:error name="comfortableWithStrangers" />
                     </flux:field>
-                    <flux:select wire:model.change="socialLevel" label="{{ __('compatibility.fields.social_level') }}">
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('compatibility.fields.social_level') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:select wire:model.change="socialLevel">
                         <flux:select.option value="">{{ __('compatibility.options.not_set') }}</flux:select.option>
                         <flux:select.option value="quiet">{{ __('compatibility.options.quiet') }}</flux:select.option>
                         <flux:select.option value="balanced">{{ __('compatibility.options.balanced') }}</flux:select.option>
                         <flux:select.option value="social">{{ __('compatibility.options.social') }}</flux:select.option>
                     </flux:select>
+                        <flux:error name="socialLevel" />
+                    </flux:field>
                 </div>
             @elseif($step === 'cleanliness')
                 <div class="grid gap-3">
-                    <flux:select wire:model.change="cleanlinessExpectation" label="{{ __('compatibility.fields.cleanliness_expectation') }}">
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('compatibility.fields.cleanliness_expectation') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:select wire:model.change="cleanlinessExpectation">
                         <flux:select.option value="">{{ __('compatibility.options.not_set') }}</flux:select.option>
                         <flux:select.option value="simple">{{ __('compatibility.options.simple_cleanliness') }}</flux:select.option>
                         <flux:select.option value="normal">{{ __('compatibility.options.normal_cleanliness') }}</flux:select.option>
                         <flux:select.option value="strict">{{ __('compatibility.options.strict_cleanliness') }}</flux:select.option>
                     </flux:select>
+                        <flux:error name="cleanlinessExpectation" />
+                    </flux:field>
                                         <flux:field variant="inline">
                         <flux:checkbox wire:model.change="readyToJoinCleaning" />
                         <flux:label>
@@ -262,7 +289,16 @@
                         </flux:label>
                         <flux:error name="comfortableWithSharedRoom" />
                     </flux:field>
-                    <flux:input type="number" min="1" max="12" inputmode="numeric" wire:model.change="maxPeopleInRoom" label="{{ __('compatibility.fields.max_people_in_room') }}" icon="users" />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('compatibility.fields.max_people_in_room') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="number" min="1" max="12" inputmode="numeric" wire:model.change="maxPeopleInRoom" icon="users" />
+                        <flux:error name="maxPeopleInRoom" />
+                    </flux:field>
                                         <flux:field variant="inline">
                         <flux:checkbox wire:model.change="comfortableWithMixedRoom" />
                         <flux:label>

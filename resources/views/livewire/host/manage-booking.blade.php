@@ -94,7 +94,16 @@
                     <span class="min-w-0">{{ __('host.manage_booking.reject_title') }}</span>
                 </span>
             </flux:heading>
-            <flux:textarea wire:model.blur="rejectReason" label="{{ __('host.manage_booking.reason_optional') }}" rows="3" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host.manage_booking.reason_optional') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea wire:model.blur="rejectReason" rows="3" />
+                <flux:error name="rejectReason" />
+            </flux:field>
             <div class="flex gap-3 mt-4">
                 <flux:button wire:click="reject" variant="danger" icon="x-mark">{{ __('host.manage_booking.reject') }}</flux:button>
                 <flux:button wire:click="$set('showRejectModal', false)" variant="ghost" icon="x-mark">{{ __('app.actions.cancel') }}</flux:button>
@@ -111,7 +120,16 @@
                 </span>
             </flux:heading>
             <flux:text class="text-zinc-500">{{ __('host.manage_booking.full_refund') }}</flux:text>
-            <flux:textarea wire:model.blur="cancelReason" label="{{ __('host.manage_booking.reason_optional') }}" rows="3" />
+                        <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host.manage_booking.reason_optional') }}</span>
+                    </span>
+                </flux:label>
+                <flux:textarea wire:model.blur="cancelReason" rows="3" />
+                <flux:error name="cancelReason" />
+            </flux:field>
             <div class="flex gap-3 mt-4">
                 <flux:button wire:click="cancel" variant="danger" icon="x-mark">{{ __('host.manage_booking.confirm_cancellation') }}</flux:button>
                 <flux:button wire:click="$set('showCancelModal', false)" variant="ghost" icon="arrow-left">{{ __('app.actions.back') }}</flux:button>

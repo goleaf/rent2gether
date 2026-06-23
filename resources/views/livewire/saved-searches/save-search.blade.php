@@ -13,7 +13,16 @@
                     </span>
                 </flux:heading>
                 <form wire:submit="save" class="space-y-4 mt-4">
-                    <flux:input wire:model="name" label="{{ __('app.profile.name') }}" placeholder="{{ __('search.saved.name_placeholder') }}" :error="$errors->first('name')" icon="magnifying-glass" />
+                                        <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="heart" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('app.profile.name') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input wire:model="name" placeholder="{{ __('search.saved.name_placeholder') }}" :error="$errors->first('name')" icon="magnifying-glass" />
+                        <flux:error name="name" />
+                    </flux:field>
                     <div class="text-sm text-zinc-500 space-y-1">
                         @if($city)<div>{{ __('listing.form.city') }}: {{ $city }}</div>@endif
                         @if($checkIn)<div>{{ __('search.saved.dates') }}: {{ $checkIn }} - {{ $checkOut }}</div>@endif

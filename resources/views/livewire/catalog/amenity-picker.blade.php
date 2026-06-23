@@ -1,12 +1,18 @@
 <div class="space-y-3">
-    <flux:autocomplete
-        type="search"
-        clearable
-        wire:model.live.debounce.500ms="search"
-        label="{{ __('host.amenities.picker.search_label') }}"
-        description="{{ __('host.amenities.picker.helper') }}"
-        placeholder="{{ __('host.amenities.picker.search_placeholder') }}"
-        container:class="max-h-80" icon="magnifying-glass">
+        <flux:field>
+        <flux:label>
+            <span class="inline-flex min-w-0 items-center gap-1.5">
+                <flux:icon name="magnifying-glass" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('host.amenities.picker.search_label') }}</span>
+            </span>
+        </flux:label>
+        <flux:description>{{ __('host.amenities.picker.helper') }}</flux:description>
+        <flux:autocomplete
+            type="search"
+            clearable
+            wire:model.live.debounce.500ms="search"
+            placeholder="{{ __('host.amenities.picker.search_placeholder') }}"
+            container:class="max-h-80" icon="magnifying-glass">
         @if(mb_strlen(trim($search)) >= 2)
             @foreach($this->groups as $group)
                 @foreach($group['options'] as $option)
@@ -17,6 +23,8 @@
             @endforeach
         @endif
     </flux:autocomplete>
+        <flux:error name="search" />
+    </flux:field>
 
     <div wire:loading.delay class="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
         {{ __('host.amenities.picker.loading') }}

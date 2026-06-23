@@ -41,13 +41,31 @@
 
         @if (! $preview && ! $cancellation)
             <div class="mt-4 grid gap-3">
-                <flux:select wire:model.change="reasonKey" :label="__('cancellations.fields.reason')">
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('cancellations.fields.reason') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="reasonKey">
                     @foreach ($reasonOptions as $reason)
                         <flux:select.option value="{{ $reason }}">{{ __('cancellations.reasons.' . $reason) }}</flux:select.option>
                     @endforeach
                 </flux:select>
+                    <flux:error name="reasonKey" />
+                </flux:field>
 
-                <flux:textarea wire:model.blur="comment" :label="__('cancellations.fields.comment')" rows="3" />
+                                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('cancellations.fields.comment') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="comment" rows="3" />
+                    <flux:error name="comment" />
+                </flux:field>
 
                 <flux:button variant="primary" wire:click="createPreview" wire:loading.attr="disabled" icon="x-mark">
                     {{ __('cancellations.actions.create_preview') }}
