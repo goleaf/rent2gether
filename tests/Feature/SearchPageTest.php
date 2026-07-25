@@ -20,11 +20,13 @@ use App\Models\HostProfile;
 use App\Models\Property;
 use App\Models\PropertyAccessDetail;
 use App\Models\Room;
+use App\Models\Rule;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -188,7 +190,7 @@ class SearchPageTest extends TestCase
             'entrance_type' => 'shared_entrance',
             'floor' => 3,
             'floors_count' => 3,
-            'has_elevator' => false,
+            'has_elevator' => true,
             'balconies_count' => 0,
         ], [
             'has_balcony' => false,
@@ -203,7 +205,6 @@ class SearchPageTest extends TestCase
             'new_home' => true,
             'private_entrance' => true,
             'first_floor' => true,
-            'elevator' => true,
             'balcony' => true,
             'quiet_windows' => true,
             'courtyard_windows' => true,
@@ -212,6 +213,388 @@ class SearchPageTest extends TestCase
         $response->assertOk();
         $response->assertSee('Matched Premise Place');
         $response->assertDontSee('Filtered Premise Place');
+    }
+
+    public function test_premise_criteria_search_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasIndex('properties', ['status', 'repair_state']));
+        $this->assertTrue(Schema::hasIndex('properties', ['status', 'floor']));
+        $this->assertTrue(Schema::hasIndex('properties', ['status', 'floors_count']));
+        $this->assertTrue(Schema::hasIndex('properties', ['status', 'balconies_count']));
+        $this->assertTrue(Schema::hasIndex('property_condition_details', ['repair_state', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_balcony']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'window_view']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'noise_level']));
+        $this->assertTrue(Schema::hasIndex('property_access_details', ['entrance_type', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_access_details', ['has_private_entrance', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_access_details', ['has_shared_entrance', 'property_id']));
+    }
+
+    public function test_search_filters_by_private_room_criteria(): void
+    {
+        $city = $this->city('Private Room City');
+
+        $this->createSearchPlace('Matched Private Room Place', $city, [], [], [
+            'type' => RoomType::Private->value,
+            'room_type' => RoomType::Private->value,
+            'is_private' => true,
+            'is_shared' => false,
+            'gender_policy' => GenderType::Female->value,
+            'gender_type' => GenderType::Female->value,
+            'living_format' => 'student',
+            'is_for_one_person' => true,
+            'max_guests' => 1,
+            'capacity' => 1,
+            'has_window' => true,
+            'windows_count' => 1,
+            'has_lock' => true,
+            'has_lockable_door' => true,
+            'has_room_key' => true,
+            'has_air_conditioning' => true,
+            'has_ac' => true,
+            'has_heating' => true,
+            'has_desk' => true,
+            'has_wardrobe' => true,
+            'has_lockers' => true,
+            'has_balcony' => true,
+            'noise_level' => 'quiet',
+            'light_level' => 'bright',
+            'is_pass_through' => false,
+        ]);
+
+        $this->createSearchPlace('Filtered Private Room Place', $city, [], [], [
+            'type' => RoomType::Shared->value,
+            'room_type' => RoomType::Shared->value,
+            'is_private' => false,
+            'is_shared' => true,
+            'gender_policy' => GenderType::Male->value,
+            'gender_type' => GenderType::Male->value,
+            'living_format' => 'worker',
+            'is_for_one_person' => false,
+            'max_guests' => 6,
+            'capacity' => 6,
+            'has_window' => false,
+            'windows_count' => 0,
+            'has_lock' => false,
+            'has_lockable_door' => false,
+            'has_room_key' => false,
+            'has_air_conditioning' => false,
+            'has_ac' => false,
+            'has_heating' => false,
+            'has_desk' => false,
+            'has_wardrobe' => false,
+            'has_lockers' => false,
+            'has_balcony' => false,
+            'noise_level' => 'moderate',
+            'light_level' => 'moderate',
+            'is_pass_through' => true,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'private_room' => true,
+            'female_room' => true,
+            'student_room' => true,
+            'one_guest_room' => true,
+            'room_window' => true,
+            'room_lock' => true,
+            'room_ac' => true,
+            'room_heating' => true,
+            'room_desk' => true,
+            'room_wardrobe' => true,
+            'room_locker' => true,
+            'room_balcony' => true,
+            'quiet_room' => true,
+            'bright_room' => true,
+            'non_pass_through' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Private Room Place');
+        $response->assertDontSee('Filtered Private Room Place');
+    }
+
+    public function test_search_filters_by_shared_large_worker_room_criteria(): void
+    {
+        $city = $this->city('Shared Worker City');
+
+        $this->createSearchPlace('Matched Shared Worker Room', $city, [], [], [
+            'type' => RoomType::Shared->value,
+            'room_type' => RoomType::Shared->value,
+            'is_private' => false,
+            'is_shared' => true,
+            'gender_policy' => GenderType::Male->value,
+            'gender_type' => GenderType::Male->value,
+            'living_format' => 'worker',
+            'max_guests' => 8,
+            'capacity' => 8,
+            'is_pass_through' => true,
+        ]);
+
+        $this->createSearchPlace('Filtered Shared Worker Room', $city, [], [], [
+            'type' => RoomType::Shared->value,
+            'room_type' => RoomType::Shared->value,
+            'is_private' => false,
+            'is_shared' => true,
+            'gender_policy' => GenderType::Male->value,
+            'gender_type' => GenderType::Male->value,
+            'living_format' => 'worker',
+            'max_guests' => 4,
+            'capacity' => 4,
+            'is_pass_through' => true,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'shared_room' => true,
+            'male_room' => true,
+            'worker_room' => true,
+            'room_over_6' => true,
+            'pass_through' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Shared Worker Room');
+        $response->assertDontSee('Filtered Shared Worker Room');
+    }
+
+    public function test_search_filters_by_mixed_tourist_long_stay_room_criteria(): void
+    {
+        $city = $this->city('Tourist Room City');
+
+        $this->createSearchPlace('Matched Tourist Room Place', $city, [], [], [
+            'gender_policy' => GenderType::Mixed->value,
+            'gender_type' => GenderType::Mixed->value,
+            'living_format' => 'tourist',
+            'is_for_long_stay' => true,
+            'max_guests' => 4,
+            'capacity' => 4,
+            'has_window' => false,
+            'windows_count' => 0,
+            'has_lock' => false,
+            'has_lockable_door' => false,
+            'has_room_key' => false,
+            'is_pass_through' => true,
+        ]);
+
+        $this->createSearchPlace('Filtered Tourist Room Place', $city, [], [], [
+            'gender_policy' => GenderType::Mixed->value,
+            'gender_type' => GenderType::Mixed->value,
+            'living_format' => 'tourist',
+            'is_for_long_stay' => true,
+            'max_guests' => 5,
+            'capacity' => 5,
+            'has_window' => true,
+            'windows_count' => 1,
+            'has_lock' => false,
+            'has_lockable_door' => false,
+            'has_room_key' => false,
+            'is_pass_through' => true,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'mixed_room' => true,
+            'tourist_room' => true,
+            'long_stay_room' => true,
+            'room_up_to_4' => true,
+            'room_no_window' => true,
+            'room_no_lock' => true,
+            'pass_through' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Tourist Room Place');
+        $response->assertDontSee('Filtered Tourist Room Place');
+    }
+
+    public function test_room_criteria_search_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'type']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'room_type']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'gender_policy']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'gender_type']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'is_private']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'is_shared']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'living_format']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'is_for_one_person']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'is_for_long_stay']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'capacity']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'max_guests']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_window']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'windows_count']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_lock']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_lockable_door']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_room_key']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_air_conditioning']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_ac']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_heating']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_desk']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_wardrobe']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_lockers']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'has_balcony']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'noise_level']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'is_pass_through']));
+        $this->assertTrue(Schema::hasIndex('rooms', ['status', 'light_level']));
+    }
+
+    public function test_search_filters_by_allowed_rule_criteria_across_place_room_and_property(): void
+    {
+        $city = $this->city('Allowed Rules City');
+        $matched = $this->createSearchPlace('Matched Allowed Rules Place', $city);
+        $this->createSearchPlace('Filtered Allowed Rules Place', $city);
+
+        $rules = $this->rules([
+            'smoking_allowed',
+            'pets_allowed',
+            'visitors_allowed',
+            'couples_allowed',
+            'children_allowed',
+            'cooking_allowed',
+            'night_cooking_allowed',
+            'washing_machine_at_night_allowed',
+            'night_work_allowed',
+            'late_entry_allowed',
+        ]);
+
+        $matched->property->rules()->attach([
+            $rules['smoking_allowed']->id,
+            $rules['pets_allowed']->id,
+            $rules['visitors_allowed']->id,
+            $rules['couples_allowed']->id,
+        ]);
+        $matched->room->rules()->attach([
+            $rules['children_allowed']->id,
+            $rules['cooking_allowed']->id,
+            $rules['night_cooking_allowed']->id,
+            $rules['washing_machine_at_night_allowed']->id,
+        ]);
+        $matched->rules()->attach([
+            $rules['night_work_allowed']->id,
+            $rules['late_entry_allowed']->id,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'smoking' => true,
+            'pets' => true,
+            'visitors' => true,
+            'couples' => true,
+            'children' => true,
+            'cook' => true,
+            'cook_night' => true,
+            'wash_night' => true,
+            'work_night' => true,
+            'late_return' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Allowed Rules Place');
+        $response->assertDontSee('Filtered Allowed Rules Place');
+    }
+
+    public function test_search_filters_by_restrictive_rule_criteria_across_place_room_and_property(): void
+    {
+        $city = $this->city('Restrictive Rules City');
+        $matched = $this->createSearchPlace('Matched Restrictive Rules Place', $city);
+        $this->createSearchPlace('Filtered Restrictive Rules Place', $city);
+
+        $rules = $this->rules([
+            'no_smoking',
+            'no_pets',
+            'no_visitors',
+            'adults_only',
+            'no_noise_after_time',
+            'quiet_hours_after_22',
+            'no_washing_machine_at_night',
+            'no_main_light_at_night',
+            'entry_time_limit',
+            'cleaning_rules',
+            'cleaning_schedule',
+            'remove_shoes_inside',
+            'no_alcohol',
+            'no_parties',
+            'no_unregistered_people',
+            'no_loud_music',
+            'no_food_storage_in_room',
+            'no_eating_on_bed',
+            'no_sleeping_place_changes_without_permission',
+            'do_not_occupy_other_shelves',
+            'do_not_use_other_residents_things',
+        ]);
+
+        $matched->property->rules()->attach([
+            $rules['no_smoking']->id,
+            $rules['no_pets']->id,
+            $rules['no_visitors']->id,
+            $rules['adults_only']->id,
+            $rules['no_noise_after_time']->id,
+            $rules['quiet_hours_after_22']->id,
+            $rules['no_washing_machine_at_night']->id,
+        ]);
+        $matched->room->rules()->attach([
+            $rules['no_main_light_at_night']->id,
+            $rules['entry_time_limit']->id,
+            $rules['cleaning_rules']->id,
+            $rules['cleaning_schedule']->id,
+            $rules['remove_shoes_inside']->id,
+            $rules['no_alcohol']->id,
+            $rules['no_parties']->id,
+        ]);
+        $matched->rules()->attach([
+            $rules['no_unregistered_people']->id,
+            $rules['no_loud_music']->id,
+            $rules['no_food_storage_in_room']->id,
+            $rules['no_eating_on_bed']->id,
+            $rules['no_sleeping_place_changes_without_permission']->id,
+            $rules['do_not_occupy_other_shelves']->id,
+            $rules['do_not_use_other_residents_things']->id,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'no_smoking' => true,
+            'no_pets' => true,
+            'no_visitors' => true,
+            'adults_only' => true,
+            'no_noise_after_time' => true,
+            'quiet' => true,
+            'no_wash_night' => true,
+            'no_light_night' => true,
+            'entry_time_limit' => true,
+            'cleaning_rules' => true,
+            'cleaning_schedule' => true,
+            'shoes_off' => true,
+            'no_alcohol' => true,
+            'no_parties' => true,
+            'no_outsiders' => true,
+            'no_loud_music' => true,
+            'no_food_room' => true,
+            'no_eating_bed' => true,
+            'no_place_change' => true,
+            'no_other_shelves' => true,
+            'no_other_things' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Restrictive Rules Place');
+        $response->assertDontSee('Filtered Restrictive Rules Place');
+    }
+
+    public function test_rule_criteria_search_uses_existing_rule_indexes(): void
+    {
+        $this->assertTrue(Schema::hasIndex('rules', ['slug']));
+        $this->assertTrue(Schema::hasIndex('property_rule', ['property_id', 'rule_id']));
+        $this->assertTrue(Schema::hasIndex('property_rule', ['rule_id']));
+        $this->assertTrue(Schema::hasIndex('room_rule', ['room_id', 'rule_id']));
+        $this->assertTrue(Schema::hasIndex('room_rule', ['rule_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_rule', ['sleeping_place_id', 'rule_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_rule', ['rule_id']));
     }
 
     public function test_search_url_state_initializes_filters(): void
@@ -242,9 +625,46 @@ class SearchPageTest extends TestCase
             ->set('withBalcony', true)
             ->set('withoutElevator', true)
             ->set('courtyardWindows', true)
+            ->set('privateRoom', true)
+            ->set('roomUpToTwoGuests', true)
+            ->set('roomUpToSixGuests', true)
+            ->set('passThroughRoom', true)
+            ->set('smokingAllowed', true)
+            ->set('visitorsAllowed', true)
+            ->set('noWashingAtNight', true)
+            ->set('noOtherPeopleThings', true)
             ->assertSet('withBalcony', true)
             ->assertSet('withoutElevator', true)
-            ->assertSet('courtyardWindows', true);
+            ->assertSet('courtyardWindows', true)
+            ->assertSet('privateRoom', true)
+            ->assertSet('roomUpToTwoGuests', true)
+            ->assertSet('roomUpToSixGuests', true)
+            ->assertSet('passThroughRoom', true)
+            ->assertSet('smokingAllowed', true)
+            ->assertSet('visitorsAllowed', true)
+            ->assertSet('noWashingAtNight', true)
+            ->assertSet('noOtherPeopleThings', true);
+    }
+
+    public function test_search_results_use_lower_bound_total_until_filter_sheet_needs_exact_count(): void
+    {
+        $city = $this->city('Lower Bound City');
+
+        for ($i = 1; $i <= 14; $i++) {
+            $this->createSearchPlace("Lower Bound Place {$i}", $city, ['base_price_per_night' => 25]);
+        }
+
+        Livewire::test(SleepingPlaceSearch::class)
+            ->set('city', (string) $city->id)
+            ->assertViewHas('results', function (array $results): bool {
+                return count($results['cards']) === 12
+                    && $results['showing'] === 12
+                    && $results['has_more'] === true
+                    && $results['total'] === 13
+                    && $results['total_is_exact'] === false;
+            })
+            ->assertSee(__('search.summary.matched_results_lower_bound', ['count' => 13]))
+            ->assertDontSee(trans_choice('search.summary.matched_results', 14, ['count' => 14]));
     }
 
     public function test_filter_sheet_result_count_tracks_total_matching_places_after_filter_changes(): void
@@ -450,5 +870,41 @@ class SearchPageTest extends TestCase
         $amenity->translations()->create(['locale' => 'ru', 'name' => $label, 'name_normalized' => str($label)->lower()->toString()]);
 
         return $amenity;
+    }
+
+    /**
+     * @param  list<string>  $slugs
+     * @return array<string, Rule>
+     */
+    private function rules(array $slugs): array
+    {
+        return collect($slugs)
+            ->mapWithKeys(fn (string $slug): array => [$slug => $this->rule($slug)])
+            ->all();
+    }
+
+    private function rule(string $slug): Rule
+    {
+        $label = str($slug)->replace('_', ' ')->title()->toString();
+
+        $rule = Rule::factory()->create([
+            'slug' => $slug,
+            'name_normalized' => str($slug)->replace('_', ' ')->lower()->toString(),
+            'category' => 'shared_room_behavior',
+            'status' => 'active',
+        ]);
+
+        $rule->translations()->create([
+            'locale' => 'en',
+            'name' => $label,
+            'name_normalized' => str($label)->lower()->toString(),
+        ]);
+        $rule->translations()->create([
+            'locale' => 'ru',
+            'name' => $label,
+            'name_normalized' => str($label)->lower()->toString(),
+        ]);
+
+        return $rule;
     }
 }

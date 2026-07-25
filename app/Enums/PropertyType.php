@@ -13,6 +13,11 @@ enum PropertyType: string
     case Hostel = 'hostel';
     case GuestHouse = 'guesthouse';
     case Cottage = 'cottage';
+    case Dacha = 'dacha';
+    case Apartments = 'apartments';
+    case MiniHotel = 'mini_hotel';
+    case CapsuleHousing = 'capsule_housing';
+    case CommercialLivingSpace = 'commercial_living_space';
     case Other = 'other';
 
     public function label(): string

@@ -271,6 +271,11 @@ return [
         'dormitory' => 'Dormitory',
         'guesthouse' => 'Guest house',
         'cottage' => 'Cottage',
+        'dacha' => 'Dacha',
+        'apartments' => 'Apartments',
+        'mini_hotel' => 'Mini-hotel',
+        'capsule_housing' => 'Capsule housing',
+        'commercial_living_space' => 'Commercial living space',
         'other' => 'Other',
     ],
     'property_rental_unit_type' => [

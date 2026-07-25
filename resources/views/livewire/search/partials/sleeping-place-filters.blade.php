@@ -85,6 +85,58 @@
     <div class="space-y-3">
         <flux:heading size="sm">
             <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="users" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.room') }}</span>
+            </span>
+        </flux:heading>
+
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            @foreach($this->roomFilterOptions() as $roomFilter)
+                <flux:field variant="inline" wire:key="room-filter-{{ $roomFilter['property'] }}">
+                    <flux:checkbox wire:model.change="{{ $roomFilter['property'] }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="{{ $roomFilter['icon'] }}" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $roomFilter['label'] }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $roomFilter['property'] }}" />
+                </flux:field>
+            @endforeach
+        </div>
+    </div>
+
+    <flux:separator />
+
+    <div class="space-y-3">
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
+                <flux:icon name="home-modern" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                <span class="min-w-0">{{ __('search.filter_groups.premise') }}</span>
+            </span>
+        </flux:heading>
+
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            @foreach($this->premiseFilterOptions() as $premiseFilter)
+                <flux:field variant="inline" wire:key="premise-filter-{{ $premiseFilter['property'] }}">
+                    <flux:checkbox wire:model.change="{{ $premiseFilter['property'] }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="{{ $premiseFilter['icon'] }}" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $premiseFilter['label'] }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $premiseFilter['property'] }}" />
+                </flux:field>
+            @endforeach
+        </div>
+    </div>
+
+    <flux:separator />
+
+    <div class="space-y-3">
+        <flux:heading size="sm">
+            <span class="inline-flex min-w-0 items-center gap-2">
                 <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
                 <span class="min-w-0">{{ __('search.filter_groups.price') }}</span>
             </span>
@@ -367,46 +419,18 @@
                 </flux:label>
                 <flux:error name="selfCheckIn" />
             </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="quietHours" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.quiet_hours') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="quietHours" />
-            </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="noSmoking" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.no_smoking') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="noSmoking" />
-            </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="petsAllowed" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.pets_allowed') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="petsAllowed" />
-            </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="noPets" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.no_pets') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="noPets" />
-            </flux:field>
+            @foreach($this->ruleFilterOptions() as $ruleFilter)
+                <flux:field variant="inline" wire:key="rule-filter-{{ $ruleFilter['property'] }}">
+                    <flux:checkbox wire:model.change="{{ $ruleFilter['property'] }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="{{ $ruleFilter['icon'] }}" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $ruleFilter['label'] }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $ruleFilter['property'] }}" />
+                </flux:field>
+            @endforeach
                         <flux:field variant="inline">
                 <flux:checkbox wire:model.change="noMixedRoom" />
                 <flux:label>

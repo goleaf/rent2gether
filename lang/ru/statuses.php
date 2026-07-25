@@ -271,6 +271,11 @@ return [
         'dormitory' => 'Общежитие',
         'guesthouse' => 'Гостевой дом',
         'cottage' => 'Коттедж',
+        'dacha' => 'Дача',
+        'apartments' => 'Апартаменты',
+        'mini_hotel' => 'Мини-гостиница',
+        'capsule_housing' => 'Капсульное жильё',
+        'commercial_living_space' => 'Коммерческое помещение для проживания',
         'other' => 'Другое',
     ],
     'property_rental_unit_type' => [

@@ -33,11 +33,17 @@ Important indexed property fields include:
 - `city_id + status`
 - `property_type + status`
 - `district + city_id`
+- `status + repair_state`
+- `status + floor`
+- `status + floors_count`
+- `status + balconies_count`
 - `has_elevator`
 - `free_sleeping_places_count`
 - `occupied_sleeping_places_count`
 
 Detail tables keep a unique `property_id` foreign key with cascade delete. Public filters and summaries use indexed scalar fields such as `distance_to_center_meters`, `transport_minutes_to_center`, `district_safety_level`, `repair_state`, `cleanliness_level`, `self_check_in_available`, `access_24_7`, and key/parking booleans.
+
+Search premise criteria use the shared listing-card query joins and stay URL-shareable through compact Livewire booleans. Guest-facing filters can combine property type, new/old/good/simple repair, private/shared entrance, elevator absence, floor boundary, balcony presence, window view, quiet windows, and courtyard-facing windows without loading full property, room, or detail graphs into public Livewire state.
 
 ## Translation Fields
 

@@ -26,6 +26,10 @@ Important indexes:
 - `rooms`: `property_id + status`, `property_id + sort_order`, `room_type + status`, `gender_policy + status`, free/occupied places, and booking flags
 - detail tables: unique `room_id` plus common filters such as area, noise, light, lock, lockers, desk, mold, insects, and last check date
 
+Guest search room criteria stay on compact URL booleans and use indexed room fields rather than loading room detail graphs into Livewire state. Filters cover private/shared rooms, gender format, student/tourist/worker/long-stay formats, capacity thresholds, window and lock presence, air conditioning, heating, desk, wardrobe, personal lockers, balcony, quiet/bright rooms, and pass-through or non-pass-through layout.
+
+Rule criteria use compact URL booleans too, but are matched through the normalized `rules.slug` catalog on sleeping places, rooms, and properties. Filters cover smoking, pets, visitors, couples, children/adults-only, cooking, quiet hours, night washing/work/light, late return, entry limits, cleaning, shoes, alcohol, parties, outsiders, music, food storage, eating on the bed, sleeping-place changes, shelves, and other residents' things without storing large rule arrays in Livewire public state.
+
 ## Translations
 
 UI labels live in:

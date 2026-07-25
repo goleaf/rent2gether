@@ -7,25 +7,14 @@ use App\Enums\GenderType;
 use App\Enums\PropertyType;
 use App\Enums\RoomType;
 use App\Enums\SleepingPlaceType;
-use App\Models\Amenity;
 use App\Models\City;
-use App\Models\MediaItem;
-use App\Models\Property;
-use App\Models\SleepingPlace;
-use App\Models\User;
-use App\Services\Compatibility\CompatibilityService;
 use App\Services\Geo\GeoSearchService;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
-use App\Services\Localization\LocalizedModelContentResolver;
-use App\Services\Localization\SupportedContentLocales;
-use App\Services\Pricing\PricingService;
 use App\Support\Geo\GeoNameNormalizer;
-use BackedEnum;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -37,17 +26,86 @@ class SleepingPlaceSearch extends Component
 
     private const MAX_VISIBLE_COUNT = 60;
 
-    private const CARD_AMENITY_SLUGS = [
-        'wifi',
-        'fast_wifi',
-        'kitchen',
-        'washing_machine',
-        'personal_locker',
-        'locker_with_lock',
-        'workspace',
-        'desk',
-        'parking',
-        'elevator',
+    private const NEW_HOME_REPAIR_STATES = ['new'];
+
+    private const OLD_HOME_REPAIR_STATES = ['old', 'worn', 'dated', 'needs_repair'];
+
+    private const GOOD_REPAIR_STATES = ['good', 'high', 'new', 'renovated'];
+
+    private const SIMPLE_REPAIR_STATES = ['simple', 'basic', 'cosmetic'];
+
+    private const QUIET_WINDOW_NOISE_LEVELS = ['quiet', 'low'];
+
+    private const COURTYARD_WINDOW_VALUES = ['courtyard', 'yard', 'inner_yard', 'garden'];
+
+    private const EMPTY_WINDOW_VIEW_VALUES = ['', 'none', 'no_view'];
+
+    private const WORKER_ROOM_FORMATS = ['worker', 'remote_work'];
+
+    private const BRIGHT_ROOM_LIGHT_LEVELS = ['bright', 'good', 'high'];
+
+    private const NEAR_CENTER_DISTANCE_METERS = 2000;
+
+    private const NEAR_CENTER_WALK_MINUTES = 25;
+
+    private const NEAR_CENTER_TRANSPORT_MINUTES = 20;
+
+    private const NEAR_METRO_DISTANCE_METERS = 1500;
+
+    private const NEAR_BUS_DISTANCE_METERS = 800;
+
+    private const NEAR_RAILWAY_DISTANCE_METERS = 3000;
+
+    private const NEAR_AIRPORT_DISTANCE_METERS = 20000;
+
+    private const GOOD_TRANSPORT_LEVELS = ['good', 'high', 'excellent'];
+
+    private const QUIET_DISTRICT_LEVELS = ['quiet', 'low'];
+
+    private const SAFE_DISTRICT_LEVELS = ['good', 'high', 'safe'];
+
+    private const GOOD_STREET_LIGHTING_LEVELS = ['good', 'high', 'bright'];
+
+    private const CLEAN_PROPERTY_LEVELS = ['good', 'high', 'clean'];
+
+    private const NORMAL_HUMIDITY_LEVELS = ['normal', 'comfortable', 'dry'];
+
+    private const COMFORTABLE_WINTER_LEVELS = ['normal', 'warm', 'comfortable'];
+
+    private const COMFORTABLE_SUMMER_LEVELS = ['normal', 'cool', 'comfortable'];
+
+    private const RULE_FILTER_SLUGS = [
+        'smokingAllowed' => ['smoking_allowed', 'smoking_only_outside', 'smoking_only_on_balcony'],
+        'noSmoking' => ['no_smoking'],
+        'petsAllowed' => ['pets_allowed', 'pets_by_request'],
+        'noPets' => ['no_pets'],
+        'visitorsAllowed' => ['visitors_allowed', 'visitors_by_agreement'],
+        'noVisitors' => ['no_visitors', 'no_overnight_visitors'],
+        'couplesAllowed' => ['couples_allowed'],
+        'childrenAllowed' => ['children_allowed'],
+        'adultsOnly' => ['adults_only'],
+        'cookingAllowed' => ['cooking_allowed', 'clean_dishes_after_use'],
+        'nightCookingAllowed' => ['night_cooking_allowed'],
+        'noNoiseAfterTime' => ['no_noise_after_time', 'quiet_hours_after_22', 'no_loud_calls_at_night', 'no_loud_music'],
+        'quietHours' => ['quiet_hours_after_22'],
+        'washingAtNightAllowed' => ['washing_machine_at_night_allowed'],
+        'noWashingAtNight' => ['no_washing_machine_at_night'],
+        'nightWorkAllowed' => ['night_work_allowed'],
+        'noMainLightAtNight' => ['no_main_light_at_night'],
+        'lateReturnAllowed' => ['late_entry_allowed'],
+        'entryTimeLimit' => ['entry_time_limit'],
+        'cleaningRules' => ['cleaning_rules', 'clean_dishes_after_use', 'take_out_trash'],
+        'cleaningSchedule' => ['cleaning_schedule'],
+        'removeShoes' => ['remove_shoes_inside'],
+        'noAlcohol' => ['no_alcohol'],
+        'noParties' => ['no_parties'],
+        'noOutsiders' => ['no_unregistered_people'],
+        'noLoudMusic' => ['no_loud_music'],
+        'noFoodStorageInRoom' => ['no_food_storage_in_room'],
+        'noEatingOnBed' => ['no_eating_on_bed'],
+        'noSleepingPlaceChange' => ['no_sleeping_place_changes_without_permission'],
+        'noOtherShelves' => ['do_not_occupy_other_shelves'],
+        'noOtherPeopleThings' => ['do_not_use_other_guests_things', 'do_not_use_other_residents_things'],
     ];
 
     #[Url(as: 'city', except: '')]
@@ -89,6 +147,90 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'gender', except: '')]
     public string $roomGenderPolicy = '';
 
+    #[Url(as: 'private_room', except: false)]
+    public bool $privateRoom = false;
+
+    #[Url(as: 'shared_room', except: false)]
+    public bool $sharedRoom = false;
+
+    #[Url(as: 'male_room', except: false)]
+    public bool $maleRoom = false;
+
+    #[Url(as: 'female_room', except: false)]
+    public bool $femaleRoom = false;
+
+    #[Url(as: 'mixed_room', except: false)]
+    public bool $mixedRoom = false;
+
+    #[Url(as: 'student_room', except: false)]
+    public bool $studentRoom = false;
+
+    #[Url(as: 'tourist_room', except: false)]
+    public bool $touristRoom = false;
+
+    #[Url(as: 'worker_room', except: false)]
+    public bool $workerRoom = false;
+
+    #[Url(as: 'long_stay_room', except: false)]
+    public bool $longStayRoom = false;
+
+    #[Url(as: 'one_guest_room', except: false)]
+    public bool $oneGuestRoom = false;
+
+    #[Url(as: 'room_up_to_2', except: false)]
+    public bool $roomUpToTwoGuests = false;
+
+    #[Url(as: 'room_up_to_4', except: false)]
+    public bool $roomUpToFourGuests = false;
+
+    #[Url(as: 'room_up_to_6', except: false)]
+    public bool $roomUpToSixGuests = false;
+
+    #[Url(as: 'room_over_6', except: false)]
+    public bool $roomMoreThanSixGuests = false;
+
+    #[Url(as: 'room_window', except: false)]
+    public bool $roomWithWindow = false;
+
+    #[Url(as: 'room_no_window', except: false)]
+    public bool $roomWithoutWindow = false;
+
+    #[Url(as: 'room_lock', except: false)]
+    public bool $roomWithLock = false;
+
+    #[Url(as: 'room_no_lock', except: false)]
+    public bool $roomWithoutLock = false;
+
+    #[Url(as: 'room_ac', except: false)]
+    public bool $roomAirConditioning = false;
+
+    #[Url(as: 'room_heating', except: false)]
+    public bool $roomHeating = false;
+
+    #[Url(as: 'room_desk', except: false)]
+    public bool $roomDesk = false;
+
+    #[Url(as: 'room_wardrobe', except: false)]
+    public bool $roomWardrobe = false;
+
+    #[Url(as: 'room_locker', except: false)]
+    public bool $roomLocker = false;
+
+    #[Url(as: 'room_balcony', except: false)]
+    public bool $roomBalcony = false;
+
+    #[Url(as: 'quiet_room', except: false)]
+    public bool $quietRoom = false;
+
+    #[Url(as: 'bright_room', except: false)]
+    public bool $brightRoom = false;
+
+    #[Url(as: 'non_pass_through', except: false)]
+    public bool $nonPassThroughRoom = false;
+
+    #[Url(as: 'pass_through', except: false)]
+    public bool $passThroughRoom = false;
+
     #[Url(as: 'instant', except: false)]
     public bool $instantBooking = false;
 
@@ -128,6 +270,9 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'self_checkin', except: false)]
     public bool $selfCheckIn = false;
 
+    #[Url(as: 'smoking', except: false)]
+    public bool $smokingAllowed = false;
+
     #[Url(as: 'quiet', except: false)]
     public bool $quietHours = false;
 
@@ -140,6 +285,84 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'no_pets', except: false)]
     public bool $noPets = false;
 
+    #[Url(as: 'visitors', except: false)]
+    public bool $visitorsAllowed = false;
+
+    #[Url(as: 'no_visitors', except: false)]
+    public bool $noVisitors = false;
+
+    #[Url(as: 'couples', except: false)]
+    public bool $couplesAllowed = false;
+
+    #[Url(as: 'children', except: false)]
+    public bool $childrenAllowed = false;
+
+    #[Url(as: 'adults_only', except: false)]
+    public bool $adultsOnly = false;
+
+    #[Url(as: 'cook', except: false)]
+    public bool $cookingAllowed = false;
+
+    #[Url(as: 'cook_night', except: false)]
+    public bool $nightCookingAllowed = false;
+
+    #[Url(as: 'no_noise_after_time', except: false)]
+    public bool $noNoiseAfterTime = false;
+
+    #[Url(as: 'wash_night', except: false)]
+    public bool $washingAtNightAllowed = false;
+
+    #[Url(as: 'no_wash_night', except: false)]
+    public bool $noWashingAtNight = false;
+
+    #[Url(as: 'work_night', except: false)]
+    public bool $nightWorkAllowed = false;
+
+    #[Url(as: 'no_light_night', except: false)]
+    public bool $noMainLightAtNight = false;
+
+    #[Url(as: 'late_return', except: false)]
+    public bool $lateReturnAllowed = false;
+
+    #[Url(as: 'entry_time_limit', except: false)]
+    public bool $entryTimeLimit = false;
+
+    #[Url(as: 'cleaning_rules', except: false)]
+    public bool $cleaningRules = false;
+
+    #[Url(as: 'cleaning_schedule', except: false)]
+    public bool $cleaningSchedule = false;
+
+    #[Url(as: 'shoes_off', except: false)]
+    public bool $removeShoes = false;
+
+    #[Url(as: 'no_alcohol', except: false)]
+    public bool $noAlcohol = false;
+
+    #[Url(as: 'no_parties', except: false)]
+    public bool $noParties = false;
+
+    #[Url(as: 'no_outsiders', except: false)]
+    public bool $noOutsiders = false;
+
+    #[Url(as: 'no_loud_music', except: false)]
+    public bool $noLoudMusic = false;
+
+    #[Url(as: 'no_food_room', except: false)]
+    public bool $noFoodStorageInRoom = false;
+
+    #[Url(as: 'no_eating_bed', except: false)]
+    public bool $noEatingOnBed = false;
+
+    #[Url(as: 'no_place_change', except: false)]
+    public bool $noSleepingPlaceChange = false;
+
+    #[Url(as: 'no_other_shelves', except: false)]
+    public bool $noOtherShelves = false;
+
+    #[Url(as: 'no_other_things', except: false)]
+    public bool $noOtherPeopleThings = false;
+
     #[Url(as: 'no_mixed', except: false)]
     public bool $noMixedRoom = false;
 
@@ -149,8 +372,149 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'elevator', except: false)]
     public bool $elevator = false;
 
+    #[Url(as: 'no_elevator', except: false)]
+    public bool $withoutElevator = false;
+
+    #[Url(as: 'new_home', except: false)]
+    public bool $newHome = false;
+
+    #[Url(as: 'old_home', except: false)]
+    public bool $oldHome = false;
+
+    #[Url(as: 'good_repair', except: false)]
+    public bool $goodRepair = false;
+
+    #[Url(as: 'simple_repair', except: false)]
+    public bool $simpleRepair = false;
+
+    #[Url(as: 'private_entrance', except: false)]
+    public bool $privateEntrance = false;
+
+    #[Url(as: 'shared_entrance', except: false)]
+    public bool $sharedEntrance = false;
+
+    #[Url(as: 'first_floor', except: false)]
+    public bool $firstFloor = false;
+
+    #[Url(as: 'last_floor', except: false)]
+    public bool $lastFloor = false;
+
+    #[Url(as: 'not_first_floor', except: false)]
+    public bool $notFirstFloor = false;
+
+    #[Url(as: 'not_last_floor', except: false)]
+    public bool $notLastFloor = false;
+
+    #[Url(as: 'balcony', except: false)]
+    public bool $withBalcony = false;
+
+    #[Url(as: 'no_balcony', except: false)]
+    public bool $withoutBalcony = false;
+
+    #[Url(as: 'window_view', except: false)]
+    public bool $windowView = false;
+
+    #[Url(as: 'quiet_windows', except: false)]
+    public bool $quietWindows = false;
+
+    #[Url(as: 'courtyard_windows', except: false)]
+    public bool $courtyardWindows = false;
+
     #[Url(as: 'parking', except: false)]
     public bool $parking = false;
+
+    #[Url(as: 'near_center', except: false)]
+    public bool $nearCenter = false;
+
+    #[Url(as: 'near_metro', except: false)]
+    public bool $nearMetro = false;
+
+    #[Url(as: 'near_bus', except: false)]
+    public bool $nearBusStop = false;
+
+    #[Url(as: 'near_shop', except: false)]
+    public bool $nearShop = false;
+
+    #[Url(as: 'near_pharmacy', except: false)]
+    public bool $nearPharmacy = false;
+
+    #[Url(as: 'near_hospital', except: false)]
+    public bool $nearHospital = false;
+
+    #[Url(as: 'near_university', except: false)]
+    public bool $nearUniversity = false;
+
+    #[Url(as: 'near_railway', except: false)]
+    public bool $nearRailwayStation = false;
+
+    #[Url(as: 'near_airport', except: false)]
+    public bool $nearAirport = false;
+
+    #[Url(as: 'transport', except: false)]
+    public bool $easyTransport = false;
+
+    #[Url(as: 'quiet_district', except: false)]
+    public bool $quietDistrict = false;
+
+    #[Url(as: 'safe_district', except: false)]
+    public bool $safeDistrict = false;
+
+    #[Url(as: 'street_light', except: false)]
+    public bool $goodStreetLighting = false;
+
+    #[Url(as: 'free_parking', except: false)]
+    public bool $freeParking = false;
+
+    #[Url(as: 'paid_parking', except: false)]
+    public bool $paidParking = false;
+
+    #[Url(as: 'clean_property', except: false)]
+    public bool $cleanProperty = false;
+
+    #[Url(as: 'no_insects', except: false)]
+    public bool $noInsects = false;
+
+    #[Url(as: 'no_mold', except: false)]
+    public bool $noMold = false;
+
+    #[Url(as: 'normal_humidity', except: false)]
+    public bool $normalHumidity = false;
+
+    #[Url(as: 'warm_winter', except: false)]
+    public bool $comfortableWinter = false;
+
+    #[Url(as: 'cool_summer', except: false)]
+    public bool $comfortableSummer = false;
+
+    #[Url(as: 'quiet_property', except: false)]
+    public bool $quietProperty = false;
+
+    #[Url(as: 'bright_property', except: false)]
+    public bool $brightProperty = false;
+
+    #[Url(as: 'door_code', except: false)]
+    public bool $doorCodeAccess = false;
+
+    #[Url(as: 'electronic_lock', except: false)]
+    public bool $electronicLockAccess = false;
+
+    #[Url(as: 'key_safe', except: false)]
+    public bool $keySafeAccess = false;
+
+    #[Url(as: 'access_24_7', except: false)]
+    public bool $access247 = false;
+
+    #[Url(as: 'no_night_restrictions', except: false)]
+    public bool $noNightEntryRestrictions = false;
+
+    #[Url(as: 'guest_rules', except: false)]
+    public bool $guestRules = false;
+
+    #[Url(as: 'courier_rules', except: false)]
+    public bool $courierRules = false;
+
+    #[Url(as: 'delivery', except: false)]
+    public bool $deliveryAvailable = false;
 
     #[Url(as: 'rating', except: false)]
     public bool $highRating = false;
@@ -245,6 +609,34 @@ class SleepingPlaceSearch extends Component
             'roomType',
             'sleepingPlaceType',
             'roomGenderPolicy',
+            'privateRoom',
+            'sharedRoom',
+            'maleRoom',
+            'femaleRoom',
+            'mixedRoom',
+            'studentRoom',
+            'touristRoom',
+            'workerRoom',
+            'longStayRoom',
+            'oneGuestRoom',
+            'roomUpToTwoGuests',
+            'roomUpToFourGuests',
+            'roomUpToSixGuests',
+            'roomMoreThanSixGuests',
+            'roomWithWindow',
+            'roomWithoutWindow',
+            'roomWithLock',
+            'roomWithoutLock',
+            'roomAirConditioning',
+            'roomHeating',
+            'roomDesk',
+            'roomWardrobe',
+            'roomLocker',
+            'roomBalcony',
+            'quietRoom',
+            'brightRoom',
+            'nonPassThroughRoom',
+            'passThroughRoom',
             'instantBooking',
             'hostApprovalRequired',
             'wifi',
@@ -258,14 +650,58 @@ class SleepingPlaceSearch extends Component
             'workspace',
             'lateCheckIn',
             'selfCheckIn',
-            'quietHours',
-            'noSmoking',
-            'petsAllowed',
-            'noPets',
+            ...array_keys(self::RULE_FILTER_SLUGS),
             'noMixedRoom',
             'maxPeopleInRoom',
             'elevator',
+            'withoutElevator',
+            'newHome',
+            'oldHome',
+            'goodRepair',
+            'simpleRepair',
+            'privateEntrance',
+            'sharedEntrance',
+            'firstFloor',
+            'lastFloor',
+            'notFirstFloor',
+            'notLastFloor',
+            'withBalcony',
+            'withoutBalcony',
+            'windowView',
+            'quietWindows',
+            'courtyardWindows',
             'parking',
+            'nearCenter',
+            'nearMetro',
+            'nearBusStop',
+            'nearShop',
+            'nearPharmacy',
+            'nearHospital',
+            'nearUniversity',
+            'nearRailwayStation',
+            'nearAirport',
+            'easyTransport',
+            'quietDistrict',
+            'safeDistrict',
+            'goodStreetLighting',
+            'freeParking',
+            'paidParking',
+            'cleanProperty',
+            'noInsects',
+            'noMold',
+            'normalHumidity',
+            'comfortableWinter',
+            'comfortableSummer',
+            'quietProperty',
+            'brightProperty',
+            'doorCodeAccess',
+            'electronicLockAccess',
+            'keySafeAccess',
+            'access247',
+            'noNightEntryRestrictions',
+            'guestRules',
+            'courierRules',
+            'deliveryAvailable',
             'highRating',
             'verifiedHost',
             'hasReviews',
@@ -347,29 +783,39 @@ class SleepingPlaceSearch extends Component
     }
 
     /**
-     * @return array{cards:list<array<string,mixed>>,has_more:bool,showing:int,total:int}
+     * @return array{cards:list<array<string,mixed>>,has_more:bool,showing:int,total:int,total_is_exact:bool}
      */
     #[Computed]
     public function searchResults(): array
     {
         $context = $this->listingCardContext();
         $query = $this->searchQuery();
-        $total = (clone $query)->reorder()->count('sleeping_places.id');
+        $exactTotal = $this->shouldComputeExactSearchTotal()
+            ? (clone $query)->reorder()->count('sleeping_places.id')
+            : null;
+
+        $canProbeForMore = $this->visibleCount < self::MAX_VISIBLE_COUNT;
+        $probeLimit = $canProbeForMore ? $this->visibleCount + 1 : $this->visibleCount;
         $places = $query
-            ->limit($this->visibleCount)
+            ->limit($probeLimit)
             ->get();
+        $hasAdditionalRow = $canProbeForMore && $places->count() > $this->visibleCount;
+        $visiblePlaces = $places->take($this->visibleCount);
 
         $cards = app(ListingCardService::class)
-            ->buildMany($places, $context)
+            ->buildMany($visiblePlaces, $context)
             ->map(fn ($card): array => $card->toArray())
             ->values()
             ->all();
+        $totalIsExact = $exactTotal !== null || ! $hasAdditionalRow;
+        $total = $exactTotal ?? ($hasAdditionalRow ? $this->visibleCount + 1 : count($cards));
 
         return [
             'cards' => $cards,
-            'has_more' => $total > $this->visibleCount && $this->visibleCount < self::MAX_VISIBLE_COUNT,
+            'has_more' => $hasAdditionalRow,
             'showing' => count($cards),
             'total' => $total,
+            'total_is_exact' => $totalIsExact,
         ];
     }
 
@@ -399,6 +845,166 @@ class SleepingPlaceSearch extends Component
         return collect(GenderType::cases())
             ->mapWithKeys(fn (GenderType $gender): array => [$gender->value => $gender->label()])
             ->all();
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function premiseFilterOptions(): array
+    {
+        return [
+            ['property' => 'newHome', 'label' => __('search.filters_flags.new_home'), 'icon' => 'home-modern'],
+            ['property' => 'oldHome', 'label' => __('search.filters_flags.old_home'), 'icon' => 'home-modern'],
+            ['property' => 'goodRepair', 'label' => __('search.filters_flags.good_repair'), 'icon' => 'wrench-screwdriver'],
+            ['property' => 'simpleRepair', 'label' => __('search.filters_flags.simple_repair'), 'icon' => 'wrench-screwdriver'],
+            ['property' => 'privateEntrance', 'label' => __('search.filters_flags.private_entrance'), 'icon' => 'key'],
+            ['property' => 'sharedEntrance', 'label' => __('search.filters_flags.shared_entrance'), 'icon' => 'key'],
+            ['property' => 'withoutElevator', 'label' => __('search.filters_flags.without_elevator'), 'icon' => 'building-office'],
+            ['property' => 'firstFloor', 'label' => __('search.filters_flags.first_floor'), 'icon' => 'building-office'],
+            ['property' => 'lastFloor', 'label' => __('search.filters_flags.last_floor'), 'icon' => 'building-office'],
+            ['property' => 'notFirstFloor', 'label' => __('search.filters_flags.not_first_floor'), 'icon' => 'building-office'],
+            ['property' => 'notLastFloor', 'label' => __('search.filters_flags.not_last_floor'), 'icon' => 'building-office'],
+            ['property' => 'withBalcony', 'label' => __('search.filters_flags.with_balcony'), 'icon' => 'sparkles'],
+            ['property' => 'withoutBalcony', 'label' => __('search.filters_flags.without_balcony'), 'icon' => 'sparkles'],
+            ['property' => 'windowView', 'label' => __('search.filters_flags.window_view'), 'icon' => 'sun'],
+            ['property' => 'quietWindows', 'label' => __('search.filters_flags.quiet_windows'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'courtyardWindows', 'label' => __('search.filters_flags.courtyard_windows'), 'icon' => 'squares-2x2'],
+        ];
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function locationFilterOptions(): array
+    {
+        return [
+            ['property' => 'nearCenter', 'label' => __('search.filters_flags.near_center'), 'icon' => 'map-pin'],
+            ['property' => 'nearMetro', 'label' => __('search.filters_flags.near_metro'), 'icon' => 'map-pin'],
+            ['property' => 'nearBusStop', 'label' => __('search.filters_flags.near_bus_stop'), 'icon' => 'map-pin'],
+            ['property' => 'nearShop', 'label' => __('search.filters_flags.near_shop'), 'icon' => 'shopping-bag'],
+            ['property' => 'nearPharmacy', 'label' => __('search.filters_flags.near_pharmacy'), 'icon' => 'plus-circle'],
+            ['property' => 'nearHospital', 'label' => __('search.filters_flags.near_hospital'), 'icon' => 'plus-circle'],
+            ['property' => 'nearUniversity', 'label' => __('search.filters_flags.near_university'), 'icon' => 'academic-cap'],
+            ['property' => 'nearRailwayStation', 'label' => __('search.filters_flags.near_railway_station'), 'icon' => 'map-pin'],
+            ['property' => 'nearAirport', 'label' => __('search.filters_flags.near_airport'), 'icon' => 'paper-airplane'],
+            ['property' => 'easyTransport', 'label' => __('search.filters_flags.easy_transport'), 'icon' => 'arrows-right-left'],
+            ['property' => 'quietDistrict', 'label' => __('search.filters_flags.quiet_district'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'safeDistrict', 'label' => __('search.filters_flags.safe_district'), 'icon' => 'shield-check'],
+            ['property' => 'goodStreetLighting', 'label' => __('search.filters_flags.good_street_lighting'), 'icon' => 'sun'],
+            ['property' => 'freeParking', 'label' => __('search.filters_flags.free_parking'), 'icon' => 'truck'],
+            ['property' => 'paidParking', 'label' => __('search.filters_flags.paid_parking'), 'icon' => 'truck'],
+        ];
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function conditionFilterOptions(): array
+    {
+        return [
+            ['property' => 'cleanProperty', 'label' => __('search.filters_flags.clean_property'), 'icon' => 'sparkles'],
+            ['property' => 'noInsects', 'label' => __('search.filters_flags.no_insects'), 'icon' => 'shield-check'],
+            ['property' => 'noMold', 'label' => __('search.filters_flags.no_mold'), 'icon' => 'shield-check'],
+            ['property' => 'normalHumidity', 'label' => __('search.filters_flags.normal_humidity'), 'icon' => 'sparkles'],
+            ['property' => 'comfortableWinter', 'label' => __('search.filters_flags.comfortable_winter'), 'icon' => 'fire'],
+            ['property' => 'comfortableSummer', 'label' => __('search.filters_flags.comfortable_summer'), 'icon' => 'sun'],
+            ['property' => 'quietProperty', 'label' => __('search.filters_flags.quiet_property'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'brightProperty', 'label' => __('search.filters_flags.bright_property'), 'icon' => 'sun'],
+        ];
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function accessFilterOptions(): array
+    {
+        return [
+            ['property' => 'doorCodeAccess', 'label' => __('search.filters_flags.door_code_access'), 'icon' => 'key'],
+            ['property' => 'electronicLockAccess', 'label' => __('search.filters_flags.electronic_lock_access'), 'icon' => 'lock-closed'],
+            ['property' => 'keySafeAccess', 'label' => __('search.filters_flags.key_safe_access'), 'icon' => 'key'],
+            ['property' => 'access247', 'label' => __('search.filters_flags.access_24_7'), 'icon' => 'clock'],
+            ['property' => 'noNightEntryRestrictions', 'label' => __('search.filters_flags.no_night_entry_restrictions'), 'icon' => 'moon'],
+            ['property' => 'guestRules', 'label' => __('search.filters_flags.guest_rules'), 'icon' => 'document-check'],
+            ['property' => 'courierRules', 'label' => __('search.filters_flags.courier_rules'), 'icon' => 'document-check'],
+            ['property' => 'deliveryAvailable', 'label' => __('search.filters_flags.delivery_available'), 'icon' => 'truck'],
+        ];
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function roomFilterOptions(): array
+    {
+        return [
+            ['property' => 'privateRoom', 'label' => __('search.filters_flags.private_room'), 'icon' => 'user'],
+            ['property' => 'sharedRoom', 'label' => __('search.filters_flags.shared_room'), 'icon' => 'users'],
+            ['property' => 'maleRoom', 'label' => __('search.filters_flags.male_room'), 'icon' => 'user'],
+            ['property' => 'femaleRoom', 'label' => __('search.filters_flags.female_room'), 'icon' => 'user'],
+            ['property' => 'mixedRoom', 'label' => __('search.filters_flags.mixed_room'), 'icon' => 'users'],
+            ['property' => 'studentRoom', 'label' => __('search.filters_flags.student_room'), 'icon' => 'academic-cap'],
+            ['property' => 'touristRoom', 'label' => __('search.filters_flags.tourist_room'), 'icon' => 'map'],
+            ['property' => 'workerRoom', 'label' => __('search.filters_flags.worker_room'), 'icon' => 'briefcase'],
+            ['property' => 'longStayRoom', 'label' => __('search.filters_flags.long_stay_room'), 'icon' => 'calendar-days'],
+            ['property' => 'oneGuestRoom', 'label' => __('search.filters_flags.one_guest_room'), 'icon' => 'user'],
+            ['property' => 'roomUpToTwoGuests', 'label' => __('search.filters_flags.room_up_to_2'), 'icon' => 'users'],
+            ['property' => 'roomUpToFourGuests', 'label' => __('search.filters_flags.room_up_to_4'), 'icon' => 'users'],
+            ['property' => 'roomUpToSixGuests', 'label' => __('search.filters_flags.room_up_to_6'), 'icon' => 'users'],
+            ['property' => 'roomMoreThanSixGuests', 'label' => __('search.filters_flags.room_more_than_6'), 'icon' => 'users'],
+            ['property' => 'roomWithWindow', 'label' => __('search.filters_flags.room_window'), 'icon' => 'window'],
+            ['property' => 'roomWithoutWindow', 'label' => __('search.filters_flags.room_without_window'), 'icon' => 'window'],
+            ['property' => 'roomWithLock', 'label' => __('search.filters_flags.room_lock'), 'icon' => 'key'],
+            ['property' => 'roomWithoutLock', 'label' => __('search.filters_flags.room_without_lock'), 'icon' => 'key'],
+            ['property' => 'roomAirConditioning', 'label' => __('search.filters_flags.room_ac'), 'icon' => 'sparkles'],
+            ['property' => 'roomHeating', 'label' => __('search.filters_flags.room_heating'), 'icon' => 'fire'],
+            ['property' => 'roomDesk', 'label' => __('search.filters_flags.room_desk'), 'icon' => 'computer-desktop'],
+            ['property' => 'roomWardrobe', 'label' => __('search.filters_flags.room_wardrobe'), 'icon' => 'archive-box'],
+            ['property' => 'roomLocker', 'label' => __('search.filters_flags.room_locker'), 'icon' => 'lock-closed'],
+            ['property' => 'roomBalcony', 'label' => __('search.filters_flags.room_balcony'), 'icon' => 'sparkles'],
+            ['property' => 'quietRoom', 'label' => __('search.filters_flags.quiet_room'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'brightRoom', 'label' => __('search.filters_flags.bright_room'), 'icon' => 'sun'],
+            ['property' => 'nonPassThroughRoom', 'label' => __('search.filters_flags.non_pass_through_room'), 'icon' => 'arrows-right-left'],
+            ['property' => 'passThroughRoom', 'label' => __('search.filters_flags.pass_through_room'), 'icon' => 'arrows-right-left'],
+        ];
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function ruleFilterOptions(): array
+    {
+        return [
+            ['property' => 'smokingAllowed', 'label' => __('search.filters_flags.smoking_allowed'), 'icon' => 'sparkles'],
+            ['property' => 'noSmoking', 'label' => __('search.filters_flags.no_smoking'), 'icon' => 'scale'],
+            ['property' => 'petsAllowed', 'label' => __('search.filters_flags.pets_allowed'), 'icon' => 'sparkles'],
+            ['property' => 'noPets', 'label' => __('search.filters_flags.no_pets'), 'icon' => 'scale'],
+            ['property' => 'visitorsAllowed', 'label' => __('search.filters_flags.visitors_allowed'), 'icon' => 'users'],
+            ['property' => 'noVisitors', 'label' => __('search.filters_flags.no_visitors'), 'icon' => 'scale'],
+            ['property' => 'couplesAllowed', 'label' => __('search.filters_flags.couples_allowed'), 'icon' => 'users'],
+            ['property' => 'childrenAllowed', 'label' => __('search.filters_flags.children_allowed'), 'icon' => 'users'],
+            ['property' => 'adultsOnly', 'label' => __('search.filters_flags.adults_only'), 'icon' => 'users'],
+            ['property' => 'cookingAllowed', 'label' => __('search.filters_flags.cooking_allowed'), 'icon' => 'sparkles'],
+            ['property' => 'nightCookingAllowed', 'label' => __('search.filters_flags.night_cooking_allowed'), 'icon' => 'moon'],
+            ['property' => 'noNoiseAfterTime', 'label' => __('search.filters_flags.no_noise_after_time'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'quietHours', 'label' => __('search.filters_flags.quiet_hours'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'washingAtNightAllowed', 'label' => __('search.filters_flags.washing_at_night_allowed'), 'icon' => 'sparkles'],
+            ['property' => 'noWashingAtNight', 'label' => __('search.filters_flags.no_washing_at_night'), 'icon' => 'scale'],
+            ['property' => 'nightWorkAllowed', 'label' => __('search.filters_flags.night_work_allowed'), 'icon' => 'computer-desktop'],
+            ['property' => 'noMainLightAtNight', 'label' => __('search.filters_flags.no_main_light_at_night'), 'icon' => 'scale'],
+            ['property' => 'lateReturnAllowed', 'label' => __('search.filters_flags.late_return_allowed'), 'icon' => 'clock'],
+            ['property' => 'entryTimeLimit', 'label' => __('search.filters_flags.entry_time_limit'), 'icon' => 'clock'],
+            ['property' => 'cleaningRules', 'label' => __('search.filters_flags.cleaning_rules'), 'icon' => 'sparkles'],
+            ['property' => 'cleaningSchedule', 'label' => __('search.filters_flags.cleaning_schedule'), 'icon' => 'calendar-days'],
+            ['property' => 'removeShoes', 'label' => __('search.filters_flags.remove_shoes'), 'icon' => 'home-modern'],
+            ['property' => 'noAlcohol', 'label' => __('search.filters_flags.no_alcohol'), 'icon' => 'scale'],
+            ['property' => 'noParties', 'label' => __('search.filters_flags.no_parties'), 'icon' => 'scale'],
+            ['property' => 'noOutsiders', 'label' => __('search.filters_flags.no_outsiders'), 'icon' => 'scale'],
+            ['property' => 'noLoudMusic', 'label' => __('search.filters_flags.no_loud_music'), 'icon' => 'speaker-x-mark'],
+            ['property' => 'noFoodStorageInRoom', 'label' => __('search.filters_flags.no_food_storage_in_room'), 'icon' => 'archive-box'],
+            ['property' => 'noEatingOnBed', 'label' => __('search.filters_flags.no_eating_on_bed'), 'icon' => 'scale'],
+            ['property' => 'noSleepingPlaceChange', 'label' => __('search.filters_flags.no_sleeping_place_change'), 'icon' => 'arrows-right-left'],
+            ['property' => 'noOtherShelves', 'label' => __('search.filters_flags.no_other_shelves'), 'icon' => 'archive-box'],
+            ['property' => 'noOtherPeopleThings', 'label' => __('search.filters_flags.no_other_people_things'), 'icon' => 'lock-closed'],
+        ];
     }
 
     public function sortOptions(): array
@@ -435,7 +1041,7 @@ class SleepingPlaceSearch extends Component
     }
 
     /**
-     * @return array{cards:list<array<string,mixed>>,has_more:bool,showing:int,total:int}
+     * @return array{cards:list<array<string,mixed>>,has_more:bool,showing:int,total:int,total_is_exact:bool}
      */
     private function resultsForView(): array
     {
@@ -444,7 +1050,13 @@ class SleepingPlaceSearch extends Component
             'has_more' => false,
             'showing' => 0,
             'total' => 0,
+            'total_is_exact' => true,
         ], $this->searchResults);
+    }
+
+    private function shouldComputeExactSearchTotal(): bool
+    {
+        return $this->filtersOpen;
     }
 
     private function saveSearchCityId(): ?int
@@ -464,6 +1076,9 @@ class SleepingPlaceSearch extends Component
         $this->applyLocationFilters($query);
         $this->applyDateFilters($query);
         $this->applyPriceAndTypeFilters($query);
+        $this->applyPremiseCriteriaFilters($query);
+        $this->applyRoomCriteriaFilters($query);
+        $this->applyRuleCriteriaFilters($query);
         $this->applyComfortFilters($query);
         $this->applyTrustFilters($query);
         $this->applySorting($query);
@@ -489,69 +1104,6 @@ class SleepingPlaceSearch extends Component
                 'comparison_ids' => session('comparison_places', []),
             ],
         );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function eagerLoads(): array
-    {
-        $locales = $this->translationLocales();
-        $mediaSelect = ['id', 'mediable_type', 'mediable_id', 'disk', 'path', 'thumb_path', 'thumbnail_path', 'mobile_path', 'full_path', 'alt_text', 'sort_order', 'is_primary', 'is_cover', 'status'];
-        $mediaTranslations = fn ($query) => $query
-            ->select(['id', 'media_item_id', 'locale', 'caption'])
-            ->whereIn('locale', $locales);
-        $amenitySelect = ['amenities.id', 'amenities.slug', 'amenities.category', 'amenities.status'];
-        $cardAmenities = fn ($query) => $query
-            ->select($amenitySelect)
-            ->whereIn('amenities.slug', self::CARD_AMENITY_SLUGS);
-        $amenityTranslation = fn ($query) => $query
-            ->select(['id', 'amenity_id', 'locale', 'name'])
-            ->whereIn('locale', $locales);
-
-        $with = [
-            'translations' => fn ($query) => $query
-                ->select(['id', 'sleeping_place_id', 'locale', 'title', 'summary'])
-                ->whereIn('locale', $locales),
-            'cardMedia' => fn ($query) => $query->select($mediaSelect)->with(['translations' => $mediaTranslations]),
-            'amenities' => $cardAmenities,
-            'amenities.translations' => $amenityTranslation,
-            'room' => fn ($query) => $query
-                ->select(['id', 'property_id', 'type', 'status', 'title', 'gender_policy', 'gender_type', 'max_guests', 'occupied_places_count', 'available_places_count', 'has_desk', 'has_chair', 'noise_level'])
-                ->with([
-                    'translations' => fn ($translation) => $translation
-                        ->select(['id', 'room_id', 'locale', 'title', 'summary'])
-                        ->whereIn('locale', $locales),
-                    'cardMedia' => fn ($media) => $media->select($mediaSelect)->with(['translations' => $mediaTranslations]),
-                    'amenities' => $cardAmenities,
-                    'amenities.translations' => $amenityTranslation,
-                ]),
-            'property' => fn ($query) => $query
-                ->select(['id', 'host_user_id', 'city_id', 'type', 'status', 'city', 'district', 'distance_to_center_meters', 'kitchens_count', 'has_elevator', 'has_parking', 'title'])
-                ->with([
-                    'translations' => fn ($translation) => $translation
-                        ->select(['id', 'property_id', 'locale', 'title', 'summary'])
-                        ->whereIn('locale', $locales),
-                    'cityModel:id,name',
-                    'cardMedia' => fn ($media) => $media->select($mediaSelect)->with(['translations' => $mediaTranslations]),
-                    'amenities' => $cardAmenities,
-                    'amenities.translations' => $amenityTranslation,
-                    'host:id,name,rating_as_host,identity_verified,identity_verified_at',
-                    'host.hostProfile:id,user_id,rating_average,reviews_count,response_time_minutes,verified_at,default_cancellation_policy',
-                ]),
-        ];
-
-        $dates = $this->dateRange();
-
-        if ($dates) {
-            $with['availabilityDays'] = fn ($query) => $query
-                ->select(['id', 'sleeping_place_id', 'date', 'price_override'])
-                ->whereDate('date', '>=', $dates[0]->toDateString())
-                ->whereDate('date', '<', $dates[1]->toDateString())
-                ->whereNotNull('price_override');
-        }
-
-        return $with;
     }
 
     private function applyLocationFilters(Builder $query): void
@@ -608,15 +1160,24 @@ class SleepingPlaceSearch extends Component
         }
 
         if ($this->propertyType !== '') {
-            $query->where('search_properties.type', $this->propertyType);
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_properties.type', $this->propertyType)
+                    ->orWhere('search_properties.property_type', $this->propertyType);
+            });
         }
 
         if ($this->roomType !== '') {
-            $query->where('search_rooms.type', $this->roomType);
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.type', $this->roomType)
+                    ->orWhere('search_rooms.room_type', $this->roomType);
+            });
         }
 
         if ($this->sleepingPlaceType !== '') {
-            $query->where('sleeping_places.type', $this->sleepingPlaceType);
+            $query->where(function (Builder $builder): void {
+                $builder->where('sleeping_places.type', $this->sleepingPlaceType)
+                    ->orWhere('sleeping_places.sleeping_place_type', $this->sleepingPlaceType);
+            });
         }
 
         if ($this->roomGenderPolicy !== '') {
@@ -624,6 +1185,245 @@ class SleepingPlaceSearch extends Component
         }
 
         $query->where('sleeping_places.max_guests', '>=', max(1, $this->guestsCount));
+    }
+
+    private function applyPremiseCriteriaFilters(Builder $query): void
+    {
+        if ($this->newHome) {
+            $this->wherePropertyRepairStates($query, self::NEW_HOME_REPAIR_STATES);
+        }
+
+        if ($this->oldHome) {
+            $this->wherePropertyRepairStates($query, self::OLD_HOME_REPAIR_STATES);
+        }
+
+        if ($this->goodRepair) {
+            $this->wherePropertyRepairStates($query, self::GOOD_REPAIR_STATES);
+        }
+
+        if ($this->simpleRepair) {
+            $this->wherePropertyRepairStates($query, self::SIMPLE_REPAIR_STATES);
+        }
+
+        if ($this->privateEntrance) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_property_access_details.entrance_type', 'private_entrance')
+                    ->orWhere('search_property_access_details.has_private_entrance', true);
+            });
+        }
+
+        if ($this->sharedEntrance) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_property_access_details.entrance_type', 'shared_entrance')
+                    ->orWhere('search_property_access_details.has_shared_entrance', true);
+            });
+        }
+
+        if ($this->withoutElevator) {
+            $query->where('search_properties.has_elevator', false)
+                ->whereDoesntHave('property.amenities', fn (Builder $amenity) => $amenity->where('slug', 'elevator'));
+        }
+
+        if ($this->firstFloor) {
+            $query->where('search_properties.floor', 1);
+        }
+
+        if ($this->lastFloor) {
+            $query->whereNotNull('search_properties.floor')
+                ->where(function (Builder $builder): void {
+                    $builder->whereColumn('search_properties.floor', 'search_properties.floors_count')
+                        ->orWhereColumn('search_properties.floor', 'search_properties.total_floors');
+                });
+        }
+
+        if ($this->notFirstFloor) {
+            $query->where('search_properties.floor', '>', 1);
+        }
+
+        if ($this->notLastFloor) {
+            $query->whereNotNull('search_properties.floor')
+                ->where(function (Builder $builder): void {
+                    $builder->whereNull('search_properties.floors_count')
+                        ->whereNull('search_properties.total_floors')
+                        ->orWhereColumn('search_properties.floor', '<', 'search_properties.floors_count')
+                        ->orWhereColumn('search_properties.floor', '<', 'search_properties.total_floors');
+                });
+        }
+
+        if ($this->withBalcony) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_properties.balconies_count', '>', 0)
+                    ->orWhere('search_rooms.has_balcony', true);
+            });
+        }
+
+        if ($this->withoutBalcony) {
+            $query->where('search_properties.balconies_count', '<=', 0)
+                ->where('search_rooms.has_balcony', false);
+        }
+
+        if ($this->windowView) {
+            $query->whereNotNull('search_rooms.window_view')
+                ->whereNotIn('search_rooms.window_view', self::EMPTY_WINDOW_VIEW_VALUES);
+        }
+
+        if ($this->quietWindows) {
+            $query->whereIn('search_rooms.noise_level', self::QUIET_WINDOW_NOISE_LEVELS);
+        }
+
+        if ($this->courtyardWindows) {
+            $query->whereIn('search_rooms.window_view', self::COURTYARD_WINDOW_VALUES);
+        }
+    }
+
+    private function applyRoomCriteriaFilters(Builder $query): void
+    {
+        if ($this->privateRoom) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.is_private', true)
+                    ->orWhere('search_rooms.type', RoomType::Private->value)
+                    ->orWhere('search_rooms.room_type', RoomType::Private->value);
+            });
+        }
+
+        if ($this->sharedRoom) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.is_shared', true)
+                    ->orWhereIn('search_rooms.type', [RoomType::Shared->value, RoomType::Dormitory->value])
+                    ->orWhereIn('search_rooms.room_type', [RoomType::Shared->value, RoomType::Dormitory->value]);
+            });
+        }
+
+        if ($this->maleRoom) {
+            $this->whereRoomGender($query, GenderType::Male);
+        }
+
+        if ($this->femaleRoom) {
+            $this->whereRoomGender($query, GenderType::Female);
+        }
+
+        if ($this->mixedRoom) {
+            $this->whereRoomGender($query, GenderType::Mixed);
+        }
+
+        if ($this->studentRoom) {
+            $this->whereRoomLivingFormats($query, ['student']);
+        }
+
+        if ($this->touristRoom) {
+            $this->whereRoomLivingFormats($query, ['tourist']);
+        }
+
+        if ($this->workerRoom) {
+            $this->whereRoomLivingFormats($query, self::WORKER_ROOM_FORMATS);
+        }
+
+        if ($this->longStayRoom) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.living_format', 'long_stay')
+                    ->orWhere('search_rooms.is_for_long_stay', true);
+            });
+        }
+
+        if ($this->oneGuestRoom) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.is_for_one_person', true)
+                    ->orWhere('search_rooms.max_guests', '<=', 1)
+                    ->orWhere('search_rooms.capacity', '<=', 1);
+            });
+        }
+
+        if ($this->roomUpToTwoGuests) {
+            $this->whereRoomCapacityAtMost($query, 2);
+        }
+
+        if ($this->roomUpToFourGuests) {
+            $this->whereRoomCapacityAtMost($query, 4);
+        }
+
+        if ($this->roomUpToSixGuests) {
+            $this->whereRoomCapacityAtMost($query, 6);
+        }
+
+        if ($this->roomMoreThanSixGuests) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.max_guests', '>', 6)
+                    ->orWhere('search_rooms.capacity', '>', 6);
+            });
+        }
+
+        if ($this->roomWithWindow) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.has_window', true)
+                    ->orWhere('search_rooms.windows_count', '>', 0);
+            });
+        }
+
+        if ($this->roomWithoutWindow) {
+            $query->where('search_rooms.has_window', false)
+                ->where('search_rooms.windows_count', '<=', 0);
+        }
+
+        if ($this->roomWithLock) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.has_lock', true)
+                    ->orWhere('search_rooms.has_lockable_door', true)
+                    ->orWhere('search_rooms.has_room_key', true);
+            });
+        }
+
+        if ($this->roomWithoutLock) {
+            $query->where('search_rooms.has_lock', false)
+                ->where('search_rooms.has_lockable_door', false)
+                ->where('search_rooms.has_room_key', false);
+        }
+
+        if ($this->roomAirConditioning) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.has_air_conditioning', true)
+                    ->orWhere('search_rooms.has_ac', true);
+            });
+        }
+
+        if ($this->roomHeating) {
+            $query->where('search_rooms.has_heating', true);
+        }
+
+        if ($this->roomDesk) {
+            $query->where('search_rooms.has_desk', true);
+        }
+
+        if ($this->roomWardrobe) {
+            $query->where('search_rooms.has_wardrobe', true);
+        }
+
+        if ($this->roomLocker) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_rooms.has_lockers', true)
+                    ->orWhere('sleeping_places.has_locker', true)
+                    ->orWhereHas('room.amenities', fn (Builder $amenity) => $amenity->whereIn('slug', ['personal_locker', 'locker_with_lock']));
+            });
+        }
+
+        if ($this->roomBalcony) {
+            $query->where('search_rooms.has_balcony', true);
+        }
+
+        if ($this->quietRoom) {
+            $query->whereIn('search_rooms.noise_level', self::QUIET_WINDOW_NOISE_LEVELS);
+        }
+
+        if ($this->brightRoom) {
+            $query->whereIn('search_rooms.light_level', self::BRIGHT_ROOM_LIGHT_LEVELS);
+        }
+
+        if ($this->nonPassThroughRoom) {
+            $query->where('search_rooms.is_pass_through', false);
+        }
+
+        if ($this->passThroughRoom) {
+            $query->where('search_rooms.is_pass_through', true);
+        }
     }
 
     private function applyComfortFilters(Builder $query): void
@@ -700,22 +1500,6 @@ class SleepingPlaceSearch extends Component
             $this->whereHasAnyAmenity($query, ['self_check_in', 'key_safe', 'electronic_lock']);
         }
 
-        if ($this->quietHours) {
-            $this->whereHasAnyRule($query, ['quiet_hours_after_22', 'no_loud_calls_at_night', 'no_main_light_at_night']);
-        }
-
-        if ($this->noSmoking) {
-            $this->whereHasAnyRule($query, ['no_smoking']);
-        }
-
-        if ($this->petsAllowed) {
-            $this->whereHasAnyRule($query, ['pets_by_request']);
-        }
-
-        if ($this->noPets) {
-            $this->whereHasAnyRule($query, ['no_pets']);
-        }
-
         if ($this->noMixedRoom) {
             $query->where('search_rooms.gender_policy', '!=', GenderType::Mixed->value);
         }
@@ -748,6 +1532,15 @@ class SleepingPlaceSearch extends Component
                     ->orWhere('sleeping_places.max_nights', '>=', 28)
                     ->orWhereNotNull('sleeping_places.monthly_price');
             });
+        }
+    }
+
+    private function applyRuleCriteriaFilters(Builder $query): void
+    {
+        foreach (self::RULE_FILTER_SLUGS as $property => $slugs) {
+            if ($this->{$property}) {
+                $this->whereHasAnyRule($query, $slugs);
+            }
         }
     }
 
@@ -818,6 +1611,41 @@ class SleepingPlaceSearch extends Component
         });
     }
 
+    private function whereRoomGender(Builder $query, GenderType $gender): void
+    {
+        $query->where(function (Builder $builder) use ($gender): void {
+            $builder->where('search_rooms.gender_policy', $gender->value)
+                ->orWhere('search_rooms.gender_type', $gender->value);
+        });
+    }
+
+    /**
+     * @param  list<string>  $formats
+     */
+    private function whereRoomLivingFormats(Builder $query, array $formats): void
+    {
+        $query->whereIn('search_rooms.living_format', $formats);
+    }
+
+    private function whereRoomCapacityAtMost(Builder $query, int $maxGuests): void
+    {
+        $query->where(function (Builder $builder) use ($maxGuests): void {
+            $builder->where('search_rooms.max_guests', '<=', $maxGuests)
+                ->orWhere('search_rooms.capacity', '<=', $maxGuests);
+        });
+    }
+
+    /**
+     * @param  list<string>  $states
+     */
+    private function wherePropertyRepairStates(Builder $query, array $states): void
+    {
+        $query->where(function (Builder $builder) use ($states): void {
+            $builder->whereIn('search_properties.repair_state', $states)
+                ->orWhereIn('search_property_condition_details.repair_state', $states);
+        });
+    }
+
     private function selectedCityId(): ?int
     {
         return ctype_digit($this->city) ? (int) $this->city : null;
@@ -860,171 +1688,6 @@ class SleepingPlaceSearch extends Component
         return [$start, $end];
     }
 
-    /**
-     * @return list<string>
-     */
-    private function translationLocales(): array
-    {
-        return app(SupportedContentLocales::class)->preferred();
-    }
-
-    private function resolver(): LocalizedModelContentResolver
-    {
-        return app(LocalizedModelContentResolver::class);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function toCard(SleepingPlace $place, ?User $guest): array
-    {
-        $room = $place->room;
-        $property = $place->property;
-        $media = $place->cardMedia ?: $room?->cardMedia ?: $property?->cardMedia;
-        $quote = $this->priceQuote($place, $guest);
-        $hostProfile = $property?->host?->hostProfile;
-        $rating = $hostProfile?->rating_average ?: $property?->host?->rating_as_host;
-
-        return [
-            'id' => $place->id,
-            'href' => route('places.show', ['locale' => app()->getLocale(), 'sleepingPlace' => $place]),
-            'title' => $this->title($place),
-            'location' => $this->location($property),
-            'room_type' => $this->label($room?->type),
-            'sleeping_place_type' => $this->label($place->type),
-            'gender_policy' => $this->label($room?->gender_policy ?: $room?->gender_type),
-            'price_per_night' => (float) $place->base_price_per_night,
-            'currency' => $place->currency,
-            'total_price' => $quote['total_amount'] ?? null,
-            'nights' => $this->nights,
-            'people_in_room' => $room?->max_guests,
-            'rating' => $rating ? (float) $rating : null,
-            'reviews_count' => $hostProfile?->reviews_count ?? 0,
-            'image_url' => $media instanceof MediaItem ? $media->imageUrl('mobile') : null,
-            'image_alt' => $media instanceof MediaItem ? ($media->localizedCaption() ?: $this->title($place)) : $this->title($place),
-            'amenities' => $this->keyAmenityLabels($place),
-            'hints' => $this->compatibilityHints($place, $guest),
-            'instant_booking' => (bool) $place->instant_booking_enabled,
-            'requires_approval' => (bool) $place->requires_host_approval,
-            'verified_host' => $hostProfile?->verified_at !== null || (bool) $property?->host?->identity_verified,
-        ];
-    }
-
-    private function priceQuote(SleepingPlace $place, ?User $guest): ?array
-    {
-        if (! $this->dateRange()) {
-            return null;
-        }
-
-        $guest ??= new User(['name' => 'Guest']);
-
-        return app(PricingService::class)
-            ->calculate($guest, $place, $this->checkIn, $this->checkOut, max(1, $this->guestsCount))
-            ->toArray();
-    }
-
-    private function title(SleepingPlace $place): string
-    {
-        $translation = $this->resolver()->resolve($place->translations, app()->getLocale());
-
-        return $translation?->title
-            ?: $place->display_name
-            ?: __('search.card.untitled', ['number' => $place->place_number ?: $place->id]);
-    }
-
-    private function location(?Property $property): string
-    {
-        $parts = array_filter([
-            $property?->cityModel?->name ?: (is_string($property?->getAttribute('city')) ? $property->getAttribute('city') : null),
-            $property?->district,
-        ]);
-
-        return $parts === [] ? __('search.card.location_missing') : implode(', ', $parts);
-    }
-
-    private function label(mixed $value): string
-    {
-        if ($value instanceof BackedEnum && method_exists($value, 'label')) {
-            return $value->label();
-        }
-
-        return $value ? __('search.card.unknown') : __('search.card.not_set');
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function keyAmenityLabels(SleepingPlace $place): array
-    {
-        $labels = $this->amenitiesForCard($place)
-            ->unique('slug')
-            ->filter(fn (Amenity $amenity): bool => in_array($amenity->slug, self::CARD_AMENITY_SLUGS, true))
-            ->map(fn (Amenity $amenity): string => $this->amenityLabel($amenity))
-            ->values();
-
-        if ($place->has_bedding) {
-            $labels->push(__('search.card.amenities.bedding'));
-        }
-
-        if ($place->has_towel) {
-            $labels->push(__('search.card.amenities.towel'));
-        }
-
-        return $labels->unique()->take(4)->values()->all();
-    }
-
-    /**
-     * @return Collection<int, Amenity>
-     */
-    private function amenitiesForCard(SleepingPlace $place): Collection
-    {
-        return collect()
-            ->merge($place->property?->amenities ?? [])
-            ->merge($place->room?->amenities ?? [])
-            ->merge($place->amenities ?? []);
-    }
-
-    private function amenityLabel(Amenity $amenity): string
-    {
-        $translation = $this->resolver()->resolve($amenity->translations, app()->getLocale());
-
-        return $translation?->name ?: __('listing.legacy_amenities.other');
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function compatibilityHints(SleepingPlace $place, ?User $guest): array
-    {
-        if ($guest?->guestPreference) {
-            $result = app(CompatibilityService::class)->evaluate(
-                $guest->guestPreference,
-                $place->property,
-                $place->room,
-                $place,
-            );
-
-            return collect([
-                __('search.card.compatibility_fit', ['level' => __('compatibility.fit_levels.'.$result['fit_level'])]),
-                $result['positive_reasons'][0] ?? null,
-                $result['warning_reasons'][0] ?? null,
-            ])->filter()->take(3)->values()->all();
-        }
-
-        return collect([
-            $place->deposit_amount <= 0 ? __('search.card.hints.no_deposit') : null,
-            $place->instant_booking_enabled ? __('search.card.hints.instant') : null,
-            $place->has_locker ? __('search.card.hints.locker') : null,
-            $this->isLowerBunk($place) ? __('search.card.hints.lower_bunk') : null,
-        ])->filter()->take(3)->values()->all();
-    }
-
-    private function isLowerBunk(SleepingPlace $place): bool
-    {
-        return $place->type === SleepingPlaceType::BunkBottom
-            || in_array((string) $place->bunk_level, ['bottom', 'lower', '1'], true);
-    }
-
     private function decimal(string $value): ?float
     {
         if ($value === '' || ! is_numeric($value)) {
@@ -1062,6 +1725,34 @@ class SleepingPlaceSearch extends Component
             'roomType',
             'sleepingPlaceType',
             'roomGenderPolicy',
+            'privateRoom',
+            'sharedRoom',
+            'maleRoom',
+            'femaleRoom',
+            'mixedRoom',
+            'studentRoom',
+            'touristRoom',
+            'workerRoom',
+            'longStayRoom',
+            'oneGuestRoom',
+            'roomUpToTwoGuests',
+            'roomUpToFourGuests',
+            'roomUpToSixGuests',
+            'roomMoreThanSixGuests',
+            'roomWithWindow',
+            'roomWithoutWindow',
+            'roomWithLock',
+            'roomWithoutLock',
+            'roomAirConditioning',
+            'roomHeating',
+            'roomDesk',
+            'roomWardrobe',
+            'roomLocker',
+            'roomBalcony',
+            'quietRoom',
+            'brightRoom',
+            'nonPassThroughRoom',
+            'passThroughRoom',
             'instantBooking',
             'hostApprovalRequired',
             'wifi',
@@ -1075,14 +1766,58 @@ class SleepingPlaceSearch extends Component
             'workspace',
             'lateCheckIn',
             'selfCheckIn',
-            'quietHours',
-            'noSmoking',
-            'petsAllowed',
-            'noPets',
+            ...array_keys(self::RULE_FILTER_SLUGS),
             'noMixedRoom',
             'maxPeopleInRoom',
             'elevator',
+            'withoutElevator',
+            'newHome',
+            'oldHome',
+            'goodRepair',
+            'simpleRepair',
+            'privateEntrance',
+            'sharedEntrance',
+            'firstFloor',
+            'lastFloor',
+            'notFirstFloor',
+            'notLastFloor',
+            'withBalcony',
+            'withoutBalcony',
+            'windowView',
+            'quietWindows',
+            'courtyardWindows',
             'parking',
+            'nearCenter',
+            'nearMetro',
+            'nearBusStop',
+            'nearShop',
+            'nearPharmacy',
+            'nearHospital',
+            'nearUniversity',
+            'nearRailwayStation',
+            'nearAirport',
+            'easyTransport',
+            'quietDistrict',
+            'safeDistrict',
+            'goodStreetLighting',
+            'freeParking',
+            'paidParking',
+            'cleanProperty',
+            'noInsects',
+            'noMold',
+            'normalHumidity',
+            'comfortableWinter',
+            'comfortableSummer',
+            'quietProperty',
+            'brightProperty',
+            'doorCodeAccess',
+            'electronicLockAccess',
+            'keySafeAccess',
+            'access247',
+            'noNightEntryRestrictions',
+            'guestRules',
+            'courierRules',
+            'deliveryAvailable',
             'highRating',
             'verifiedHost',
             'hasReviews',
