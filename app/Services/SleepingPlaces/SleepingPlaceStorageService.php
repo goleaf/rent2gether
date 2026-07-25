@@ -16,6 +16,7 @@ class SleepingPlaceStorageService
         $place->update(array_filter([
             'has_locker' => $data['has_personal_locker'] ?? null,
             'locker_has_lock' => $data['locker_has_lock'] ?? null,
+            'has_lockable_locker' => $data['has_lockable_locker'] ?? null,
             'has_luggage_space' => $data['has_luggage_space'] ?? null,
         ], fn (mixed $value): bool => $value !== null));
     }
@@ -40,6 +41,7 @@ class SleepingPlaceStorageService
             'has_luggage_space' => $this->yesNo($details->has_luggage_space),
             'has_shoe_space' => $this->yesNo($details->has_shoe_space),
             'has_personal_locker' => $lockerValue,
+            'locker_has_lock' => $this->yesNo($details->locker_has_lock),
             'can_store_valuables' => $this->yesNo($details->can_store_valuables),
             'can_store_documents' => $this->yesNo($details->can_store_documents),
             'can_store_laptop' => $this->yesNo($details->can_store_laptop),

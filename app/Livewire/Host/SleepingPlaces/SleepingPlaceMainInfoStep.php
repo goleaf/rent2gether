@@ -85,7 +85,7 @@ class SleepingPlaceMainInfoStep extends Component
             'internalName' => ['nullable', 'string', 'max:160'],
             'sleepingPlaceType' => ['required', Rule::in(array_column(SleepingPlaceType::cases(), 'value'))],
             'sleepingPlaceSubtype' => ['nullable', 'string', 'max:80'],
-            'bunkLevel' => ['nullable', 'string', 'max:40'],
+            'bunkLevel' => ['nullable', Rule::in(['', 'top', 'middle', 'bottom'])],
             'isTopBunk' => ['boolean'],
             'isBottomBunk' => ['boolean'],
             'isSingle' => ['boolean'],
@@ -101,22 +101,60 @@ class SleepingPlaceMainInfoStep extends Component
             $this->localizedValidationAttributes('sleeping_place.translation_fields', self::TRANSLATION_FIELDS),
         ));
 
+        if (! $this->validateCapacityAndPlacement($validated)) {
+            return;
+        }
+
+        $isTopBunk = (bool) (
+            $validated['isTopBunk']
+            || $validated['sleepingPlaceType'] === SleepingPlaceType::BunkTop->value
+            || $validated['bunkLevel'] === 'top'
+        );
+        $isBottomBunk = (bool) (
+            $validated['isBottomBunk']
+            || $validated['sleepingPlaceType'] === SleepingPlaceType::BunkBottom->value
+            || $validated['bunkLevel'] === 'bottom'
+        );
+        $isDouble = (bool) (
+            $validated['isDouble']
+            || in_array($validated['sleepingPlaceType'], [SleepingPlaceType::Double->value, SleepingPlaceType::SofaBed->value], true)
+        );
+        $isSingle = (bool) (
+            $validated['isSingle']
+            || in_array($validated['sleepingPlaceType'], [
+                SleepingPlaceType::Single->value,
+                SleepingPlaceType::BunkTop->value,
+                SleepingPlaceType::BunkBottom->value,
+                SleepingPlaceType::Mattress->value,
+                SleepingPlaceType::FoldOut->value,
+                SleepingPlaceType::Capsule->value,
+            ], true)
+        );
+        $isDoublePlace = (bool) ($isDouble || $validated['isForCouple']);
+        $maxGuests = $validated['maxGuests'] ?? ($isDoublePlace ? 2 : 1);
+        $foundationPlaceType = $this->foundationPlaceType($validated['sleepingPlaceType']);
+
         $place = $this->sleepingPlace();
         $place->update([
+            'title' => $this->firstTranslationValue('title'),
             'display_name' => $this->firstTranslationValue('title'),
+            'place_type' => $foundationPlaceType,
+            'bed_type' => $validated['sleepingPlaceSubtype'] ?: $foundationPlaceType,
             'type' => $validated['sleepingPlaceType'],
             'sleeping_place_type' => $validated['sleepingPlaceType'],
             'sleeping_place_subtype' => $validated['sleepingPlaceSubtype'] ?: null,
             'place_number' => $validated['placeNumber'] ?: null,
             'internal_name' => $validated['internalName'] ?: null,
             'bunk_level' => $validated['bunkLevel'] ?: null,
-            'is_top_bunk' => $validated['isTopBunk'],
-            'is_bottom_bunk' => $validated['isBottomBunk'],
-            'is_single' => $validated['isSingle'],
-            'is_double' => $validated['isDouble'],
+            'is_top_bunk' => $isTopBunk,
+            'is_bottom_bunk' => $isBottomBunk,
+            'is_single' => $isSingle,
+            'is_double' => $isDouble,
+            'is_double_place' => $isDoublePlace,
             'is_for_one_person' => $validated['isForOnePerson'],
             'is_for_couple' => $validated['isForCouple'],
-            'max_guests' => $validated['maxGuests'] ?? 1,
+            'max_guests' => $maxGuests,
+            'max_guests_count' => $maxGuests,
             'min_guest_age' => $validated['minGuestAge'],
             'max_guest_age' => $validated['maxGuestAge'],
             'status' => $validated['status'],
@@ -141,5 +179,61 @@ class SleepingPlaceMainInfoStep extends Component
     public function render(): View
     {
         return view('livewire.host.sleeping-places.sleeping-place-main-info-step');
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function validateCapacityAndPlacement(array $validated): bool
+    {
+        $topSelected = $validated['isTopBunk']
+            || $validated['sleepingPlaceType'] === SleepingPlaceType::BunkTop->value
+            || $validated['bunkLevel'] === 'top';
+        $bottomSelected = $validated['isBottomBunk']
+            || $validated['sleepingPlaceType'] === SleepingPlaceType::BunkBottom->value
+            || $validated['bunkLevel'] === 'bottom';
+
+        if ($topSelected && $bottomSelected) {
+            $this->addError('isTopBunk', __('sleeping_place.validation.only_one_bunk_level'));
+
+            return false;
+        }
+
+        if ($validated['isForOnePerson'] && $validated['isForCouple']) {
+            $this->addError('isForCouple', __('sleeping_place.validation.one_person_or_couple'));
+
+            return false;
+        }
+
+        if ($validated['isForCouple'] && ($validated['maxGuests'] ?? 1) < 2) {
+            $this->addError('maxGuests', __('sleeping_place.validation.couple_requires_two_guests'));
+
+            return false;
+        }
+
+        if (
+            $validated['minGuestAge'] !== null
+            && $validated['maxGuestAge'] !== null
+            && $validated['minGuestAge'] > $validated['maxGuestAge']
+        ) {
+            $this->addError('maxGuestAge', __('sleeping_place.validation.max_age_after_min_age'));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function foundationPlaceType(string $type): string
+    {
+        return match ($type) {
+            SleepingPlaceType::Single->value => 'single_bed',
+            SleepingPlaceType::Double->value => 'double_bed',
+            SleepingPlaceType::BunkTop->value => 'top_bunk',
+            SleepingPlaceType::BunkBottom->value => 'bottom_bunk',
+            SleepingPlaceType::FoldOut->value => 'folding_bed',
+            SleepingPlaceType::SofaBed->value => 'sofa',
+            default => $type,
+        };
     }
 }

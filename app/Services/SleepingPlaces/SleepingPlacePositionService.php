@@ -16,8 +16,11 @@ class SleepingPlacePositionService
         $place->update(array_filter([
             'privacy_level' => $data['privacy_level'] ?? null,
             'has_curtain' => $data['has_curtain'] ?? null,
+            'has_privacy_curtain' => $data['has_curtain'] ?? null,
             'has_lamp' => $data['has_personal_lamp'] ?? null,
+            'has_personal_lamp' => $data['has_personal_lamp'] ?? null,
             'has_power_socket' => $data['has_power_socket'] ?? null,
+            'has_socket' => $data['has_power_socket'] ?? null,
             'has_usb' => $data['has_usb_charger'] ?? null,
             'has_shelf' => $data['has_shelf'] ?? null,
             'has_hook' => $data['has_hook'] ?? null,
@@ -25,6 +28,7 @@ class SleepingPlacePositionService
             'near_window' => $data['near_window'] ?? null,
             'near_radiator' => $data['near_radiator'] ?? null,
             'near_air_conditioner' => $data['near_air_conditioner'] ?? null,
+            'near_passage' => $data['near_passage'] ?? null,
             'noise_level' => $data['noise_level_near_place'] ?? null,
         ], fn (mixed $value): bool => $value !== null));
     }
@@ -54,6 +58,7 @@ class SleepingPlacePositionService
             'near_window' => $this->yesNo($details->near_window),
             'near_radiator' => $this->yesNo($details->near_radiator),
             'near_air_conditioner' => $this->yesNo($details->near_air_conditioner),
+            'near_power_socket' => $this->yesNo($details->near_power_socket ?? $details->near_socket),
             'near_passage' => $this->yesNo($details->near_passage),
             'in_room_corner' => $this->yesNo($details->in_room_corner),
             'noise_level_near_place' => $details->noise_level_near_place ? __('sleeping_place.levels.'.$details->noise_level_near_place) : null,

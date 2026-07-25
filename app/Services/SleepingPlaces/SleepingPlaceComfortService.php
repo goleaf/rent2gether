@@ -16,6 +16,8 @@ class SleepingPlaceComfortService
         $place->update(array_filter([
             'mattress_type' => $data['mattress_type'] ?? null,
             'mattress_firmness' => $data['mattress_firmness'] ?? null,
+            'mattress_condition' => $data['mattress_condition'] ?? null,
+            'has_mattress' => filled($data['mattress_type'] ?? null) || filled($data['mattress_firmness'] ?? null),
             'has_pillow' => $data['has_pillow'] ?? null,
             'has_blanket' => $data['has_blanket'] ?? null,
             'has_bedding' => $data['has_bedding'] ?? null,
@@ -39,12 +41,15 @@ class SleepingPlaceComfortService
             'mattress_type' => $details->mattress_type ? __('sleeping_place.mattress_types.'.$details->mattress_type) : null,
             'mattress_firmness' => $details->mattress_firmness ? __('sleeping_place.levels.'.$details->mattress_firmness) : null,
             'mattress_condition' => $details->mattress_condition ? __('sleeping_place.levels.'.$details->mattress_condition) : null,
+            'mattress_newness' => $details->mattress_newness ? __('sleeping_place.levels.'.$details->mattress_newness) : null,
             'mattress_thickness_cm' => $details->mattress_thickness_cm ? __('sleeping_place.values.centimeters', ['count' => $details->mattress_thickness_cm]) : null,
             'has_mattress_protector' => $this->yesNo($details->has_mattress_protector),
             'has_pillow' => $this->yesNo($details->has_pillow),
             'has_blanket' => $this->yesNo($details->has_blanket),
             'has_bedding' => $this->yesNo($details->has_bedding),
+            'bedding_included' => $this->yesNo($details->bedding_included),
             'has_towel' => $this->yesNo($details->has_towel),
+            'towel_included' => $this->yesNo($details->towel_included),
             'bedding_changed_before_guest' => $this->yesNo($details->bedding_changed_before_guest),
         ]);
     }

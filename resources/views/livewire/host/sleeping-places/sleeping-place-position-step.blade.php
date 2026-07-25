@@ -32,7 +32,7 @@
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
-            @foreach(['hasCurtain', 'hasPersonalLamp', 'hasPowerSocket', 'hasUsbCharger', 'hasShelf', 'hasHook', 'nearDoor', 'nearWindow', 'nearRadiator', 'nearAirConditioner', 'nearPassage', 'morningLight', 'draftNearby'] as $field)
+            @foreach(['hasCurtain', 'hasPersonalLamp', 'hasPowerSocket', 'hasUsbCharger', 'hasShelf', 'hasHook', 'nearDoor', 'nearWindow', 'nearRadiator', 'nearAirConditioner', 'nearPowerSocket', 'nearPassage', 'morningLight', 'draftNearby'] as $field)
                                 <flux:field variant="inline">
                     <flux:checkbox wire:model.change="{{ $field }}" />
                     <flux:label>

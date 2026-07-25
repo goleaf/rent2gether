@@ -15,6 +15,9 @@ class SleepingPlaceStorageDetailFactory extends Factory
     {
         return [
             'sleeping_place_id' => SleepingPlace::factory(),
+            'has_locker' => true,
+            'has_lockable_locker' => true,
+            'locker_number' => null,
             'has_shoe_space' => true,
             'has_luggage_space' => true,
             'has_backpack_space' => true,
@@ -32,8 +35,10 @@ class SleepingPlaceStorageDetailFactory extends Factory
             'locker_height_cm' => 60,
             'locker_depth_cm' => 45,
             'has_shared_storage_area' => true,
+            'has_luggage_storage' => true,
             'can_leave_luggage_before_checkin' => false,
             'can_leave_luggage_after_checkout' => false,
+            'storage_note' => null,
             'storage_responsibility_note' => null,
         ];
     }

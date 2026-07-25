@@ -45,6 +45,17 @@ class SleepingPlaceComfortDetailFactory extends Factory
             'has_plaid' => false,
             'has_earplugs' => false,
             'has_sleep_mask' => false,
+            'has_privacy_curtain' => false,
+            'has_personal_lamp' => true,
+            'has_socket' => true,
+            'has_usb_charger' => false,
+            'has_shelf' => true,
+            'has_hook' => true,
+            'has_phone_place' => false,
+            'has_shoe_place' => true,
+            'has_luggage_place' => true,
+            'privacy_level' => 'moderate',
+            'noise_level' => 'moderate',
         ];
     }
 }

@@ -18,6 +18,8 @@ class SleepingPlacePhysicalService
             'width_cm' => $data['width_cm'] ?? null,
             'height_cm' => $data['height_cm'] ?? null,
             'suitable_for_tall_person' => $data['suitable_for_tall_person'] ?? null,
+            'suitable_for_tall_guest' => $data['suitable_for_tall_person'] ?? null,
+            'suitable_for_heavy_guest' => $data['suitable_for_heavy_person'] ?? null,
             'suitable_for_elderly' => $data['suitable_for_elderly'] ?? null,
             'suitable_for_limited_mobility' => $data['suitable_for_limited_mobility'] ?? null,
             'is_accessible' => $data['suitable_for_limited_mobility'] ?? null,

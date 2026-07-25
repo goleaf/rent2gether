@@ -13,10 +13,12 @@ use App\Livewire\Host\SleepingPlaces\SleepingPlaceComfortStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlaceCompletionPanel;
 use App\Livewire\Host\SleepingPlaces\SleepingPlaceConditionStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlaceMainInfoStep;
+use App\Livewire\Host\SleepingPlaces\SleepingPlaceMediaStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlacePhysicalStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlacePositionStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlacePricingStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlaceStorageStep;
+use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -30,7 +32,9 @@ use App\Services\SleepingPlaces\SleepingPlaceCompletionService;
 use App\Services\SleepingPlaces\SleepingPlaceGuestSummaryService;
 use App\Services\SleepingPlaces\SleepingPlacePrivacyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -45,14 +49,30 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
         $this->assertTrue(Schema::hasTable('sleeping_place_storage_details'));
         $this->assertTrue(Schema::hasTable('sleeping_place_position_details'));
         $this->assertTrue(Schema::hasTable('sleeping_place_condition_details'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'title'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'place_type'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'bed_type'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'max_guests_count'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'has_lockable_locker'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'suitable_for_heavy_guest'));
+        $this->assertTrue(Schema::hasColumn('sleeping_places', 'near_passage'));
         $this->assertTrue(Schema::hasColumn('sleeping_places', 'sleeping_place_type'));
         $this->assertTrue(Schema::hasColumn('sleeping_places', 'internal_name'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_physical_details', 'bed_type'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_physical_details', 'mattress_age_months'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_physical_details', 'has_mattress_protector'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_physical_details', 'suitable_for_couple'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_physical_details', 'single_guest_only'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_position_details', 'near_power_socket'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_position_details', 'near_socket'));
         $this->assertTrue(Schema::hasColumn('sleeping_place_translations', 'what_guest_should_bring'));
         $this->assertTrue(Schema::hasIndex('sleeping_places', ['room_id', 'sort_order']));
         $this->assertTrue(Schema::hasIndex('sleeping_place_physical_details', ['sleeping_place_id'], 'unique'));
         $this->assertTrue(Schema::hasIndex('sleeping_place_comfort_details', ['has_bedding']));
         $this->assertTrue(Schema::hasIndex('sleeping_place_storage_details', ['has_personal_locker']));
         $this->assertTrue(Schema::hasIndex('sleeping_place_position_details', ['has_power_socket']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_position_details', ['near_power_socket']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_position_details', ['near_passage']));
         $this->assertTrue(Schema::hasIndex('sleeping_place_condition_details', ['needs_repair']));
 
         $place = SleepingPlace::factory()->create();
@@ -165,6 +185,7 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
             ->set('widthCm', 95)
             ->set('maxWeightKg', 120)
             ->set('suitableForTallPerson', true)
+            ->set('suitableForHeavyPerson', true)
             ->set('safetyRailAvailable', true)
             ->call('save')
             ->assertHasNoErrors();
@@ -174,6 +195,8 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
             ->set('mattressType', 'foam')
             ->set('mattressFirmness', 'medium')
             ->set('mattressCondition', 'good')
+            ->set('mattressNewness', 'normal')
+            ->set('hasMattressProtector', true)
             ->set('hasBedding', true)
             ->set('hasTowel', true)
             ->call('save')
@@ -184,6 +207,7 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
             ->set('hasLuggageSpace', true)
             ->set('hasPersonalLocker', true)
             ->set('lockerHasLock', true)
+            ->set('canStoreValuables', true)
             ->set('guestShouldBringLock', true)
             ->call('save')
             ->assertHasNoErrors();
@@ -195,6 +219,8 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
             ->set('hasPowerSocket', true)
             ->set('hasPersonalLamp', true)
             ->set('nearDoor', true)
+            ->set('nearPowerSocket', true)
+            ->set('nearPassage', true)
             ->set('noiseLevelNearPlace', 'moderate')
             ->call('save')
             ->assertHasNoErrors();
@@ -240,12 +266,158 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
             'sleeping_place_id' => $place->id,
             'length_cm' => 205,
             'width_cm' => 95,
+            'max_weight_kg' => 120,
+            'suitable_for_heavy_person' => true,
         ]);
         $this->assertDatabaseHas('sleeping_places', [
             'id' => $place->id,
+            'title' => 'Lower bunk with curtain',
+            'display_name' => 'Lower bunk with curtain',
+            'place_type' => 'bottom_bunk',
+            'bed_type' => 'bottom_bunk',
+            'max_guests_count' => 1,
+            'suitable_for_tall_guest' => true,
+            'suitable_for_heavy_guest' => true,
+            'mattress_condition' => 'good',
+            'has_mattress' => true,
+            'has_lockable_locker' => true,
+            'has_personal_lamp' => true,
+            'has_socket' => true,
+            'near_passage' => true,
             'base_price_per_night' => 24.5,
             'instant_booking_enabled' => true,
         ]);
+        $this->assertDatabaseHas('sleeping_place_comfort_details', [
+            'sleeping_place_id' => $place->id,
+            'mattress_newness' => 'normal',
+            'has_mattress_protector' => true,
+        ]);
+        $this->assertDatabaseHas('sleeping_place_storage_details', [
+            'sleeping_place_id' => $place->id,
+            'has_lockable_locker' => true,
+            'can_store_valuables' => true,
+        ]);
+        $this->assertDatabaseHas('sleeping_place_position_details', [
+            'sleeping_place_id' => $place->id,
+            'near_power_socket' => true,
+            'near_socket' => true,
+            'near_passage' => true,
+        ]);
+    }
+
+    public function test_sleeping_place_main_step_rejects_impossible_capacity_and_age_combinations(): void
+    {
+        [$place] = $this->placeWithDetails();
+        $host = $place->property->host;
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMainInfoStep::class, ['sleepingPlace' => $place])
+            ->set('isTopBunk', true)
+            ->set('isBottomBunk', true)
+            ->call('save')
+            ->assertHasErrors(['isTopBunk']);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMainInfoStep::class, ['sleepingPlace' => $place])
+            ->set('isForOnePerson', true)
+            ->set('isForCouple', true)
+            ->call('save')
+            ->assertHasErrors(['isForCouple']);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMainInfoStep::class, ['sleepingPlace' => $place])
+            ->set('isForOnePerson', false)
+            ->set('isForCouple', true)
+            ->set('maxGuests', 1)
+            ->call('save')
+            ->assertHasErrors(['maxGuests']);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMainInfoStep::class, ['sleepingPlace' => $place])
+            ->set('minGuestAge', 45)
+            ->set('maxGuestAge', 30)
+            ->call('save')
+            ->assertHasErrors(['maxGuestAge']);
+    }
+
+    public function test_sleeping_place_storage_step_rejects_impossible_locker_combinations(): void
+    {
+        [$place] = $this->placeWithDetails();
+        $host = $place->property->host;
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceStorageStep::class, ['sleepingPlace' => $place])
+            ->set('hasPersonalLocker', false)
+            ->set('lockerHasLock', true)
+            ->call('save')
+            ->assertHasErrors(['lockerHasLock']);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceStorageStep::class, ['sleepingPlace' => $place])
+            ->set('hasPersonalLocker', true)
+            ->set('lockerHasLock', false)
+            ->set('canStoreValuables', true)
+            ->call('save')
+            ->assertHasErrors(['canStoreValuables']);
+    }
+
+    public function test_sleeping_place_media_step_uploads_and_deletes_video_with_authorization(): void
+    {
+        Storage::fake('public');
+
+        [$place] = $this->placeWithDetails();
+        $host = $place->property->host;
+        $otherHost = User::factory()->create(['is_host' => true]);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMediaStep::class, ['sleepingPlace' => $place])
+            ->assertSee(__('sleeping_place.media.videos_title'))
+            ->set('videoFile', UploadedFile::fake()->create('place-tour.mp4', 512, 'video/mp4'))
+            ->set('videoCaptions.en', 'Quick exact place video')
+            ->call('saveVideo')
+            ->assertHasNoErrors()
+            ->assertSee(__('sleeping_place.media.saved_video'));
+
+        $mediaItem = MediaItem::query()
+            ->where('owner_type', SleepingPlace::class)
+            ->where('owner_id', $place->id)
+            ->where('collection', 'video')
+            ->firstOrFail();
+
+        Storage::disk('public')->assertExists($mediaItem->path);
+
+        $this->assertDatabaseHas('media_item_translations', [
+            'media_item_id' => $mediaItem->id,
+            'locale' => 'en',
+            'caption' => 'Quick exact place video',
+        ]);
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMediaStep::class, ['sleepingPlace' => $place])
+            ->call('deleteVideo', $mediaItem->id)
+            ->assertHasNoErrors()
+            ->assertSee(__('sleeping_place.media.deleted_video'));
+
+        Storage::disk('public')->assertMissing($mediaItem->path);
+        $this->assertDatabaseMissing('media_items', ['id' => $mediaItem->id]);
+
+        Livewire::actingAs($otherHost)
+            ->test(SleepingPlaceMediaStep::class, ['sleepingPlace' => $place])
+            ->assertForbidden();
+    }
+
+    public function test_sleeping_place_media_step_rejects_invalid_video_uploads(): void
+    {
+        Storage::fake('public');
+
+        [$place] = $this->placeWithDetails();
+        $host = $place->property->host;
+
+        Livewire::actingAs($host)
+            ->test(SleepingPlaceMediaStep::class, ['sleepingPlace' => $place])
+            ->set('videoFile', UploadedFile::fake()->create('notes.txt', 8, 'text/plain'))
+            ->call('saveVideo')
+            ->assertHasErrors(['videoFile']);
     }
 
     public function test_listing_detail_renders_public_sleeping_place_profile_without_private_notes(): void

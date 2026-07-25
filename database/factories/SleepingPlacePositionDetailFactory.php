@@ -44,6 +44,7 @@ class SleepingPlacePositionDetailFactory extends Factory
             'near_radiator' => false,
             'near_air_conditioner' => false,
             'near_power_socket' => true,
+            'near_socket' => true,
             'near_passage' => false,
             'near_wardrobe' => false,
             'near_desk' => false,
@@ -60,6 +61,9 @@ class SleepingPlacePositionDetailFactory extends Factory
             'morning_light' => false,
             'corridor_light_reaches' => false,
             'draft_nearby' => false,
+            'top_bunk' => false,
+            'bottom_bunk' => false,
+            'position_note' => null,
         ];
     }
 }

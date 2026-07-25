@@ -2,6 +2,7 @@
 
 namespace App\Services\SleepingPlaces;
 
+use App\Models\MediaItem;
 use App\Models\SleepingPlace;
 use App\Services\Localization\SupportedContentLocales;
 
@@ -32,7 +33,7 @@ class SleepingPlaceCompletionService
             ['key' => 'dimensions', 'label' => __('sleeping_place.completion.items.dimensions'), 'complete' => $place->physicalDetails !== null && filled($place->physicalDetails->length_cm) && filled($place->physicalDetails->width_cm)],
             ['key' => 'price', 'label' => __('sleeping_place.completion.items.price'), 'complete' => filled($place->base_price_per_night)],
             ['key' => 'calendar', 'label' => __('sleeping_place.completion.items.calendar'), 'complete' => $place->availabilityDays()->exists()],
-            ['key' => 'photos', 'label' => __('sleeping_place.completion.items.photos'), 'complete' => $place->mediaItems()->active()->exists()],
+            ['key' => 'media', 'label' => __('sleeping_place.completion.items.media'), 'complete' => $this->hasMedia($place)],
             ['key' => 'mattress', 'label' => __('sleeping_place.completion.items.mattress'), 'complete' => filled($place->comfortDetails?->mattress_type) || filled($place->comfortDetails?->mattress_firmness)],
             ['key' => 'bedding', 'label' => __('sleeping_place.completion.items.bedding'), 'complete' => $place->comfortDetails?->has_bedding !== null],
             ['key' => 'towel', 'label' => __('sleeping_place.completion.items.towel'), 'complete' => $place->comfortDetails?->has_towel !== null],
@@ -50,5 +51,15 @@ class SleepingPlaceCompletionService
         $complete = count(array_filter($items, fn (array $item): bool => $item['complete']));
 
         return (int) round(($complete / max(1, count($items))) * 100);
+    }
+
+    private function hasMedia(SleepingPlace $place): bool
+    {
+        return MediaItem::query()
+            ->where('owner_type', SleepingPlace::class)
+            ->where('owner_id', $place->id)
+            ->whereIn('collection', ['gallery', 'video'])
+            ->active()
+            ->exists();
     }
 }

@@ -69,12 +69,18 @@ class SleepingPlaceStorageStep extends Component
             'lockerSize' => ['nullable', 'string', 'max:40'],
         ], attributes: __('sleeping_place.validation_attributes'));
 
+        if (! $this->validateStorageCombination($validated)) {
+            return;
+        }
+
         $service->updateStorageDetails($this->sleepingPlace(), [
             'has_shoe_space' => $validated['hasShoeSpace'],
             'has_luggage_space' => $validated['hasLuggageSpace'],
             'has_backpack_space' => $validated['hasBackpackSpace'],
             'has_personal_locker' => $validated['hasPersonalLocker'],
+            'has_locker' => $validated['hasPersonalLocker'],
             'locker_has_lock' => $validated['lockerHasLock'],
+            'has_lockable_locker' => $validated['hasPersonalLocker'] && $validated['lockerHasLock'],
             'lock_provided' => $validated['lockProvided'],
             'guest_should_bring_lock' => $validated['guestShouldBringLock'],
             'can_store_valuables' => $validated['canStoreValuables'],
@@ -89,5 +95,25 @@ class SleepingPlaceStorageStep extends Component
     public function render(): View
     {
         return view('livewire.host.sleeping-places.sleeping-place-storage-step');
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function validateStorageCombination(array $validated): bool
+    {
+        if ($validated['lockerHasLock'] && ! $validated['hasPersonalLocker']) {
+            $this->addError('lockerHasLock', __('sleeping_place.validation.lock_requires_locker'));
+
+            return false;
+        }
+
+        if ($validated['canStoreValuables'] && (! $validated['hasPersonalLocker'] || ! $validated['lockerHasLock'])) {
+            $this->addError('canStoreValuables', __('sleeping_place.validation.valuables_require_lockable_locker'));
+
+            return false;
+        }
+
+        return true;
     }
 }

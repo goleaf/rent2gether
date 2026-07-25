@@ -36,6 +36,8 @@ class SleepingPlacePositionStep extends Component
 
     public bool $nearAirConditioner = false;
 
+    public bool $nearPowerSocket = false;
+
     public bool $nearPassage = false;
 
     public string $noiseLevelNearPlace = '';
@@ -64,6 +66,7 @@ class SleepingPlacePositionStep extends Component
         $this->nearWindow = (bool) ($details?->near_window ?? $sleepingPlace->near_window);
         $this->nearRadiator = (bool) ($details?->near_radiator ?? $sleepingPlace->near_radiator);
         $this->nearAirConditioner = (bool) ($details?->near_air_conditioner ?? $sleepingPlace->near_air_conditioner);
+        $this->nearPowerSocket = (bool) ($details?->near_power_socket ?? $details?->near_socket);
         $this->nearPassage = (bool) $details?->near_passage;
         $this->noiseLevelNearPlace = (string) ($details?->noise_level_near_place ?? $sleepingPlace->noise_level ?? '');
         $this->lightLevelNearPlace = (string) ($details?->light_level_near_place ?? '');
@@ -86,6 +89,7 @@ class SleepingPlacePositionStep extends Component
             'nearWindow' => ['boolean'],
             'nearRadiator' => ['boolean'],
             'nearAirConditioner' => ['boolean'],
+            'nearPowerSocket' => ['boolean'],
             'nearPassage' => ['boolean'],
             'noiseLevelNearPlace' => ['nullable', 'string', 'max:40'],
             'lightLevelNearPlace' => ['nullable', 'string', 'max:40'],
@@ -106,6 +110,8 @@ class SleepingPlacePositionStep extends Component
             'near_window' => $validated['nearWindow'],
             'near_radiator' => $validated['nearRadiator'],
             'near_air_conditioner' => $validated['nearAirConditioner'],
+            'near_power_socket' => $validated['nearPowerSocket'],
+            'near_socket' => $validated['nearPowerSocket'],
             'near_passage' => $validated['nearPassage'],
             'noise_level_near_place' => $validated['noiseLevelNearPlace'] ?: null,
             'light_level_near_place' => $validated['lightLevelNearPlace'] ?: null,
