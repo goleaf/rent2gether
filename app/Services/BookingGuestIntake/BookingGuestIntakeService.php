@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class BookingGuestIntakeService
@@ -24,6 +25,9 @@ class BookingGuestIntakeService
         'planned_arrival_time',
         'planned_arrival_window',
         'planned_departure_time',
+        'needs_early_check_in',
+        'needs_late_check_out',
+        'luggage_amount',
         'arrival_time_unknown',
         'departure_time_unknown',
         'early_check_in_requested',
@@ -50,6 +54,7 @@ class BookingGuestIntakeService
         'smoking_type',
         'accepts_smoking_rules',
         'needs_quiet',
+        'needs_desk',
         'noise_sensitivity_level',
         'needs_workspace',
         'needs_fast_wifi',
@@ -65,9 +70,50 @@ class BookingGuestIntakeService
         'company_name',
         'document_notes',
         'special_requests',
+        'message_to_host',
         'host_message',
         'rules_accepted',
     ];
+
+    /**
+     * @var list<string>
+     */
+    private const TRIP_PURPOSES = [
+        'tourism',
+        'work',
+        'study',
+        'relocation',
+        'business_trip',
+        'medical',
+        'housing_search',
+        'other',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    private const BAGGAGE_LEVELS = [
+        'none',
+        'small_bag',
+        'one_bag',
+        'two_bags',
+        'many_bags',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    private const PET_TYPES = ['cat', 'dog', 'other'];
+
+    /**
+     * @var list<string>
+     */
+    private const PET_SIZES = ['small', 'medium', 'large'];
+
+    /**
+     * @var list<string>
+     */
+    private const NOISE_LEVELS = ['low', 'medium', 'high'];
 
     public function __construct(
         private readonly BookingGuestIntakeCompatibilityService $compatibility,
@@ -154,6 +200,10 @@ class BookingGuestIntakeService
 
         $payload = $this->validatedPayload($data);
 
+        if (array_key_exists('message_to_host', $payload) && filled($payload['message_to_host'])) {
+            $payload['message_to_host'] = $this->messageService->cleanHostMessage((string) $payload['message_to_host']);
+        }
+
         if (array_key_exists('host_message', $payload) && filled($payload['host_message'])) {
             $payload['host_message'] = $this->messageService->cleanHostMessage((string) $payload['host_message']);
         }
@@ -171,8 +221,9 @@ class BookingGuestIntakeService
     {
         $this->authorizeOwner($user, $intake);
 
-        $validator = Validator::make($intake->getAttributes(), [
-            'trip_purpose' => ['required', 'string'],
+        $validator = Validator::make($this->normalizeScalars($intake->getAttributes()), [
+            'trip_purpose' => ['required', 'string', Rule::in(self::TRIP_PURPOSES)],
+            'trip_purpose_other' => ['nullable', 'required_if:trip_purpose,other', 'string', 'max:500'],
             'rules_accepted' => ['accepted'],
         ], attributes: $this->validationAttributes());
 
@@ -226,6 +277,7 @@ class BookingGuestIntakeService
             'planned_departure_time' => $intake->planned_departure_time,
             'needs_early_check_in' => (bool) ($intake->needs_early_check_in || $intake->early_check_in_requested),
             'needs_late_check_out' => (bool) ($intake->needs_late_check_out || $intake->late_check_out_requested),
+            'luggage_amount' => $intake->luggage_amount ?: $intake->baggage_level,
             'has_large_suitcase' => (bool) $intake->has_large_suitcase,
             'has_pet' => (bool) $intake->has_pet,
             'smokes' => (bool) $intake->smokes,
@@ -258,16 +310,19 @@ class BookingGuestIntakeService
      */
     private function validatedPayload(array $data): array
     {
-        $payload = Arr::only($data, self::FIELDS);
+        $payload = $this->normalizeScalars(Arr::only($data, self::FIELDS));
 
-        return Validator::make($payload, [
-            'trip_purpose' => ['nullable', 'string', 'max:50'],
+        $validated = Validator::make($payload, [
+            'trip_purpose' => ['nullable', 'string', 'max:50', Rule::in(self::TRIP_PURPOSES)],
             'trip_purpose_other' => ['nullable', 'string', 'max:500'],
             'trip_purpose_visibility' => ['nullable', 'in:safe,exact'],
             'planned_arrival_date' => ['nullable', 'date'],
             'planned_arrival_time' => ['nullable', 'date_format:H:i'],
             'planned_arrival_window' => ['nullable', 'string', 'max:100'],
             'planned_departure_time' => ['nullable', 'date_format:H:i'],
+            'needs_early_check_in' => ['nullable', 'boolean'],
+            'needs_late_check_out' => ['nullable', 'boolean'],
+            'luggage_amount' => ['nullable', 'string', Rule::in(self::BAGGAGE_LEVELS)],
             'arrival_time_unknown' => ['nullable', 'boolean'],
             'departure_time_unknown' => ['nullable', 'boolean'],
             'early_check_in_requested' => ['nullable', 'boolean'],
@@ -279,7 +334,7 @@ class BookingGuestIntakeService
             'early_check_out_requested' => ['nullable', 'boolean'],
             'requested_early_check_out_time' => ['nullable', 'date_format:H:i'],
             'can_adjust_arrival_time' => ['nullable', 'boolean'],
-            'baggage_level' => ['nullable', 'string', 'max:50'],
+            'baggage_level' => ['nullable', 'string', Rule::in(self::BAGGAGE_LEVELS)],
             'baggage_count' => ['nullable', 'integer', 'min:0', 'max:20'],
             'has_large_suitcase' => ['nullable', 'boolean'],
             'has_special_baggage' => ['nullable', 'boolean'],
@@ -287,14 +342,15 @@ class BookingGuestIntakeService
             'needs_luggage_storage_before_checkin' => ['nullable', 'boolean'],
             'needs_luggage_storage_after_checkout' => ['nullable', 'boolean'],
             'has_pet' => ['nullable', 'boolean'],
-            'pet_type' => ['nullable', 'string', 'max:100'],
-            'pet_size' => ['nullable', 'string', 'max:50'],
+            'pet_type' => ['nullable', 'string', Rule::in(self::PET_TYPES)],
+            'pet_size' => ['nullable', 'string', Rule::in(self::PET_SIZES)],
             'pet_notes' => ['nullable', 'string', 'max:500'],
             'smokes' => ['nullable', 'boolean'],
             'smoking_type' => ['nullable', 'string', 'max:50'],
             'accepts_smoking_rules' => ['nullable', 'boolean'],
             'needs_quiet' => ['nullable', 'boolean'],
-            'noise_sensitivity_level' => ['nullable', 'string', 'max:50'],
+            'needs_desk' => ['nullable', 'boolean'],
+            'noise_sensitivity_level' => ['nullable', 'string', Rule::in(self::NOISE_LEVELS)],
             'needs_workspace' => ['nullable', 'boolean'],
             'needs_fast_wifi' => ['nullable', 'boolean'],
             'needs_power_socket' => ['nullable', 'boolean'],
@@ -309,9 +365,12 @@ class BookingGuestIntakeService
             'company_name' => ['nullable', 'string', 'max:255'],
             'document_notes' => ['nullable', 'string', 'max:500'],
             'special_requests' => ['nullable', 'string', 'max:1000'],
+            'message_to_host' => ['nullable', 'string', 'max:1000'],
             'host_message' => ['nullable', 'string', 'max:1000'],
             'rules_accepted' => ['nullable', 'boolean'],
         ], attributes: $this->validationAttributes())->validate();
+
+        return $this->syncAliases($validated);
     }
 
     /**
@@ -320,42 +379,93 @@ class BookingGuestIntakeService
      */
     private function bookingPayload(User $guest, SleepingPlace $place, array $data): array
     {
+        $validated = $this->validatedPayload($data);
         $allowed = Arr::only($data, [
             'booking_quote_id',
             'booking_request_id',
             'booking_id',
-            'trip_purpose',
-            'planned_arrival_time',
-            'planned_departure_time',
-            'needs_early_check_in',
-            'needs_late_check_out',
-            'luggage_amount',
-            'has_large_suitcase',
-            'has_pet',
-            'smokes',
-            'needs_quiet',
-            'needs_desk',
-            'needs_fast_wifi',
-            'needs_registration',
-            'needs_work_documents',
-            'special_requests',
-            'message_to_host',
         ]);
 
         return [
             ...$allowed,
+            ...$validated,
             'user_id' => $guest->id,
             'guest_user_id' => $guest->id,
             'property_id' => $place->property_id,
             'room_id' => $place->room_id,
             'sleeping_place_id' => $place->id,
             'status' => 'draft',
-            'early_check_in_requested' => (bool) ($data['needs_early_check_in'] ?? false),
-            'late_check_out_requested' => (bool) ($data['needs_late_check_out'] ?? false),
-            'baggage_level' => $data['luggage_amount'] ?? null,
-            'needs_workspace' => (bool) ($data['needs_desk'] ?? false),
-            'host_message' => $data['message_to_host'] ?? null,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function syncAliases(array $payload): array
+    {
+        $payload = $this->syncBooleanAlias($payload, 'needs_early_check_in', 'early_check_in_requested');
+        $payload = $this->syncBooleanAlias($payload, 'needs_late_check_out', 'late_check_out_requested');
+        $payload = $this->syncStringAlias($payload, 'luggage_amount', 'baggage_level');
+        $payload = $this->syncBooleanAlias($payload, 'needs_desk', 'needs_workspace');
+        $payload = $this->syncStringAlias($payload, 'message_to_host', 'host_message');
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function syncBooleanAlias(array $payload, string $publicField, string $legacyField): array
+    {
+        if (! array_key_exists($publicField, $payload) && ! array_key_exists($legacyField, $payload)) {
+            return $payload;
+        }
+
+        $value = array_key_exists($publicField, $payload)
+            ? $payload[$publicField]
+            : $payload[$legacyField];
+
+        $payload[$publicField] = (bool) $value;
+        $payload[$legacyField] = (bool) $value;
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function syncStringAlias(array $payload, string $publicField, string $legacyField): array
+    {
+        if (! array_key_exists($publicField, $payload) && ! array_key_exists($legacyField, $payload)) {
+            return $payload;
+        }
+
+        $value = array_key_exists($publicField, $payload)
+            ? $payload[$publicField]
+            : $payload[$legacyField];
+
+        $payload[$publicField] = $value;
+        $payload[$legacyField] = $value;
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function normalizeScalars(array $payload): array
+    {
+        foreach ($payload as $key => $value) {
+            if (is_string($value)) {
+                $payload[$key] = trim($value) === '' ? null : trim($value);
+            }
+        }
+
+        return $payload;
     }
 
     private function authorizeOwner(User $user, BookingGuestIntake $intake): void

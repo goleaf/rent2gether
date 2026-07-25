@@ -17,11 +17,11 @@ class BookingGuestIntakeValidationService
         $warnings = [];
         $blockingReasons = [];
 
-        if ($intake->early_check_in_requested && ! $this->isTruthy($intake->sleepingPlace?->early_check_in_allowed)) {
+        if (($intake->needs_early_check_in || $intake->early_check_in_requested) && ! $this->isTruthy($intake->sleepingPlace?->early_check_in_allowed)) {
             $warnings[] = $this->warning('early_check_in_unavailable');
         }
 
-        if ($intake->late_check_out_requested && ! $this->isTruthy($intake->sleepingPlace?->late_check_out_allowed)) {
+        if (($intake->needs_late_check_out || $intake->late_check_out_requested) && ! $this->isTruthy($intake->sleepingPlace?->late_check_out_allowed)) {
             $warnings[] = $this->warning('late_check_out_unavailable');
         }
 
@@ -37,7 +37,7 @@ class BookingGuestIntakeValidationService
             $warnings[] = $this->warning('quiet_conflict');
         }
 
-        if ($intake->needs_workspace && ! $this->hasWorkspace($intake)) {
+        if (($intake->needs_desk || $intake->needs_workspace) && ! $this->hasWorkspace($intake)) {
             $warnings[] = $this->warning('workspace_missing');
         }
 
@@ -54,7 +54,7 @@ class BookingGuestIntakeValidationService
         }
 
         if (
-            ($intake->has_large_suitcase || $intake->needs_luggage_storage_before_checkin || $intake->needs_luggage_storage_after_checkout)
+            (filled($intake->luggage_amount) || $intake->has_large_suitcase || $intake->needs_luggage_storage_before_checkin || $intake->needs_luggage_storage_after_checkout)
             && ! $this->hasLuggageSupport($intake)
         ) {
             $warnings[] = $this->warning('luggage_space_missing');

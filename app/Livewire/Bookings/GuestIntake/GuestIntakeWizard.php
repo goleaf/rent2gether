@@ -277,16 +277,16 @@ class GuestIntakeWizard extends Component
         $this->plannedDepartureTime = (string) $intake->planned_departure_time;
         $this->arrivalTimeUnknown = (bool) $intake->arrival_time_unknown;
         $this->departureTimeUnknown = (bool) $intake->departure_time_unknown;
-        $this->earlyCheckInRequested = (bool) $intake->early_check_in_requested;
+        $this->earlyCheckInRequested = (bool) ($intake->needs_early_check_in || $intake->early_check_in_requested);
         $this->requestedEarlyCheckInTime = (string) $intake->requested_early_check_in_time;
         $this->lateCheckInRequested = (bool) $intake->late_check_in_requested;
         $this->requestedLateCheckInTime = (string) $intake->requested_late_check_in_time;
-        $this->lateCheckOutRequested = (bool) $intake->late_check_out_requested;
+        $this->lateCheckOutRequested = (bool) ($intake->needs_late_check_out || $intake->late_check_out_requested);
         $this->requestedLateCheckOutTime = (string) $intake->requested_late_check_out_time;
         $this->earlyCheckOutRequested = (bool) $intake->early_check_out_requested;
         $this->requestedEarlyCheckOutTime = (string) $intake->requested_early_check_out_time;
         $this->canAdjustArrivalTime = (bool) $intake->can_adjust_arrival_time;
-        $this->baggageLevel = (string) $intake->baggage_level;
+        $this->baggageLevel = (string) ($intake->luggage_amount ?: $intake->baggage_level);
         $this->baggageCount = $intake->baggage_count;
         $this->hasLargeSuitcase = (bool) $intake->has_large_suitcase;
         $this->hasSpecialBaggage = (bool) $intake->has_special_baggage;
@@ -302,7 +302,7 @@ class GuestIntakeWizard extends Component
         $this->acceptsSmokingRules = (bool) $intake->accepts_smoking_rules;
         $this->needsQuiet = (bool) $intake->needs_quiet;
         $this->noiseSensitivityLevel = (string) $intake->noise_sensitivity_level;
-        $this->needsWorkspace = (bool) $intake->needs_workspace;
+        $this->needsWorkspace = (bool) ($intake->needs_desk || $intake->needs_workspace);
         $this->needsFastWifi = (bool) $intake->needs_fast_wifi;
         $this->needsPowerSocket = (bool) $intake->needs_power_socket;
         $this->needsOnlineCalls = (bool) $intake->needs_online_calls;
@@ -316,7 +316,7 @@ class GuestIntakeWizard extends Component
         $this->companyName = (string) $intake->company_name;
         $this->documentNotes = (string) $intake->document_notes;
         $this->specialRequests = (string) $intake->special_requests;
-        $this->hostMessage = (string) $intake->host_message;
+        $this->hostMessage = (string) ($intake->message_to_host ?: $intake->host_message);
         $this->rulesAccepted = (bool) $intake->rules_accepted;
     }
 
@@ -333,6 +333,9 @@ class GuestIntakeWizard extends Component
             'planned_arrival_time' => $this->blankToNull($this->plannedArrivalTime),
             'planned_arrival_window' => $this->blankToNull($this->plannedArrivalWindow),
             'planned_departure_time' => $this->blankToNull($this->plannedDepartureTime),
+            'needs_early_check_in' => $this->earlyCheckInRequested,
+            'needs_late_check_out' => $this->lateCheckOutRequested,
+            'luggage_amount' => $this->blankToNull($this->baggageLevel),
             'arrival_time_unknown' => $this->arrivalTimeUnknown,
             'departure_time_unknown' => $this->departureTimeUnknown,
             'early_check_in_requested' => $this->earlyCheckInRequested,
@@ -360,6 +363,7 @@ class GuestIntakeWizard extends Component
             'accepts_smoking_rules' => $this->acceptsSmokingRules,
             'needs_quiet' => $this->needsQuiet,
             'noise_sensitivity_level' => $this->blankToNull($this->noiseSensitivityLevel),
+            'needs_desk' => $this->needsWorkspace,
             'needs_workspace' => $this->needsWorkspace,
             'needs_fast_wifi' => $this->needsFastWifi,
             'needs_power_socket' => $this->needsPowerSocket,
@@ -374,6 +378,7 @@ class GuestIntakeWizard extends Component
             'company_name' => $this->blankToNull($this->companyName),
             'document_notes' => $this->blankToNull($this->documentNotes),
             'special_requests' => $this->blankToNull($this->specialRequests),
+            'message_to_host' => $this->blankToNull($this->hostMessage),
             'host_message' => $this->blankToNull($this->hostMessage),
             'rules_accepted' => $this->rulesAccepted,
         ];

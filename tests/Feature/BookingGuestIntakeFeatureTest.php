@@ -50,6 +50,11 @@ class BookingGuestIntakeFeatureTest extends TestCase
         $this->assertTrue(Schema::hasTable('booking_guest_intakes'));
         $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'trip_purpose_visibility'));
         $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'warnings_json'));
+        $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'needs_early_check_in'));
+        $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'needs_late_check_out'));
+        $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'luggage_amount'));
+        $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'needs_desk'));
+        $this->assertTrue(Schema::hasColumn('booking_guest_intakes', 'message_to_host'));
         $this->assertTrue(Schema::hasIndex('booking_guest_intakes', ['user_id', 'status']));
         $this->assertTrue(Schema::hasIndex('booking_guest_intakes', ['sleeping_place_id']));
         $this->assertTrue(Schema::hasIndex('booking_guest_intakes', ['compatibility_status']));
@@ -104,18 +109,116 @@ class BookingGuestIntakeFeatureTest extends TestCase
         $updated = $service->updateDraft($guest, $intake, [
             'trip_purpose' => 'work',
             'planned_arrival_time' => '19:00',
+            'planned_departure_time' => '08:30',
+            'needs_early_check_in' => true,
+            'needs_late_check_out' => true,
+            'luggage_amount' => 'two_bags',
             'baggage_level' => 'one_bag',
             'baggage_count' => 1,
+            'has_large_suitcase' => true,
+            'has_pet' => true,
+            'smokes' => true,
+            'needs_quiet' => true,
+            'needs_desk' => true,
             'needs_workspace' => true,
             'needs_fast_wifi' => true,
-            'host_message' => 'I will arrive quietly.',
+            'needs_registration' => true,
+            'needs_work_documents' => true,
+            'special_requests' => 'Please keep a quiet lower shelf if possible.',
+            'message_to_host' => 'I will arrive quietly.',
         ]);
 
+        $this->assertTrue($updated->needs_early_check_in);
+        $this->assertTrue($updated->early_check_in_requested);
+        $this->assertTrue($updated->needs_late_check_out);
+        $this->assertTrue($updated->late_check_out_requested);
+        $this->assertSame('two_bags', $updated->luggage_amount);
+        $this->assertSame('two_bags', $updated->baggage_level);
+        $this->assertTrue($updated->has_large_suitcase);
+        $this->assertTrue($updated->has_pet);
+        $this->assertTrue($updated->smokes);
+        $this->assertTrue($updated->needs_quiet);
+        $this->assertTrue($updated->needs_desk);
         $this->assertTrue($updated->needs_workspace);
+        $this->assertTrue($updated->needs_fast_wifi);
+        $this->assertTrue($updated->needs_registration);
+        $this->assertTrue($updated->needs_work_documents);
+        $this->assertSame('Please keep a quiet lower shelf if possible.', $updated->special_requests);
+        $this->assertSame('I will arrive quietly.', $updated->message_to_host);
         $this->assertSame('I will arrive quietly.', $updated->host_message);
+
+        $summary = $service->buildHostSummary($updated);
+
+        $this->assertTrue($summary['needs_early_check_in']);
+        $this->assertTrue($summary['needs_late_check_out']);
+        $this->assertSame('two_bags', $summary['luggage_amount']);
+        $this->assertTrue($summary['has_large_suitcase']);
+        $this->assertTrue($summary['has_pet']);
+        $this->assertTrue($summary['smokes']);
+        $this->assertTrue($summary['needs_quiet']);
+        $this->assertTrue($summary['needs_desk']);
+        $this->assertTrue($summary['needs_fast_wifi']);
+        $this->assertTrue($summary['needs_registration']);
+        $this->assertTrue($summary['needs_work_documents']);
+        $this->assertSame('I will arrive quietly.', $summary['message_to_host']);
+        $this->assertTrue(BookingGuestIntake::needsHostApproval()->whereKey($updated->id)->exists());
+        $this->assertTrue(BookingGuestIntake::hasSpecialRequests()->whereKey($updated->id)->exists());
 
         $this->expectException(AuthorizationException::class);
         $service->updateDraft(User::factory()->create(), $updated, ['trip_purpose' => 'study']);
+    }
+
+    public function test_intake_rejects_invalid_short_questionnaire_values(): void
+    {
+        [$guest, $place] = $this->createPlace();
+        $service = app(BookingGuestIntakeService::class);
+        $intake = $service->createDraft($guest, $place, []);
+
+        try {
+            $service->updateDraft($guest, $intake, [
+                'trip_purpose' => 'party',
+                'planned_arrival_time' => '25:99',
+                'planned_departure_time' => 'soon',
+                'luggage_amount' => 'truckload',
+                'baggage_count' => 21,
+                'message_to_host' => str_repeat('a', 1001),
+            ]);
+            $this->fail('Invalid questionnaire values should fail validation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('trip_purpose', $exception->errors());
+            $this->assertArrayHasKey('planned_arrival_time', $exception->errors());
+            $this->assertArrayHasKey('planned_departure_time', $exception->errors());
+            $this->assertArrayHasKey('luggage_amount', $exception->errors());
+            $this->assertArrayHasKey('baggage_count', $exception->errors());
+            $this->assertArrayHasKey('message_to_host', $exception->errors());
+        }
+    }
+
+    public function test_other_trip_purpose_requires_text_before_completion(): void
+    {
+        [$guest, $place] = $this->createPlace();
+        $service = app(BookingGuestIntakeService::class);
+        $intake = $service->createDraft($guest, $place, []);
+
+        $intake = $service->updateDraft($guest, $intake, [
+            'trip_purpose' => 'other',
+            'rules_accepted' => true,
+        ]);
+
+        try {
+            $service->complete($guest, $intake->refresh());
+            $this->fail('Other trip purpose should require a short explanation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('trip_purpose_other', $exception->errors());
+        }
+
+        $intake = $service->updateDraft($guest, $intake->refresh(), [
+            'trip_purpose_other' => 'Family matter',
+        ]);
+
+        $completed = $service->complete($guest, $intake->refresh());
+
+        $this->assertSame('completed', $completed->status);
     }
 
     public function test_complete_requires_rules_and_attach_to_booking(): void
@@ -245,15 +348,42 @@ class BookingGuestIntakeFeatureTest extends TestCase
             ->assertSee(__('guest_intake.title', [], 'en'))
             ->set('tripPurpose', 'work')
             ->set('plannedArrivalTime', '19:00')
+            ->set('plannedDepartureTime', '08:30')
             ->set('baggageLevel', 'one_bag')
+            ->set('hasLargeSuitcase', true)
+            ->set('hasPet', true)
+            ->set('smokes', true)
             ->set('needsQuiet', true)
             ->set('needsWorkspace', true)
+            ->set('needsFastWifi', true)
+            ->set('needsRegistration', true)
+            ->set('needsWorkDocuments', true)
+            ->set('specialRequests', 'Quiet corner if available.')
+            ->set('hostMessage', 'I will arrive after dinner.')
             ->set('rulesAccepted', true)
             ->call('saveCurrentStep')
             ->assertHasNoErrors()
             ->assertSee(__('guest_intake.messages.draft_saved', [], 'en'));
 
         $intake = BookingGuestIntake::query()->where('user_id', $guest->id)->firstOrFail();
+
+        $this->assertSame('work', $intake->trip_purpose);
+        $this->assertSame('19:00', $intake->planned_arrival_time);
+        $this->assertSame('08:30', $intake->planned_departure_time);
+        $this->assertSame('one_bag', $intake->luggage_amount);
+        $this->assertSame('one_bag', $intake->baggage_level);
+        $this->assertTrue($intake->has_large_suitcase);
+        $this->assertTrue($intake->has_pet);
+        $this->assertTrue($intake->smokes);
+        $this->assertTrue($intake->needs_quiet);
+        $this->assertTrue($intake->needs_desk);
+        $this->assertTrue($intake->needs_workspace);
+        $this->assertTrue($intake->needs_fast_wifi);
+        $this->assertTrue($intake->needs_registration);
+        $this->assertTrue($intake->needs_work_documents);
+        $this->assertSame('Quiet corner if available.', $intake->special_requests);
+        $this->assertSame('I will arrive after dinner.', $intake->message_to_host);
+        $this->assertSame('I will arrive after dinner.', $intake->host_message);
 
         Livewire::actingAs($guest)
             ->test(GuestIntakeSummary::class, ['intakeId' => $intake->id])

@@ -76,6 +76,8 @@ Public UI must show only score, fit status, translated safe reasons, and warning
 
 The table stores trip purpose, safe purpose visibility, arrival/departure timing, early check-in and late checkout requests, baggage, pet and smoking answers, quiet/work/Wi-Fi/socket/late-entry/self-check-in needs, document request flags, special requests, host message, generated host message, rules acceptance, compatibility status, warnings, and blocking reasons.
 
+The short pre-booking questionnaire exposes compact fields to the product flow: `needs_early_check_in`, `needs_late_check_out`, `luggage_amount`, `needs_desk`, and `message_to_host`. `BookingGuestIntakeService` mirrors them to the older internal columns used by existing warnings and host summaries so query and display code can migrate gradually without breaking previous booking behavior.
+
 Medical or treatment purpose is sensitive. Host-facing summaries must show a safe label such as `private trip` by default unless the guest explicitly chooses exact purpose visibility. Document details and private notes should not be rendered in host-facing Blade; use `BookingGuestIntakePrivacyService` and `BookingGuestIntakeSummaryService`.
 
 Draft lookup uses `user_id + status`; booking and host screens use `booking_id`, `property_id`, `room_id`, and `sleeping_place_id`. Need flags such as pets, smoking, quiet, workspace, fast Wi-Fi, registration, work documents, and compatibility status are indexed for host/request workflows.

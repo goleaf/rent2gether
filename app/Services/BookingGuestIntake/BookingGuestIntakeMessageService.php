@@ -29,13 +29,13 @@ class BookingGuestIntakeMessageService
             ], $locale);
         }
 
-        if (filled($intake->baggage_level) || $intake->baggage_count) {
+        if (filled($intake->luggage_amount) || filled($intake->baggage_level) || $intake->baggage_count) {
             $parts[] = __('guest_intake.generated.baggage', [
                 'count' => (string) ($intake->baggage_count ?: 1),
             ], $locale);
         }
 
-        if ($intake->needs_quiet || $intake->needs_workspace || $intake->needs_fast_wifi) {
+        if ($intake->needs_quiet || $intake->needs_desk || $intake->needs_workspace || $intake->needs_fast_wifi) {
             $parts[] = __('guest_intake.generated.work_quiet', [], $locale);
         }
 
@@ -60,7 +60,7 @@ class BookingGuestIntakeMessageService
             __('guest_intake.message_templates.arrival', [], $locale),
         ];
 
-        if ($intake->needs_quiet || $intake->needs_workspace || $intake->needs_fast_wifi) {
+        if ($intake->needs_quiet || $intake->needs_desk || $intake->needs_workspace || $intake->needs_fast_wifi) {
             $templates[] = __('guest_intake.message_templates.work', [], $locale);
         }
 

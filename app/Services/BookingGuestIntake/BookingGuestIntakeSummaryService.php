@@ -21,8 +21,8 @@ class BookingGuestIntakeSummaryService
             'trip_purpose' => $safe['trip_purpose'],
             'planned_arrival' => $this->plannedArrivalLabel($intake),
             'planned_departure' => $this->plannedDepartureLabel($intake),
-            'early_check_in_requested' => $intake->early_check_in_requested,
-            'late_check_out_requested' => $intake->late_check_out_requested,
+            'early_check_in_requested' => (bool) ($intake->needs_early_check_in || $intake->early_check_in_requested),
+            'late_check_out_requested' => (bool) ($intake->needs_late_check_out || $intake->late_check_out_requested),
             'baggage' => $this->baggageLabel($intake),
             'pet' => $intake->has_pet ? $this->optionLabel('pet_types', $intake->pet_type) : __('guest_intake.summary.no_pet'),
             'smoking' => is_null($intake->smokes) ? __('guest_intake.summary.not_specified') : ($intake->smokes ? __('guest_intake.summary.smokes') : __('guest_intake.summary.does_not_smoke')),
@@ -91,11 +91,13 @@ class BookingGuestIntakeSummaryService
 
     private function baggageLabel(BookingGuestIntake $intake): string
     {
-        if (blank($intake->baggage_level) && ! $intake->baggage_count) {
+        $baggageLevel = $intake->luggage_amount ?: $intake->baggage_level;
+
+        if (blank($baggageLevel) && ! $intake->baggage_count) {
             return __('guest_intake.summary.not_specified');
         }
 
-        $label = $this->optionLabel('baggage', $intake->baggage_level);
+        $label = $this->optionLabel('baggage', $baggageLevel);
 
         if ($intake->baggage_count) {
             return __('guest_intake.summary.baggage_with_count', [
@@ -114,10 +116,14 @@ class BookingGuestIntakeSummaryService
     {
         $needs = [];
 
-        foreach (['needs_quiet', 'needs_workspace', 'needs_fast_wifi', 'needs_power_socket', 'needs_online_calls', 'needs_late_entry', 'needs_self_check_in'] as $field) {
+        foreach (['needs_quiet', 'needs_fast_wifi', 'needs_power_socket', 'needs_online_calls', 'needs_late_entry', 'needs_self_check_in'] as $field) {
             if ($intake->{$field}) {
                 $needs[] = __("guest_intake.fields.{$field}");
             }
+        }
+
+        if ($intake->needs_desk || $intake->needs_workspace) {
+            $needs[] = __('guest_intake.fields.needs_desk');
         }
 
         return $needs;

@@ -244,8 +244,10 @@ class BookingGuestIntake extends Model
     {
         return $query->where(function (Builder $builder): void {
             $builder
-                ->where($builder->qualifyColumn('early_check_in_requested'), true)
+                ->where($builder->qualifyColumn('needs_early_check_in'), true)
+                ->orWhere($builder->qualifyColumn('early_check_in_requested'), true)
                 ->orWhere($builder->qualifyColumn('late_check_in_requested'), true)
+                ->orWhere($builder->qualifyColumn('needs_late_check_out'), true)
                 ->orWhere($builder->qualifyColumn('late_check_out_requested'), true)
                 ->orWhere($builder->qualifyColumn('has_pet'), true)
                 ->orWhere($builder->qualifyColumn('needs_registration'), true)
@@ -263,6 +265,7 @@ class BookingGuestIntake extends Model
         return $query->where(function (Builder $builder): void {
             $builder
                 ->whereNotNull($builder->qualifyColumn('special_requests'))
+                ->orWhereNotNull($builder->qualifyColumn('message_to_host'))
                 ->orWhereNotNull($builder->qualifyColumn('host_message'))
                 ->orWhereNotNull($builder->qualifyColumn('trip_purpose_other'))
                 ->orWhereNotNull($builder->qualifyColumn('pet_notes'))

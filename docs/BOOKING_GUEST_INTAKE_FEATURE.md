@@ -28,6 +28,8 @@ Main groups:
 - registration, work documents, invoice, receipt, contract, company name, and document notes
 - special requests, host message, generated host message, rules acceptance, compatibility status, warnings, and blocking reasons
 
+The guest-facing short questionnaire contract uses the compact fields `needs_early_check_in`, `needs_late_check_out`, `luggage_amount`, `needs_desk`, and `message_to_host`. The service keeps these fields synchronized with older internal columns such as `early_check_in_requested`, `late_check_out_requested`, `baggage_level`, `needs_workspace`, and `host_message` so existing booking and host-summary code stays backward compatible.
+
 ## Database Structure
 
 The table is intentionally separate from `bookings` so the guest can save a draft step-by-step before a payable booking or host request exists.
@@ -72,6 +74,8 @@ The Livewire wizard is class-based and renders one step at a time:
 
 The wizard uses `wire:model.change` for toggles/selects/time fields and `wire:model.blur` for text and textarea fields. It saves a draft after each step and keeps public Livewire state to small scalar values only.
 
+The baggage step stores the visible "how much luggage" answer in `luggage_amount` and mirrors it to `baggage_level`. The comfort step stores the visible desk need in `needs_desk` and mirrors it to `needs_workspace`. The final message step stores `message_to_host` and mirrors it to `host_message`.
+
 ## Host Summary
 
 `HostIntakeSummary` renders the privacy-safe host view. It includes the safe trip purpose, timings, baggage, practical needs, message, warnings, and required confirmations.
@@ -106,6 +110,7 @@ Covered by `tests/Feature/BookingGuestIntakeFeatureTest.php`:
 
 - schema, indexes, relationships, scopes, and cascade delete
 - draft creation and step-by-step update
+- short questionnaire field synchronization and validation
 - owner-only edits
 - completion rules acceptance
 - attaching intake to booking
