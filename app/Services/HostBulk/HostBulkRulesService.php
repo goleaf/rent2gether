@@ -5,6 +5,8 @@ namespace App\Services\HostBulk;
 use App\Models\Property;
 use App\Models\PropertyAccessDetail;
 use App\Models\Room;
+use App\Models\SleepingPlace;
+use App\Models\SleepingPlaceRule;
 use Illuminate\Support\Collection;
 
 class HostBulkRulesService
@@ -48,6 +50,41 @@ class HostBulkRulesService
         }
 
         return $this->result($rooms->count(), $affected);
+    }
+
+    public function updateSleepingPlaceRules(Collection $places, array $rules): array
+    {
+        $affected = 0;
+        $normalizedRules = collect($rules)
+            ->map(fn (mixed $rule): string => trim((string) $rule))
+            ->filter()
+            ->values();
+
+        foreach ($places as $place) {
+            if (! $place instanceof SleepingPlace) {
+                continue;
+            }
+
+            $place->ruleRecords()->update(['status' => 'inactive']);
+
+            foreach ($normalizedRules as $index => $ruleKey) {
+                SleepingPlaceRule::query()->updateOrCreate(
+                    [
+                        'sleeping_place_id' => $place->id,
+                        'rule_key' => $ruleKey,
+                    ],
+                    [
+                        'rule_id' => null,
+                        'sort_order' => $index + 1,
+                        'status' => 'active',
+                    ],
+                );
+            }
+
+            $affected++;
+        }
+
+        return $this->result($places->count(), $affected);
     }
 
     public function updateKitchenRules(Collection $properties, array $rules): array

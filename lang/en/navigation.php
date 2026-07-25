@@ -35,6 +35,7 @@ return [
     'host' => 'Host',
     'host_home' => 'Host home',
     'host_listings' => 'Listings',
+    'host_bulk' => 'Bulk tools',
     'host_calendar' => 'Calendar',
     'host_requests' => 'Requests',
     'host_income' => 'Income',

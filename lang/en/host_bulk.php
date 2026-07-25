@@ -24,6 +24,7 @@ return [
         'messages' => 'Message guests',
         'cleaning' => 'Cleaning tasks',
         'publication' => 'Publication status',
+        'copy_tools' => 'Copy and creation tools',
     ],
 
     'helpers' => [
@@ -83,19 +84,90 @@ return [
         'preview_before_apply' => 'Preview before applying.',
         'critical_action_confirm' => 'This action changes several objects at once.',
         'completed' => 'Bulk action completed.',
+        'clone_room_completed' => 'Room copied.',
+        'clone_sleeping_place_completed' => 'Sleeping place copied.',
+        'create_identical_places_completed' => 'Sleeping places created.',
+        'publication_action_notice' => 'This action changes listing visibility for the selected sleeping places.',
+        'places_count' => ':count places',
     ],
 
     'errors' => [
         'not_allowed' => 'This action is not allowed for the selected object.',
+        'empty_targets' => 'Choose at least one object before continuing.',
         'empty_message' => 'Enter a message before sending it.',
         'cannot_confirm' => 'This batch cannot be confirmed now.',
         'unknown_action' => 'This bulk action is not supported yet.',
+    ],
+
+    'buttons' => [
+        'select_visible' => 'Select visible',
+        'clear_selection' => 'Clear',
+        'loading' => 'Working...',
+    ],
+
+    'targets' => [
+        'property' => 'Properties',
+        'room' => 'Rooms',
+        'sleeping_place' => 'Sleeping places',
+        'booking' => 'Bookings',
+    ],
+
+    'fields' => [
+        'action_type' => 'Action',
+        'target_type' => 'Target type',
+        'property' => 'Property',
+        'room' => 'Room',
+        'sleeping_place' => 'Sleeping place',
+        'range_start' => 'Start date',
+        'range_end' => 'End date',
+        'range_start_optional' => 'Start date, optional',
+        'range_end_optional' => 'End date, optional',
+        'price' => 'Price',
+        'price_optional' => 'Price, optional',
+        'currency' => 'Currency',
+        'reason' => 'Reason',
+        'discount_type' => 'Discount type',
+        'discount_percent' => 'Discount percent',
+        'rules' => 'Rules',
+        'check_in_time_from' => 'Check-in from',
+        'check_in_time_until' => 'Check-in until',
+        'check_out_time_until' => 'Check-out until',
+        'cleaning_fee' => 'Cleaning fee',
+        'message' => 'Message',
+        'cleaning_scheduled_date' => 'Cleaning date',
+        'cleaning_scheduled_time' => 'Cleaning time',
+        'cleaning_reason' => 'Cleaning reason',
+        'cleaning_note' => 'Cleaning note',
+        'copy_photos' => 'Copy photos',
+        'copy_price' => 'Copy price',
+        'copy_calendar' => 'Copy calendar template',
+        'identical_count' => 'Count',
+        'identical_name' => 'Name prefix',
+        'max_guests' => 'Guests',
+    ],
+
+    'options' => [
+        'all_properties' => 'All properties',
+        'all_rooms' => 'All rooms',
+        'choose_room' => 'Choose room',
+        'choose_sleeping_place' => 'Choose sleeping place',
+        'weekly_discount' => 'Weekly discount',
+        'monthly_discount' => 'Monthly discount',
+    ],
+
+    'placeholders' => [
+        'rules' => "One rule per line\nquiet_after_22\nno_extra_guests",
+    ],
+
+    'empty' => [
+        'targets' => 'No matching objects yet. Change filters or create a listing first.',
     ],
 
     'defaults' => [
         'room_copy' => 'Room',
         'sleeping_place_copy' => 'Sleeping place',
         'sleeping_place' => 'Place',
+        'booking' => 'Booking',
         'copy_suffix' => 'copy',
     ],
 

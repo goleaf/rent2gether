@@ -32,6 +32,13 @@ class HostBulkActionService
     public function createBatch(User $host, string $actionType, array $targets, array $payload): HostBulkActionBatch
     {
         $normalizedTargets = $this->normalizeTargets($targets, $payload['target_type'] ?? null);
+
+        if ($normalizedTargets === []) {
+            throw ValidationException::withMessages([
+                'targets' => __('host_bulk.errors.empty_targets'),
+            ]);
+        }
+
         $targetType = $normalizedTargets[0]['type'] ?? ($payload['target_type'] ?? 'sleeping_place');
 
         return DB::transaction(function () use ($host, $actionType, $payload, $normalizedTargets, $targetType): HostBulkActionBatch {
@@ -186,6 +193,8 @@ class HostBulkActionService
             'mark_occupied' => $this->calendar->markOccupied(collect([$model]), $payload['range'], $payload['reason'] ?? 'occupied'),
             'add_discount' => $this->applyDiscount($payload, collect([$model])),
             'change_rules' => $this->applyRules($item->target_type, collect([$model]), $payload),
+            'change_check_in_time' => $this->calendar->setCheckInOutTimes(collect([$model]), $payload),
+            'change_cleaning_fee' => $this->pricing->setCleaningFee(collect([$model]), $payload['fee'] ?? $payload['cleaning_fee'] ?? 0),
             'message_guests' => $this->messages->sendToBookingGuests($batch->user, collect([$model]), $payload['message'] ?? ''),
             'assign_cleaning' => $this->cleaning->createCleaningTasks(collect([$model]), ['user_id' => $batch->user_id, ...$payload]),
             'hide_listings' => $this->publication->hideListings(collect([$model])),
@@ -213,6 +222,7 @@ class HostBulkActionService
         match ($targetType) {
             'property' => $this->rules->updateHouseRules($targets, $payload['rules'] ?? []),
             'room' => $this->rules->updateRoomRules($targets, $payload['rules'] ?? []),
+            'sleeping_place' => $this->rules->updateSleepingPlaceRules($targets, $payload['rules'] ?? []),
             default => null,
         };
     }

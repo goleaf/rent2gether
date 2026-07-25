@@ -4,12 +4,14 @@ namespace App\Services\HostBulk;
 
 use App\Models\SleepingPlace;
 use App\Services\HostListings\Wizard\HostCalendarDraftService;
+use App\Services\Pricing\PricingSettingsService;
 use Illuminate\Support\Collection;
 
 class HostBulkPricingService
 {
     public function __construct(
         private readonly HostCalendarDraftService $calendar,
+        private readonly PricingSettingsService $pricingSettings,
     ) {}
 
     public function setPrice(Collection $places, int|float|string $price, ?array $range = null, string $currency = 'EUR'): array
@@ -24,7 +26,12 @@ class HostBulkPricingService
             $place->loadMissing('property.host');
             $place->forceFill([
                 'base_price_per_night' => $price,
+                'base_price' => $price,
                 'currency' => $currency,
+            ])->save();
+            $this->pricingSettings->getForSleepingPlace($place)->forceFill([
+                'base_nightly_price' => $price,
+                'currency' => strtoupper($currency),
             ])->save();
 
             if ($range !== null && $place->property?->host) {
@@ -66,6 +73,7 @@ class HostBulkPricingService
         foreach ($places as $place) {
             if ($place instanceof SleepingPlace) {
                 $place->forceFill(['cleaning_fee' => $fee])->save();
+                $this->pricingSettings->getForSleepingPlace($place)->forceFill(['cleaning_fee' => $fee])->save();
                 $affected++;
             }
         }

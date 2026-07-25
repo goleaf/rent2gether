@@ -24,6 +24,7 @@ return [
         'messages' => 'Сообщения гостям',
         'cleaning' => 'Задачи уборки',
         'publication' => 'Статус публикации',
+        'copy_tools' => 'Копирование и создание',
     ],
 
     'helpers' => [
@@ -83,19 +84,90 @@ return [
         'preview_before_apply' => 'Проверьте перед применением.',
         'critical_action_confirm' => 'Это действие изменит несколько объектов сразу.',
         'completed' => 'Массовое действие выполнено.',
+        'clone_room_completed' => 'Комната скопирована.',
+        'clone_sleeping_place_completed' => 'Спальное место скопировано.',
+        'create_identical_places_completed' => 'Спальные места созданы.',
+        'publication_action_notice' => 'Это действие изменит видимость выбранных спальных мест.',
+        'places_count' => ':count мест',
     ],
 
     'errors' => [
         'not_allowed' => 'Это действие нельзя выполнить для выбранного объекта.',
+        'empty_targets' => 'Выберите хотя бы один объект, чтобы продолжить.',
         'empty_message' => 'Введите сообщение перед отправкой.',
         'cannot_confirm' => 'Сейчас нельзя подтвердить этот пакет изменений.',
         'unknown_action' => 'Это массовое действие пока не поддерживается.',
+    ],
+
+    'buttons' => [
+        'select_visible' => 'Выбрать видимые',
+        'clear_selection' => 'Очистить',
+        'loading' => 'Выполняется...',
+    ],
+
+    'targets' => [
+        'property' => 'Помещения',
+        'room' => 'Комнаты',
+        'sleeping_place' => 'Спальные места',
+        'booking' => 'Бронирования',
+    ],
+
+    'fields' => [
+        'action_type' => 'Действие',
+        'target_type' => 'Тип объектов',
+        'property' => 'Помещение',
+        'room' => 'Комната',
+        'sleeping_place' => 'Спальное место',
+        'range_start' => 'Дата начала',
+        'range_end' => 'Дата окончания',
+        'range_start_optional' => 'Дата начала, необязательно',
+        'range_end_optional' => 'Дата окончания, необязательно',
+        'price' => 'Цена',
+        'price_optional' => 'Цена, необязательно',
+        'currency' => 'Валюта',
+        'reason' => 'Причина',
+        'discount_type' => 'Тип скидки',
+        'discount_percent' => 'Процент скидки',
+        'rules' => 'Правила',
+        'check_in_time_from' => 'Заезд с',
+        'check_in_time_until' => 'Заезд до',
+        'check_out_time_until' => 'Выезд до',
+        'cleaning_fee' => 'Сбор за уборку',
+        'message' => 'Сообщение',
+        'cleaning_scheduled_date' => 'Дата уборки',
+        'cleaning_scheduled_time' => 'Время уборки',
+        'cleaning_reason' => 'Причина уборки',
+        'cleaning_note' => 'Заметка по уборке',
+        'copy_photos' => 'Копировать фото',
+        'copy_price' => 'Копировать цену',
+        'copy_calendar' => 'Копировать шаблон календаря',
+        'identical_count' => 'Количество',
+        'identical_name' => 'Префикс названия',
+        'max_guests' => 'Гостей',
+    ],
+
+    'options' => [
+        'all_properties' => 'Все помещения',
+        'all_rooms' => 'Все комнаты',
+        'choose_room' => 'Выберите комнату',
+        'choose_sleeping_place' => 'Выберите спальное место',
+        'weekly_discount' => 'Недельная скидка',
+        'monthly_discount' => 'Месячная скидка',
+    ],
+
+    'placeholders' => [
+        'rules' => "Одно правило на строку\nquiet_after_22\nno_extra_guests",
+    ],
+
+    'empty' => [
+        'targets' => 'Подходящих объектов пока нет. Измените фильтры или создайте объявление.',
     ],
 
     'defaults' => [
         'room_copy' => 'Комната',
         'sleeping_place_copy' => 'Спальное место',
         'sleeping_place' => 'Место',
+        'booking' => 'Бронирование',
         'copy_suffix' => 'копия',
     ],
 

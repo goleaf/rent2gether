@@ -28,11 +28,12 @@ use App\Livewire\Extensions\ExtendStay;
 use App\Livewire\Extensions\ManageExtension;
 use App\Livewire\Favorites\FavoriteCollectionPage;
 use App\Livewire\Host\BedForm;
+use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
+use App\Livewire\Host\Bulk\HostBulkActionsPanel;
 use App\Livewire\Host\HostBookings;
 use App\Livewire\Host\HostIncome;
 use App\Livewire\Host\HostOnboardingPage;
 use App\Livewire\Host\HostProfileEditPage;
-use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
 use App\Livewire\Host\Listings\CreateListingWizard;
 use App\Livewire\Host\ManageBooking;
 use App\Livewire\Host\Occupants\CurrentOccupantsPage;
@@ -203,6 +204,7 @@ Route::prefix('{locale}')
             Route::get('/listings/{scope}', HostListingsPage::class)
                 ->whereIn('scope', ['drafts', 'hidden'])
                 ->name('listings.scope');
+            Route::get('/bulk', HostBulkActionsPanel::class)->name('bulk.index');
             Route::get('/calendar', HostCalendarPage::class)->name('calendar');
             Route::get('/occupants', CurrentOccupantsPage::class)->name('occupants.index');
             Route::get('/requests', HostBookingRequestsPage::class)->name('requests.index');

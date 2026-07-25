@@ -28,6 +28,8 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomTranslation;
 use App\Models\SleepingPlace;
+use App\Models\SleepingPlacePricingSetting;
+use App\Models\SleepingPlaceRule;
 use App\Models\SleepingPlaceTranslation;
 use App\Models\User;
 use App\Services\HostBulk\HostBulkActionService;
@@ -278,18 +280,140 @@ class HostBulkManagementFeatureTest extends TestCase
         $this->assertSame('hidden', $places[0]->fresh()->publication_status);
     }
 
-    public function test_bulk_publication_activation_requires_readiness(): void
+    public function test_bulk_actions_change_cleaning_fee_and_check_in_times(): void
     {
         $listing = $this->listing(places: 2);
+        $places = $listing['places'];
+        SleepingPlacePricingSetting::factory()->for($places[0], 'sleepingPlace')->create(['cleaning_fee' => 4]);
+
+        $service = app(HostBulkActionService::class);
+        $feeBatch = $service->createBatch($listing['host'], 'change_cleaning_fee', [
+            ['type' => 'sleeping_place', 'id' => $places[0]->id],
+            ['type' => 'sleeping_place', 'id' => $places[1]->id],
+        ], [
+            'target_type' => 'sleeping_place',
+            'fee' => 16.50,
+        ]);
+        $timeBatch = $service->createBatch($listing['host'], 'change_check_in_time', [
+            ['type' => 'sleeping_place', 'id' => $places[0]->id],
+            ['type' => 'sleeping_place', 'id' => $places[1]->id],
+        ], [
+            'target_type' => 'sleeping_place',
+            'check_in_time_from' => '13:30',
+            'check_in_time_until' => '21:00',
+            'check_out_time_until' => '10:30',
+        ]);
+
+        $feeResult = $service->process($service->confirm($feeBatch));
+        $timeResult = $service->process($service->confirm($timeBatch));
+
+        $this->assertSame('completed', $feeResult->status);
+        $this->assertSame('16.50', $places[0]->fresh()->cleaning_fee);
+        $this->assertDatabaseHas('sleeping_place_pricing_settings', [
+            'sleeping_place_id' => $places[0]->id,
+            'cleaning_fee' => 16.50,
+        ]);
+        $this->assertSame('completed', $timeResult->status);
+        $this->assertDatabaseHas('sleeping_place_calendar_settings', [
+            'sleeping_place_id' => $places[0]->id,
+            'default_check_in_time' => '13:30',
+            'check_in_time_from' => '13:30',
+            'check_in_time_until' => '21:00',
+            'default_check_out_time' => '10:30',
+            'check_out_time_until' => '10:30',
+        ]);
+    }
+
+    public function test_bulk_mark_occupied_writes_occupied_calendar_and_availability_rows(): void
+    {
+        $listing = $this->listing(places: 2);
+
+        $batch = app(HostBulkActionService::class)->createBatch($listing['host'], 'mark_occupied', [
+            ['type' => 'sleeping_place', 'id' => $listing['places'][0]->id],
+            ['type' => 'sleeping_place', 'id' => $listing['places'][1]->id],
+        ], [
+            'target_type' => 'sleeping_place',
+            'range' => ['start' => '2026-07-20', 'end' => '2026-07-22'],
+            'reason' => 'host_bulk_occupied',
+        ]);
+
+        $processed = app(HostBulkActionService::class)->process(app(HostBulkActionService::class)->confirm($batch));
+
+        $this->assertSame('completed', $processed->status);
+        $this->assertDatabaseHas('sleeping_place_calendar_days', [
+            'sleeping_place_id' => $listing['places'][0]->id,
+            'date' => '2026-07-20',
+            'status' => 'occupied',
+            'reason' => 'host_bulk_occupied',
+            'blocked_by_host' => true,
+        ]);
+        $this->assertDatabaseHas('availability_days', [
+            'sleeping_place_id' => $listing['places'][0]->id,
+            'date' => '2026-07-20',
+            'status' => 'occupied',
+        ]);
+    }
+
+    public function test_bulk_rules_can_be_applied_to_sleeping_places(): void
+    {
+        $listing = $this->listing(places: 2);
+
+        $batch = app(HostBulkActionService::class)->createBatch($listing['host'], 'change_rules', [
+            ['type' => 'sleeping_place', 'id' => $listing['places'][0]->id],
+            ['type' => 'sleeping_place', 'id' => $listing['places'][1]->id],
+        ], [
+            'target_type' => 'sleeping_place',
+            'rules' => ['quiet_after_22', 'no_extra_guests'],
+        ]);
+
+        $processed = app(HostBulkActionService::class)->process(app(HostBulkActionService::class)->confirm($batch));
+
+        $this->assertSame('completed', $processed->status);
+        $this->assertDatabaseHas('sleeping_place_rules', [
+            'sleeping_place_id' => $listing['places'][0]->id,
+            'rule_key' => 'quiet_after_22',
+            'sort_order' => 1,
+            'status' => 'active',
+        ]);
+        $this->assertSame(2, SleepingPlaceRule::query()->where('sleeping_place_id', $listing['places'][0]->id)->count());
+    }
+
+    public function test_bulk_publication_activation_requires_readiness(): void
+    {
+        $listing = $this->listing(places: 3);
         $listing['places'][0]->forceFill(['publication_status' => 'published'])->save();
         $listing['places'][1]->forceFill(['publication_status' => 'draft', 'base_price_per_night' => 0])->save();
+        $listing['places'][2]->forceFill([
+            'status' => SleepingPlaceStatus::Hidden->value,
+            'publication_status' => 'hidden',
+            'base_price_per_night' => 20,
+        ])->save();
 
         $result = app(HostBulkPublicationService::class)->activateListings($listing['places']);
 
-        $this->assertSame(1, $result['affected_count']);
+        $this->assertSame(2, $result['affected_count']);
         $this->assertSame(1, $result['skipped_count']);
         $this->assertSame('published', $listing['places'][0]->fresh()->publication_status);
         $this->assertSame('draft', $listing['places'][1]->fresh()->publication_status);
+        $this->assertSame('published', $listing['places'][2]->fresh()->publication_status);
+        $this->assertSame(SleepingPlaceStatus::Active, $listing['places'][2]->fresh()->status);
+    }
+
+    public function test_host_bulk_livewire_panel_applies_selected_sleeping_place_action(): void
+    {
+        $listing = $this->listing(places: 2);
+
+        Livewire::actingAs($listing['host'])
+            ->test(HostBulkActionsPanel::class)
+            ->set('actionType', 'change_cleaning_fee')
+            ->set('targetType', 'sleeping_place')
+            ->set('selectedTargetIds', [$listing['places'][0]->id, $listing['places'][1]->id])
+            ->set('cleaningFee', '14.75')
+            ->call('applyBulkAction')
+            ->assertHasNoErrors()
+            ->assertSet('noticeKey', 'host_bulk.messages.completed');
+
+        $this->assertSame('14.75', $listing['places'][0]->fresh()->cleaning_fee);
     }
 
     public function test_bulk_livewire_components_render_in_english_and_russian(): void
@@ -308,6 +432,17 @@ class HostBulkManagementFeatureTest extends TestCase
             ->test(HostBulkActionsPanel::class)
             ->assertSee(__('host_bulk.title', [], 'ru'))
             ->assertSee(__('host_bulk.choose_action', [], 'ru'));
+    }
+
+    public function test_host_bulk_route_renders_for_authenticated_host(): void
+    {
+        $listing = $this->listing();
+
+        $this->actingAs($listing['host'])
+            ->get(route('host.bulk.index', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee(__('host_bulk.title', [], 'en'))
+            ->assertSee(__('host_bulk.actions.change_price', [], 'en'));
     }
 
     /**

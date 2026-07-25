@@ -35,6 +35,7 @@ return [
     'host' => 'Хозяин',
     'host_home' => 'Главная хозяина',
     'host_listings' => 'Объекты',
+    'host_bulk' => 'Массовые действия',
     'host_calendar' => 'Календарь',
     'host_requests' => 'Запросы',
     'host_income' => 'Доход',

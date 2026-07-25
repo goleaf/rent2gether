@@ -64,6 +64,8 @@ class HostBulkPreviewService
             'open_dates',
             'close_dates',
             'mark_occupied',
+            'change_check_in_time',
+            'change_cleaning_fee',
             'change_rules',
             'message_guests',
             'assign_cleaning',

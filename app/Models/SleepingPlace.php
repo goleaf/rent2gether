@@ -397,6 +397,14 @@ class SleepingPlace extends Model
     }
 
     /**
+     * Lists host-managed rule assignments that apply directly to this Sleeping Place.
+     */
+    public function ruleRecords(): HasMany
+    {
+        return $this->hasMany(SleepingPlaceRule::class);
+    }
+
+    /**
      * Lists period blocks that affect this Sleeping Place calendar.
      */
     public function calendarBlocks(): HasMany

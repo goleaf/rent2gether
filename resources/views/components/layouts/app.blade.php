@@ -44,6 +44,7 @@
                 <flux:sidebar.nav heading="{{ __('navigation.host') }}">
                     <flux:sidebar.item icon="squares-2x2" href="{{ route('host.dashboard', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_home') }}</flux:sidebar.item>
                     <flux:sidebar.item icon="building-office-2" href="{{ route('host.listings.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_listings') }}</flux:sidebar.item>
+                    <flux:sidebar.item icon="adjustments-horizontal" href="{{ route('host.bulk.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_bulk') }}</flux:sidebar.item>
                     <flux:sidebar.item icon="calendar-days" href="{{ route('host.calendar', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_calendar') }}</flux:sidebar.item>
                     <flux:sidebar.item icon="clipboard-document-list" href="{{ route('host.requests.index', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_requests') }}</flux:sidebar.item>
                     <flux:sidebar.item icon="banknotes" href="{{ route('host.income', ['locale' => app()->getLocale()]) }}" wire:navigate>{{ __('navigation.host_income') }}</flux:sidebar.item>

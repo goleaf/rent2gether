@@ -69,7 +69,7 @@ class HostBulkPublicationService
 
     private function canActivate(SleepingPlace $place): bool
     {
-        return $place->publication_status === 'published'
+        return in_array($place->publication_status, ['published', 'hidden', 'paused'], true)
             && (float) $place->base_price_per_night > 0;
     }
 
