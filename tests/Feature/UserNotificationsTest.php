@@ -140,6 +140,36 @@ class UserNotificationsTest extends TestCase
             ->assertSee(__('notifications.status.unread', [], 'en'));
     }
 
+    public function test_notifications_page_hides_unsafe_action_urls(): void
+    {
+        $user = User::factory()->create();
+
+        $this->notificationFor($user)->forceFill([
+            'action_url' => 'javascript:alert(1)',
+        ])->save();
+
+        $this->actingAs($user)
+            ->get('/en/notifications')
+            ->assertOk()
+            ->assertDontSee('href="javascript:alert(1)"', false)
+            ->assertDontSee('javascript:alert(1)', false);
+    }
+
+    public function test_notifications_page_renders_internal_action_urls(): void
+    {
+        $user = User::factory()->create();
+
+        $this->notificationFor($user)->forceFill([
+            'action_url' => route('guest.bookings.payment', ['locale' => 'en', 'booking' => 123]),
+        ])->save();
+
+        $this->actingAs($user)
+            ->get('/en/notifications')
+            ->assertOk()
+            ->assertSee('/en/bookings/123/payment', false)
+            ->assertSee(__('notifications.actions.open', [], 'en'));
+    }
+
     /**
      * @param  array<string, mixed>  $placeAttributes
      * @return array{0: User, 1: User, 2: SleepingPlace}

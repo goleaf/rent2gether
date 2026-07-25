@@ -55,8 +55,8 @@
                 </div>
 
                 <div class="flex flex-col gap-2 sm:flex-row">
-                    @if($notification->action_url)
-                        <flux:button href="{{ $notification->action_url }}" wire:navigate variant="primary" class="w-full sm:w-auto" icon="bell">
+                    @if($notification->safe_action_url)
+                        <flux:button href="{{ $notification->safe_action_url }}" wire:navigate variant="primary" class="w-full sm:w-auto" icon="bell">
                             {{ __('notifications.actions.open') }}
                         </flux:button>
                     @endif

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Database\Factories\NotificationFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Notification extends Model
 {
@@ -209,6 +211,61 @@ class Notification extends Model
         }
 
         return $params;
+    }
+
+    /**
+     * Returns a browser-safe internal notification action URL.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function safeActionUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => self::normalizeInternalActionUrl($this->action_url));
+    }
+
+    private static function normalizeInternalActionUrl(?string $actionUrl): ?string
+    {
+        $actionUrl = trim((string) $actionUrl);
+
+        if ($actionUrl === '' || Str::contains($actionUrl, ["\r", "\n", "\0"]) || Str::startsWith($actionUrl, ['//', '\\'])) {
+            return null;
+        }
+
+        if (Str::startsWith($actionUrl, '/')) {
+            return $actionUrl;
+        }
+
+        $parts = parse_url($actionUrl);
+
+        if ($parts === false) {
+            return null;
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+
+        $host = strtolower((string) ($parts['host'] ?? ''));
+        $allowedHosts = collect([
+            parse_url((string) config('app.url'), PHP_URL_HOST),
+            parse_url(url('/'), PHP_URL_HOST),
+        ])
+            ->filter()
+            ->map(fn (string $allowedHost): string => strtolower($allowedHost))
+            ->unique()
+            ->all();
+
+        if ($host === '' || ! in_array($host, $allowedHosts, true)) {
+            return null;
+        }
+
+        $path = (string) ($parts['path'] ?? '/');
+        $query = isset($parts['query']) ? '?'.$parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+
+        return (Str::startsWith($path, '/') ? $path : '/').$query.$fragment;
     }
 
     /**
