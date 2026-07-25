@@ -38,10 +38,16 @@ class PropertyConditionService
             'summer_temperature_level' => $this->level($details->summer_temperature_level),
             'indoor_noise_level' => $this->level($details->indoor_noise_level),
             'light_level' => $this->level($details->light_level),
+            'has_insects' => $this->yesNo($details->has_insects),
+            'has_mold' => $this->yesNo($details->has_mold),
             'furniture_condition' => $this->level($details->furniture_condition),
             'plumbing_condition' => $this->level($details->plumbing_condition),
             'kitchen_condition' => $this->level($details->kitchen_condition),
             'bathroom_condition' => $this->level($details->bathroom_condition),
+            'floor_condition' => $this->level($details->floor_condition),
+            'walls_condition' => $this->level($details->walls_condition),
+            'last_cleaned_at' => $details->last_cleaned_at?->translatedFormat('d M Y'),
+            'last_repaired_at' => $details->last_repaired_at?->translatedFormat('d M Y'),
             'last_checked_at' => $details->last_checked_at?->translatedFormat('d M Y'),
         ]);
     }
@@ -92,5 +98,14 @@ class PropertyConditionService
     private function level(?string $level): ?string
     {
         return $level ? __('property.levels.'.$level) : null;
+    }
+
+    private function yesNo(?bool $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return $value ? __('property.values.yes') : __('property.values.no');
     }
 }

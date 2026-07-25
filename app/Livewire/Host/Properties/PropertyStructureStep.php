@@ -33,6 +33,12 @@ class PropertyStructureStep extends Component
 
     public ?int $maxResidents = null;
 
+    public ?int $currentResidentsCount = null;
+
+    public ?int $freeSleepingPlacesCount = null;
+
+    public ?int $occupiedSleepingPlacesCount = null;
+
     public bool $canBookWholeProperty = false;
 
     public bool $canBookPrivateRoom = true;
@@ -54,6 +60,9 @@ class PropertyStructureStep extends Component
         $this->kitchensCount = $property->kitchens_count;
         $this->balconiesCount = $property->balconies_count;
         $this->maxResidents = $property->max_residents;
+        $this->currentResidentsCount = $property->current_residents_count;
+        $this->freeSleepingPlacesCount = $property->free_sleeping_places_count;
+        $this->occupiedSleepingPlacesCount = $property->occupied_sleeping_places_count;
         $this->canBookWholeProperty = (bool) $property->can_book_whole_property;
         $this->canBookPrivateRoom = (bool) $property->can_book_private_room;
         $this->canBookSleepingPlace = (bool) $property->can_book_sleeping_place;
@@ -73,6 +82,9 @@ class PropertyStructureStep extends Component
             'kitchensCount' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'balconiesCount' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'maxResidents' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'currentResidentsCount' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'freeSleepingPlacesCount' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'occupiedSleepingPlacesCount' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'canBookWholeProperty' => ['boolean'],
             'canBookPrivateRoom' => ['boolean'],
             'canBookSleepingPlace' => ['boolean'],
@@ -90,6 +102,13 @@ class PropertyStructureStep extends Component
             'kitchens_count' => $validated['kitchensCount'],
             'balconies_count' => $validated['balconiesCount'],
             'max_residents' => $validated['maxResidents'],
+            'max_residents_count' => $validated['maxResidents'],
+            'current_residents_count' => $validated['currentResidentsCount'] ?? 0,
+            'current_guests_count' => $validated['currentResidentsCount'] ?? 0,
+            'free_sleeping_places_count' => $validated['freeSleepingPlacesCount'] ?? 0,
+            'free_places_count' => $validated['freeSleepingPlacesCount'] ?? 0,
+            'occupied_sleeping_places_count' => $validated['occupiedSleepingPlacesCount'] ?? 0,
+            'occupied_places_count' => $validated['occupiedSleepingPlacesCount'] ?? 0,
             'can_book_whole_property' => $validated['canBookWholeProperty'],
             'can_book_private_room' => $validated['canBookPrivateRoom'],
             'can_book_sleeping_place' => $validated['canBookSleepingPlace'],

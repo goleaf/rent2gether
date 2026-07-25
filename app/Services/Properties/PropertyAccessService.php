@@ -38,6 +38,7 @@ class PropertyAccessService
         return $this->rows([
             'entrance_type' => $details->entrance_type ? __('property.entrance_types.'.$details->entrance_type) : null,
             'has_intercom' => $this->yesNo($details->has_intercom),
+            'has_door_code' => $this->yesNo($details->has_door_code),
             'has_key' => $this->yesNo($details->has_key),
             'has_keycard' => $this->yesNo($details->has_keycard),
             'has_electronic_lock' => $this->yesNo($details->has_electronic_lock),
@@ -48,7 +49,10 @@ class PropertyAccessService
             'access_24_7' => $this->yesNo($details->access_24_7),
             'can_return_at_night' => $this->yesNo($details->can_return_at_night),
             'has_night_entry_restrictions' => $this->yesNo($details->has_night_entry_restrictions),
+            'guest_rules_enabled' => $this->yesNo($details->guest_rules_enabled),
+            'courier_rules_enabled' => $this->yesNo($details->courier_rules_enabled),
             'delivery_allowed' => $this->yesNo($details->delivery_allowed),
+            'delivery_dropoff_location' => $details->delivery_dropoff_location,
         ]);
     }
 

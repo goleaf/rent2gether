@@ -79,6 +79,8 @@ return [
         'furniture_condition' => 'Состояние мебели',
         'guest_visitors_allowed' => 'Гостю можно принимать посетителей',
         'guest_visitors_need_approval' => 'Посетители требуют согласования',
+        'guest_rules_enabled' => 'Правила для гостей указаны',
+        'guest_visitor_rules_text' => 'Правила для гостей',
         'has_air_conditioning' => 'Кондиционер',
         'has_bicycle_parking' => 'Парковка для велосипеда',
         'has_electronic_lock' => 'Электронный замок',

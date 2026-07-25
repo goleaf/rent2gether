@@ -134,11 +134,19 @@ class PropertyGuestSummaryService
             'property_type' => $property->type?->label() ?: $property->property_type?->label(),
             'city' => $property->cityModel?->name ?: $property->city,
             'district' => $property->district,
+            'total_area' => $this->area($property->total_area),
+            'living_area' => $this->area($property->living_area),
             'floor' => $property->floor === null ? null : (string) $property->floor,
             'total_floors' => $property->total_floors === null ? null : (string) $property->total_floors,
             'has_elevator' => $property->has_elevator ? __('property.values.yes') : __('property.values.no'),
             'rooms_count' => $property->rooms_count === null ? null : (string) $property->rooms_count,
+            'bedrooms_count' => $property->bedrooms_count === null ? null : (string) $property->bedrooms_count,
+            'shared_rooms_count' => $property->shared_rooms_count === null ? null : (string) $property->shared_rooms_count,
             'bathrooms_count' => $property->bathrooms_count === null ? null : (string) $property->bathrooms_count,
+            'showers_count' => $property->showers_count === null ? null : (string) $property->showers_count,
+            'kitchens_count' => $property->kitchens_count === null ? null : (string) $property->kitchens_count,
+            'balconies_count' => $property->balconies_count === null ? null : (string) $property->balconies_count,
+            'max_residents' => $property->max_residents === null ? null : (string) $property->max_residents,
             'current_residents_count' => $property->current_residents_count === null ? null : (string) $property->current_residents_count,
             'free_sleeping_places_count' => $property->free_sleeping_places_count === null ? null : (string) $property->free_sleeping_places_count,
             'occupied_sleeping_places_count' => $property->occupied_sleeping_places_count === null ? null : (string) $property->occupied_sleeping_places_count,
@@ -160,6 +168,8 @@ class PropertyGuestSummaryService
         return $this->rows([
             'delivery_allowed' => $this->yesNo($access->delivery_allowed),
             'delivery_dropoff_location' => $access->delivery_dropoff_location,
+            'guest_rules_enabled' => $this->yesNo($access->guest_rules_enabled),
+            'guest_visitor_rules_text' => $translation?->guest_visitor_rules_text,
             'courier_rules_text' => $translation?->courier_rules_text,
             'delivery_instructions' => $translation?->delivery_instructions,
         ]);
@@ -245,5 +255,14 @@ class PropertyGuestSummaryService
         }
 
         return $value ? __('property.values.yes') : __('property.values.no');
+    }
+
+    private function area(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return __('property.values.area_square_meters', ['count' => (float) $value]);
     }
 }

@@ -41,9 +41,9 @@ Important indexed property fields include:
 - `free_sleeping_places_count`
 - `occupied_sleeping_places_count`
 
-Detail tables keep a unique `property_id` foreign key with cascade delete. Public filters and summaries use indexed scalar fields such as `distance_to_center_meters`, `transport_minutes_to_center`, `district_safety_level`, `repair_state`, `cleanliness_level`, `self_check_in_available`, `access_24_7`, and key/parking booleans.
+Detail tables keep a unique `property_id` foreign key with cascade delete. Public filters and summaries use indexed scalar fields such as `nearest_metro`, `distance_to_center_meters`, `transport_minutes_to_center`, `district_safety_level`, `street_lighting_level`, `repair_state`, `cleanliness_level`, `humidity_level`, `has_insects`, `has_mold`, `self_check_in_available`, `guest_rules_enabled`, `access_24_7`, and key/parking/delivery booleans.
 
-Search premise criteria use the shared listing-card query joins and stay URL-shareable through compact Livewire booleans. Guest-facing filters can combine property type, new/old/good/simple repair, private/shared entrance, elevator absence, floor boundary, balcony presence, window view, quiet windows, and courtyard-facing windows without loading full property, room, or detail graphs into public Livewire state.
+Search premise criteria use the shared listing-card query joins and stay URL-shareable through compact Livewire booleans. Guest-facing filters can combine property type, new/old/good/simple repair, private/shared entrance, elevator absence, floor boundary, balcony presence, window view, quiet windows, courtyard-facing windows, location proximity, district safety/noise, cleanliness, humidity, insects/mold absence, temperature comfort, access method, guest/courier rules, delivery, and parking without loading full property, room, or detail graphs into public Livewire state.
 
 ## Translation Fields
 
@@ -118,6 +118,8 @@ Visible guest sections include:
 
 Empty rows are hidden. Warnings such as mold, insects, unstable heating, unstable hot water, or damp marks are shown only when the host-filled data says they apply.
 
+The host structure step stores both total limits and current availability counters: maximum residents, current residents, free sleeping places, and occupied sleeping places. The access step stores high-level guest rules through `guest_rules_enabled`; private access notes and actual codes remain hidden until booking privacy rules allow them.
+
 ## Privacy Rules
 
 Before a confirmed or paid booking allows it, guests must not see:
@@ -161,3 +163,5 @@ php artisan test tests/Feature/ExtendedPropertyFieldsTest.php --compact
 ```
 
 This verifies detail relationships, cascade deletes, key indexes, supported-locale translation fields, host step updates, owner authorization, privacy-safe public summaries, confirmed access instructions, condition warnings, and private access data hidden before booking.
+
+Search filter coverage lives in `tests/Feature/SearchPageTest.php` and verifies combined extended location, condition, and access predicates plus index presence for the new searchable columns.

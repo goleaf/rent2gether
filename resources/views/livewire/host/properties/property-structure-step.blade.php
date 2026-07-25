@@ -17,7 +17,7 @@
         @endif
 
         <div class="grid gap-4 sm:grid-cols-2">
-            @foreach(['totalArea', 'livingArea', 'roomsCount', 'bedroomsCount', 'sharedRoomsCount', 'passThroughRoomsCount', 'bathroomsCount', 'showersCount', 'kitchensCount', 'balconiesCount', 'maxResidents'] as $field)
+            @foreach(['totalArea', 'livingArea', 'roomsCount', 'bedroomsCount', 'sharedRoomsCount', 'passThroughRoomsCount', 'bathroomsCount', 'showersCount', 'kitchensCount', 'balconiesCount', 'maxResidents', 'currentResidentsCount', 'freeSleepingPlacesCount', 'occupiedSleepingPlacesCount'] as $field)
                 <flux:field>
                     <flux:label>
     <span class="inline-flex min-w-0 items-center gap-1.5">

@@ -184,6 +184,16 @@
                 <flux:error name="guestVisitorsNeedApproval" />
             </flux:field>
                         <flux:field variant="inline">
+                <flux:checkbox wire:model.change="guestRulesEnabled" />
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="key" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('property.fields.guest_rules_enabled') }}</span>
+                    </span>
+                </flux:label>
+                <flux:error name="guestRulesEnabled" />
+            </flux:field>
+                        <flux:field variant="inline">
                 <flux:checkbox wire:model.change="courierRulesEnabled" />
                 <flux:label>
                     <span class="inline-flex min-w-0 items-center gap-1.5">

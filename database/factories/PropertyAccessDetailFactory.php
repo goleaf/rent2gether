@@ -54,6 +54,7 @@ class PropertyAccessDetailFactory extends Factory
             'must_be_quiet_at_night_entry' => true,
             'guest_visitors_allowed' => $this->faker->boolean(35),
             'guest_visitors_need_approval' => $this->faker->boolean(50),
+            'guest_rules_enabled' => $this->faker->boolean(65),
             'courier_rules_enabled' => $this->faker->boolean(50),
             'delivery_allowed' => $this->faker->boolean(70),
             'delivery_dropoff_location' => $this->faker->optional()->randomElement(['building entrance', 'apartment door', 'reception']),

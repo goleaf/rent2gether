@@ -49,6 +49,8 @@ class PropertyAccessStep extends Component
 
     public ?bool $guestVisitorsNeedApproval = null;
 
+    public ?bool $guestRulesEnabled = null;
+
     public ?bool $courierRulesEnabled = null;
 
     public ?bool $deliveryAllowed = null;
@@ -87,6 +89,7 @@ class PropertyAccessStep extends Component
         $this->nightEntryRestrictionText = $details->night_entry_restriction_text ?: '';
         $this->guestVisitorsAllowed = $details->guest_visitors_allowed;
         $this->guestVisitorsNeedApproval = $details->guest_visitors_need_approval;
+        $this->guestRulesEnabled = $details->guest_rules_enabled;
         $this->courierRulesEnabled = $details->courier_rules_enabled;
         $this->deliveryAllowed = $details->delivery_allowed;
         $this->deliveryDropoffLocation = $details->delivery_dropoff_location ?: '';
@@ -113,6 +116,7 @@ class PropertyAccessStep extends Component
             'nightEntryRestrictionText' => ['nullable', 'string', 'max:1000'],
             'guestVisitorsAllowed' => ['nullable', 'boolean'],
             'guestVisitorsNeedApproval' => ['nullable', 'boolean'],
+            'guestRulesEnabled' => ['nullable', 'boolean'],
             'courierRulesEnabled' => ['nullable', 'boolean'],
             'deliveryAllowed' => ['nullable', 'boolean'],
             'deliveryDropoffLocation' => ['nullable', 'string', 'max:255'],
@@ -141,6 +145,7 @@ class PropertyAccessStep extends Component
             'night_entry_restriction_text' => $this->blankToNull($validated['nightEntryRestrictionText']),
             'guest_visitors_allowed' => $validated['guestVisitorsAllowed'],
             'guest_visitors_need_approval' => $validated['guestVisitorsNeedApproval'],
+            'guest_rules_enabled' => $validated['guestRulesEnabled'],
             'courier_rules_enabled' => $validated['courierRulesEnabled'],
             'delivery_allowed' => $validated['deliveryAllowed'],
             'delivery_dropoff_location' => $this->blankToNull($validated['deliveryDropoffLocation']),

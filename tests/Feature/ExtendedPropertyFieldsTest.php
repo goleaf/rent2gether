@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\BookingStatus;
+use App\Enums\GenderType;
 use App\Enums\PaymentStatus;
 use App\Enums\PropertyStatus;
 use App\Enums\PropertyType;
 use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
+use App\Enums\SleepingPlaceType;
 use App\Livewire\Host\Properties\PropertyAccessStep;
 use App\Livewire\Host\Properties\PropertyCompletionPanel;
 use App\Livewire\Host\Properties\PropertyConditionStep;
@@ -46,10 +48,14 @@ class ExtendedPropertyFieldsTest extends TestCase
         $this->assertTrue(Schema::hasColumn('properties', 'property_subtype'));
         $this->assertTrue(Schema::hasColumn('properties', 'show_exact_address_after_confirmation'));
         $this->assertTrue(Schema::hasColumn('properties', 'free_sleeping_places_count'));
+        $this->assertTrue(Schema::hasColumn('property_access_details', 'guest_rules_enabled'));
         $this->assertTrue(Schema::hasColumn('property_translations', 'transport_description'));
         $this->assertTrue(Schema::hasIndex('properties', ['property_type', 'status']));
         $this->assertTrue(Schema::hasIndex('property_location_details', ['property_id'], 'unique'));
         $this->assertTrue(Schema::hasIndex('property_access_details', ['self_check_in_available']));
+        $this->assertTrue(Schema::hasIndex('property_access_details', ['guest_rules_enabled', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['district_safety_level', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_condition_details', ['cleanliness_level', 'property_id']));
 
         $property = Property::factory()->create();
 
@@ -69,6 +75,7 @@ class ExtendedPropertyFieldsTest extends TestCase
             'has_key_safe' => true,
             'key_safe_location_note' => 'Private key safe behind the blue door.',
             'self_check_in_available' => true,
+            'guest_rules_enabled' => true,
         ]);
 
         $property = $property->fresh(['locationDetails', 'conditionDetails', 'accessDetails']);
@@ -107,6 +114,8 @@ class ExtendedPropertyFieldsTest extends TestCase
         $this->assertStringNotContainsString('Secret Street', $summary['address']['public']);
         $this->assertStringNotContainsString('Private key safe', json_encode($summary, JSON_THROW_ON_ERROR));
         $this->assertStringContainsString('15', json_encode($summary, JSON_THROW_ON_ERROR));
+        $this->assertStringContainsString(__('property.fields.guest_rules_enabled'), json_encode($summary, JSON_THROW_ON_ERROR));
+        $this->assertStringContainsString(__('property.fields.floor_condition'), json_encode($summary, JSON_THROW_ON_ERROR));
 
         $booking = Booking::factory()->create([
             'guest_user_id' => $guest->id,
@@ -156,6 +165,9 @@ class ExtendedPropertyFieldsTest extends TestCase
             ->set('bedroomsCount', 2)
             ->set('sharedRoomsCount', 1)
             ->set('maxResidents', 8)
+            ->set('currentResidentsCount', 4)
+            ->set('freeSleepingPlacesCount', 3)
+            ->set('occupiedSleepingPlacesCount', 5)
             ->set('canBookSleepingPlace', true)
             ->call('save')
             ->assertHasNoErrors();
@@ -200,6 +212,8 @@ class ExtendedPropertyFieldsTest extends TestCase
             ->set('meetHostRepresentativeRequired', true)
             ->set('selfCheckInAvailable', true)
             ->set('access247', true)
+            ->set('guestRulesEnabled', true)
+            ->set('courierRulesEnabled', true)
             ->set('deliveryAllowed', true)
             ->call('save')
             ->assertHasNoErrors();
@@ -223,6 +237,17 @@ class ExtendedPropertyFieldsTest extends TestCase
             'property_id' => $property->id,
             'meet_host_required' => true,
             'meet_host_representative_required' => true,
+            'guest_rules_enabled' => true,
+            'courier_rules_enabled' => true,
+        ]);
+        $this->assertDatabaseHas('properties', [
+            'id' => $property->id,
+            'current_residents_count' => 4,
+            'current_guests_count' => 4,
+            'free_sleeping_places_count' => 3,
+            'free_places_count' => 3,
+            'occupied_sleeping_places_count' => 5,
+            'occupied_places_count' => 5,
         ]);
         $this->assertDatabaseHas('property_translations', [
             'property_id' => $property->id,
@@ -258,6 +283,153 @@ class ExtendedPropertyFieldsTest extends TestCase
             ->assertDontSee('Private key safe behind the blue door.');
     }
 
+    public function test_search_filters_by_extended_location_condition_and_access_details(): void
+    {
+        $country = Country::factory()->create(['name_en' => 'Lithuania', 'name' => 'Lithuania']);
+        $region = Region::factory()->for($country)->create(['name' => 'Vilnius County']);
+        $city = City::factory()->for($country)->for($region)->create(['name' => 'Extended Search City']);
+
+        $matched = $this->searchablePlace($city, 'Matched Extended Property Place');
+        PropertyLocationDetail::factory()->for($matched->property)->create([
+            'nearest_metro' => 'Central Metro',
+            'nearest_metro_distance_meters' => 600,
+            'nearest_bus_stop' => 'Main Bus',
+            'nearest_bus_stop_distance_meters' => 300,
+            'nearest_shop' => 'Corner Shop',
+            'nearest_pharmacy' => 'Daily Pharmacy',
+            'nearest_hospital' => 'City Hospital',
+            'nearest_university' => 'Central University',
+            'nearest_railway_station' => 'Central Railway',
+            'railway_station_distance_meters' => 1200,
+            'nearest_airport' => 'City Airport',
+            'airport_distance_meters' => 12000,
+            'distance_to_center_meters' => 1200,
+            'walk_minutes_to_center' => 20,
+            'transport_minutes_to_center' => 10,
+            'transport_convenience_level' => 'good',
+            'district_noise_level' => 'quiet',
+            'district_safety_level' => 'good',
+            'street_lighting_level' => 'good',
+            'has_free_parking' => true,
+            'has_paid_parking' => true,
+        ]);
+        PropertyConditionDetail::factory()->for($matched->property)->create([
+            'cleanliness_level' => 'high',
+            'has_insects' => false,
+            'has_mold' => false,
+            'humidity_level' => 'normal',
+            'winter_temperature_level' => 'warm',
+            'summer_temperature_level' => 'normal',
+            'indoor_noise_level' => 'quiet',
+            'light_level' => 'bright',
+        ]);
+        PropertyAccessDetail::factory()->for($matched->property)->create([
+            'entrance_type' => 'code_door',
+            'has_door_code' => true,
+            'has_electronic_lock' => true,
+            'has_key_safe' => true,
+            'access_24_7' => true,
+            'has_night_entry_restrictions' => false,
+            'guest_rules_enabled' => true,
+            'courier_rules_enabled' => true,
+            'delivery_allowed' => true,
+            'self_check_in_available' => true,
+        ]);
+
+        $filtered = $this->searchablePlace($city, 'Filtered Extended Property Place', [
+            'distance_to_center_meters' => 9000,
+            'has_parking' => false,
+        ]);
+        PropertyLocationDetail::factory()->for($filtered->property)->create([
+            'nearest_metro' => null,
+            'nearest_metro_distance_meters' => 2500,
+            'nearest_bus_stop' => null,
+            'nearest_bus_stop_distance_meters' => 1500,
+            'nearest_shop' => null,
+            'nearest_supermarket' => null,
+            'nearest_pharmacy' => null,
+            'nearest_hospital' => null,
+            'nearest_clinic' => null,
+            'nearest_university' => null,
+            'nearest_railway_station' => null,
+            'nearest_train_station' => null,
+            'railway_station_distance_meters' => 6000,
+            'nearest_airport' => null,
+            'airport_distance_meters' => 25000,
+            'distance_to_center_meters' => 9000,
+            'walk_minutes_to_center' => 70,
+            'transport_minutes_to_center' => 45,
+            'transport_convenience_level' => 'low',
+            'district_noise_level' => 'loud',
+            'district_safety_level' => 'low',
+            'street_lighting_level' => 'low',
+            'has_free_parking' => false,
+            'has_paid_parking' => false,
+        ]);
+        PropertyConditionDetail::factory()->for($filtered->property)->create([
+            'cleanliness_level' => 'low',
+            'has_insects' => true,
+            'has_mold' => true,
+            'humidity_level' => 'damp',
+            'winter_temperature_level' => 'cold',
+            'summer_temperature_level' => 'hot',
+            'indoor_noise_level' => 'loud',
+            'light_level' => 'low',
+        ]);
+        PropertyAccessDetail::factory()->for($filtered->property)->create([
+            'entrance_type' => 'shared_entrance',
+            'has_door_code' => false,
+            'has_electronic_lock' => false,
+            'has_key_safe' => false,
+            'access_24_7' => false,
+            'has_night_entry_restrictions' => true,
+            'guest_rules_enabled' => false,
+            'courier_rules_enabled' => false,
+            'delivery_allowed' => false,
+            'self_check_in_available' => false,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'near_center' => true,
+            'near_metro' => true,
+            'near_bus' => true,
+            'near_shop' => true,
+            'near_pharmacy' => true,
+            'near_hospital' => true,
+            'near_university' => true,
+            'near_railway' => true,
+            'near_airport' => true,
+            'transport' => true,
+            'quiet_district' => true,
+            'safe_district' => true,
+            'street_light' => true,
+            'free_parking' => true,
+            'paid_parking' => true,
+            'clean_property' => true,
+            'no_insects' => true,
+            'no_mold' => true,
+            'normal_humidity' => true,
+            'warm_winter' => true,
+            'cool_summer' => true,
+            'quiet_property' => true,
+            'bright_property' => true,
+            'door_code' => true,
+            'electronic_lock' => true,
+            'key_safe' => true,
+            'access_24_7' => true,
+            'no_night_restrictions' => true,
+            'guest_rules' => true,
+            'courier_rules' => true,
+            'delivery' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Extended Property Place');
+        $response->assertDontSee('Filtered Extended Property Place');
+    }
+
     /**
      * @return array{0: Property, 1: User}
      */
@@ -287,6 +459,19 @@ class ExtendedPropertyFieldsTest extends TestCase
                 'floor' => 2,
                 'total_floors' => 5,
                 'has_elevator' => false,
+                'total_area' => 64.5,
+                'living_area' => 42.5,
+                'rooms_count' => 3,
+                'bedrooms_count' => 2,
+                'shared_rooms_count' => 1,
+                'bathrooms_count' => 1,
+                'showers_count' => 1,
+                'kitchens_count' => 1,
+                'balconies_count' => 1,
+                'max_residents' => 8,
+                'current_residents_count' => 4,
+                'free_sleeping_places_count' => 2,
+                'occupied_sleeping_places_count' => 2,
                 'status' => PropertyStatus::Active,
                 'type' => PropertyType::Apartment,
                 'show_exact_address_before_booking' => false,
@@ -321,6 +506,10 @@ class ExtendedPropertyFieldsTest extends TestCase
             'cleanliness_level' => 'high',
             'has_mold' => false,
             'has_insects' => false,
+            'floor_condition' => 'good',
+            'walls_condition' => 'good',
+            'last_cleaned_at' => '2026-06-19 10:00:00',
+            'last_repaired_at' => '2026-05-20 10:00:00',
             'last_checked_at' => '2026-06-20 10:00:00',
         ]);
         PropertyAccessDetail::factory()->for($property)->create([
@@ -330,9 +519,62 @@ class ExtendedPropertyFieldsTest extends TestCase
             'key_safe_location_note' => 'Private key safe behind the blue door.',
             'self_check_in_available' => true,
             'access_24_7' => true,
+            'guest_rules_enabled' => true,
+            'courier_rules_enabled' => true,
             'delivery_allowed' => true,
+            'delivery_dropoff_location' => 'Building entrance',
         ]);
 
         return [$property->fresh(), $guest];
+    }
+
+    /**
+     * @param  array<string, mixed>  $propertyAttributes
+     */
+    private function searchablePlace(City $city, string $title, array $propertyAttributes = []): SleepingPlace
+    {
+        $host = User::factory()->create(['is_host' => true]);
+        $property = Property::factory()
+            ->for($host, 'host')
+            ->for($city, 'cityModel')
+            ->create([
+                ...[
+                    'host_user_id' => $host->id,
+                    'user_id' => $host->id,
+                    'country_id' => $city->country_id,
+                    'region_id' => $city->region_id,
+                    'city_id' => $city->id,
+                    'city' => $city->name,
+                    'district' => 'Central',
+                    'status' => PropertyStatus::Active,
+                    'type' => PropertyType::Apartment,
+                ],
+                ...$propertyAttributes,
+            ]);
+        $room = Room::factory()->for($property)->create([
+            'status' => RoomStatus::Active,
+            'gender_policy' => GenderType::NoRestriction,
+            'max_guests' => 4,
+            'available_places_count' => 1,
+        ]);
+        $place = SleepingPlace::factory()
+            ->for($room)
+            ->for($property)
+            ->create([
+                'status' => SleepingPlaceStatus::Active,
+                'type' => SleepingPlaceType::Single,
+                'display_name' => $title,
+                'base_price_per_night' => 30,
+                'base_price' => 30,
+                'currency' => 'EUR',
+                'max_guests' => 1,
+                'min_nights' => 1,
+                'max_nights' => null,
+            ]);
+
+        $place->translations()->create(['locale' => 'en', 'title' => $title]);
+        $place->translations()->create(['locale' => 'ru', 'title' => $title]);
+
+        return $place;
     }
 }

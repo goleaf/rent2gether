@@ -79,6 +79,8 @@ return [
         'furniture_condition' => 'Furniture condition',
         'guest_visitors_allowed' => 'Guests may have visitors',
         'guest_visitors_need_approval' => 'Visitors need approval',
+        'guest_rules_enabled' => 'Guest rules are set',
+        'guest_visitor_rules_text' => 'Guest visitor rules',
         'has_air_conditioning' => 'Air conditioning',
         'has_elevator' => 'Elevator',
         'has_electronic_lock' => 'Electronic lock',
