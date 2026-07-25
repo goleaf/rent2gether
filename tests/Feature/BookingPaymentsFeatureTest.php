@@ -2,9 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Bookings\Payments\BookingPaymentPage;
+use App\Livewire\Bookings\Payments\PaymentAttemptsList;
+use App\Livewire\Bookings\Payments\PaymentBreakdown;
 use App\Livewire\Bookings\Payments\PaymentDeadlineBanner;
+use App\Livewire\Bookings\Payments\PaymentMethodPicker;
+use App\Livewire\Bookings\Payments\PaymentReceiptCard;
+use App\Livewire\Bookings\Payments\PaymentStatusBadge;
 use App\Livewire\Bookings\Payments\PaymentSummaryCard;
 use App\Livewire\Bookings\Payments\RefundStatusCard;
+use App\Livewire\Host\Payments\HostBookingPaymentStatus;
+use App\Livewire\Host\Payments\HostPaymentSummaryCard;
+use App\Livewire\Host\Payments\HostRefundStatusCard;
 use App\Models\Booking;
 use App\Models\BookingRefund;
 use App\Models\Property;
@@ -228,7 +237,7 @@ class BookingPaymentsFeatureTest extends TestCase
 
     public function test_payment_components_render_in_english_and_russian(): void
     {
-        [, , , $booking] = $this->createPayableBooking();
+        [$guest, $host, , $booking] = $this->createPayableBooking();
         $payment = app(BookingPaymentCreationService::class)->createForBooking($booking);
         $refund = BookingRefund::factory()->for($booking)->create([
             'booking_payment_id' => $payment->id,
@@ -246,16 +255,101 @@ class BookingPaymentsFeatureTest extends TestCase
         foreach (['en', 'ru'] as $locale) {
             app()->setLocale($locale);
 
-            Livewire::test(PaymentSummaryCard::class, ['paymentId' => $payment->id])
+            Livewire::actingAs($guest)
+                ->test(PaymentSummaryCard::class, ['paymentId' => $payment->id])
                 ->assertSee(__('payments.title', [], $locale))
                 ->assertSee(__('payments.fields.amount', [], $locale));
 
-            Livewire::test(PaymentDeadlineBanner::class, ['paymentId' => $payment->id])
+            Livewire::actingAs($guest)
+                ->test(PaymentDeadlineBanner::class, ['paymentId' => $payment->id])
                 ->assertSee(__('payments.fields.payment_deadline', [], $locale));
 
-            Livewire::test(RefundStatusCard::class, ['refundId' => $refund->id])
+            Livewire::actingAs($guest)
+                ->test(PaymentBreakdown::class, ['paymentId' => $payment->id])
+                ->assertSee(__('payments.allocation_types.deposit', [], $locale));
+
+            Livewire::actingAs($guest)
+                ->test(PaymentAttemptsList::class, ['paymentId' => $payment->id])
+                ->assertSee(__('payments.empty_states.no_attempts', [], $locale));
+
+            Livewire::actingAs($guest)
+                ->test(PaymentReceiptCard::class, ['paymentId' => $payment->id])
+                ->assertSee(__('payments.empty_states.no_receipt', [], $locale));
+
+            Livewire::actingAs($guest)
+                ->test(PaymentStatusBadge::class, ['paymentId' => $payment->id])
+                ->assertSee(__('payments.statuses.waiting_payment', [], $locale));
+
+            Livewire::actingAs($guest)
+                ->test(PaymentMethodPicker::class, ['paymentId' => $payment->id])
+                ->set('paymentMethod', 'manual_confirmation_future')
+                ->call('save')
+                ->assertHasNoErrors();
+
+            Livewire::actingAs($guest)
+                ->test(RefundStatusCard::class, ['refundId' => $refund->id])
                 ->assertSee(__('payments.refund_types.deposit_refund', [], $locale));
+
+            Livewire::actingAs($host)
+                ->test(HostPaymentSummaryCard::class, ['paymentId' => $payment->id])
+                ->assertSee(__('payments.host.summary_title', [], $locale));
+
+            Livewire::actingAs($host)
+                ->test(HostBookingPaymentStatus::class, ['paymentId' => $payment->id])
+                ->assertSee(__('payments.host.status_title', [], $locale));
+
+            Livewire::actingAs($host)
+                ->test(HostRefundStatusCard::class, ['refundId' => $refund->id])
+                ->assertSee(__('payments.host.refund_title', [], $locale));
         }
+    }
+
+    public function test_payment_components_forbid_non_owner_users(): void
+    {
+        [, , , $booking] = $this->createPayableBooking();
+        $payment = app(BookingPaymentCreationService::class)->createForBooking($booking);
+        $refund = BookingRefund::factory()->for($booking)->create([
+            'booking_payment_id' => $payment->id,
+            'guest_user_id' => $booking->guest_user_id,
+            'host_user_id' => $booking->host_user_id,
+            'property_id' => $booking->property_id,
+            'room_id' => $booking->room_id,
+            'sleeping_place_id' => $booking->sleeping_place_id,
+            'refund_type' => 'deposit_refund',
+            'status' => 'pending',
+            'amount' => 50,
+            'currency' => 'EUR',
+        ]);
+        $otherGuest = User::factory()->create();
+        $otherHost = User::factory()->host()->create();
+
+        $this->actingAs($otherGuest)
+            ->get(route('guest.bookings.payment', ['locale' => 'en', 'booking' => $booking]))
+            ->assertForbidden();
+
+        Livewire::actingAs($otherGuest)
+            ->test(BookingPaymentPage::class, ['paymentId' => $payment->id])
+            ->assertForbidden();
+
+        Livewire::actingAs($otherGuest)
+            ->test(PaymentSummaryCard::class, ['paymentId' => $payment->id])
+            ->assertForbidden();
+
+        Livewire::actingAs($otherGuest)
+            ->test(PaymentMethodPicker::class, ['paymentId' => $payment->id])
+            ->assertForbidden();
+
+        Livewire::actingAs($otherGuest)
+            ->test(RefundStatusCard::class, ['refundId' => $refund->id])
+            ->assertForbidden();
+
+        Livewire::actingAs($otherHost)
+            ->test(HostPaymentSummaryCard::class, ['paymentId' => $payment->id])
+            ->assertForbidden();
+
+        Livewire::actingAs($otherHost)
+            ->test(HostRefundStatusCard::class, ['refundId' => $refund->id])
+            ->assertForbidden();
     }
 
     /**

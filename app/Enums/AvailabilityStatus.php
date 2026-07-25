@@ -7,17 +7,22 @@ enum AvailabilityStatus: string
     case Available = 'available';
     case BlockedByHost = 'blocked_by_host';
     case ClosedByHost = 'closed_by_host';
+    case ClosedByService = 'closed_by_service';
     case ClosedByServiceFuture = 'closed_by_service_future';
     case Booked = 'booked';
     case PendingPayment = 'pending_payment';
     case PaymentPending = 'payment_pending';
     case PendingApproval = 'pending_approval';
+    case PendingHostConfirmation = 'pending_host_confirmation';
     case HostConfirmationPending = 'host_confirmation_pending';
     case Occupied = 'occupied';
     case GuestCheckedIn = 'guest_checked_in';
     case GuestCheckedOut = 'guest_checked_out';
     case Cleaning = 'cleaning';
     case Repair = 'repair';
+    case Broken = 'broken';
+    case ComplaintBlocked = 'complaint_blocked';
+    case Hidden = 'hidden';
     case Unavailable = 'unavailable';
     case UnavailableBreakdown = 'unavailable_breakdown';
     case UnavailableComplaint = 'unavailable_complaint';
@@ -31,7 +36,23 @@ enum AvailabilityStatus: string
 
     public function label(): string
     {
-        return __('statuses.availability.'.$this->value);
+        return __('statuses.availability.'.$this->canonicalValue());
+    }
+
+    public function canonicalValue(): string
+    {
+        return match ($this) {
+            self::BlockedByHost => self::ClosedByHost->value,
+            self::ClosedByServiceFuture => self::ClosedByService->value,
+            self::PaymentPending => self::PendingPayment->value,
+            self::PendingApproval, self::HostConfirmationPending => self::PendingHostConfirmation->value,
+            self::UnavailableBreakdown => self::Broken->value,
+            self::UnavailableComplaint => self::ComplaintBlocked->value,
+            self::TemporarilyHidden => self::Hidden->value,
+            self::Blocked => self::ClosedByHost->value,
+            self::Maintenance => self::Repair->value,
+            default => $this->value,
+        };
     }
 
     /**
@@ -42,16 +63,21 @@ enum AvailabilityStatus: string
         return [
             self::BlockedByHost->value,
             self::ClosedByHost->value,
+            self::ClosedByService->value,
             self::ClosedByServiceFuture->value,
             self::Booked->value,
             self::PendingPayment->value,
             self::PaymentPending->value,
             self::PendingApproval->value,
+            self::PendingHostConfirmation->value,
             self::HostConfirmationPending->value,
             self::Occupied->value,
             self::GuestCheckedIn->value,
             self::Cleaning->value,
             self::Repair->value,
+            self::Broken->value,
+            self::ComplaintBlocked->value,
+            self::Hidden->value,
             self::Unavailable->value,
             self::UnavailableBreakdown->value,
             self::UnavailableComplaint->value,
@@ -72,6 +98,7 @@ enum AvailabilityStatus: string
             self::PendingPayment->value,
             self::PaymentPending->value,
             self::PendingApproval->value,
+            self::PendingHostConfirmation->value,
             self::HostConfirmationPending->value,
             self::GuestCheckedIn->value,
         ];
@@ -88,6 +115,8 @@ enum AvailabilityStatus: string
             self::ClosedByHost->value,
             self::Cleaning->value,
             self::Repair->value,
+            self::Broken->value,
+            self::Hidden->value,
             self::Unavailable->value,
             self::UnavailableBreakdown->value,
             self::TemporarilyHidden->value,

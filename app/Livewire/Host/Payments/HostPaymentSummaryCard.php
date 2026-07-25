@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Host\Payments;
 
+use App\Livewire\Bookings\Payments\Concerns\AuthorizesPaymentViewData;
 use App\Livewire\Bookings\Payments\Concerns\BuildsPaymentViewData;
 use App\Models\BookingPayment;
 use Illuminate\Contracts\View\View;
@@ -10,6 +11,7 @@ use Livewire\Component;
 
 class HostPaymentSummaryCard extends Component
 {
+    use AuthorizesPaymentViewData;
     use BuildsPaymentViewData;
 
     #[Locked]
@@ -17,12 +19,17 @@ class HostPaymentSummaryCard extends Component
 
     public function mount(int|BookingPayment $paymentId): void
     {
-        $this->paymentId = $paymentId instanceof BookingPayment ? $paymentId->id : $paymentId;
+        $payment = $paymentId instanceof BookingPayment ? $paymentId : $this->loadPayment($paymentId);
+
+        $this->authorizeHostPayment($payment);
+
+        $this->paymentId = $payment->id;
     }
 
     public function render(): View
     {
         $payment = $this->loadPayment($this->paymentId);
+        $this->authorizeHostPayment($payment);
 
         return view('livewire.host.payments.host-payment-summary-card', [
             'summary' => $this->paymentSummary($payment),

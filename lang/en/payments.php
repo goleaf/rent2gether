@@ -188,6 +188,7 @@ return [
         'no_deadline' => 'No payment deadline is set.',
         'no_attempts' => 'No payment attempts yet.',
         'no_receipt' => 'No receipt has been issued yet.',
+        'no_payment_methods' => 'No payment methods are available yet.',
         'no_refunds' => 'No refunds yet.',
     ],
 ];

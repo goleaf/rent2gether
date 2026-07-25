@@ -7,7 +7,10 @@ enum BookingStatus: string
     case Draft = 'draft';
     case Created = 'created';
     case AwaitingHostApproval = 'awaiting_host_approval';
+    case AwaitingGuestResponse = 'awaiting_guest_response';
     case AwaitingPayment = 'awaiting_payment';
+    case AwaitingIdentityVerification = 'awaiting_identity_verification';
+    case AwaitingDocumentVerification = 'awaiting_document_verification';
     case WaitingHostConfirmation = 'waiting_host_confirmation';
     case WaitingGuestResponse = 'waiting_guest_response';
     case WaitingPayment = 'waiting_payment';
@@ -32,7 +35,9 @@ enum BookingStatus: string
     case CheckedOut = 'checked_out';
     case GuestCheckedOut = 'guest_checked_out';
     case WaitingPropertyInspection = 'waiting_property_inspection';
+    case AwaitingRoomInspection = 'awaiting_room_inspection';
     case WaitingDepositReturn = 'waiting_deposit_return';
+    case AwaitingDepositReturn = 'awaiting_deposit_return';
     case Completed = 'completed';
     case AwaitingReview = 'awaiting_review';
     case WaitingReview = 'waiting_review';
@@ -47,8 +52,11 @@ enum BookingStatus: string
     case CancelledByHost = 'cancelled_host';
     case CancelledBySystem = 'cancelled_system';
     case CancelledByService = 'cancelled_service';
+    case CancelledByServiceCanonical = 'cancelled_by_service';
     case PaymentFailed = 'payment_failed';
+    case Unpaid = 'unpaid';
     case NoShow = 'no_show';
+    case GuestNoShow = 'guest_no_show';
     case HostUnresponsive = 'host_unresponsive';
     case HostNoShow = 'host_no_show';
     case DisputeOpened = 'dispute_opened';
@@ -56,12 +64,44 @@ enum BookingStatus: string
     case ProblemReported = 'problem_reported';
     case RefundRequested = 'refund_requested';
     case FrozenUntilDisputeResolved = 'frozen_until_dispute_resolved';
+    case FrozenPendingDisputeResolution = 'frozen_pending_dispute_resolution';
     case FutureSupportRequired = 'future_support_required';
     case NeedsSupportIntervention = 'needs_support_intervention';
+    case RequiresSupportIntervention = 'requires_support_intervention';
 
     public function label(): string
     {
-        return __('statuses.booking.'.$this->value);
+        return __('statuses.booking.'.$this->canonicalValue());
+    }
+
+    public function canonicalValue(): string
+    {
+        return match ($this) {
+            self::WaitingHostConfirmation, self::PendingHostConfirmation => self::AwaitingHostApproval->value,
+            self::WaitingGuestResponse, self::PendingGuestResponse => self::AwaitingGuestResponse->value,
+            self::WaitingPayment, self::PendingPayment => self::AwaitingPayment->value,
+            self::WaitingIdentityVerification, self::PendingIdentityCheck => self::AwaitingIdentityVerification->value,
+            self::WaitingDocumentVerification, self::PendingDocumentCheck => self::AwaitingDocumentVerification->value,
+            self::ReadyForCheckIn => self::ReadyForCheckInCore->value,
+            self::CheckedIn => self::GuestCheckedIn->value,
+            self::StayInProgress, self::ActiveStay => self::InProgress->value,
+            self::LeavingSoon => self::CheckOutSoon->value,
+            self::CheckedOut => self::GuestCheckedOut->value,
+            self::WaitingPropertyInspection => self::AwaitingRoomInspection->value,
+            self::WaitingDepositReturn => self::AwaitingDepositReturn->value,
+            self::WaitingReview => self::AwaitingReview->value,
+            self::RejectedByHost => self::DeclinedByHost->value,
+            self::CancelledByServiceFuture,
+            self::CancelledBySystem,
+            self::CancelledByService => self::CancelledByServiceCanonical->value,
+            self::PaymentFailed => self::Unpaid->value,
+            self::NoShow => self::GuestNoShow->value,
+            self::HostNoShow => self::HostUnresponsive->value,
+            self::Disputed => self::DisputeOpened->value,
+            self::FrozenUntilDisputeResolved => self::FrozenPendingDisputeResolution->value,
+            self::FutureSupportRequired, self::NeedsSupportIntervention => self::RequiresSupportIntervention->value,
+            default => $this->value,
+        };
     }
 
     public function isCancelled(): bool
@@ -74,6 +114,7 @@ enum BookingStatus: string
             self::CancelledByHost,
             self::CancelledBySystem,
             self::CancelledByService,
+            self::CancelledByServiceCanonical,
         ]);
     }
 

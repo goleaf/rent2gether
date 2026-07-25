@@ -54,6 +54,68 @@ class PricingEngineFeatureTest extends TestCase
         $this->assertSame(30.0, $resolver->resolveNightPrice($place, CarbonImmutable::parse('2026-07-12')));
     }
 
+    public function test_guest_price_example_shows_daily_lines_discount_fees_deposit_and_total_due_now(): void
+    {
+        $guest = User::factory()->create();
+        $place = $this->sleepingPlace(price: 20);
+        $this->settings($place, [
+            'base_nightly_price' => 20,
+            'cleaning_fee' => 10,
+            'deposit_required' => true,
+            'deposit_amount' => 50,
+            'deposit_payable_now' => true,
+            'deposit_refundable' => true,
+            'guest_service_fee_type' => SleepingPlacePricingSetting::FEE_FIXED,
+            'guest_service_fee_value' => 6,
+            'host_service_fee_type' => SleepingPlacePricingSetting::FEE_NONE,
+            'host_service_fee_value' => 0,
+        ]);
+        SleepingPlaceDatePrice::factory()->create([
+            'sleeping_place_id' => $place->id,
+            'date' => '2026-07-12',
+            'price' => 25,
+            'price_type' => SleepingPlaceDatePrice::TYPE_MANUAL_OVERRIDE,
+        ]);
+        SleepingPlaceDiscountRule::factory()->create([
+            'sleeping_place_id' => $place->id,
+            'discount_type' => SleepingPlaceDiscountRule::TYPE_PERSONAL,
+            'name' => 'Example discount',
+            'value_type' => SleepingPlaceDiscountRule::VALUE_FIXED_AMOUNT,
+            'value' => 5,
+            'min_nights' => 1,
+            'allow_stacking' => true,
+            'priority' => 50,
+            'active' => true,
+        ]);
+
+        $quote = app(BookingPriceQuoteService::class)->createQuote($guest, $place, [
+            'check_in_date' => '2026-07-10',
+            'check_out_date' => '2026-07-13',
+            'guests_count' => 1,
+        ]);
+
+        $dailyLines = $quote->lines()
+            ->whereIn('line_type', ['night', 'weekday_night', 'weekend_night', 'holiday_night', 'date_override'])
+            ->orderBy('date')
+            ->get(['date', 'amount'])
+            ->mapWithKeys(fn ($line): array => [$line->date->toDateString() => (float) $line->amount])
+            ->all();
+
+        $this->assertSame([
+            '2026-07-10' => 20.0,
+            '2026-07-11' => 20.0,
+            '2026-07-12' => 25.0,
+        ], $dailyLines);
+        $this->assertSame(3, $quote->chargeable_days_count);
+        $this->assertSame(65.0, (float) $quote->accommodation_amount);
+        $this->assertSame(5.0, (float) $quote->discount_amount);
+        $this->assertSame(10.0, (float) $quote->cleaning_fee_amount);
+        $this->assertSame(50.0, (float) $quote->deposit_amount);
+        $this->assertSame(6.0, (float) $quote->service_fee_amount);
+        $this->assertSame(126.0, (float) $quote->total_payable);
+        $this->assertSame(50.0, (float) $quote->refundable_amount);
+    }
+
     public function test_weekly_monthly_and_long_stay_discounts_use_stacking_rules(): void
     {
         $guest = User::factory()->create();

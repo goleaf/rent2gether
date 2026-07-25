@@ -98,6 +98,7 @@ class ConfirmDemoPayment
         return [
             PaymentStatus::Unpaid->value,
             PaymentStatus::AwaitingPayment->value,
+            PaymentStatus::WaitingPayment->value,
             PaymentStatus::Pending->value,
             PaymentStatus::Failed->value,
         ];

@@ -12,7 +12,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\PropertyStatus;
 use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
-use App\Livewire\Booking\PaymentPage;
+use App\Livewire\Bookings\Payments\BookingPaymentPage;
 use App\Models\Booking;
 use App\Models\GuestPreference;
 use App\Models\HostProfile;
@@ -22,6 +22,7 @@ use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Services\Availability\AvailabilityService;
+use App\Services\Bookings\BookingPaymentCreationService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,27 +58,35 @@ class PaymentPlaceholderFlowTest extends TestCase
         $this->actingAs($guest)
             ->get(route('guest.bookings.payment', ['locale' => 'en', 'booking' => $booking]))
             ->assertOk()
-            ->assertSeeLivewire(PaymentPage::class)
-            ->assertSee(__('booking.payment_page.title', [], 'en'))
-            ->assertSee(__('booking.payment_page.method.placeholder', [], 'en'))
-            ->assertSee(__('booking.payment_page.actions.mark_paid', [], 'en'))
+            ->assertSeeLivewire(BookingPaymentPage::class)
+            ->assertSee(__('payments.title', [], 'en'))
+            ->assertSee(__('payments.actions.pay', [], 'en'))
             ->assertSee('Quiet lower bed');
+
+        $this->assertDatabaseHas('booking_payments', [
+            'booking_id' => $booking->id,
+            'guest_user_id' => $guest->id,
+            'status' => 'waiting_payment',
+        ]);
     }
 
     public function test_local_demo_payment_creates_record_confirms_booking_and_notifies_host(): void
     {
         [$guest, $host, $place, $booking] = $this->createPayableBooking();
+        $payment = app(BookingPaymentCreationService::class)->createForBooking($booking);
 
         Livewire::actingAs($guest)
-            ->test(PaymentPage::class, ['booking' => $booking])
-            ->call('markAsPaid')
+            ->test(BookingPaymentPage::class, ['paymentId' => $payment->id])
+            ->call('pay')
             ->assertHasNoErrors();
 
         $booking->refresh();
+        $payment->refresh();
 
         $this->assertTrue($booking->status === BookingStatus::Confirmed);
         $this->assertTrue($booking->payment_status === PaymentStatus::Paid);
         $this->assertNotNull($booking->payment_paid_at);
+        $this->assertSame('paid', $payment->status);
         $this->assertStringContainsString('Central Street', (string) $booking->check_in_instructions);
         $this->assertStringContainsString('Use the small entrance.', (string) $booking->check_in_instructions);
 
@@ -90,6 +99,12 @@ class PaymentPlaceholderFlowTest extends TestCase
             'provider' => 'demo_manual',
             'currency' => 'EUR',
             'status' => PaymentRecordStatus::Paid->value,
+        ]);
+        $this->assertDatabaseHas('booking_payment_attempts', [
+            'booking_payment_id' => $payment->id,
+            'booking_id' => $booking->id,
+            'guest_user_id' => $guest->id,
+            'status' => 'succeeded',
         ]);
 
         $this->assertDatabaseHas('notifications', [

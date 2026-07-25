@@ -12,6 +12,7 @@ use App\Models\Booking;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceCalendarBlock;
 use App\Models\User;
+use BackedEnum;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -127,11 +128,11 @@ class AvailabilityService
 
         $this->blockingAvailabilityQuery($place, $start, $end)
             ->pluck('status')
-            ->each(fn (string $status): Collection => $reasons->push($this->reasonForStatus($status)));
+            ->each(fn (BackedEnum|string $status): Collection => $reasons->push($this->reasonForStatus($status)));
 
         $this->blockingCalendarDayQuery($place, $start, $end)
             ->pluck('status')
-            ->each(fn (string $status): Collection => $reasons->push($this->reasonForStatus($status)));
+            ->each(fn (BackedEnum|string $status): Collection => $reasons->push($this->reasonForStatus($status)));
 
         if ($this->checkInRestrictionQuery($place, $start)->exists() || $this->calendarCheckInRestrictionQuery($place, $start)->exists()) {
             $reasons->push('check_in_not_allowed');
@@ -549,17 +550,19 @@ class AvailabilityService
         };
     }
 
-    private function reasonForStatus(string $status): string
+    private function reasonForStatus(BackedEnum|string $status): string
     {
+        $status = $status instanceof BackedEnum ? (string) $status->value : $status;
+
         return match ($status) {
-            'payment_pending', 'pending_payment', 'host_confirmation_pending', 'pending_approval', 'booked', 'guest_checked_in', 'occupied' => 'range_overlaps_existing_booking',
+            'payment_pending', 'pending_payment', 'host_confirmation_pending', 'pending_host_confirmation', 'pending_approval', 'booked', 'guest_checked_in', 'occupied' => 'range_overlaps_existing_booking',
             'closed_by_host', 'blocked_by_host', 'blocked' => 'closed_by_host',
-            'closed_by_service_future' => 'closed_by_service_future',
+            'closed_by_service', 'closed_by_service_future' => 'closed_by_service',
             'cleaning' => 'cleaning_gap_required',
             'repair', 'maintenance' => 'repair',
-            'unavailable_breakdown' => 'unavailable_breakdown',
-            'unavailable_complaint' => 'unavailable_complaint',
-            'temporarily_hidden' => 'temporarily_hidden',
+            'broken', 'unavailable_breakdown' => 'broken',
+            'complaint_blocked', 'unavailable_complaint' => 'complaint_blocked',
+            'hidden', 'temporarily_hidden' => 'hidden',
             'request_only' => 'request_only',
             default => 'date_unavailable',
         };

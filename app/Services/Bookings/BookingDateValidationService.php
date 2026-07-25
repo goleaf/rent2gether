@@ -215,9 +215,13 @@ class BookingDateValidationService
             ->map(fn (string $reason): array => match ($reason) {
                 'range_overlaps_existing_booking' => $this->result('date_locked_by_another_booking'),
                 'repair' => $this->result('sleeping_place_repair'),
+                'broken' => $this->result('sleeping_place_repair'),
                 'unavailable_complaint' => $this->result('complaint_block'),
+                'complaint_blocked' => $this->result('complaint_block'),
                 'closed_by_host' => $this->result('sleeping_place_unavailable'),
+                'closed_by_service' => $this->result('sleeping_place_unavailable'),
                 'hierarchy_unavailable' => $this->result('sleeping_place_unavailable'),
+                'hidden' => $this->result('sleeping_place_unavailable'),
                 'request_only' => $this->result('request_only', 'warning', false),
                 default => $this->result('sleeping_place_unavailable'),
             });

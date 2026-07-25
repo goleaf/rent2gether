@@ -7,9 +7,11 @@
     </flux:heading>
 
     <flux:select wire:model.change="paymentMethod">
-        @foreach ($methods as $method)
+        @forelse ($methods as $method)
             <flux:select.option value="{{ $method }}">{{ __('payments.methods.'.$method) }}</flux:select.option>
-        @endforeach
+        @empty
+            <flux:select.option value="internal_test">{{ __('payments.empty_states.no_payment_methods') }}</flux:select.option>
+        @endforelse
     </flux:select>
 
     <flux:button type="button" variant="ghost" class="w-full" wire:click="save" icon="credit-card">

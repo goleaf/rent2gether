@@ -26,6 +26,7 @@ class SleepingPlaceTurnoverRuleFactory extends Factory
             'inspection_required_after_checkout' => false,
             'inspection_gap_minutes' => 0,
             'same_day_turnover_allowed' => false,
+            'morning_checkout_evening_checkin_allowed' => true,
             'same_day_turnover_requires_cleaning_done' => true,
             'same_day_turnover_requires_inspection_done' => false,
             'earliest_new_check_in_time' => '15:00',
@@ -37,6 +38,7 @@ class SleepingPlaceTurnoverRuleFactory extends Factory
     {
         return $this->state([
             'same_day_turnover_allowed' => true,
+            'morning_checkout_evening_checkin_allowed' => true,
             'same_day_turnover_requires_cleaning_done' => false,
             'same_day_turnover_requires_inspection_done' => false,
         ]);

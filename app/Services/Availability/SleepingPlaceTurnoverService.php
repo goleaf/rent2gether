@@ -98,6 +98,10 @@ class SleepingPlaceTurnoverService
             return false;
         }
 
+        if (! (bool) ($rule?->morning_checkout_evening_checkin_allowed ?? true)) {
+            return false;
+        }
+
         $previousCheckoutTime = $this->timeString(
             $previousBooking->check_out_time
                 ?? $rule?->latest_previous_check_out_time

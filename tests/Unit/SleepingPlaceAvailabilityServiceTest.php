@@ -14,6 +14,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\Availability\AvailabilityService;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -134,6 +135,34 @@ class SleepingPlaceAvailabilityServiceTest extends TestCase
         $this->assertFalse($service->isAvailable($place, '2026-07-10', '2026-07-12'));
         $this->assertFalse($service->isAvailable($place, '2026-07-13', '2026-07-14'));
         $this->assertSame(['2026-07-11', '2026-07-13'], $service->unavailableDates($place, '2026-07-10', '2026-07-15'));
+    }
+
+    public function test_canonical_sleeping_place_calendar_statuses_block_with_expected_reason_keys(): void
+    {
+        $canonicalStatuses = [
+            AvailabilityStatus::PendingHostConfirmation->value => 'range_overlaps_existing_booking',
+            AvailabilityStatus::ClosedByService->value => 'closed_by_service',
+            AvailabilityStatus::Broken->value => 'broken',
+            AvailabilityStatus::ComplaintBlocked->value => 'complaint_blocked',
+            AvailabilityStatus::Hidden->value => 'hidden',
+        ];
+
+        foreach ($canonicalStatuses as $status => $reason) {
+            [$place] = $this->sleepingPlace();
+            AvailabilityDay::factory()->for($place)->create([
+                'date' => '2026-07-11',
+                'status' => $status,
+            ]);
+
+            $service = new AvailabilityService;
+
+            $this->assertFalse($service->isAvailable($place, '2026-07-10', '2026-07-12'));
+            $this->assertContains($reason, $service->getBlockingReasons(
+                $place,
+                CarbonImmutable::parse('2026-07-10'),
+                CarbonImmutable::parse('2026-07-12'),
+            ));
+        }
     }
 
     public function test_nearest_available_ranges_skip_blocked_dates(): void

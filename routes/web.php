@@ -13,10 +13,10 @@ use App\Livewire\Auth\RegisterPage;
 use App\Livewire\Beds\ShowBed;
 use App\Livewire\Booking\CancelBooking;
 use App\Livewire\Booking\CreateBooking;
-use App\Livewire\Booking\PaymentPage;
 use App\Livewire\Bookings\CheckIn\GuestCheckInPage;
 use App\Livewire\Bookings\CheckOut\GuestCheckOutPage;
 use App\Livewire\Bookings\Create\BookingCreatePage;
+use App\Livewire\Bookings\Payments\BookingPaymentPage;
 use App\Livewire\Bookings\Requests\GuestBookingRequestPage;
 use App\Livewire\Checkin\CheckIn;
 use App\Livewire\Checkin\CheckOut;
@@ -128,7 +128,7 @@ Route::prefix('{locale}')
 
         Route::prefix('bookings')->name('guest.bookings.')->group(function (): void {
             Route::get('/', TripList::class)->name('index');
-            Route::get('/{booking}/payment', PaymentPage::class)->name('payment');
+            Route::get('/{booking}/payment', BookingPaymentPage::class)->name('payment');
             Route::get('/{booking}/cancel', CancelBooking::class)->name('cancel');
             Route::get('/{booking}/check-in', GuestCheckInPage::class)->name('check-in');
             Route::get('/{booking}/check-out', GuestCheckOutPage::class)->name('check-out');

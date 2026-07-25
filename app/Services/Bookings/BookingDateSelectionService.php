@@ -2,6 +2,7 @@
 
 namespace App\Services\Bookings;
 
+use App\Data\Bookings\BookingDateSelectionData;
 use App\Models\BookingQuote;
 use App\Models\SleepingPlace;
 use App\Models\User;
@@ -44,6 +45,32 @@ class BookingDateSelectionService
     /**
      * @param  array<string, mixed>  $data
      */
+    public function selectionData(array $data): BookingDateSelectionData
+    {
+        $checkIn = $this->date($data['check_in_date']);
+        $checkOut = $this->date($data['check_out_date']);
+
+        return new BookingDateSelectionData(
+            checkInDate: $checkIn->toDateString(),
+            checkInTime: $this->nullableString($data['check_in_time'] ?? null),
+            checkOutDate: $checkOut->toDateString(),
+            checkOutTime: $this->nullableString($data['check_out_time'] ?? null),
+            nightsCount: $this->stayLength->calculateNights($checkIn, $checkOut),
+            stayDaysCount: $this->stayLength->calculateChargeableDays($checkIn, $checkOut),
+            calendarPresenceDaysCount: $this->stayLength->calculateCalendarPresenceDays($checkIn, $checkOut),
+            earlyCheckInRequested: (bool) ($data['early_check_in_requested'] ?? false),
+            lateCheckOutRequested: (bool) ($data['late_check_out_requested'] ?? false),
+            flexibleCheckIn: (bool) ($data['flexible_check_in'] ?? false),
+            flexibleCheckOut: (bool) ($data['flexible_check_out'] ?? false),
+            requiresHostTimeApproval: (bool) ($data['requires_host_time_approval'] ?? false),
+            checkInComment: $this->nullableString($data['check_in_comment'] ?? null),
+            checkOutComment: $this->nullableString($data['check_out_comment'] ?? null),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function createQuotePreview(User $guest, SleepingPlace $place, array $data): BookingQuote
     {
         return $this->quotes->createQuote($guest, $place, $data);
@@ -62,5 +89,12 @@ class BookingDateSelectionService
         return $date instanceof CarbonInterface
             ? CarbonImmutable::instance($date)->startOfDay()
             : CarbonImmutable::parse($date)->startOfDay();
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Bookings\Payments;
 
+use App\Livewire\Bookings\Payments\Concerns\AuthorizesPaymentViewData;
 use App\Livewire\Bookings\Payments\Concerns\BuildsPaymentViewData;
 use App\Models\BookingRefund;
 use Illuminate\Contracts\View\View;
@@ -10,6 +11,7 @@ use Livewire\Component;
 
 class RefundStatusCard extends Component
 {
+    use AuthorizesPaymentViewData;
     use BuildsPaymentViewData;
 
     #[Locked]
@@ -17,13 +19,20 @@ class RefundStatusCard extends Component
 
     public function mount(int|BookingRefund $refundId): void
     {
-        $this->refundId = $refundId instanceof BookingRefund ? $refundId->id : $refundId;
+        $refund = $refundId instanceof BookingRefund ? $refundId : $this->loadRefund($refundId);
+
+        $this->authorizeGuestRefund($refund);
+
+        $this->refundId = $refund->id;
     }
 
     public function render(): View
     {
+        $refund = $this->loadRefund($this->refundId);
+        $this->authorizeGuestRefund($refund);
+
         return view('livewire.bookings.payments.refund-status-card', [
-            'summary' => $this->refundSummary($this->loadRefund($this->refundId)),
+            'summary' => $this->refundSummary($refund),
         ]);
     }
 }

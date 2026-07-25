@@ -18,6 +18,7 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\HostProfile;
 use App\Models\Property;
+use App\Models\PropertyAccessDetail;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
@@ -161,6 +162,58 @@ class SearchPageTest extends TestCase
         $response->assertDontSee('Mixed Room Place');
     }
 
+    public function test_search_filters_by_premise_criteria(): void
+    {
+        $city = $this->city('Premise City');
+
+        $this->createSearchPlace('Matched Premise Place', $city, [], [
+            'property_type' => PropertyType::Apartment->value,
+            'type' => PropertyType::Apartment->value,
+            'repair_state' => 'new',
+            'entrance_type' => 'private_entrance',
+            'floor' => 1,
+            'floors_count' => 5,
+            'has_elevator' => true,
+            'balconies_count' => 1,
+        ], [
+            'has_balcony' => true,
+            'window_view' => 'courtyard',
+            'noise_level' => 'quiet',
+        ]);
+
+        $this->createSearchPlace('Filtered Premise Place', $city, [], [
+            'property_type' => PropertyType::Apartment->value,
+            'type' => PropertyType::Apartment->value,
+            'repair_state' => 'old',
+            'entrance_type' => 'shared_entrance',
+            'floor' => 3,
+            'floors_count' => 3,
+            'has_elevator' => false,
+            'balconies_count' => 0,
+        ], [
+            'has_balcony' => false,
+            'window_view' => 'street',
+            'noise_level' => 'moderate',
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'property_type' => PropertyType::Apartment->value,
+            'new_home' => true,
+            'private_entrance' => true,
+            'first_floor' => true,
+            'elevator' => true,
+            'balcony' => true,
+            'quiet_windows' => true,
+            'courtyard_windows' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Premise Place');
+        $response->assertDontSee('Filtered Premise Place');
+    }
+
     public function test_search_url_state_initializes_filters(): void
     {
         $city = $this->city('Warsaw');
@@ -184,6 +237,14 @@ class SearchPageTest extends TestCase
             ->assertSet('city', 'War')
             ->assertSet('priceMax', '30')
             ->assertSet('wifi', true);
+
+        Livewire::test(SleepingPlaceSearch::class)
+            ->set('withBalcony', true)
+            ->set('withoutElevator', true)
+            ->set('courtyardWindows', true)
+            ->assertSet('withBalcony', true)
+            ->assertSet('withoutElevator', true)
+            ->assertSet('courtyardWindows', true);
     }
 
     public function test_filter_sheet_result_count_tracks_total_matching_places_after_filter_changes(): void
@@ -325,6 +386,10 @@ class SearchPageTest extends TestCase
             'reviews_count' => 12,
             'verified_at' => now(),
         ]);
+
+        $entranceType = $propertyAttributes['entrance_type'] ?? null;
+        unset($propertyAttributes['entrance_type']);
+
         $property = Property::factory()
             ->for($host, 'host')
             ->for($city, 'cityModel')
@@ -361,6 +426,14 @@ class SearchPageTest extends TestCase
 
         $place->translations()->create(['locale' => 'en', 'title' => $title]);
         $place->translations()->create(['locale' => 'ru', 'title' => $ruTitle ?: $title]);
+
+        if (is_string($entranceType) && $entranceType !== '') {
+            PropertyAccessDetail::factory()->for($property)->create([
+                'entrance_type' => $entranceType,
+                'has_private_entrance' => $entranceType === 'private_entrance',
+                'has_shared_entrance' => $entranceType === 'shared_entrance',
+            ]);
+        }
 
         return $place;
     }

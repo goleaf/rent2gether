@@ -20,6 +20,7 @@ class SleepingPlaceTurnoverRule extends Model
         'inspection_required_after_checkout',
         'inspection_gap_minutes',
         'same_day_turnover_allowed',
+        'morning_checkout_evening_checkin_allowed',
         'same_day_turnover_requires_cleaning_done',
         'same_day_turnover_requires_inspection_done',
         'earliest_new_check_in_time',
@@ -33,6 +34,7 @@ class SleepingPlaceTurnoverRule extends Model
         'inspection_required_after_checkout' => false,
         'inspection_gap_minutes' => 0,
         'same_day_turnover_allowed' => false,
+        'morning_checkout_evening_checkin_allowed' => true,
         'same_day_turnover_requires_cleaning_done' => true,
         'same_day_turnover_requires_inspection_done' => false,
     ];
@@ -49,6 +51,7 @@ class SleepingPlaceTurnoverRule extends Model
             'inspection_required_after_checkout' => 'boolean',
             'inspection_gap_minutes' => 'integer',
             'same_day_turnover_allowed' => 'boolean',
+            'morning_checkout_evening_checkin_allowed' => 'boolean',
             'same_day_turnover_requires_cleaning_done' => 'boolean',
             'same_day_turnover_requires_inspection_done' => 'boolean',
         ];
