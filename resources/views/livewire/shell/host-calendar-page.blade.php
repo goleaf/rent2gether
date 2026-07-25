@@ -65,6 +65,245 @@
             </div>
         </section>
 
+        <section id="host-calendar-overview" class="space-y-4">
+            <div class="space-y-1">
+                <flux:badge color="blue" icon="calendar-days">{{ __('host_calendar.title') }}</flux:badge>
+                <flux:heading size="lg" level="2">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="calendar-days" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('host_calendar.sections.page') }}</span>
+                    </span>
+                </flux:heading>
+                <flux:text class="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+                    {{ __('host_calendar.helpers.page') }}
+                </flux:text>
+            </div>
+
+            <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-950">
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.summary_cards.events') }}</p>
+                    <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ $this->calendarOverviewSummary['total_events'] }}</p>
+                </div>
+                <div class="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-950">
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.summary_cards.turnover') }}</p>
+                    <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        {{ __('host_calendar.summary_cards.turnover_value', ['check_ins' => $this->calendarOverviewSummary['check_ins'], 'check_outs' => $this->calendarOverviewSummary['check_outs']]) }}
+                    </p>
+                </div>
+                <div class="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-950">
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.summary_cards.work') }}</p>
+                    <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        {{ __('host_calendar.summary_cards.work_value', ['cleanings' => $this->calendarOverviewSummary['cleanings'], 'repairs' => $this->calendarOverviewSummary['repairs']]) }}
+                    </p>
+                </div>
+                <div class="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-950">
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.summary_cards.problems') }}</p>
+                    <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ $this->calendarOverviewSummary['problem_events'] }}</p>
+                </div>
+            </div>
+
+            <form wire:submit="applyCalendarFilters" class="space-y-4 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-950">
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host_calendar.fields.calendar_view') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:select wire:model.change="calendarScopeView">
+                            @foreach($this->calendarViewOptions as $view)
+                                <flux:select.option value="{{ $view['value'] }}">{{ $view['label'] }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="calendarScopeView" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host_calendar.fields.range_start') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="date" wire:model.change="calendarRangeStart" icon="calendar-days" />
+                        <flux:error name="calendarRangeStart" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host_calendar.fields.range_end') }}</span>
+                            </span>
+                        </flux:label>
+                        <flux:input type="date" wire:model.change="calendarRangeEnd" icon="calendar-days" />
+                        <flux:error name="calendarRangeEnd" />
+                    </flux:field>
+
+                    <flux:field class="justify-end">
+                        <flux:label>
+                            <span class="inline-flex min-w-0 items-center gap-1.5">
+                                <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                <span class="min-w-0">{{ __('host_calendar.filters.only_problems') }}</span>
+                            </span>
+                        </flux:label>
+                        <label class="flex min-h-10 items-center gap-2 rounded-lg border border-zinc-200 px-3 text-sm dark:border-zinc-700">
+                            <flux:checkbox wire:model.change="calendarOnlyProblems" />
+                            <span>{{ __('host_calendar.filters.only_problems_short') }}</span>
+                        </label>
+                    </flux:field>
+
+                    <div class="flex items-end gap-2">
+                        <flux:button type="submit" variant="primary" class="flex-1 data-loading:opacity-70" wire:target="applyCalendarFilters" icon="funnel">
+                            {{ __('host_calendar.actions.apply_filters') }}
+                        </flux:button>
+                        <flux:button type="button" variant="ghost" wire:click="resetCalendarFilters" wire:loading.attr="disabled" icon="x-mark">
+                            {{ __('host_calendar.actions.reset_filters') }}
+                        </flux:button>
+                    </div>
+                </div>
+            </form>
+
+            @if($this->calendarOverviewRows->count() === 0)
+                <flux:callout icon="calendar-days">
+                    <flux:callout.heading>
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('host_calendar.empty.events_title') }}</span>
+                        </span>
+                    </flux:callout.heading>
+                    <flux:callout.text>{{ __('host_calendar.empty.events') }}</flux:callout.text>
+                </flux:callout>
+            @else
+                <div class="space-y-3 md:hidden">
+                    @foreach($this->calendarOverviewRows as $row)
+                        <flux:card class="space-y-3" wire:key="{{ $row['wire_key'] }}-mobile">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0 space-y-1">
+                                    <flux:badge size="sm" color="{{ $row['event_type_color'] }}" icon="calendar-days">{{ $row['event_type_label'] }}</flux:badge>
+                                    <flux:heading size="sm">
+                                        <span class="inline-flex min-w-0 items-center gap-2">
+                                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                                            <span class="min-w-0">{{ $row['date_label'] }}</span>
+                                        </span>
+                                    </flux:heading>
+                                    <flux:text size="sm" class="truncate text-zinc-600 dark:text-zinc-400">{{ $row['sleeping_place'] }}</flux:text>
+                                </div>
+                                <flux:badge size="sm" color="{{ $row['place_status_color'] }}" icon="user">{{ $row['place_status_label'] }}</flux:badge>
+                            </div>
+
+                            <dl class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.property') }}</dt>
+                                    <dd class="truncate font-medium text-zinc-800 dark:text-zinc-100">{{ $row['property'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.room') }}</dt>
+                                    <dd class="truncate font-medium text-zinc-800 dark:text-zinc-100">{{ $row['room'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.guest_name') }}</dt>
+                                    <dd class="truncate font-medium text-zinc-800 dark:text-zinc-100">{{ $row['guest_name'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.nights_count') }}</dt>
+                                    <dd class="font-medium text-zinc-800 dark:text-zinc-100">{{ $row['nights_count_label'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.payment_status') }}</dt>
+                                    <dd class="truncate font-medium text-zinc-800 dark:text-zinc-100">{{ $row['payment_status_label'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.check_in_status') }}</dt>
+                                    <dd class="truncate font-medium text-zinc-800 dark:text-zinc-100">{{ $row['check_in_status_label'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.date_price') }}</dt>
+                                    <dd class="font-medium text-zinc-800 dark:text-zinc-100">{{ $row['date_price'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.payout_amount') }}</dt>
+                                    <dd class="font-medium text-zinc-800 dark:text-zinc-100">{{ $row['payout'] }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('host_calendar.fields.host_comment') }}</dt>
+                                    <dd class="truncate font-medium text-zinc-800 dark:text-zinc-100">{{ $row['host_comment'] }}</dd>
+                                </div>
+                            </dl>
+
+                            <div class="flex flex-wrap gap-2">
+                                @if($row['needs_cleaning'])
+                                    <flux:badge size="sm" color="amber" icon="sparkles">{{ __('host_calendar.fields.needs_cleaning') }}</flux:badge>
+                                @endif
+                                @if($row['needs_inspection'])
+                                    <flux:badge size="sm" color="amber" icon="check-circle">{{ __('host_calendar.fields.needs_inspection') }}</flux:badge>
+                                @endif
+                                @if($row['needs_repair'])
+                                    <flux:badge size="sm" color="red" icon="wrench">{{ __('host_calendar.fields.needs_repair') }}</flux:badge>
+                                @endif
+                            </div>
+                        </flux:card>
+                    @endforeach
+                </div>
+
+                <div class="hidden overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-950 md:block">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>{{ __('host_calendar.fields.date') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.property') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.room') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.sleeping_place') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.place_status') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.guest_name') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.check_in_date') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.check_out_date') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.nights_count') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.payment_status') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.check_in_status') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.needs_cleaning') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.needs_inspection') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.needs_repair') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.date_price') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.payout_amount') }}</flux:table.column>
+                            <flux:table.column>{{ __('host_calendar.fields.host_comment') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach($this->calendarOverviewRows as $row)
+                                <flux:table.row :key="$row['wire_key']">
+                                    <flux:table.cell variant="strong">{{ $row['date_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['property'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['room'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['sleeping_place'] }}</flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:badge size="sm" color="{{ $row['place_status_color'] }}" icon="user">{{ $row['place_status_label'] }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell>{{ $row['guest_name'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['check_in_date_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['check_out_date_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['nights_count_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['payment_status_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['check_in_status_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['needs_cleaning_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['needs_inspection_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['needs_repair_label'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['date_price'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['payout'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $row['host_comment'] }}</flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+
+                @if($this->calendarOverviewRows->hasPages())
+                    <div>
+                        {{ $this->calendarOverviewRows->links(data: ['scrollTo' => '#host-calendar-overview']) }}
+                    </div>
+                @endif
+            @endif
+        </section>
+
         <flux:card class="space-y-4">
             <div class="space-y-1">
                 <flux:heading size="sm">

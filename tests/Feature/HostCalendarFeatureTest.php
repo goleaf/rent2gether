@@ -18,6 +18,7 @@ use App\Livewire\Host\Calendar\HostCalendarPriceEditor;
 use App\Livewire\Host\Calendar\HostCalendarQuickActions;
 use App\Livewire\Host\Calendar\HostCalendarRepairSheet;
 use App\Livewire\Host\Calendar\HostCalendarSummary;
+use App\Livewire\Shell\HostCalendarPage as ShellHostCalendarPage;
 use App\Models\Booking;
 use App\Models\HostCalendarEvent;
 use App\Models\HostCalendarNote;
@@ -194,6 +195,8 @@ class HostCalendarFeatureTest extends TestCase
         $other = $this->listing();
         $booking = $this->booking($listing);
         $otherBooking = $this->booking($other);
+        $otherBooking->guest->forceFill(['name' => 'Other Calendar Guest'])->save();
+        $otherBooking = $otherBooking->fresh(['guest']);
         app(HostCalendarSnapshotService::class)->refreshForBooking($booking);
         app(HostCalendarSnapshotService::class)->refreshForBooking($otherBooking);
 
@@ -295,6 +298,138 @@ class HostCalendarFeatureTest extends TestCase
             ->test(HostCalendarPage::class)
             ->assertSee(__('host_calendar.title', [], 'ru'))
             ->assertSee(__('host_calendar.summary.check_ins_today', ['count' => 0], 'ru'));
+    }
+
+    public function test_published_host_calendar_page_shows_living_picture_for_every_calendar_view(): void
+    {
+        $listing = $this->listing();
+        $booking = $this->booking($listing);
+        Payout::factory()
+            ->for($listing['host'], 'host')
+            ->for($booking)
+            ->create([
+                'scheduled_date' => '2026-07-13',
+                'net_amount' => 120,
+                'currency' => 'EUR',
+                'status' => PayoutStatus::Pending,
+            ]);
+
+        app(HostCalendarSnapshotService::class)->refreshForBooking($booking);
+        $task = app(HostCalendarCleaningService::class)->createCleaningAfterCheckout($booking);
+        app(HostCalendarSnapshotService::class)->refreshForCleaningTask($task);
+        app(HostCalendarPriceService::class)->changePrice($listing['host'], $listing['place'], '2026-07-11', 27, 'EUR');
+        app(HostCalendarRepairService::class)->createRepairEvent($listing['host'], $listing['place'], [
+            'start' => '2026-07-14',
+            'end' => '2026-07-16',
+        ], 'Mattress replacement');
+        app(HostCalendarNoteService::class)->createNote($listing['host'], [
+            'property_id' => $listing['property']->id,
+            'room_id' => $listing['room']->id,
+            'sleeping_place_id' => $listing['place']->id,
+            'note_date' => '2026-07-10',
+            'note' => 'Check locker key.',
+        ]);
+
+        $expectations = [
+            'property' => ['Calendar Guest', __('host_calendar.fields.guest_name'), __('host_calendar.fields.payout_amount')],
+            'room' => ['Calendar Guest', __('host_calendar.fields.room')],
+            'sleeping_place' => ['Calendar Guest', __('host_calendar.fields.sleeping_place')],
+            'check_ins' => [__('host_calendar.event_types.check_in'), 'Calendar Guest'],
+            'check_outs' => [__('host_calendar.event_types.check_out'), __('host_calendar.fields.needs_cleaning')],
+            'cleaning' => [__('host_calendar.event_types.cleaning')],
+            'repairs' => [__('host_calendar.event_types.repair'), 'Mattress replacement'],
+            'payouts' => [__('host_calendar.event_types.payout'), 'EUR 120.00'],
+            'prices' => [__('host_calendar.event_types.price'), 'EUR 27.00'],
+            'occupancy' => [__('host_calendar.event_types.booking'), 'Calendar Guest'],
+        ];
+
+        foreach ($expectations as $view => $visibleTexts) {
+            $component = Livewire::actingAs($listing['host'])
+                ->test(ShellHostCalendarPage::class)
+                ->set('selectedPropertyId', $listing['property']->id)
+                ->set('selectedRoomId', $listing['room']->id)
+                ->set('selectedSleepingPlaceId', $listing['place']->id)
+                ->set('calendarScopeView', $view)
+                ->set('calendarRangeStart', '2026-07-10')
+                ->set('calendarRangeEnd', '2026-07-16')
+                ->call('applyCalendarFilters')
+                ->assertHasNoErrors()
+                ->assertSee(__('host_calendar.views.'.$view));
+
+            foreach ($visibleTexts as $visibleText) {
+                $component->assertSee($visibleText);
+            }
+        }
+    }
+
+    public function test_host_calendar_overview_filters_problem_rows_validates_dates_and_hides_other_hosts(): void
+    {
+        $listing = $this->listing();
+        $other = $this->listing();
+        $booking = $this->booking($listing);
+        $otherBooking = $this->booking($other);
+        $otherBooking->guest->forceFill(['name' => 'Other Calendar Guest'])->save();
+        $otherBooking = $otherBooking->fresh(['guest']);
+
+        app(HostCalendarSnapshotService::class)->refreshForBooking($booking);
+        app(HostCalendarSnapshotService::class)->refreshForBooking($otherBooking);
+        app(HostCalendarPriceService::class)->changePrice($listing['host'], $listing['place'], '2026-07-11', 27, 'EUR');
+        app(HostCalendarRepairService::class)->createRepairEvent($listing['host'], $listing['place'], [
+            'start' => '2026-07-14',
+            'end' => '2026-07-15',
+        ], 'Mattress replacement');
+
+        Livewire::actingAs($listing['host'])
+            ->test(ShellHostCalendarPage::class)
+            ->set('selectedPropertyId', $listing['property']->id)
+            ->set('calendarScopeView', 'property')
+            ->set('calendarRangeStart', '2026-07-10')
+            ->set('calendarRangeEnd', '2026-07-16')
+            ->set('calendarOnlyProblems', true)
+            ->call('applyCalendarFilters')
+            ->assertHasNoErrors()
+            ->assertSee('Mattress replacement')
+            ->assertDontSee('EUR 27.00')
+            ->assertDontSee('Other Calendar Guest');
+
+        Livewire::actingAs($listing['host'])
+            ->test(ShellHostCalendarPage::class)
+            ->set('calendarRangeStart', '2026-07-01')
+            ->set('calendarRangeEnd', '2026-10-01')
+            ->call('applyCalendarFilters')
+            ->assertHasErrors(['calendarRangeEnd']);
+    }
+
+    public function test_host_calendar_overview_paginates_with_filters(): void
+    {
+        $listing = $this->listing();
+
+        for ($number = 1; $number <= 25; $number++) {
+            HostCalendarEvent::factory()
+                ->for($listing['host'], 'user')
+                ->for($listing['property'])
+                ->for($listing['room'])
+                ->for($listing['place'], 'sleepingPlace')
+                ->create([
+                    'event_type' => 'note',
+                    'event_status' => 'active',
+                    'event_date' => '2026-07-10',
+                    'title_key' => 'host_calendar.event_titles.note',
+                    'host_note' => 'Calendar row '.$number,
+                ]);
+        }
+
+        Livewire::actingAs($listing['host'])
+            ->test(ShellHostCalendarPage::class)
+            ->set('selectedPropertyId', $listing['property']->id)
+            ->set('calendarScopeView', 'property')
+            ->set('calendarRangeStart', '2026-07-10')
+            ->set('calendarRangeEnd', '2026-07-10')
+            ->call('applyCalendarFilters')
+            ->assertSee('Calendar row 1')
+            ->assertDontSee('Calendar row 25')
+            ->call('nextPage', 'hostCalendarEventsPage')
+            ->assertSee('Calendar row 25');
     }
 
     /**

@@ -25,13 +25,24 @@ class HostCalendarPriceService
 
     public function getDailyPrices(SleepingPlace $place, array $range): Collection
     {
+        $calendarDays = $place->calendarDays()
+            ->select(['id', 'sleeping_place_id', 'date', 'source'])
+            ->where('date', '>=', CarbonImmutable::parse($range['start'])->toDateString())
+            ->where('date', '<', CarbonImmutable::parse($range['end'])->toDateString())
+            ->get()
+            ->keyBy(fn ($day): string => $day->date->toDateString());
+
         return collect(CarbonPeriod::create(CarbonImmutable::parse($range['start']), CarbonImmutable::parse($range['end'])->subDay()))
-            ->map(fn (CarbonImmutable $date): HostCalendarPriceData => new HostCalendarPriceData(
-                date: $date->toDateString(),
-                price: $this->prices->getPriceForDate($place, $date),
-                currency: $place->currency ?? 'EUR',
-                source: $place->calendarDays()->whereDate('date', $date->toDateString())->value('source') ?? 'default',
-            ));
+            ->map(function (CarbonImmutable $date) use ($calendarDays, $place): HostCalendarPriceData {
+                $dateString = $date->toDateString();
+
+                return new HostCalendarPriceData(
+                    date: $dateString,
+                    price: $this->prices->getPriceForDate($place, $date),
+                    currency: $place->currency ?? 'EUR',
+                    source: $calendarDays->get($dateString)?->source ?? 'default',
+                );
+            });
     }
 
     public function getPriceEvents(User $host, array $range, HostCalendarFilters $filters): Collection
@@ -39,8 +50,8 @@ class HostCalendarPriceService
         $query = HostCalendarEvent::query()
             ->where('user_id', $host->id)
             ->where('event_type', 'price')
-            ->whereDate('event_date', '>=', $range['start'])
-            ->whereDate('event_date', '<', $range['end'])
+            ->where('event_date', '>=', $range['start'])
+            ->where('event_date', '<', $range['end'])
             ->orderBy('event_date');
 
         return $this->filters->apply($query, $filters)->get();
@@ -82,7 +93,7 @@ class HostCalendarPriceService
             ->where('user_id', $host->id)
             ->where('sleeping_place_id', $place->id)
             ->where('event_type', 'price')
-            ->whereDate('event_date', $date)
+            ->where('event_date', CarbonImmutable::parse($date)->toDateString())
             ->latest('id')
             ->firstOrFail();
     }

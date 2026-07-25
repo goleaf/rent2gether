@@ -10,6 +10,8 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\HostCalendar\Data\HostCalendarFilters;
+use App\Services\HostCalendar\HostCalendarOverviewService;
 use App\Services\Localization\LocalizedModelContentResolver;
 use App\Services\Notifications\NotificationService;
 use Carbon\CarbonImmutable;
@@ -17,14 +19,25 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class HostCalendarPage extends Component
 {
+    use WithPagination;
+
     private const SELECTOR_OPTION_LIMIT = 30;
+
+    private const CALENDAR_EVENTS_PAGE = 'hostCalendarEventsPage';
+
+    private const CALENDAR_EVENT_PAGE_SIZE = 20;
+
+    private const CALENDAR_MAX_RANGE_DAYS = 62;
 
     public ?int $selectedPropertyId = null;
 
@@ -56,6 +69,18 @@ class HostCalendarPage extends Component
 
     public bool $dateActionsOpen = false;
 
+    #[Url(as: 'calendar_view', except: 'property')]
+    public string $calendarScopeView = 'property';
+
+    #[Url(as: 'calendar_from', except: '')]
+    public string $calendarRangeStart = '';
+
+    #[Url(as: 'calendar_to', except: '')]
+    public string $calendarRangeEnd = '';
+
+    #[Url(as: 'calendar_problems', except: false)]
+    public bool $calendarOnlyProblems = false;
+
     public function mount(): void
     {
         $today = CarbonImmutable::today();
@@ -63,6 +88,9 @@ class HostCalendarPage extends Component
         $this->month = $today->format('Y-m');
         $this->rangeStart = $today->toDateString();
         $this->rangeEnd = $today->toDateString();
+        $this->calendarRangeStart = $this->calendarRangeStart ?: $today->toDateString();
+        $this->calendarRangeEnd = $this->calendarRangeEnd ?: $today->addDays(31)->toDateString();
+        $this->calendarScopeView = $this->normalizedCalendarView($this->calendarScopeView);
         $this->selectedPropertyId = $this->firstHostPropertyId();
         $this->selectedRoomId = $this->firstHostRoomId($this->selectedPropertyId);
         $this->selectedSleepingPlaceId = $this->firstHostSleepingPlaceId($this->selectedPropertyId, $this->selectedRoomId);
@@ -73,6 +101,7 @@ class HostCalendarPage extends Component
         $this->selectedPropertyId = $this->selectedPropertyId ? (int) $this->selectedPropertyId : null;
         $this->selectedRoomId = $this->firstHostRoomId($this->selectedPropertyId);
         $this->selectedSleepingPlaceId = $this->firstHostSleepingPlaceId($this->selectedPropertyId, $this->selectedRoomId);
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
         $this->flushCalendarState();
     }
 
@@ -80,12 +109,40 @@ class HostCalendarPage extends Component
     {
         $this->selectedRoomId = $this->selectedRoomId ? (int) $this->selectedRoomId : null;
         $this->selectedSleepingPlaceId = $this->firstHostSleepingPlaceId($this->selectedPropertyId, $this->selectedRoomId);
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
         $this->flushCalendarState();
     }
 
     public function updatedSelectedSleepingPlaceId(): void
     {
         $this->selectedSleepingPlaceId = $this->selectedSleepingPlaceId ? (int) $this->selectedSleepingPlaceId : null;
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
+        $this->flushCalendarState();
+    }
+
+    public function updatedCalendarScopeView(): void
+    {
+        $this->calendarScopeView = $this->normalizedCalendarView($this->calendarScopeView);
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
+        $this->flushCalendarState();
+    }
+
+    public function updatedCalendarRangeStart(): void
+    {
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
+        $this->flushCalendarState();
+    }
+
+    public function updatedCalendarRangeEnd(): void
+    {
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
+        $this->flushCalendarState();
+    }
+
+    public function updatedCalendarOnlyProblems(): void
+    {
+        $this->calendarOnlyProblems = (bool) $this->calendarOnlyProblems;
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
         $this->flushCalendarState();
     }
 
@@ -117,6 +174,38 @@ class HostCalendarPage extends Component
     public function closeDateActions(): void
     {
         $this->dateActionsOpen = false;
+    }
+
+    public function applyCalendarFilters(): void
+    {
+        $this->validate($this->calendarFilterRules(), attributes: $this->validationAttributes());
+
+        if ($this->calendarRangeTooLarge()) {
+            $this->addError('calendarRangeEnd', __('host_calendar.validation.range_too_large', [
+                'days' => self::CALENDAR_MAX_RANGE_DAYS,
+            ]));
+
+            return;
+        }
+
+        $this->calendarScopeView = $this->normalizedCalendarView($this->calendarScopeView);
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
+        $this->flushCalendarState();
+    }
+
+    public function resetCalendarFilters(): void
+    {
+        $today = CarbonImmutable::today();
+
+        $this->calendarScopeView = 'property';
+        $this->calendarRangeStart = $today->toDateString();
+        $this->calendarRangeEnd = $today->addDays(31)->toDateString();
+        $this->calendarOnlyProblems = false;
+        $this->selectedPropertyId = $this->firstHostPropertyId();
+        $this->selectedRoomId = $this->firstHostRoomId($this->selectedPropertyId);
+        $this->selectedSleepingPlaceId = $this->firstHostSleepingPlaceId($this->selectedPropertyId, $this->selectedRoomId);
+        $this->resetPage(pageName: self::CALENDAR_EVENTS_PAGE);
+        $this->flushCalendarState();
     }
 
     public function openRange(): void
@@ -453,6 +542,53 @@ class HostCalendarPage extends Component
             ->all();
     }
 
+    #[Computed]
+    public function calendarViewOptions(): array
+    {
+        return collect(HostCalendarOverviewService::viewKeys())
+            ->map(fn (string $view): array => [
+                'value' => $view,
+                'label' => __('host_calendar.views.'.$view),
+            ])
+            ->all();
+    }
+
+    #[Computed]
+    public function calendarOverviewRows(): Paginator
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return new Paginator(collect(), self::CALENDAR_EVENT_PAGE_SIZE, 1, [
+                'pageName' => self::CALENDAR_EVENTS_PAGE,
+            ]);
+        }
+
+        return app(HostCalendarOverviewService::class)->paginateRows(
+            $user,
+            $this->calendarRange(),
+            $this->calendarFilters(),
+            self::CALENDAR_EVENT_PAGE_SIZE,
+            self::CALENDAR_EVENTS_PAGE,
+        );
+    }
+
+    #[Computed]
+    public function calendarOverviewSummary(): array
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return $this->emptyCalendarOverviewSummary();
+        }
+
+        return app(HostCalendarOverviewService::class)->summary(
+            $user,
+            $this->calendarRange(),
+            $this->calendarFilters(),
+        );
+    }
+
     public function render(): View
     {
         return view('livewire.shell.host-calendar-page', [
@@ -477,6 +613,99 @@ class HostCalendarPage extends Component
             'empty_text' => __('shell.pages.host.calendar.empty_text'),
             'note' => __('shell.pages.host.calendar.note'),
             'icon' => __('shell.pages.host.calendar.icon'),
+        ];
+    }
+
+    private function calendarFilters(): HostCalendarFilters
+    {
+        $view = $this->normalizedCalendarView($this->calendarScopeView);
+        $propertyId = $this->selectedPropertyId ? (int) $this->selectedPropertyId : null;
+        $roomId = $view === 'room' || $view === 'sleeping_place'
+            ? ($this->selectedRoomId ? (int) $this->selectedRoomId : null)
+            : null;
+        $sleepingPlaceId = $view === 'sleeping_place'
+            ? ($this->selectedSleepingPlaceId ? (int) $this->selectedSleepingPlaceId : null)
+            : null;
+
+        return new HostCalendarFilters(
+            propertyId: $propertyId,
+            roomId: $roomId,
+            sleepingPlaceId: $sleepingPlaceId,
+            eventTypes: HostCalendarOverviewService::eventTypesForView($view),
+            view: $view,
+            onlyProblems: $this->calendarOnlyProblems,
+        );
+    }
+
+    /**
+     * @return array{start:string,end:string}
+     */
+    private function calendarRange(): array
+    {
+        $start = $this->safeCalendarDate($this->calendarRangeStart, CarbonImmutable::today());
+        $end = $this->safeCalendarDate($this->calendarRangeEnd, $start->addDays(31));
+
+        if ($end->lessThan($start)) {
+            $end = $start;
+        }
+
+        if ($start->diffInDays($end) > self::CALENDAR_MAX_RANGE_DAYS) {
+            $end = $start->addDays(self::CALENDAR_MAX_RANGE_DAYS);
+        }
+
+        return [
+            'start' => $start->toDateString(),
+            'end' => $end->addDay()->toDateString(),
+        ];
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    private function calendarFilterRules(): array
+    {
+        return [
+            'calendarScopeView' => ['required', Rule::in(HostCalendarOverviewService::viewKeys())],
+            'calendarRangeStart' => ['required', 'date'],
+            'calendarRangeEnd' => ['required', 'date', 'after_or_equal:calendarRangeStart'],
+            'calendarOnlyProblems' => ['boolean'],
+        ];
+    }
+
+    private function calendarRangeTooLarge(): bool
+    {
+        return CarbonImmutable::parse($this->calendarRangeStart)
+            ->diffInDays(CarbonImmutable::parse($this->calendarRangeEnd)) > self::CALENDAR_MAX_RANGE_DAYS;
+    }
+
+    private function normalizedCalendarView(string $view): string
+    {
+        return HostCalendarOverviewService::isSupportedView($view) ? $view : 'property';
+    }
+
+    private function safeCalendarDate(string $value, CarbonImmutable $fallback): CarbonImmutable
+    {
+        try {
+            return CarbonImmutable::parse($value)->startOfDay();
+        } catch (\Throwable) {
+            return $fallback->startOfDay();
+        }
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function emptyCalendarOverviewSummary(): array
+    {
+        return [
+            'total_events' => 0,
+            'check_ins' => 0,
+            'check_outs' => 0,
+            'cleanings' => 0,
+            'repairs' => 0,
+            'payouts' => 0,
+            'prices' => 0,
+            'problem_events' => 0,
         ];
     }
 
@@ -776,7 +1005,10 @@ class HostCalendarPage extends Component
      */
     private function validationAttributes(): array
     {
-        $attributes = app('translator')->get('availability.calendar.validation_attributes');
+        $attributes = array_merge(
+            app('translator')->get('availability.calendar.validation_attributes') ?: [],
+            app('translator')->get('host_calendar.validation_attributes') ?: [],
+        );
 
         return is_array($attributes) ? $attributes : [];
     }
@@ -800,6 +1032,9 @@ class HostCalendarPage extends Component
             $this->listDays,
             $this->upcomingCheckIns,
             $this->upcomingCheckOuts,
+            $this->calendarViewOptions,
+            $this->calendarOverviewRows,
+            $this->calendarOverviewSummary,
         );
     }
 }

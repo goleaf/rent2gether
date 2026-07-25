@@ -33,8 +33,8 @@ class HostCalendarPayoutService
         return HostCalendarEvent::query()
             ->where('user_id', $host->id)
             ->where('event_type', 'payout')
-            ->whereDate('event_date', '>=', $range['start'])
-            ->whereDate('event_date', '<', $range['end'])
+            ->where('event_date', '>=', $range['start'])
+            ->where('event_date', '<', $range['end'])
             ->orderBy('event_date');
     }
 }

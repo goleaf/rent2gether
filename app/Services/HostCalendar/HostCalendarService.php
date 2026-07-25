@@ -2,7 +2,6 @@
 
 namespace App\Services\HostCalendar;
 
-use App\Models\HostCalendarEvent;
 use App\Models\Property;
 use App\Models\User;
 use App\Services\HostCalendar\Data\HostCalendarContext;
@@ -48,12 +47,7 @@ class HostCalendarService
 
     public function getSummary(User $host, array $range, HostCalendarFilters $filters): HostCalendarSummaryData
     {
-        $base = HostCalendarEvent::query()
-            ->where('user_id', $host->id)
-            ->whereDate('event_date', '>=', $range['start'])
-            ->whereDate('event_date', '<', $range['end']);
-
-        $events = $base->get(['event_type']);
+        $events = $this->events->queryForHost($host, $range, $filters);
         $total = Property::query()
             ->where('host_user_id', $host->id)
             ->withCount('sleepingPlaces')

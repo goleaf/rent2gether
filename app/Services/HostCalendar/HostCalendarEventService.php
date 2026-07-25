@@ -70,8 +70,8 @@ class HostCalendarEventService
                 'is_private',
             ])
             ->where('user_id', $host->id)
-            ->whereDate('event_date', '>=', $this->dateString($range['start']))
-            ->whereDate('event_date', '<', $this->dateString($range['end']))
+            ->where('event_date', '>=', $this->dateString($range['start']))
+            ->where('event_date', '<', $this->dateString($range['end']))
             ->orderBy('event_date')
             ->orderByDesc('priority')
             ->orderBy('id');
