@@ -5,6 +5,8 @@ namespace App\Services\HostOccupants;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\HostCurrentStaySnapshot;
+use App\Models\HostGuestStayFlag;
+use App\Models\HostGuestStayNote;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -14,6 +16,7 @@ use App\Services\HostOccupants\Data\HostOccupantFilters;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 
 class HostCurrentOccupantsService
@@ -27,6 +30,27 @@ class HostCurrentOccupantsService
     ) {}
 
     public function getCurrentOccupants(User $host, HostOccupantFilters $filters): Collection
+    {
+        return $this->currentOccupantsQuery($host, $filters)->get();
+    }
+
+    public function paginateCurrentOccupants(User $host, HostOccupantFilters $filters, int $perPage = 10, string $pageName = 'currentOccupantsPage'): Paginator
+    {
+        $paginator = $this->currentOccupantsQuery($host, $filters)
+            ->simplePaginate($perPage, pageName: $pageName);
+
+        $paginator->setCollection(
+            $this->hydrateOccupantData($host, $paginator->getCollection())
+                ->map(fn (HostOccupantData $occupant): array => $occupant->toArray()),
+        );
+
+        return $paginator;
+    }
+
+    /**
+     * @return Builder<HostCurrentStaySnapshot>
+     */
+    public function currentOccupantsQuery(User $host, HostOccupantFilters $filters): Builder
     {
         $this->refreshCurrentBookings($host);
 
@@ -45,12 +69,14 @@ class HostCurrentOccupantsService
                 'sleeping_place_label',
                 'check_in_date',
                 'check_out_date',
+                'nights_count',
                 'nights_left',
                 'payment_status',
                 'stay_status',
                 'check_in_status',
                 'has_special_requests',
                 'special_requests_summary',
+                'guest_rating_average',
                 'has_complaints',
                 'open_complaints_count',
                 'needs_extension',
@@ -62,7 +88,10 @@ class HostCurrentOccupantsService
                 'last_host_note',
                 'last_activity_at',
             ])
-            ->where('user_id', $host->id)
+            ->with([
+                'booking:id,host_user_id,guest_user_id,status',
+            ])
+            ->forHost($host)
             ->whereNotIn('stay_status', ['checked_out', 'cancelled', 'no_show'])
             ->where(function (Builder $current): void {
                 $today = CarbonImmutable::today()->toDateString();
@@ -70,8 +99,8 @@ class HostCurrentOccupantsService
                 $current
                     ->where(function (Builder $range) use ($today): void {
                         $range
-                            ->whereDate('check_in_date', '<=', $today)
-                            ->whereDate('check_out_date', '>=', $today);
+                            ->where('check_in_date', '<=', $today)
+                            ->where('check_out_date', '>=', $today);
                     })
                     ->orWhereIn('stay_status', ['checked_in', 'living_now', 'check_out_today', 'checkout_overdue']);
             })
@@ -80,7 +109,7 @@ class HostCurrentOccupantsService
             ->orderBy('sleeping_place_label')
             ->orderBy('id');
 
-        return $this->filters->apply($query, $filters)->get();
+        return $this->filters->apply($query, $filters);
     }
 
     public function getOccupantDetails(User $host, Booking $booking): HostOccupantData
@@ -93,7 +122,12 @@ class HostCurrentOccupantsService
         $flags = $this->flags->getOpenFlags($host, $booking);
         $notes = $this->notes->getNotesForBooking($host, $booking);
 
-        return HostOccupantData::fromSnapshot($snapshot, $flags, $notes);
+        return HostOccupantData::fromSnapshot(
+            $snapshot,
+            $flags,
+            $notes,
+            $this->privacy->filterGuestContactForHost($host, $booking),
+        );
     }
 
     public function getByProperty(User $host, Property $property): Collection
@@ -153,8 +187,8 @@ class HostCurrentOccupantsService
                 $query
                     ->where(function (Builder $range) use ($today): void {
                         $range
-                            ->whereDate('check_in_date', '<=', $today)
-                            ->whereDate('check_out_date', '>=', $today);
+                            ->where('check_in_date', '<=', $today)
+                            ->where('check_out_date', '>=', $today);
                     })
                     ->orWhereIn('status', [
                         BookingStatus::CheckedIn->value,
@@ -167,6 +201,53 @@ class HostCurrentOccupantsService
             ->each(function (Booking $booking): void {
                 $this->snapshots->refreshForBooking($booking);
             });
+    }
+
+    /**
+     * @param  Collection<int, HostCurrentStaySnapshot>  $snapshots
+     * @return Collection<int, HostOccupantData>
+     */
+    private function hydrateOccupantData(User $host, Collection $snapshots): Collection
+    {
+        $bookingIds = $snapshots
+            ->pluck('booking_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $flagsByBooking = $bookingIds->isEmpty()
+            ? collect()
+            : HostGuestStayFlag::query()
+                ->where('user_id', $host->id)
+                ->whereIn('booking_id', $bookingIds)
+                ->where('status', 'open')
+                ->orderByDesc('severity')
+                ->orderBy('id')
+                ->get()
+                ->groupBy('booking_id');
+
+        $notesByBooking = $bookingIds->isEmpty()
+            ? collect()
+            : HostGuestStayNote::query()
+                ->where('user_id', $host->id)
+                ->whereIn('booking_id', $bookingIds)
+                ->orderByDesc('is_pinned')
+                ->orderByDesc('id')
+                ->get()
+                ->groupBy('booking_id');
+
+        return $snapshots->map(function (HostCurrentStaySnapshot $snapshot) use ($flagsByBooking, $host, $notesByBooking): HostOccupantData {
+            $contact = $snapshot->booking
+                ? $this->privacy->filterGuestContactForHost($host, $snapshot->booking)
+                : ['chat' => false, 'phone' => null, 'email' => null];
+
+            return HostOccupantData::fromSnapshot(
+                $snapshot,
+                $flagsByBooking->get($snapshot->booking_id, collect()),
+                $notesByBooking->get($snapshot->booking_id, collect()),
+                $contact,
+            );
+        });
     }
 
     /**

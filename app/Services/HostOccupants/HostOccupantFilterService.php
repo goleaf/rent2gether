@@ -26,9 +26,9 @@ class HostOccupantFilterService
             ->when($filters->stayStatus, fn (Builder $query) => $query->where('stay_status', $filters->stayStatus));
 
         match ($filters->scope) {
-            'check_ins_today' => $query->whereDate('check_in_date', $today),
-            'check_outs_today' => $query->whereDate('check_out_date', $today),
-            'leaving_soon' => $query->whereDate('check_out_date', '>=', $today)->whereDate('check_out_date', '<=', $soon),
+            'check_ins_today' => $query->where('check_in_date', $today),
+            'check_outs_today' => $query->where('check_out_date', $today),
+            'leaving_soon' => $query->where('check_out_date', '>=', $today)->where('check_out_date', '<=', $soon),
             'checkout_overdue' => $query->where('checkout_overdue', true),
             'payment_pending' => $query->whereIn('payment_status', ['pending', 'partial', 'overdue']),
             'complaints' => $query->where('has_complaints', true),

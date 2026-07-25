@@ -64,6 +64,7 @@ class HostCurrentOccupantsFeatureTest extends TestCase
         $this->assertTrue(Schema::hasTable('host_guest_stay_flags'));
         $this->assertTrue(Schema::hasIndex('host_current_stay_snapshots', ['user_id', 'stay_status']));
         $this->assertTrue(Schema::hasIndex('host_current_stay_snapshots', ['user_id', 'check_out_date']));
+        $this->assertTrue(Schema::hasIndex('host_current_stay_snapshots', ['user_id', 'check_out_date', 'room_label', 'sleeping_place_label', 'id']));
         $this->assertTrue(Schema::hasIndex('host_current_stay_snapshots', ['booking_id']));
         $this->assertTrue(Schema::hasIndex('host_guest_stay_notes', ['user_id', 'guest_user_id']));
         $this->assertTrue(Schema::hasIndex('host_guest_stay_flags', ['booking_id', 'status']));
@@ -315,6 +316,106 @@ class HostCurrentOccupantsFeatureTest extends TestCase
         ]);
     }
 
+    public function test_current_occupants_page_renders_complete_cards_filters_and_host_scope(): void
+    {
+        app()->setLocale('en');
+
+        $listing = $this->listing();
+        $otherListing = $this->listing();
+        $booking = $this->booking($listing, [
+            'check_in_date' => '2026-06-10',
+            'check_out_date' => '2026-06-25',
+            'nights_count' => 15,
+            'payment_status' => PaymentStatus::PartiallyPaid,
+            'guest_message' => 'Needs a quiet corner.',
+        ]);
+        $booking->guest->forceFill([
+            'avatar_path' => 'avatars/current-guest.jpg',
+            'phone' => '+37060000000',
+            'phone_verified' => true,
+            'rating_as_guest' => 4.7,
+        ])->save();
+
+        BookingExtension::factory()->for($booking)->create([
+            'status' => BookingExtensionStatus::AwaitingHostApproval,
+        ]);
+        Complaint::factory()
+            ->for($booking)
+            ->for($listing['property'])
+            ->for($listing['room'])
+            ->for($listing['place'], 'sleepingPlace')
+            ->create([
+                'reporter_id' => $booking->guest_user_id,
+                'reported_user_id' => $listing['host']->id,
+                'status' => ComplaintStatus::Open,
+            ]);
+        app(HostGuestStayNoteService::class)->createNote($listing['host'], $booking, 'Prefers quiet reminders.', 'important');
+        app(HostCurrentStaySnapshotService::class)->refreshForBooking($booking->refresh());
+        app(HostGuestStayFlagService::class)->refreshFlagsForBooking($booking->refresh());
+
+        $otherBooking = $this->booking($otherListing, [
+            'guest_name' => 'Other Tenant',
+            'check_in_date' => '2026-06-10',
+            'check_out_date' => '2026-06-25',
+        ]);
+        app(HostCurrentStaySnapshotService::class)->refreshForBooking($otherBooking);
+
+        Livewire::actingAs($listing['host'])
+            ->test(CurrentOccupantsPage::class)
+            ->assertSee('Current Guest')
+            ->assertSee('/storage/avatars/current-guest.jpg')
+            ->assertSee('Photo of Current Guest')
+            ->assertSee('Room A')
+            ->assertSee('Place 1')
+            ->assertSee('10 Jun 2026')
+            ->assertSee('25 Jun 2026')
+            ->assertSee('Partially paid')
+            ->assertSee('Staying now')
+            ->assertSee('Chat is available')
+            ->assertSee('Needs a quiet corner.')
+            ->assertSee('4.7 / 5')
+            ->assertSee('1 open complaint')
+            ->assertSee('Extension requested')
+            ->assertSee('Payment needs attention')
+            ->assertSee('Special request')
+            ->assertSee('Prefers quiet reminders.')
+            ->assertSee('Yes')
+            ->assertSee('No')
+            ->assertDontSee('Other Tenant')
+            ->call('setScope', 'complaints')
+            ->assertSet('scope', 'complaints')
+            ->assertSee('Current Guest')
+            ->call('setScope', 'unknown-scope')
+            ->assertSet('scope', 'all')
+            ->set('onlyNeedsAttention', true)
+            ->assertSet('onlyNeedsAttention', true)
+            ->assertSee('Current Guest');
+    }
+
+    public function test_current_occupants_page_paginates_current_stays(): void
+    {
+        $listing = $this->listing();
+
+        for ($number = 1; $number <= 12; $number++) {
+            $booking = $this->booking($listing, [
+                'guest_name' => sprintf('Current Guest %02d', $number),
+                'check_in_date' => '2026-06-10',
+                'check_out_date' => '2026-06-25',
+            ]);
+
+            app(HostCurrentStaySnapshotService::class)->refreshForBooking($booking);
+        }
+
+        Livewire::actingAs($listing['host'])
+            ->test(CurrentOccupantsPage::class)
+            ->assertSee('Current Guest 01')
+            ->assertSee('Current Guest 10')
+            ->assertDontSee('Current Guest 11')
+            ->call('nextPage', 'currentOccupantsPage')
+            ->assertSee('Current Guest 11')
+            ->assertSee('Current Guest 12');
+    }
+
     public function test_current_occupants_livewire_components_render_in_english_and_russian(): void
     {
         $listing = $this->listing();
@@ -374,8 +475,11 @@ class HostCurrentOccupantsFeatureTest extends TestCase
      */
     private function booking(array $listing, array $overrides = []): Booking
     {
+        $guestName = $overrides['guest_name'] ?? 'Current Guest';
+        unset($overrides['guest_name']);
+
         $guest = User::factory()->create([
-            'name' => $overrides['guest_name'] ?? 'Current Guest',
+            'name' => $guestName,
             'rating_as_guest' => 4.7,
             'avatar' => '/avatars/current-guest.jpg',
         ]);

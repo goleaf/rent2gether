@@ -81,6 +81,7 @@ return [
         'needs_extension' => 'Needs extension',
         'needs_checkout' => 'Needs checkout review',
         'needs_cleaning' => 'Needs cleaning',
+        'only_needs_attention' => 'Show only stays that need attention',
         'property' => 'By property',
         'room' => 'By room',
         'sleeping_place' => 'By sleeping place',
@@ -121,6 +122,7 @@ return [
     'actions' => [
         'title' => 'Actions',
         'filters' => 'Filters',
+        'reset_filters' => 'Reset',
         'details' => 'Details',
         'open_booking' => 'Open booking',
         'message_guest' => 'Message guest',
@@ -144,6 +146,26 @@ return [
 
     'cards' => [
         'title' => 'Occupant cards',
+        'subtitle' => 'Each card shows the guest, room, dates, payment, stay state, contact option, requests, complaints, extension and checkout needs, and the host comment.',
+    ],
+
+    'loading' => [
+        'refreshing' => 'Refreshing current occupants...',
+    ],
+
+    'values' => [
+        'avatar_alt' => 'Photo of :name',
+        'not_available' => 'Not available',
+        'chat_available' => 'Chat is available',
+        'contact_hidden' => 'Contact is hidden until this stay allows it',
+        'no_special_requests' => 'No special requests',
+        'rating' => ':rating / 5',
+        'no_rating' => 'No guest rating yet',
+        'complaints_count' => '{0} No complaints|{1} :count open complaint|[2,*] :count open complaints',
+        'no_complaints' => 'No complaints',
+        'no_host_comment' => 'No host comment yet',
+        'yes' => 'Yes',
+        'no' => 'No',
     ],
 
     'empty' => [

@@ -20,7 +20,7 @@ class HostCurrentStaySnapshotService
     public function refreshForBooking(Booking $booking): HostCurrentStaySnapshot
     {
         $booking->loadMissing([
-            'guest:id,name,email,phone,phone_verified,avatar,rating_as_guest',
+            'guest:id,name,email,phone,phone_verified,avatar,avatar_path,rating_as_guest',
             'room:id,title',
             'sleepingPlace:id,display_name,place_number',
             'paymentRecords:id,booking_id,amount,status',
@@ -52,7 +52,7 @@ class HostCurrentStaySnapshotService
                 'room_id' => $booking->room_id,
                 'sleeping_place_id' => $booking->sleeping_place_id,
                 'guest_display_name' => $booking->guest?->name,
-                'guest_avatar_url' => $booking->guest?->avatar,
+                'guest_avatar_url' => $booking->guest?->avatar_path ?: $booking->guest?->avatar,
                 'room_label' => $booking->room?->title,
                 'sleeping_place_label' => $booking->sleepingPlace?->display_name ?: $booking->sleepingPlace?->place_number,
                 'check_in_date' => $this->dateString($booking->check_in_date),
