@@ -121,26 +121,19 @@
         </div>
 
         <div class="grid gap-4 sm:grid-cols-3">
-            <flux:field>
-                <flux:label>
+            @foreach(['sleepingPlacesCount', 'occupiedSleepingPlacesCount', 'freeSleepingPlacesCount', 'currentGuestsCount', 'maxGuests'] as $field)
+                <flux:field>
+                    <flux:label>
     <span class="inline-flex min-w-0 items-center gap-1.5">
-        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-        <span class="min-w-0">{{ __('room.fields.sleeping_places_count') }}</span>
+        <flux:icon name="users" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+        <span class="min-w-0">{{ __('room.fields.'.\Illuminate\Support\Str::snake($field)) }}</span>
     </span>
 </flux:label>
-                <flux:input type="number" inputmode="numeric" wire:model.blur="sleepingPlacesCount" icon="home-modern" />
-                <flux:error name="sleepingPlacesCount" />
-            </flux:field>
-            <flux:field>
-                <flux:label>
-    <span class="inline-flex min-w-0 items-center gap-1.5">
-        <flux:icon name="cog-6-tooth" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-        <span class="min-w-0">{{ __('room.fields.max_guests') }}</span>
-    </span>
-</flux:label>
-                <flux:input type="number" inputmode="numeric" wire:model.blur="maxGuests" icon="users" />
-                <flux:error name="maxGuests" />
-            </flux:field>
+                    <flux:input type="number" inputmode="numeric" wire:model.blur="{{ $field }}" icon="users" />
+                    <flux:error name="{{ $field }}" />
+                </flux:field>
+            @endforeach
+
             <flux:field>
                 <flux:label>
     <span class="inline-flex min-w-0 items-center gap-1.5">

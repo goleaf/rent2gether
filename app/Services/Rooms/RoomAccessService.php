@@ -35,6 +35,7 @@ class RoomAccessService
             'has_key' => $this->yesNo($details->has_key),
             'privacy_level' => $details->privacy_level ? __('room.levels.'.$details->privacy_level) : null,
             'has_wardrobe' => $this->yesNo($details->has_wardrobe),
+            'has_shared_wardrobe' => $this->yesNo($details->has_shared_wardrobe),
             'has_personal_lockers' => $details->has_personal_lockers ? __('room.values.personal_lockers') : $this->yesNo($details->has_personal_lockers),
             'personal_lockers_count' => $details->personal_lockers_count === null ? null : (string) $details->personal_lockers_count,
             'lockers_have_locks' => $this->yesNo($details->lockers_have_locks),

@@ -73,7 +73,9 @@ class RoomLayoutStep extends Component
             'narrowPassages' => ['boolean'],
         ], attributes: __('room.validation_attributes'));
 
+        $windowsCount = (int) ($validated['windowsCount'] ?? 0);
         $room = $this->room();
+
         $layouts->updateLayoutDetails($room, [
             'area' => $validated['area'],
             'length_meters' => $validated['lengthMeters'],
@@ -91,7 +93,9 @@ class RoomLayoutStep extends Component
 
         $room->update([
             'area' => $validated['area'],
-            'windows_count' => $validated['windowsCount'] ?? 0,
+            'area_sqm' => $validated['area'],
+            'has_window' => $windowsCount > 0,
+            'windows_count' => $windowsCount,
             'window_view' => $validated['windowView'] ?: null,
             'has_balcony' => $validated['hasBalcony'],
         ]);

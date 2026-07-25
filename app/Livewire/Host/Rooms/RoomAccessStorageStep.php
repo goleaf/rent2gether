@@ -126,9 +126,13 @@ class RoomAccessStorageStep extends Component
 
         $room->update([
             'has_lock' => $validated['hasLock'],
+            'has_lockable_door' => $validated['hasLock'],
+            'has_room_key' => $validated['hasKey'],
             'has_wardrobe' => $validated['hasWardrobe'],
+            'has_lockers' => $validated['hasPersonalLockers'],
             'has_desk' => $validated['hasDesk'],
             'has_chair' => $validated['hasChairs'],
+            'has_chairs' => $validated['hasChairs'],
             'has_mirror' => $validated['hasMirror'],
         ]);
 

@@ -51,6 +51,12 @@ class RoomMainInfoStep extends Component
 
     public ?int $sleepingPlacesCount = null;
 
+    public ?int $occupiedSleepingPlacesCount = null;
+
+    public ?int $freeSleepingPlacesCount = null;
+
+    public ?int $currentGuestsCount = null;
+
     public ?int $maxGuests = null;
 
     public string $status = '';
@@ -79,6 +85,9 @@ class RoomMainInfoStep extends Component
         $this->isForLongStay = (bool) $room->is_for_long_stay;
         $this->isForShortStay = (bool) $room->is_for_short_stay;
         $this->sleepingPlacesCount = $room->sleeping_places_count ?: $room->beds_count;
+        $this->occupiedSleepingPlacesCount = $room->occupied_sleeping_places_count;
+        $this->freeSleepingPlacesCount = $room->free_sleeping_places_count ?? $room->available_places_count;
+        $this->currentGuestsCount = $room->current_guests_count;
         $this->maxGuests = $room->max_guests;
         $this->status = (string) ($room->status?->value ?? RoomStatus::Draft->value);
         $this->canBookEntireRoom = (bool) $room->can_book_entire_room;
@@ -107,6 +116,9 @@ class RoomMainInfoStep extends Component
             'isForLongStay' => ['boolean'],
             'isForShortStay' => ['boolean'],
             'sleepingPlacesCount' => ['nullable', 'integer', 'min:0', 'max:200'],
+            'occupiedSleepingPlacesCount' => ['nullable', 'integer', 'min:0', 'max:200'],
+            'freeSleepingPlacesCount' => ['nullable', 'integer', 'min:0', 'max:200'],
+            'currentGuestsCount' => ['nullable', 'integer', 'min:0', 'max:200'],
             'maxGuests' => ['nullable', 'integer', 'min:1', 'max:200'],
             'status' => ['required', Rule::in(array_column(RoomStatus::cases(), 'value'))],
             'canBookEntireRoom' => ['boolean'],
@@ -115,6 +127,18 @@ class RoomMainInfoStep extends Component
             (array) __('room.validation_attributes'),
             $this->localizedValidationAttributes('room.translation_fields', self::TRANSLATION_FIELDS),
         ));
+
+        if (! $this->validateOccupancyCounts($validated)) {
+            return;
+        }
+
+        $sleepingPlacesCount = (int) ($validated['sleepingPlacesCount'] ?? 0);
+        $occupiedPlacesCount = (int) ($validated['occupiedSleepingPlacesCount'] ?? 0);
+        $freePlacesCount = $validated['freeSleepingPlacesCount'] === null
+            ? max(0, $sleepingPlacesCount - $occupiedPlacesCount)
+            : (int) $validated['freeSleepingPlacesCount'];
+        $currentGuestsCount = (int) ($validated['currentGuestsCount'] ?? $occupiedPlacesCount);
+        $maxGuests = (int) ($validated['maxGuests'] ?? max(1, $sleepingPlacesCount));
 
         $room = $this->room();
         $room->update([
@@ -134,10 +158,15 @@ class RoomMainInfoStep extends Component
             'is_for_groups' => $validated['isForGroups'],
             'is_for_long_stay' => $validated['isForLongStay'],
             'is_for_short_stay' => $validated['isForShortStay'],
-            'beds_count' => $validated['sleepingPlacesCount'] ?? 0,
-            'sleeping_places_count' => $validated['sleepingPlacesCount'] ?? 0,
-            'active_sleeping_places_count' => $validated['sleepingPlacesCount'] ?? 0,
-            'max_guests' => $validated['maxGuests'],
+            'beds_count' => $sleepingPlacesCount,
+            'sleeping_places_count' => $sleepingPlacesCount,
+            'active_sleeping_places_count' => max(0, $sleepingPlacesCount - (int) $room->unavailable_sleeping_places_count),
+            'occupied_places_count' => $occupiedPlacesCount,
+            'occupied_sleeping_places_count' => $occupiedPlacesCount,
+            'available_places_count' => $freePlacesCount,
+            'free_sleeping_places_count' => $freePlacesCount,
+            'current_guests_count' => $currentGuestsCount,
+            'max_guests' => $maxGuests,
             'status' => $validated['status'],
             'can_book_entire_room' => $validated['canBookEntireRoom'],
             'can_book_individual_places' => $validated['canBookIndividualPlaces'],
@@ -164,5 +193,33 @@ class RoomMainInfoStep extends Component
     public function render(): View
     {
         return view('livewire.host.rooms.room-main-info-step');
+    }
+
+    /**
+     * Ensures host-entered occupancy numbers describe one possible room state.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function validateOccupancyCounts(array $validated): bool
+    {
+        $sleepingPlacesCount = (int) ($validated['sleepingPlacesCount'] ?? 0);
+        $occupiedPlacesCount = (int) ($validated['occupiedSleepingPlacesCount'] ?? 0);
+        $freePlacesCount = (int) ($validated['freeSleepingPlacesCount'] ?? 0);
+        $currentGuestsCount = (int) ($validated['currentGuestsCount'] ?? $occupiedPlacesCount);
+        $maxGuests = (int) ($validated['maxGuests'] ?? max(1, $sleepingPlacesCount));
+
+        if ($occupiedPlacesCount + $freePlacesCount > $sleepingPlacesCount) {
+            $this->addError('freeSleepingPlacesCount', __('room.validation.occupancy_exceeds_places'));
+
+            return false;
+        }
+
+        if ($currentGuestsCount > $maxGuests) {
+            $this->addError('currentGuestsCount', __('room.validation.current_guests_exceed_max'));
+
+            return false;
+        }
+
+        return true;
     }
 }

@@ -4,9 +4,11 @@ namespace App\Livewire\Host\Rooms\Concerns;
 
 use App\Models\Room;
 use App\Models\User;
+use Livewire\Attributes\Locked;
 
 trait HandlesRoomStep
 {
+    #[Locked]
     public int $roomId;
 
     public bool $saved = false;
@@ -25,7 +27,12 @@ trait HandlesRoomStep
 
     protected function room(): Room
     {
-        return Room::query()->with('property')->findOrFail($this->roomId);
+        $room = Room::query()->with('property')->findOrFail($this->roomId);
+        $user = auth()->user();
+
+        abort_unless($user instanceof User && $room->property?->isOwnedBy($user), 403);
+
+        return $room;
     }
 
     protected function markSaved(): void

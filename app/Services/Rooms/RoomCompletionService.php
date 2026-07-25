@@ -27,6 +27,7 @@ class RoomCompletionService
             ['key' => 'access_storage', 'label' => __('room.completion.items.access_storage'), 'complete' => $room->accessDetails !== null],
             ['key' => 'condition', 'label' => __('room.completion.items.condition'), 'complete' => $room->conditionDetails !== null],
             ['key' => 'rules', 'label' => __('room.completion.items.rules'), 'complete' => filled($translation?->room_rules_text ?? $room->room_rules_text)],
+            ['key' => 'media', 'label' => __('room.completion.items.media'), 'complete' => $room->mediaItems()->whereIn('collection', ['gallery', 'video'])->active()->exists()],
             ['key' => 'translations', 'label' => __('room.completion.items.translations'), 'complete' => app(SupportedContentLocales::class)->hasAllTranslations($room->translations, ['title'])],
         ];
     }

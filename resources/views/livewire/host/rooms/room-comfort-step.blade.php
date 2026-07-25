@@ -17,7 +17,7 @@
         @endif
 
         <div class="grid gap-3 sm:grid-cols-2">
-            @foreach(['hasHeating', 'hasAirConditioning', 'hasFan', 'canOpenWindow', 'canCloseWindow', 'hasCurtains', 'hasBlackoutCurtains', 'canTurnLightAtNight', 'canUsePersonalLampAtNight', 'quietHoursEnabled'] as $field)
+            @foreach(['hasHeating', 'hasAirConditioning', 'hasFan', 'canOpenWindow', 'canCloseWindow', 'hasCurtains', 'hasBlackoutCurtains', 'canTurnLightAtNight', 'canUsePersonalLampAtNight', 'canWorkAtNight', 'canEatInRoom', 'quietHoursEnabled'] as $field)
                                 <flux:field variant="inline">
                     <flux:checkbox wire:model.change="{{ $field }}" />
                     <flux:label>

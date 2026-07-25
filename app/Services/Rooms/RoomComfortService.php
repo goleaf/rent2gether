@@ -65,6 +65,8 @@ class RoomComfortService
             'has_blackout_curtains' => $this->yesNo($details->has_blackout_curtains),
             'can_turn_light_at_night' => $this->yesNo($details->can_turn_light_at_night),
             'can_use_personal_lamp_at_night' => $this->yesNo($details->can_use_personal_lamp_at_night),
+            'can_work_at_night' => $this->yesNo($details->can_work_at_night),
+            'can_eat_in_room' => $this->yesNo($details->can_eat_in_room),
             'noise_level' => $this->level($details->noise_level),
             'soundproofing_level' => $this->level($details->soundproofing_level),
             'quiet_hours_enabled' => $quietHours,

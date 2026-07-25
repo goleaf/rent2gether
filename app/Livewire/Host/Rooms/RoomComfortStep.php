@@ -38,6 +38,10 @@ class RoomComfortStep extends Component
 
     public bool $canUsePersonalLampAtNight = true;
 
+    public bool $canWorkAtNight = false;
+
+    public bool $canEatInRoom = false;
+
     public string $noiseLevel = '';
 
     public string $soundproofingLevel = '';
@@ -67,6 +71,8 @@ class RoomComfortStep extends Component
         $this->hasBlackoutCurtains = (bool) ($details?->has_blackout_curtains ?? $room->has_blackout_curtains);
         $this->canTurnLightAtNight = (bool) ($details?->can_turn_light_at_night ?? $room->can_turn_light_at_night);
         $this->canUsePersonalLampAtNight = (bool) ($details?->can_use_personal_lamp_at_night ?? true);
+        $this->canWorkAtNight = (bool) ($details?->can_work_at_night ?? $room->can_work_at_night);
+        $this->canEatInRoom = (bool) ($details?->can_eat_in_room ?? $room->can_eat);
         $this->noiseLevel = (string) ($details?->noise_level ?? $room->noise_level ?? '');
         $this->soundproofingLevel = (string) ($details?->soundproofing_level ?? '');
         $this->quietHoursEnabled = (bool) $details?->quiet_hours_enabled;
@@ -90,6 +96,8 @@ class RoomComfortStep extends Component
             'hasBlackoutCurtains' => ['boolean'],
             'canTurnLightAtNight' => ['boolean'],
             'canUsePersonalLampAtNight' => ['boolean'],
+            'canWorkAtNight' => ['boolean'],
+            'canEatInRoom' => ['boolean'],
             'noiseLevel' => ['nullable', 'string', 'max:80'],
             'soundproofingLevel' => ['nullable', 'string', 'max:80'],
             'quietHoursEnabled' => ['boolean'],
@@ -112,6 +120,8 @@ class RoomComfortStep extends Component
             'has_blackout_curtains' => $validated['hasBlackoutCurtains'],
             'can_turn_light_at_night' => $validated['canTurnLightAtNight'],
             'can_use_personal_lamp_at_night' => $validated['canUsePersonalLampAtNight'],
+            'can_work_at_night' => $validated['canWorkAtNight'],
+            'can_eat_in_room' => $validated['canEatInRoom'],
             'noise_level' => $validated['noiseLevel'] ?: null,
             'soundproofing_level' => $validated['soundproofingLevel'] ?: null,
             'quiet_hours_enabled' => $validated['quietHoursEnabled'],
@@ -123,12 +133,15 @@ class RoomComfortStep extends Component
             'has_heating' => $validated['hasHeating'],
             'has_air_conditioning' => $validated['hasAirConditioning'],
             'has_ac' => $validated['hasAirConditioning'],
+            'has_fan' => $validated['hasFan'],
             'light_level' => $validated['lightLevel'] ?: null,
             'noise_level' => $validated['noiseLevel'] ?: null,
             'ventilation_level' => $validated['ventilationLevel'] ?: null,
             'has_curtains' => $validated['hasCurtains'],
             'has_blackout_curtains' => $validated['hasBlackoutCurtains'],
             'can_turn_light_at_night' => $validated['canTurnLightAtNight'],
+            'can_work_at_night' => $validated['canWorkAtNight'],
+            'can_eat' => $validated['canEatInRoom'],
         ]);
 
         $this->markSaved();

@@ -14,7 +14,9 @@ use App\Livewire\Host\Rooms\RoomCompletionPanel;
 use App\Livewire\Host\Rooms\RoomConditionStep;
 use App\Livewire\Host\Rooms\RoomLayoutStep;
 use App\Livewire\Host\Rooms\RoomMainInfoStep;
+use App\Livewire\Host\Rooms\RoomMediaStep;
 use App\Livewire\Host\Rooms\RoomRulesStep;
+use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomAccessDetail;
@@ -27,7 +29,9 @@ use App\Services\Rooms\RoomCompletionService;
 use App\Services\Rooms\RoomGuestSummaryService;
 use App\Services\Rooms\RoomPrivacyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -43,6 +47,14 @@ class ExtendedRoomFieldsTest extends TestCase
         $this->assertTrue(Schema::hasTable('room_condition_details'));
         $this->assertTrue(Schema::hasColumn('rooms', 'living_format'));
         $this->assertTrue(Schema::hasColumn('rooms', 'sleeping_places_count'));
+        $this->assertTrue(Schema::hasColumn('rooms', 'occupied_sleeping_places_count'));
+        $this->assertTrue(Schema::hasColumn('rooms', 'free_sleeping_places_count'));
+        $this->assertTrue(Schema::hasColumn('rooms', 'current_guests_count'));
+        $this->assertTrue(Schema::hasColumn('rooms', 'can_work_at_night'));
+        $this->assertTrue(Schema::hasColumn('rooms', 'can_eat'));
+        $this->assertTrue(Schema::hasColumn('room_comfort_details', 'can_work_at_night'));
+        $this->assertTrue(Schema::hasColumn('room_comfort_details', 'can_eat_in_room'));
+        $this->assertTrue(Schema::hasColumn('room_comfort_details', 'can_store_food_in_room'));
         $this->assertTrue(Schema::hasColumn('room_translations', 'work_study_instructions'));
         $this->assertTrue(Schema::hasColumn('room_translations', 'food_rules_text'));
         $this->assertTrue(Schema::hasIndex('rooms', ['property_id', 'status']));
@@ -131,6 +143,9 @@ class ExtendedRoomFieldsTest extends TestCase
             ->set('livingFormat', 'long_stay')
             ->set('genderPolicy', GenderType::Mixed->value)
             ->set('sleepingPlacesCount', 4)
+            ->set('occupiedSleepingPlacesCount', 2)
+            ->set('freeSleepingPlacesCount', 2)
+            ->set('currentGuestsCount', 2)
             ->set('maxGuests', 4)
             ->set('status', RoomStatus::Active->value)
             ->call('save')
@@ -151,8 +166,11 @@ class ExtendedRoomFieldsTest extends TestCase
             ->test(RoomComfortStep::class, ['room' => $room])
             ->set('hasHeating', true)
             ->set('hasAirConditioning', true)
+            ->set('hasFan', true)
             ->set('noiseLevel', 'quiet')
             ->set('lightLevel', 'bright')
+            ->set('canWorkAtNight', true)
+            ->set('canEatInRoom', true)
             ->set('quietHoursEnabled', true)
             ->set('quietHoursStart', '22:00')
             ->set('quietHoursEnd', '07:00')
@@ -166,6 +184,8 @@ class ExtendedRoomFieldsTest extends TestCase
             ->set('hasPersonalLockers', true)
             ->set('personalLockersCount', 4)
             ->set('hasDesk', true)
+            ->set('hasChairs', true)
+            ->set('hasMirror', true)
             ->set('canStoreFood', false)
             ->call('save')
             ->assertHasNoErrors();
@@ -214,6 +234,25 @@ class ExtendedRoomFieldsTest extends TestCase
             'has_lock' => true,
             'has_personal_lockers' => true,
         ]);
+        $this->assertDatabaseHas('room_comfort_details', [
+            'room_id' => $room->id,
+            'can_work_at_night' => true,
+            'can_eat_in_room' => true,
+        ]);
+        $this->assertDatabaseHas('rooms', [
+            'id' => $room->id,
+            'occupied_sleeping_places_count' => 2,
+            'free_sleeping_places_count' => 2,
+            'current_guests_count' => 2,
+            'has_window' => true,
+            'area_sqm' => 18.5,
+            'has_room_key' => true,
+            'has_lockers' => true,
+            'has_chairs' => true,
+            'has_fan' => true,
+            'can_work_at_night' => true,
+            'can_eat' => true,
+        ]);
         $this->assertDatabaseHas('room_translations', [
             'room_id' => $room->id,
             'locale' => 'en',
@@ -236,6 +275,90 @@ class ExtendedRoomFieldsTest extends TestCase
             ->assertSee(__('room.values.personal_lockers'))
             ->assertDontSee('Alex Private')
             ->assertDontSee('Room 101');
+    }
+
+    public function test_room_main_step_rejects_impossible_occupancy_counts(): void
+    {
+        [$room] = $this->roomWithDetails();
+        $host = $room->property->host;
+
+        Livewire::actingAs($host)
+            ->test(RoomMainInfoStep::class, ['room' => $room])
+            ->set('sleepingPlacesCount', 2)
+            ->set('occupiedSleepingPlacesCount', 2)
+            ->set('freeSleepingPlacesCount', 1)
+            ->call('save')
+            ->assertHasErrors(['freeSleepingPlacesCount']);
+
+        Livewire::actingAs($host)
+            ->test(RoomMainInfoStep::class, ['room' => $room])
+            ->set('maxGuests', 2)
+            ->set('currentGuestsCount', 3)
+            ->call('save')
+            ->assertHasErrors(['currentGuestsCount']);
+    }
+
+    public function test_room_media_step_uploads_and_deletes_room_video_with_authorization(): void
+    {
+        Storage::fake('public');
+
+        [$room] = $this->roomWithDetails();
+        $host = $room->property->host;
+        $otherHost = User::factory()->create(['is_host' => true]);
+        $video = UploadedFile::fake()->create('room-tour.mp4', 1024, 'video/mp4');
+
+        Livewire::actingAs($host)
+            ->test(RoomMediaStep::class, ['room' => $room])
+            ->set('videoFile', $video)
+            ->set('videoCaptions.en', 'Short room tour')
+            ->set('videoCaptions.ru', 'Короткое видео комнаты')
+            ->call('saveVideo')
+            ->assertHasNoErrors()
+            ->assertSet('statusMessage', __('room.media.saved_video'));
+
+        $media = MediaItem::query()->where('collection', 'video')->firstOrFail();
+
+        $this->assertSame(Room::class, $media->mediable_type);
+        $this->assertSame($room->id, $media->mediable_id);
+        $this->assertSame(Room::class, $media->owner_type);
+        $this->assertSame($room->id, $media->owner_id);
+        $this->assertSame('video/mp4', $media->mime_type);
+        $this->assertSame('Short room tour', $media->translations->firstWhere('locale', 'en')?->caption);
+        Storage::disk('public')->assertExists($media->path);
+        $this->assertDatabaseMissing('room_photos', ['media_item_id' => $media->id]);
+
+        Livewire::actingAs($otherHost)
+            ->test(RoomMediaStep::class, ['room' => $room])
+            ->assertForbidden();
+
+        Livewire::actingAs($host)
+            ->test(RoomMediaStep::class, ['room' => $room])
+            ->call('deleteVideo', $media->id)
+            ->assertHasNoErrors();
+
+        $this->assertModelMissing($media);
+        Storage::disk('public')->assertMissing($media->path);
+    }
+
+    public function test_room_media_step_rejects_invalid_video_file(): void
+    {
+        Storage::fake('public');
+
+        [$room] = $this->roomWithDetails();
+        $host = $room->property->host;
+        $file = UploadedFile::fake()->create('room-notes.pdf', 20, 'application/pdf');
+
+        Livewire::actingAs($host)
+            ->test(RoomMediaStep::class, ['room' => $room])
+            ->set('videoFile', $file)
+            ->call('saveVideo')
+            ->assertHasErrors(['videoFile']);
+
+        $this->assertDatabaseMissing('media_items', [
+            'mediable_type' => Room::class,
+            'mediable_id' => $room->id,
+            'collection' => 'video',
+        ]);
     }
 
     /**
