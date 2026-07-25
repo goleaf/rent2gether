@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Geo\CityAutocomplete;
+use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
 use App\Livewire\Pages\HomePage;
 use App\Livewire\Search\SleepingPlaceSearch;
 use App\Livewire\Shell\FavoritesPage;
@@ -10,7 +11,6 @@ use App\Livewire\Shell\HostCalendarPage;
 use App\Livewire\Shell\HostHomePage;
 use App\Livewire\Shell\HostListingsPage;
 use App\Livewire\Shell\HostProfilePage;
-use App\Livewire\Shell\HostRequestsPage;
 use App\Livewire\Shell\MessagesPage;
 use App\Livewire\Trips\TripList;
 use App\Models\User;
@@ -58,11 +58,11 @@ class MobileApplicationShellTest extends TestCase
         $host = User::factory()->create(['is_host' => true]);
 
         $pages = [
-            ['path' => '/host', 'key' => 'host.home', 'component' => HostHomePage::class],
-            ['path' => '/host/listings', 'key' => 'host.listings', 'component' => HostListingsPage::class],
-            ['path' => '/host/calendar', 'key' => 'host.calendar', 'component' => HostCalendarPage::class],
-            ['path' => '/host/requests', 'key' => 'host.requests', 'component' => HostRequestsPage::class],
-            ['path' => '/host/profile', 'key' => 'host.profile', 'component' => HostProfilePage::class],
+            ['path' => '/host', 'title' => 'shell.pages.host.home.title', 'helper' => 'shell.pages.host.home.helper', 'empty' => 'shell.pages.host.home.empty_title', 'component' => HostHomePage::class],
+            ['path' => '/host/listings', 'title' => 'shell.pages.host.listings.title', 'helper' => 'shell.pages.host.listings.helper', 'empty' => 'shell.pages.host.listings.empty_title', 'component' => HostListingsPage::class],
+            ['path' => '/host/calendar', 'title' => 'shell.pages.host.calendar.title', 'helper' => 'shell.pages.host.calendar.helper', 'empty' => 'shell.pages.host.calendar.empty_title', 'component' => HostCalendarPage::class],
+            ['path' => '/host/requests', 'title' => 'booking_requests.host_page.title', 'helper' => 'booking_requests.host_page.helper', 'empty' => 'booking_requests.empty.no_host_requests', 'component' => HostBookingRequestsPage::class],
+            ['path' => '/host/profile', 'title' => 'shell.pages.host.profile.title', 'helper' => 'shell.pages.host.profile.helper', 'empty' => 'shell.pages.host.profile.empty_title', 'component' => HostProfilePage::class],
         ];
 
         foreach (['en', 'ru'] as $locale) {
@@ -71,9 +71,9 @@ class MobileApplicationShellTest extends TestCase
 
                 $response->assertOk();
                 $response->assertSeeLivewire($page['component']);
-                $response->assertSee(Lang::get('shell.pages.'.$page['key'].'.title', [], $locale));
-                $response->assertSee(Lang::get('shell.pages.'.$page['key'].'.helper', [], $locale));
-                $response->assertSee(Lang::get('shell.pages.'.$page['key'].'.empty_title', [], $locale));
+                $response->assertSee(Lang::get($page['title'], [], $locale));
+                $response->assertSee(Lang::get($page['helper'], [], $locale));
+                $response->assertSee(Lang::get($page['empty'], [], $locale));
                 $response->assertSee(Lang::get('navigation.host_mobile', [], $locale));
             }
         }

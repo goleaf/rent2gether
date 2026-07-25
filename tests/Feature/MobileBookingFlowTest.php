@@ -11,6 +11,7 @@ use App\Enums\PropertyStatus;
 use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
 use App\Livewire\Booking\BookingReview;
+use App\Livewire\Bookings\Create\BookingCreatePage;
 use App\Models\AvailabilityDay;
 use App\Models\Booking;
 use App\Models\GuestPreference;
@@ -178,7 +179,7 @@ class MobileBookingFlowTest extends TestCase
         }
     }
 
-    public function test_booking_review_page_renders_in_english_and_russian(): void
+    public function test_booking_create_page_renders_date_flow_in_english_and_russian(): void
     {
         [$guest, $place] = $this->createPlace();
 
@@ -190,7 +191,9 @@ class MobileBookingFlowTest extends TestCase
                 'out' => '2026-07-12',
             ]))
             ->assertOk()
-            ->assertSee(__('booking.flow.title', [], 'en'))
+            ->assertSeeLivewire(BookingCreatePage::class)
+            ->assertSee(__('bookings.create.title', [], 'en'))
+            ->assertSee(__('booking_dates.title', [], 'en'))
             ->assertSee('Quiet lower bed');
 
         $this->actingAs($guest)
@@ -201,7 +204,9 @@ class MobileBookingFlowTest extends TestCase
                 'out' => '2026-07-12',
             ]))
             ->assertOk()
-            ->assertSee(__('booking.flow.title', [], 'ru'))
+            ->assertSeeLivewire(BookingCreatePage::class)
+            ->assertSee(__('bookings.create.title', [], 'ru'))
+            ->assertSee(__('booking_dates.title', [], 'ru'))
             ->assertSee('Тихое нижнее место');
     }
 

@@ -250,6 +250,7 @@ return [
         'title' => 'Create booking',
         'subtitle' => 'Review dates, requirements, payment, and confirmation.',
         'step' => 'Step :step',
+        'selected_place' => 'Selected sleeping place',
         'summary' => 'Booking summary',
         'confirmation' => 'Booking confirmation',
     ],

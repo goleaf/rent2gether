@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Stays\BookingStayNumberService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +23,7 @@ class BookingStayFactory extends Factory
         $nights = (int) $checkIn->diff($checkOut)->days;
 
         return [
-            'stay_number' => sprintf('STAY-%s-%06d', now()->format('Y'), fake()->unique()->numberBetween(1, 999999)),
+            'stay_number' => app(BookingStayNumberService::class)->generate(),
             'booking_id' => Booking::factory(),
             'guest_user_id' => User::factory(),
             'host_user_id' => User::factory(),

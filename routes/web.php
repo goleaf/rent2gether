@@ -11,12 +11,13 @@ use App\Livewire\Auth\ForgotPasswordPage;
 use App\Livewire\Auth\LoginPage;
 use App\Livewire\Auth\RegisterPage;
 use App\Livewire\Beds\ShowBed;
-use App\Livewire\Booking\BookingReview;
 use App\Livewire\Booking\CancelBooking;
 use App\Livewire\Booking\CreateBooking;
 use App\Livewire\Booking\PaymentPage;
 use App\Livewire\Bookings\CheckIn\GuestCheckInPage;
 use App\Livewire\Bookings\CheckOut\GuestCheckOutPage;
+use App\Livewire\Bookings\Create\BookingCreatePage;
+use App\Livewire\Bookings\Requests\GuestBookingRequestPage;
 use App\Livewire\Checkin\CheckIn;
 use App\Livewire\Checkin\CheckOut;
 use App\Livewire\Checkin\ProblemReport;
@@ -31,6 +32,7 @@ use App\Livewire\Host\HostBookings;
 use App\Livewire\Host\HostIncome;
 use App\Livewire\Host\HostOnboardingPage;
 use App\Livewire\Host\HostProfileEditPage;
+use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
 use App\Livewire\Host\Listings\CreateListingWizard;
 use App\Livewire\Host\ManageBooking;
 use App\Livewire\Host\Occupants\CurrentOccupantsPage;
@@ -79,7 +81,6 @@ use App\Livewire\Shell\HostCalendarPage;
 use App\Livewire\Shell\HostHomePage;
 use App\Livewire\Shell\HostListingsPage;
 use App\Livewire\Shell\HostProfilePage;
-use App\Livewire\Shell\HostRequestsPage;
 use App\Livewire\Shell\MessagesPage;
 use App\Livewire\Trips\BookingDetail;
 use App\Livewire\Trips\CurrentStay;
@@ -141,7 +142,11 @@ Route::prefix('{locale}')
             ->name('trips.scope');
 
         Route::get('/beds/{bed}/book', CreateBooking::class)->name('beds.book');
-        Route::get('/places/{sleepingPlace}/book', BookingReview::class)->name('places.book');
+        Route::get('/places/{sleepingPlace}/book', BookingCreatePage::class)->name('places.book');
+
+        Route::prefix('booking-requests')->name('guest.booking-requests.')->group(function (): void {
+            Route::get('/{request}', GuestBookingRequestPage::class)->name('show');
+        });
 
         Route::prefix('profile')->name('profile.')->group(function (): void {
             Route::get('/', EditProfile::class)->name('index');
@@ -200,7 +205,7 @@ Route::prefix('{locale}')
                 ->name('listings.scope');
             Route::get('/calendar', HostCalendarPage::class)->name('calendar');
             Route::get('/occupants', CurrentOccupantsPage::class)->name('occupants.index');
-            Route::get('/requests', HostRequestsPage::class)->name('requests.index');
+            Route::get('/requests', HostBookingRequestsPage::class)->name('requests.index');
             Route::get('/profile', HostProfilePage::class)->name('profile');
             Route::get('/profile/onboarding', HostOnboardingPage::class)->name('profile.onboarding');
             Route::get('/profile/edit', HostProfileEditPage::class)->name('profile.edit');

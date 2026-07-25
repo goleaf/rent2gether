@@ -10,8 +10,10 @@ use App\Enums\PaymentStatus;
 use App\Enums\PropertyStatus;
 use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
+use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
 use App\Livewire\Shell\HostRequestsPage;
 use App\Models\Booking;
+use App\Models\BookingRequest as IncomingBookingRequest;
 use App\Models\GuestPreference;
 use App\Models\HostProfile;
 use App\Models\Property;
@@ -50,14 +52,30 @@ class HostBookingRequestManagementTest extends TestCase
     public function test_host_requests_page_shows_incoming_request_and_guest_summary(): void
     {
         [$host, $guest, $place, $booking] = $this->createBookingRequest();
+        IncomingBookingRequest::factory()->create([
+            'booking_quote_id' => null,
+            'guest_user_id' => $guest->id,
+            'host_user_id' => $host->id,
+            'property_id' => $place->property_id,
+            'room_id' => $place->room_id,
+            'sleeping_place_id' => $place->id,
+            'check_in_date' => '2026-07-10',
+            'check_out_date' => '2026-07-12',
+            'nights_count' => 2,
+            'chargeable_days_count' => 2,
+            'calendar_presence_days_count' => 3,
+            'guests_count' => 1,
+            'total_amount' => 56,
+            'currency' => 'EUR',
+        ]);
 
         $this->actingAs($host)
             ->get('/en/host/requests')
             ->assertOk()
-            ->assertSeeLivewire(HostRequestsPage::class)
-            ->assertSee(__('shell.pages.host.requests.title', [], 'en'))
+            ->assertSeeLivewire(HostBookingRequestsPage::class)
+            ->assertSee(__('booking_requests.host_page.title', [], 'en'))
             ->assertSee('Quiet lower bed')
-            ->assertSee(__('host.requests.card.guest', ['name' => 'Calm Guest'], 'en'));
+            ->assertSee('Calm Guest');
 
         Livewire::actingAs($host)
             ->test(HostRequestsPage::class)
@@ -70,7 +88,7 @@ class HostBookingRequestManagementTest extends TestCase
         $this->actingAs($host)
             ->get('/ru/host/requests')
             ->assertOk()
-            ->assertSee(__('shell.pages.host.requests.title', [], 'ru'));
+            ->assertSee(__('booking_requests.host_page.title', [], 'ru'));
 
         $this->assertSame($place->id, $booking->sleeping_place_id);
         $this->assertSame($guest->id, $booking->guest_user_id);
@@ -286,6 +304,7 @@ class HostBookingRequestManagementTest extends TestCase
     private function guest(string $displayName): User
     {
         $guest = User::factory()->create([
+            'name' => $displayName,
             'email_verified_at' => now(),
             'phone_verified' => true,
             'identity_verified' => true,

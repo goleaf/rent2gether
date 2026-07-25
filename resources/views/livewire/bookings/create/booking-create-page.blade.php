@@ -13,6 +13,18 @@
             <flux:badge icon="calendar-days">{{ __('bookings.create.step', ['step' => $step]) }}</flux:badge>
         </div>
 
+        @if ($sleepingPlaceTitle)
+            <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                <flux:text size="sm">{{ __('bookings.create.selected_place') }}</flux:text>
+                <flux:heading size="sm">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="home" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ $sleepingPlaceTitle }}</span>
+                    </span>
+                </flux:heading>
+            </div>
+        @endif
+
         @if ($quote && ! $summary)
             <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
                 <flux:text size="sm">{{ $quote['quote_number'] }}</flux:text>
@@ -33,6 +45,16 @@
             <flux:badge color="{{ $summary['status_color'] }}" icon="calendar-days">{{ $summary['status'] }}</flux:badge>
         @endif
     </flux:card>
+
+    @if ($sleepingPlaceId && ! $quote && ! $summary)
+        <livewire:bookings.dates.date-selection-panel
+            :sleeping-place="$sleepingPlaceId"
+            :check-in-date="$checkInDate"
+            :check-out-date="$checkOutDate"
+            :guests-count="$guestsCount"
+            :key="'booking-dates-'.$sleepingPlaceId"
+        />
+    @endif
 
     @if ($summary)
         <livewire:bookings.create.booking-confirmation-step :booking-id="$summary['id']" :key="'confirmation-'.$summary['id']" />

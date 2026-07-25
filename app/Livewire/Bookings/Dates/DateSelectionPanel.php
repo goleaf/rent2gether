@@ -49,9 +49,30 @@ class DateSelectionPanel extends Component
     /** @var list<array{check_out:string,nights:int,chargeable_days:int,calendar_presence_days:int}> */
     public array $availableCheckoutDates = [];
 
-    public function mount(int|SleepingPlace $sleepingPlace): void
-    {
+    public function mount(
+        int|SleepingPlace $sleepingPlace,
+        string $checkInDate = '',
+        string $checkOutDate = '',
+        int $guestsCount = 1,
+    ): void {
         $this->sleepingPlaceId = $sleepingPlace instanceof SleepingPlace ? $sleepingPlace->id : $sleepingPlace;
+        $this->checkInDate = trim($checkInDate);
+        $this->checkOutDate = trim($checkOutDate);
+        $this->guestsCount = max(1, $guestsCount);
+
+        if ($this->checkInDate !== '' && $this->checkOutDate !== '') {
+            try {
+                $this->recalculateQuote();
+            } catch (ValidationException $exception) {
+                $this->addError('checkInDate', collect($exception->errors())->flatten()->first() ?: __('booking_quotes.messages.quote_recalculate_required'));
+            }
+
+            return;
+        }
+
+        if ($this->checkInDate !== '') {
+            $this->refreshAvailableCheckoutDates();
+        }
     }
 
     public function updatedCheckInDate(): void
@@ -163,7 +184,7 @@ class DateSelectionPanel extends Component
         ], navigate: true);
     }
 
-    public function sendRequest(BookingRequestCreationService $requests): ?BookingRequest
+    public function sendRequest(BookingRequestCreationService $requests): mixed
     {
         $guest = auth()->user();
 
@@ -174,11 +195,16 @@ class DateSelectionPanel extends Component
         }
 
         try {
-            return $requests->createFromQuote($guest, $this->quote(), [
+            $request = $requests->createFromQuote($guest, $this->quote(), [
                 'guest_message' => $this->checkInComment,
-                'request_type' => 'request_only',
+                'request_type' => BookingRequest::TYPE_REQUEST_ONLY,
                 'hold_dates' => true,
             ]);
+
+            return $this->redirectRoute('guest.booking-requests.show', [
+                'locale' => app()->getLocale(),
+                'request' => $request,
+            ], navigate: true);
         } catch (ValidationException $exception) {
             $this->addError('checkInDate', collect($exception->errors())->flatten()->first() ?: __('booking_quotes.messages.quote_recalculate_required'));
 

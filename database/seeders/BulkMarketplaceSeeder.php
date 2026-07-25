@@ -332,6 +332,7 @@ use App\Services\Localization\SupportedContentLocales;
 use App\Services\Media\DemoMediaFileService;
 use App\Services\Messaging\MessageTemplateService;
 use App\Services\Notifications\NotificationTemplateService;
+use App\Services\Stays\BookingStayNumberService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
@@ -3455,14 +3456,14 @@ class BulkMarketplaceSeeder extends Seeder
     {
         $bookingRows = $this->bookingRows();
         $bookingIds = array_column($bookingRows, 'id');
-        $stayStart = BookingStay::query()->count();
+        $stayNumbers = app(BookingStayNumberService::class);
 
         $this->seedMissingOwnedRows(
             BookingStay::class,
             'booking_id',
             $bookingIds,
             fn (int $bookingId, int $index): BookingStay => BookingStay::factory()->create($this->bookingState($this->pick($bookingRows, $index), [
-                'stay_number' => sprintf('STAY-%s-%06d', now()->format('Y'), $stayStart + $index + 1),
+                'stay_number' => $stayNumbers->generate(),
                 'booking_id' => $bookingId,
                 'status' => ['active', 'checkout_soon', 'extension_requested', 'problem_reported'][$index % 4],
                 'check_in_date' => $this->pick($bookingRows, $index)['check_in_date'],

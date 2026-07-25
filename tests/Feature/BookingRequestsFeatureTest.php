@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\Bookings\Requests\GuestBookingRequestPage;
 use App\Livewire\Host\BookingRequests\HostBookingRequestDetailsSheet;
+use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
 use App\Models\BookingQuote;
 use App\Models\BookingRequest;
 use App\Models\Notification;
@@ -243,6 +244,39 @@ class BookingRequestsFeatureTest extends TestCase
         Livewire::actingAs($host)
             ->test(HostBookingRequestDetailsSheet::class, ['request' => $request->id])
             ->assertSee(__('booking_requests.host_details.title', [], 'ru'));
+    }
+
+    public function test_request_routes_use_new_guest_and_host_surfaces_with_owner_checks(): void
+    {
+        [$guest, $host, $place] = $this->placeSetup();
+        $request = app(BookingRequestCreationService::class)->createFromQuote($guest, $this->quoteFor($guest, $host, $place), [
+            'request_type' => BookingRequest::TYPE_HOST_APPROVAL,
+            'hold_dates' => false,
+        ]);
+
+        $this->actingAs($guest)
+            ->get(route('guest.booking-requests.show', [
+                'locale' => 'en',
+                'request' => $request,
+            ]))
+            ->assertOk()
+            ->assertSeeLivewire(GuestBookingRequestPage::class)
+            ->assertSee(__('booking_requests.guest_page.title', [], 'en'))
+            ->assertSee($request->request_number);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('guest.booking-requests.show', [
+                'locale' => 'en',
+                'request' => $request,
+            ]))
+            ->assertForbidden();
+
+        $this->actingAs($host)
+            ->get(route('host.requests.index', ['locale' => 'ru']))
+            ->assertOk()
+            ->assertSeeLivewire(HostBookingRequestsPage::class)
+            ->assertSee(__('booking_requests.host_page.title', [], 'ru'))
+            ->assertSee($request->guest->name);
     }
 
     /**

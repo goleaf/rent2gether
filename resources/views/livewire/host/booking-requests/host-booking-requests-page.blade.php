@@ -1,4 +1,4 @@
-<div class="space-y-4">
+<x-ui.page class="space-y-4">
     <div class="space-y-1">
         <flux:heading>
             <span class="inline-flex min-w-0 items-center gap-2">
@@ -27,9 +27,9 @@
         @endforelse
     </div>
 
-    @if($requests->count() >= $perPage)
+    @if($hasMore)
         <flux:button type="button" variant="primary" class="w-full" wire:click="loadMore" icon="arrow-down">
             {{ __('booking_requests.actions.load_more') }}
         </flux:button>
     @endif
-</div>
+</x-ui.page>

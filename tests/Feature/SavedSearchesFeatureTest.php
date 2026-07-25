@@ -27,6 +27,7 @@ use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\SavedSearches\SavedSearchFrequencyService;
 use App\Services\SavedSearches\SavedSearchService;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -36,6 +37,22 @@ use Tests\TestCase;
 class SavedSearchesFeatureTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Carbon::setTestNow('2026-06-20 10:00:00');
+        CarbonImmutable::setTestNow('2026-06-20 10:00:00');
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        CarbonImmutable::setTestNow();
+
+        parent::tearDown();
+    }
 
     public function test_saved_search_service_creates_updates_pauses_resumes_archives_and_deletes(): void
     {
