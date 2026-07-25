@@ -15,6 +15,7 @@ The source of truth is always `bookings`. Snapshot tables are display caches onl
 - One row per booking.
 - Stores compact card data: guest label, room label, sleeping place label, dates, nights left, payment status, stay status, complaint flags, extension need, checkout need, cleaning need, and last host note.
 - Indexed by host and common filters: stay status, checkout date, payment status, complaints, extension need, checkout need, property, room, sleeping place, booking, and guest.
+- The mobile list sort uses `current_stays_user_checkout_sort_index` on `user_id`, `check_out_date`, `room_label`, `sleeping_place_label`, and `id`.
 
 `host_guest_stay_notes`
 
@@ -110,10 +111,11 @@ The system does not auto-evict guests. “Needs checkout” means the host shoul
 ## Mobile UX
 
 - Summary cards are shown first.
-- Filters are compact chips and can be moved into a bottom sheet.
-- Occupants are represented as cards, not tables.
+- Filters are compact horizontal chips with URL-backed scope state, attention-only state, and reset.
+- Occupants are represented as paginated cards, not tables.
+- Each card shows guest photo, guest name, room, sleeping place, check-in date, check-out date, nights count, nights left, payment status, stay status, guest contact option, special requests, guest rating, complaint state, extension need, checkout need, and host comment.
 - Details live in a sheet-style component.
-- Public Livewire state is limited to IDs, section names, and action state.
+- Public Livewire state is limited to section names, filter state, and compact pagination state.
 - All visible strings use `current_occupants.*` translation keys.
 
 ## Translation Keys
@@ -159,4 +161,6 @@ Coverage:
 - internal message creation
 - filters and summary counts
 - quick actions and confirmation state
+- complete card rendering with guest photo, dates, room, place, statuses, contact, requests, rating, complaints, extension, checkout, host comment, and attention flags
+- pagination and filter reset behavior
 - English and Russian Livewire rendering
