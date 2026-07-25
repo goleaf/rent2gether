@@ -32,6 +32,11 @@ return [
         'save_settings' => 'Save calendar settings',
     ],
 
+    'errors' => [
+        'range_too_large' => 'Choose a shorter date range.',
+        'max_less_than_min' => 'Maximum nights must be greater than or equal to minimum nights.',
+    ],
+
     'weekdays' => [
         1 => 'Mon',
         2 => 'Tue',

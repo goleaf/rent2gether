@@ -18,6 +18,7 @@
     </span>
 </flux:label>
             <flux:input type="date" wire:model.change="start" icon="calendar-days" />
+            <flux:error name="start" />
         </flux:field>
         <flux:field>
             <flux:label>
@@ -27,6 +28,7 @@
     </span>
 </flux:label>
             <flux:input type="date" wire:model.change="end" icon="calendar-days" />
+            <flux:error name="end" />
         </flux:field>
         <flux:field>
             <flux:label>
@@ -36,6 +38,7 @@
     </span>
 </flux:label>
             <flux:input type="number" step="0.01" wire:model.blur="price" icon="banknotes" />
+            <flux:error name="price" />
         </flux:field>
         <flux:field>
             <flux:label>
@@ -45,6 +48,7 @@
     </span>
 </flux:label>
             <flux:input type="number" min="1" wire:model.blur="minNights" icon="numbered-list" />
+            <flux:error name="minNights" />
         </flux:field>
         <flux:field>
             <flux:label>
@@ -54,15 +58,18 @@
     </span>
 </flux:label>
             <flux:input type="number" min="1" wire:model.blur="maxNights" icon="numbered-list" />
+            <flux:error name="maxNights" />
         </flux:field>
     </div>
 
     <div class="grid gap-2 sm:grid-cols-2">
-        <flux:button type="button" variant="primary" wire:click="openDates" wire:loading.attr="disabled" icon="calendar-days">
-            {{ __('listing_calendar.actions.open_dates') }}
+        <flux:button type="button" variant="primary" wire:click="openDates" wire:loading.attr="disabled" wire:target="openDates" icon="calendar-days">
+            <span wire:loading.remove wire:target="openDates">{{ __('listing_calendar.actions.open_dates') }}</span>
+            <span wire:loading wire:target="openDates">{{ __('listing_wizard.actions.saving') }}</span>
         </flux:button>
-        <flux:button type="button" variant="ghost" wire:click="closeDates" wire:loading.attr="disabled" icon="x-mark">
-            {{ __('listing_calendar.actions.close_dates') }}
+        <flux:button type="button" variant="ghost" wire:click="closeDates" wire:loading.attr="disabled" wire:target="closeDates" icon="x-mark">
+            <span wire:loading.remove wire:target="closeDates">{{ __('listing_calendar.actions.close_dates') }}</span>
+            <span wire:loading wire:target="closeDates">{{ __('listing_wizard.actions.saving') }}</span>
         </flux:button>
     </div>
 </flux:card>

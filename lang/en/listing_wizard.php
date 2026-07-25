@@ -12,9 +12,11 @@ return [
     'back' => 'Back',
     'publish' => 'Publish',
     'request_review' => 'Send to review',
+    'media_count' => ':count photos',
 
     'actions' => [
         'save_draft' => 'Save draft',
+        'saving' => 'Saving...',
         'continue' => 'Continue',
         'back' => 'Back',
         'publish' => 'Publish',
@@ -83,9 +85,21 @@ return [
         'description' => 'Description',
         'photos' => 'Photos',
         'rules' => 'Room rules',
+        'rules_note' => 'Rules note',
+        'gender_policy' => 'Gender policy',
+        'status' => 'Room status',
         'add_room' => 'Add room',
         'created' => 'Created rooms',
+        'created_sleeping_places' => ':count sleeping places created',
         'empty' => 'No rooms yet. Add the first room to continue.',
+        'living_formats' => [
+            'shared' => 'Shared',
+            'private' => 'Private',
+            'family' => 'Family',
+            'workers' => 'Workers',
+            'students' => 'Students',
+            'long_stay' => 'Long stay',
+        ],
     ],
 
     'sleeping_places' => [
@@ -98,9 +112,24 @@ return [
         'photos' => 'Photos',
         'features' => 'Features',
         'status' => 'Status',
+        'add_place' => 'Add place',
         'auto_create' => 'Create places automatically',
         'auto_create_helper' => 'Create missing places from the room capacity and edit details later.',
         'empty' => 'No sleeping places yet.',
+        'availability_modes' => [
+            'instant' => 'Instant booking',
+            'host_confirmation' => 'Host confirmation',
+            'request_only' => 'Request only',
+        ],
+        'feature_options' => [
+            'power_socket' => 'Power socket',
+            'lamp' => 'Lamp',
+            'locker' => 'Locker',
+            'curtain' => 'Privacy curtain',
+            'bedding' => 'Bedding',
+            'towel' => 'Towel',
+            'luggage_space' => 'Luggage space',
+        ],
     ],
 
     'calendar' => [
@@ -123,6 +152,7 @@ return [
         'title' => 'Publication',
         'helper' => 'Automatic checks show what blocks publishing and what can be improved later.',
         'ready' => 'Ready to publish',
+        'ready_confirmation' => 'I confirm the listing is ready for review.',
         'send_to_review' => 'Send to review',
         'comment' => 'Review comment',
         'review_status' => 'Review status',

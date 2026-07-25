@@ -32,7 +32,8 @@ class HostPropertyDraftService
             'country' => $data['country'] ?? $property->country ?? '',
             'city' => $data['city'] ?? $property->city ?? '',
             'district' => $data['district'] ?? $property->district ?? '',
-            'street' => $data['street'] ?? $property->street ?? '',
+            'street' => $data['street'] ?? $data['address'] ?? $property->street ?? '',
+            'address_line_1' => $data['address_line_1'] ?? $data['address'] ?? $property->address_line_1,
             'house_number' => $data['house_number'] ?? $property->house_number,
             'apartment_number' => $data['apartment_number'] ?? $property->apartment_number,
             'floor' => $data['floor'] ?? $property->floor,
@@ -49,6 +50,10 @@ class HostPropertyDraftService
 
         if (array_key_exists('rules', $data)) {
             $property->forceFill(['rules' => $data['rules']])->save();
+        }
+
+        if (array_key_exists('amenities', $data)) {
+            $property->forceFill(['amenities' => $data['amenities']])->save();
         }
 
         return $property;

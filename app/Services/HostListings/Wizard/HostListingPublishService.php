@@ -5,6 +5,7 @@ namespace App\Services\HostListings\Wizard;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class HostListingPublishService
@@ -18,14 +19,31 @@ class HostListingPublishService
     {
         $this->authorizeHost($host, $property);
 
-        $property->forceFill([
-            'publication_status' => 'pending_review',
-            'review_status' => 'pending',
-            'review_requested_at' => now(),
-            'review_comment' => $comment,
-        ])->save();
+        $readiness = $this->readiness->checkPublishReadiness($property);
 
-        return $property->fresh();
+        if (! $readiness['ready']) {
+            $this->statuses->markIncomplete($property);
+
+            throw ValidationException::withMessages([
+                'publication' => __('listing_wizard.errors.not_ready'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($property, $comment): Property {
+            $property->forceFill([
+                'publication_status' => 'pending_review',
+                'review_status' => 'pending',
+                'review_requested_at' => now(),
+                'reviewed_at' => null,
+                'review_comment' => $comment,
+                'rejection_reason' => null,
+            ])->save();
+
+            $property->rooms()->update(['publication_status' => 'pending_review']);
+            $property->sleepingPlaces()->update(['publication_status' => 'pending_review']);
+
+            return $property->fresh();
+        });
     }
 
     public function publishIfReady(User $host, Property $property): Property

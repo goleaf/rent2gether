@@ -8,6 +8,7 @@
     </span>
 </flux:label>
             <flux:input type="date" wire:model.change="start" icon="calendar-days" />
+            <flux:error name="start" />
         </flux:field>
         <flux:field>
             <flux:label>
@@ -17,6 +18,7 @@
     </span>
 </flux:label>
             <flux:input type="date" wire:model.change="end" icon="calendar-days" />
+            <flux:error name="end" />
         </flux:field>
         <flux:field>
             <flux:label>
@@ -26,10 +28,12 @@
     </span>
 </flux:label>
             <flux:input type="number" step="0.01" wire:model.blur="price" icon="banknotes" />
+            <flux:error name="price" />
         </flux:field>
     </div>
 
-    <flux:button type="button" variant="primary" wire:click="save" wire:loading.attr="disabled" icon="calendar-days">
-        {{ __('listing_calendar.actions.save_price') }}
+    <flux:button type="button" variant="primary" wire:click="save" wire:loading.attr="disabled" wire:target="save" icon="calendar-days">
+        <span wire:loading.remove wire:target="save">{{ __('listing_calendar.actions.save_price') }}</span>
+        <span wire:loading wire:target="save">{{ __('listing_wizard.actions.saving') }}</span>
     </flux:button>
 </flux:card>

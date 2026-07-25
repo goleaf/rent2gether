@@ -65,8 +65,8 @@
                 {{ __('listing_wizard.save_draft') }}
             </flux:button>
             @if($step === 'publish')
-                <flux:button type="button" variant="primary" wire:click="publish" wire:loading.attr="disabled" icon="check">
-                    {{ __('listing_wizard.publish') }}
+                <flux:button type="button" variant="primary" wire:click="publish" wire:loading.attr="disabled" icon="paper-airplane">
+                    {{ __('listing_wizard.request_review') }}
                 </flux:button>
             @else
                 <flux:button type="button" variant="primary" wire:click="next" wire:loading.attr="disabled" icon="arrow-right">

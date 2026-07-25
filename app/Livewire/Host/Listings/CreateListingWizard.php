@@ -77,8 +77,8 @@ class CreateListingWizard extends Component
         $host = auth()->user();
 
         if ($property instanceof Property && $host instanceof User) {
-            $publisher->publishIfReady($host, $property);
-            $this->dispatch('listing-published');
+            $publisher->requestPublication($host, $property);
+            $this->dispatch('listing-review-requested');
         }
     }
 
@@ -95,7 +95,11 @@ class CreateListingWizard extends Component
 
     private function property(): ?Property
     {
-        return $this->propertyId ? Property::query()->find($this->propertyId) : null;
+        return $this->propertyId
+            ? Property::query()
+                ->select(['id', 'host_user_id', 'user_id', 'title', 'publication_status', 'review_status'])
+                ->find($this->propertyId)
+            : null;
     }
 
     /**

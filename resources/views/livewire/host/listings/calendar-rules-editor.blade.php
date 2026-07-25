@@ -25,6 +25,7 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
+                <flux:error name="sleepingPlaceId" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -34,6 +35,7 @@
     </span>
 </flux:label>
                 <flux:input type="number" step="0.01" wire:model.blur="defaultPrice" icon="banknotes" />
+                <flux:error name="defaultPrice" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -43,6 +45,7 @@
     </span>
 </flux:label>
                 <flux:input type="number" min="1" wire:model.blur="minNights" icon="numbered-list" />
+                <flux:error name="minNights" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -52,6 +55,7 @@
     </span>
 </flux:label>
                 <flux:input type="number" min="1" wire:model.blur="maxNights" icon="numbered-list" />
+                <flux:error name="maxNights" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -61,6 +65,7 @@
     </span>
 </flux:label>
                 <flux:input type="number" min="0" wire:model.blur="cleaningGapHours" icon="numbered-list" />
+                <flux:error name="cleaningGapHours" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -70,6 +75,7 @@
     </span>
 </flux:label>
                 <flux:input type="number" min="0" wire:model.blur="cleaningGapDays" icon="numbered-list" />
+                <flux:error name="cleaningGapDays" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -79,6 +85,7 @@
     </span>
 </flux:label>
                 <flux:input type="time" wire:model.change="checkInTimeFrom" icon="calendar-days" />
+                <flux:error name="checkInTimeFrom" />
             </flux:field>
             <flux:field>
                 <flux:label>
@@ -88,6 +95,7 @@
     </span>
 </flux:label>
                 <flux:input type="time" wire:model.change="checkOutTimeUntil" icon="calendar-days" />
+                <flux:error name="checkOutTimeUntil" />
             </flux:field>
         </div>
 
@@ -95,7 +103,7 @@
             <flux:text size="sm" class="font-medium">{{ __('listing_calendar.fields.check_in_days') }}</flux:text>
             <div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
                 @foreach($weekdays as $day)
-                                        <flux:field variant="inline">
+                    <flux:field variant="inline">
                         <flux:checkbox wire:model.change="checkInDays" value="{{ $day }}" />
                         <flux:label>
                             <span class="inline-flex min-w-0 items-center gap-1.5">
@@ -107,13 +115,14 @@
                     </flux:field>
                 @endforeach
             </div>
+            <flux:error name="checkInDays" />
         </div>
 
         <div class="space-y-2">
             <flux:text size="sm" class="font-medium">{{ __('listing_calendar.fields.check_out_days') }}</flux:text>
             <div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
                 @foreach($weekdays as $day)
-                                        <flux:field variant="inline">
+                    <flux:field variant="inline">
                         <flux:checkbox wire:model.change="checkOutDays" value="{{ $day }}" />
                         <flux:label>
                             <span class="inline-flex min-w-0 items-center gap-1.5">
@@ -125,10 +134,12 @@
                     </flux:field>
                 @endforeach
             </div>
+            <flux:error name="checkOutDays" />
         </div>
 
-        <flux:button type="button" variant="primary" wire:click="saveSettings" wire:loading.attr="disabled" icon="calendar-days">
-            {{ __('listing_calendar.actions.save_settings') }}
+        <flux:button type="button" variant="primary" wire:click="saveSettings" wire:loading.attr="disabled" wire:target="saveSettings" icon="calendar-days">
+            <span wire:loading.remove wire:target="saveSettings">{{ __('listing_calendar.actions.save_settings') }}</span>
+            <span wire:loading wire:target="saveSettings">{{ __('listing_wizard.actions.saving') }}</span>
         </flux:button>
     @else
         <div class="rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">

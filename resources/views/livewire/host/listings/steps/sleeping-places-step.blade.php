@@ -9,7 +9,9 @@
         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('listing_wizard.sleeping_places.helper') }}</flux:text>
     </flux:card>
 
-    @foreach($rooms as $room)
+    @forelse($rooms as $room)
         <livewire:host.listings.sleeping-place-repeater :room-id="$room->id" :key="'place-repeater-'.$room->id" />
-    @endforeach
+    @empty
+        <flux:callout variant="secondary" icon="information-circle" :text="__('listing_wizard.rooms.empty')" />
+    @endforelse
 </div>
