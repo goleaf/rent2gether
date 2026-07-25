@@ -63,7 +63,8 @@ class NotificationsPage extends Component
             ->forUser(auth()->id())
             ->recent()
             ->limit(self::INITIAL_NOTIFICATION_LIMIT)
-            ->get();
+            ->get()
+            ->each->makeHidden('action_url');
     }
 
     public function render(): View

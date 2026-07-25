@@ -12,8 +12,14 @@ class NotificationActionButton extends Component
 
     public function render(): View
     {
+        $notification = Notification::query()
+            ->forUser(auth()->user())
+            ->find($this->notificationId);
+
+        $notification?->makeHidden('action_url');
+
         return view('livewire.notifications.notification-action-button', [
-            'notification' => Notification::query()->forUser(auth()->user())->find($this->notificationId),
+            'notification' => $notification,
         ]);
     }
 }

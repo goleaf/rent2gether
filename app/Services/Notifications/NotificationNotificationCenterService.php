@@ -14,7 +14,7 @@ class NotificationNotificationCenterService
      */
     public function getForUser(User $user, array $filters = []): CursorPaginator
     {
-        return Notification::query()
+        $notifications = Notification::query()
             ->select([
                 'id',
                 'notification_number',
@@ -47,6 +47,10 @@ class NotificationNotificationCenterService
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->cursorPaginate(20);
+
+        collect($notifications->items())->each->makeHidden('action_url');
+
+        return $notifications;
     }
 
     public function getUnreadCount(User $user): int
