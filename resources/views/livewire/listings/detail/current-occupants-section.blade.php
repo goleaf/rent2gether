@@ -39,15 +39,13 @@
                 <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            @if($card['alias'])
-                                <p class="font-medium text-zinc-900 dark:text-zinc-50">{{ $card['alias'] }}</p>
-                            @endif
+                            <p class="font-medium text-zinc-900 dark:text-zinc-50">{{ $card['display_name'] }}</p>
                             @if($card['age_range'])
                                 <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $card['age_range'] }}</p>
                             @endif
                         </div>
-                        @if($card['roommate_rating'])
-                            <flux:badge color="green" icon="check-circle">{{ __('occupants.roommate_rating') }}: {{ number_format($card['roommate_rating'], 1) }}</flux:badge>
+                        @if($card['roommate_rating_label'])
+                            <flux:badge color="green" icon="check-circle">{{ $card['roommate_rating_label'] }}</flux:badge>
                         @endif
                     </div>
 
@@ -59,15 +57,15 @@
                         </div>
                     @endif
 
-                    @if($card['languages'] !== [] || $card['checkout_date_label'])
-                        <div class="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
-                            @if($card['languages'] !== [])
-                                <p>{{ __('occupants.languages', ['languages' => implode(', ', $card['languages'])]) }}</p>
-                            @endif
-                            @if($card['checkout_date_label'])
-                                <p>{{ $card['checkout_date_label'] }}</p>
-                            @endif
-                        </div>
+                    @if($card['fields'] !== [])
+                        <dl class="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                            @foreach($card['fields'] as $field)
+                                <div class="min-w-0 rounded-md bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                                    <dt class="text-xs text-zinc-500 dark:text-zinc-400">{{ $field['label'] }}</dt>
+                                    <dd class="mt-0.5 break-words text-zinc-800 dark:text-zinc-100">{{ $field['value'] }}</dd>
+                                </div>
+                            @endforeach
+                        </dl>
                     @endif
                 </div>
             @endforeach

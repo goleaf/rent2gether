@@ -13,9 +13,12 @@ use App\Livewire\Listings\Detail\CurrentOccupantsSection;
 use App\Livewire\Profile\CoLivingPrivacySettings;
 use App\Livewire\Profile\CoLivingProfileForm;
 use App\Models\Booking;
+use App\Models\City;
 use App\Models\CoLivingProfile;
 use App\Models\CoLivingVisibilitySetting;
+use App\Models\Country;
 use App\Models\Property;
+use App\Models\Region;
 use App\Models\Room;
 use App\Models\RoomOccupantSnapshot;
 use App\Models\SleepingPlace;
@@ -70,6 +73,9 @@ class CurrentOccupantsFeatureTest extends TestCase
 
     public function test_snapshot_from_booking_and_prebooking_summary_are_privacy_safe(): void
     {
+        $country = Country::factory()->create(['name' => 'Lithuania', 'name_en' => 'Lithuania']);
+        $region = Region::factory()->for($country)->create(['name' => 'Vilnius County']);
+        $city = City::factory()->for($country)->for($region)->create(['name' => 'Vilnius']);
         $booking = $this->occupantBooking([
             'check_in_date' => '2026-07-08',
             'check_out_date' => '2026-07-12',
@@ -83,19 +89,28 @@ class CurrentOccupantsFeatureTest extends TestCase
         $this->profileFor($booking->guest, [
             'public_alias' => 'Alex',
             'age_range' => '25-34',
+            'gender_for_room_policy' => 'male',
+            'country_id' => $country->id,
+            'city_id' => $city->id,
             'languages_json' => ['en', 'ru'],
+            'stay_purpose' => 'work',
             'guest_type' => 'long_term_guest',
             'tourist' => false,
             'working' => true,
             'remote_worker' => true,
             'long_term_guest' => true,
             'sleep_schedule' => 'early_bird',
+            'wake_schedule' => 'early',
             'home_presence_level' => 'often_home',
             'smokes' => false,
             'social_level' => 'calm',
             'prefers_quiet' => true,
             'roommate_rating_average' => 4.8,
             'roommate_reviews_count' => 6,
+        ], [
+            'show_country' => true,
+            'show_city' => true,
+            'show_wake_schedule' => true,
         ]);
 
         $snapshot = app(RoomOccupantSnapshotService::class)->createFromBooking($booking);
@@ -104,16 +119,29 @@ class CurrentOccupantsFeatureTest extends TestCase
             new DateRange('2026-07-10', '2026-07-15'),
         );
 
-        $encoded = json_encode($summary->toArray(), JSON_THROW_ON_ERROR);
+        $encoded = json_encode($summary->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         $this->assertSame($booking->id, $snapshot->booking_id);
         $this->assertSame(1, $summary->occupantsCount);
+        $this->assertStringContainsString('Alex', $encoded);
+        $this->assertStringContainsString('25-34', $encoded);
+        $this->assertStringContainsString(__('occupants.options.gender.male'), $encoded);
+        $this->assertStringContainsString('Lithuania, Vilnius', $encoded);
+        $this->assertStringContainsString(__('occupants.options.stay_purpose.work'), $encoded);
         $this->assertStringContainsString(__('occupants.long_term_guest'), $encoded);
         $this->assertStringContainsString(__('occupants.remote_worker'), $encoded);
+        $this->assertStringContainsString(__('occupants.early_bird'), $encoded);
+        $this->assertStringContainsString(__('occupants.wake_schedules.early'), $encoded);
+        $this->assertStringContainsString(__('occupants.often_home'), $encoded);
+        $this->assertStringContainsString(__('occupants.does_not_smoke'), $encoded);
+        $this->assertStringContainsString(__('occupants.options.social.calm'), $encoded);
         $this->assertStringContainsString(__('occupants.quiet'), $encoded);
+        $this->assertStringContainsString('4.8 / 5', $encoded);
         $this->assertStringNotContainsString('Full Private Name', $encoded);
         $this->assertStringNotContainsString('private@example.test', $encoded);
         $this->assertStringNotContainsString('+37060000001', $encoded);
+        $this->assertStringNotContainsString('"user_id"', $encoded);
+        $this->assertStringNotContainsString('"booking_id"', $encoded);
     }
 
     public function test_date_overlap_rules_ignore_checkout_boundary_and_cancelled_bookings(): void
@@ -155,16 +183,31 @@ class CurrentOccupantsFeatureTest extends TestCase
     public function test_confirmed_booking_summary_shows_only_allowed_roommate_fields(): void
     {
         $occupantBooking = $this->occupantBooking();
+        $country = Country::factory()->create(['name' => 'Lithuania', 'name_en' => 'Lithuania']);
+        $region = Region::factory()->for($country)->create(['name' => 'Vilnius County']);
+        $city = City::factory()->for($country)->for($region)->create(['name' => 'Vilnius']);
         $this->profileFor($occupantBooking->guest, [
             'public_alias' => 'Alex',
             'age_range' => '25-34',
+            'gender_for_room_policy' => 'female',
+            'country_id' => $country->id,
+            'city_id' => $city->id,
             'languages_json' => ['en', 'ru'],
             'stay_purpose' => 'work',
             'guest_type' => 'remote_worker',
             'remote_worker' => true,
+            'sleep_schedule' => 'night_owl',
+            'wake_schedule' => 'late',
+            'home_presence_level' => 'rarely_home',
+            'smokes' => false,
+            'social_level' => 'social',
             'prefers_quiet' => true,
             'roommate_rating_average' => 4.8,
             'roommate_reviews_count' => 6,
+        ], [
+            'show_country' => true,
+            'show_city' => true,
+            'show_wake_schedule' => true,
         ]);
         app(RoomOccupantSnapshotService::class)->createFromBooking($occupantBooking);
 
@@ -182,15 +225,27 @@ class CurrentOccupantsFeatureTest extends TestCase
             $confirmedGuest,
             $viewerBooking,
         );
-        $encoded = json_encode($summary->toArray(), JSON_THROW_ON_ERROR);
+        $encoded = json_encode($summary->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         $this->assertSame(1, $summary->occupantsCount);
         $this->assertStringContainsString('Alex', $encoded);
         $this->assertStringContainsString('25-34', $encoded);
+        $this->assertStringContainsString(__('occupants.options.gender.female'), $encoded);
+        $this->assertStringContainsString('Lithuania, Vilnius', $encoded);
         $this->assertStringContainsString('EN', $encoded);
+        $this->assertStringContainsString(__('occupants.options.stay_purpose.work'), $encoded);
+        $this->assertStringContainsString(__('occupants.remote_worker'), $encoded);
+        $this->assertStringContainsString(__('occupants.night_owl'), $encoded);
+        $this->assertStringContainsString(__('occupants.wake_schedules.late'), $encoded);
+        $this->assertStringContainsString(__('occupants.rarely_home'), $encoded);
+        $this->assertStringContainsString(__('occupants.does_not_smoke'), $encoded);
+        $this->assertStringContainsString(__('occupants.social'), $encoded);
+        $this->assertStringContainsString('4.8 / 5', $encoded);
         $this->assertStringContainsString(__('occupants.checkout_date', ['date' => 'Jul 15, 2026']), $encoded);
         $this->assertStringNotContainsString($occupantBooking->guest->email, $encoded);
         $this->assertStringNotContainsString((string) $occupantBooking->guest->phone, $encoded);
+        $this->assertStringNotContainsString('"user_id"', $encoded);
+        $this->assertStringNotContainsString('"booking_id"', $encoded);
     }
 
     public function test_profile_and_privacy_livewire_forms_save_and_render_localized_copy(): void
@@ -260,8 +315,9 @@ class CurrentOccupantsFeatureTest extends TestCase
             ->assertSee(__('occupants.title'))
             ->assertSee(__('occupants.privacy_note'))
             ->assertSee(__('occupants.tourist'))
+            ->assertSee('Hidden Alias')
             ->assertDontSee('Do Not Render')
-            ->assertDontSee('Hidden Alias');
+            ->assertDontSee($booking->guest->email);
 
         Livewire::test(CurrentOccupantsSection::class, [
             'roomId' => $booking->room_id,
@@ -270,7 +326,8 @@ class CurrentOccupantsFeatureTest extends TestCase
         ])
             ->assertSee(__('occupants.title'))
             ->assertSee(__('occupants.tourist'))
-            ->assertDontSee('Hidden Alias');
+            ->assertSee('Hidden Alias')
+            ->assertDontSee($booking->guest->email);
     }
 
     public function test_compatibility_warnings_and_host_preview_are_privacy_safe(): void

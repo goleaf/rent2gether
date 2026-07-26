@@ -60,24 +60,31 @@ class RoomOccupantsForDateRangeQueryTest extends TestCase
         $this->assertSame([$earlier->id, $later->id], $snapshots->pluck('id')->all());
     }
 
-    public function test_it_selects_only_the_privacy_safe_summary_columns(): void
+    public function test_it_selects_only_the_privacy_safe_snapshot_summary_columns(): void
     {
         $room = $this->room();
         $this->snapshot($room, [
             'check_in_date' => '2026-07-10',
             'check_out_date' => '2026-07-15',
-            'country_label_snapshot' => 'Private Country',
-            'city_label_snapshot' => 'Private City',
+            'gender_for_room_policy_snapshot' => 'female',
+            'country_label_snapshot' => 'Lithuania',
+            'city_label_snapshot' => 'Vilnius',
         ]);
 
         $snapshot = $this->runQuery($room, new DateRange('2026-07-10', '2026-07-15'))->firstOrFail();
         $attributes = $snapshot->getAttributes();
 
         $this->assertArrayHasKey('public_alias_snapshot', $attributes);
+        $this->assertArrayHasKey('gender_for_room_policy_snapshot', $attributes);
+        $this->assertArrayHasKey('country_label_snapshot', $attributes);
+        $this->assertArrayHasKey('city_label_snapshot', $attributes);
         $this->assertArrayHasKey('languages_json_snapshot', $attributes);
         $this->assertArrayHasKey('can_show_before_booking', $attributes);
-        $this->assertArrayNotHasKey('country_label_snapshot', $attributes);
-        $this->assertArrayNotHasKey('city_label_snapshot', $attributes);
+        $this->assertArrayNotHasKey('booking_id', $attributes);
+        $this->assertArrayNotHasKey('user_id', $attributes);
+        $this->assertArrayNotHasKey('sleeping_place_id', $attributes);
+        $this->assertArrayNotHasKey('created_at', $attributes);
+        $this->assertArrayNotHasKey('updated_at', $attributes);
     }
 
     /**

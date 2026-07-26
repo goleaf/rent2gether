@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Queries\Occupants\RoomOccupantsForDateRangeQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Lang;
 
 class RoomOccupantSummaryService
 {
@@ -103,7 +104,7 @@ class RoomOccupantSummaryService
             badges: $this->badges($visibleForSummary),
             messages: $this->messages($count, $visibleForSummary),
             warnings: $this->aggregateWarnings($room, $snapshots),
-            cards: $confirmed ? $this->cards($visibleForCards) : [],
+            cards: $this->cards($confirmed ? $visibleForCards : $visibleForSummary),
             privacyNote: __('occupants.privacy_note'),
             confirmed: $confirmed,
         );
@@ -125,6 +126,14 @@ class RoomOccupantSummaryService
         foreach ($snapshots as $snapshot) {
             foreach ($this->guestTypeKeys($snapshot) as $key) {
                 $badges[] = __('occupants.'.$key);
+            }
+
+            if ($snapshot->age_range_snapshot) {
+                $badges[] = __('occupants.values.age_range', ['age' => $snapshot->age_range_snapshot]);
+            }
+
+            if ($snapshot->gender_for_room_policy_snapshot) {
+                $badges[] = $this->translatedOption('occupants.options.gender', $snapshot->gender_for_room_policy_snapshot);
             }
 
             if ($snapshot->prefers_quiet_snapshot === true) {
@@ -169,6 +178,10 @@ class RoomOccupantSummaryService
             $messages[] = __('occupants.languages', ['languages' => implode(', ', $languages)]);
         }
 
+        foreach ($this->summaryLines($snapshots) as $summaryLine) {
+            $messages[] = $summaryLine;
+        }
+
         return $messages;
     }
 
@@ -195,19 +208,20 @@ class RoomOccupantSummaryService
     {
         return $snapshots
             ->map(fn (RoomOccupantSnapshot $snapshot): RoomOccupantData => new RoomOccupantData(
-                snapshotId: $snapshot->id,
-                userId: $snapshot->user_id,
-                bookingId: $snapshot->booking_id,
+                displayName: $this->displayName($snapshot),
                 alias: $snapshot->public_alias_snapshot,
                 ageRange: $snapshot->age_range_snapshot,
                 languages: $this->languages($snapshot->languages_json_snapshot),
+                languagesLabel: $this->languagesLabel($snapshot),
                 checkoutDateLabel: $snapshot->check_out_date
                     ? __('occupants.checkout_date', ['date' => $snapshot->check_out_date->format('M j, Y')])
                     : null,
                 roommateRating: $snapshot->roommate_rating_average_snapshot === null ? null : (float) $snapshot->roommate_rating_average_snapshot,
+                roommateRatingLabel: $this->roommateRatingLabel($snapshot),
                 roommateReviewsCount: (int) $snapshot->roommate_reviews_count_snapshot,
                 badges: $this->cardBadges($snapshot),
                 lines: $this->cardLines($snapshot),
+                fields: $this->cardFields($snapshot),
             ))
             ->values()
             ->all();
@@ -247,6 +261,191 @@ class RoomOccupantSummaryService
             $snapshot->home_presence_level_snapshot ? __('occupants.'.$snapshot->home_presence_level_snapshot) : null,
             $snapshot->check_out_date ? __('occupants.checkout_date', ['date' => $snapshot->check_out_date->format('M j, Y')]) : null,
         ]));
+    }
+
+    /**
+     * @param  Collection<int, RoomOccupantSnapshot>  $snapshots
+     * @return list<string>
+     */
+    private function summaryLines(Collection $snapshots): array
+    {
+        return $snapshots
+            ->take(3)
+            ->map(function (RoomOccupantSnapshot $snapshot): string {
+                $details = array_values(array_filter([
+                    $snapshot->age_range_snapshot,
+                    $snapshot->gender_for_room_policy_snapshot
+                        ? $this->translatedOption('occupants.options.gender', $snapshot->gender_for_room_policy_snapshot)
+                        : null,
+                    $this->locationLabel($snapshot),
+                    $this->stayPurposeLabel($snapshot),
+                    $snapshot->sleep_schedule_snapshot ? __('occupants.'.$snapshot->sleep_schedule_snapshot) : null,
+                    $snapshot->home_presence_level_snapshot ? __('occupants.'.$snapshot->home_presence_level_snapshot) : null,
+                    $this->smokingLabel($snapshot),
+                    $snapshot->social_level_snapshot ? $this->socialLevelLabel($snapshot) : null,
+                    $snapshot->prefers_quiet_snapshot === true ? __('occupants.quiet') : null,
+                    $this->roommateRatingLabel($snapshot),
+                    $snapshot->check_out_date ? __('occupants.checkout_date', ['date' => $snapshot->check_out_date->format('M j, Y')]) : null,
+                ]));
+
+                if ($details === []) {
+                    return $this->displayName($snapshot);
+                }
+
+                return __('occupants.values.occupant_summary', [
+                    'name' => $this->displayName($snapshot),
+                    'details' => implode(', ', array_slice($details, 0, 7)),
+                ]);
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array{label:string,value:string}>
+     */
+    private function cardFields(RoomOccupantSnapshot $snapshot): array
+    {
+        $fields = [];
+
+        $this->addField($fields, 'occupants.fields.age_range', $snapshot->age_range_snapshot);
+        $this->addField($fields, 'occupants.fields.gender_for_room_policy', $snapshot->gender_for_room_policy_snapshot ? $this->translatedOption('occupants.options.gender', $snapshot->gender_for_room_policy_snapshot) : null);
+        $this->addField($fields, 'occupants.fields.location', $this->locationLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.languages', $this->languagesLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.stay_purpose', $this->stayPurposeLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.guest_type', $this->guestTypeLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.sleep_schedule', $snapshot->sleep_schedule_snapshot ? __('occupants.'.$snapshot->sleep_schedule_snapshot) : null);
+        $this->addField($fields, 'occupants.fields.wake_schedule', $this->wakeScheduleLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.home_presence_level', $snapshot->home_presence_level_snapshot ? __('occupants.'.$snapshot->home_presence_level_snapshot) : null);
+        $this->addField($fields, 'occupants.fields.smoking_status', $this->smokingLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.social_level', $snapshot->social_level_snapshot ? $this->socialLevelLabel($snapshot) : null);
+        $this->addField($fields, 'occupants.fields.quiet_preference', $snapshot->prefers_quiet_snapshot === true ? __('occupants.quiet') : null);
+        $this->addField($fields, 'occupants.fields.roommate_rating', $this->roommateRatingLabel($snapshot));
+        $this->addField($fields, 'occupants.fields.checkout_date', $snapshot->check_out_date ? __('occupants.checkout_date', ['date' => $snapshot->check_out_date->format('M j, Y')]) : null);
+
+        return $fields;
+    }
+
+    /**
+     * @param  list<array{label:string,value:string}>  $fields
+     */
+    private function addField(array &$fields, string $labelKey, ?string $value): void
+    {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        $fields[] = [
+            'label' => __($labelKey),
+            'value' => $value,
+        ];
+    }
+
+    private function displayName(RoomOccupantSnapshot $snapshot): string
+    {
+        return $snapshot->public_alias_snapshot ?: __('occupants.values.private_occupant');
+    }
+
+    private function languagesLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        $languages = $this->languages($snapshot->languages_json_snapshot);
+
+        if ($languages === []) {
+            return null;
+        }
+
+        return implode(', ', $languages);
+    }
+
+    private function locationLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        if ($snapshot->country_label_snapshot && $snapshot->city_label_snapshot) {
+            return __('occupants.values.country_city', [
+                'country' => $snapshot->country_label_snapshot,
+                'city' => $snapshot->city_label_snapshot,
+            ]);
+        }
+
+        return $snapshot->city_label_snapshot ?: $snapshot->country_label_snapshot;
+    }
+
+    private function stayPurposeLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        return $this->translatedOption('occupants.options.stay_purpose', $snapshot->stay_purpose_snapshot)
+            ?? $this->translatedOption('occupants.purposes', $snapshot->stay_purpose_snapshot);
+    }
+
+    private function guestTypeLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        $labels = collect($this->guestTypeKeys($snapshot))
+            ->map(fn (string $key): string => __('occupants.'.$key))
+            ->values()
+            ->all();
+
+        if ($labels === []) {
+            return null;
+        }
+
+        return implode(', ', $labels);
+    }
+
+    private function wakeScheduleLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        return $this->translatedOption('occupants.wake_schedules', $snapshot->wake_schedule_snapshot)
+            ?? $this->translatedOption('occupants.options.schedule', $snapshot->wake_schedule_snapshot);
+    }
+
+    private function smokingLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        if ($snapshot->smokes_snapshot === true) {
+            return __('occupants.smokes');
+        }
+
+        if ($snapshot->smokes_snapshot === false) {
+            return __('occupants.does_not_smoke');
+        }
+
+        return null;
+    }
+
+    private function socialLevelLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        return $this->translatedOption('occupants.options.social', $snapshot->social_level_snapshot)
+            ?? $this->translatedOption('occupants', $snapshot->social_level_snapshot);
+    }
+
+    private function roommateRatingLabel(RoomOccupantSnapshot $snapshot): ?string
+    {
+        if ($snapshot->roommate_rating_average_snapshot === null) {
+            return null;
+        }
+
+        $reviewsCount = (int) $snapshot->roommate_reviews_count_snapshot;
+        $rating = number_format((float) $snapshot->roommate_rating_average_snapshot, 1);
+
+        if ($reviewsCount > 0) {
+            return trans_choice('occupants.values.rating_with_reviews', $reviewsCount, [
+                'rating' => $rating,
+                'count' => $reviewsCount,
+            ]);
+        }
+
+        return __('occupants.values.rating', ['rating' => $rating]);
+    }
+
+    private function translatedOption(string $prefix, ?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $key = $prefix.'.'.$value;
+
+        if (Lang::has($key)) {
+            return __($key);
+        }
+
+        return str($value)->replace('_', ' ')->ucfirst()->toString();
     }
 
     /**

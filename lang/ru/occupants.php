@@ -26,6 +26,7 @@ return [
     'roommate_rating' => 'Рейтинг как сосед',
     'checkout_date' => 'Выезд: :date',
     'privacy_note' => 'Личные данные жильцов скрыты до подтверждения бронирования.',
+    'private_occupant' => 'Жилец с приватным профилем',
 
     'fields' => [
         'public_alias' => 'Псевдоним',
@@ -33,6 +34,7 @@ return [
         'room' => 'Комната',
         'sleeping_place' => 'Спальное место',
         'age_range' => 'Возрастной диапазон',
+        'location' => 'Страна или город',
         'city' => 'Город',
         'gender_for_room_policy' => 'Пол, если важен для формата комнаты',
         'languages' => 'Языки общения',
@@ -47,6 +49,8 @@ return [
         'smoking_location' => 'Где курите',
         'has_pet' => 'Есть животное',
         'social_level' => 'Уровень общительности',
+        'quiet_preference' => 'Предпочтение тишины',
+        'roommate_rating' => 'Рейтинг как сосед',
         'cleanliness_level' => 'Отношение к чистоте',
         'participates_in_cleaning' => 'Участвует в уборке',
         'respects_personal_space' => 'Уважает личное пространство',
@@ -78,6 +82,12 @@ return [
         'works_at_night' => 'Работает ночью',
         'often_at_home' => 'Часто дома',
         'rarely_at_home' => 'Редко дома',
+    ],
+
+    'wake_schedules' => [
+        'early' => 'Рано встаёт',
+        'normal' => 'Обычное время подъёма',
+        'late' => 'Поздно встаёт',
     ],
 
     'smoking_statuses' => [
@@ -177,6 +187,15 @@ return [
         'current_roommates_count' => 'Сейчас в комнате: :count жильцов.',
         'roommate' => 'Сосед',
         'private_roommate' => 'Сосед с приватным профилем',
+    ],
+
+    'values' => [
+        'age_range' => 'Возраст :age',
+        'country_city' => ':country, :city',
+        'occupant_summary' => ':name: :details',
+        'private_occupant' => 'Жилец с приватным профилем',
+        'rating' => ':rating / 5',
+        'rating_with_reviews' => '{1}:rating / 5 по :count отзыву|[2,4]:rating / 5 по :count отзывам|[5,*]:rating / 5 по :count отзывам',
     ],
 
     'warnings' => [

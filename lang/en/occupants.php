@@ -26,6 +26,7 @@ return [
     'roommate_rating' => 'Roommate rating',
     'checkout_date' => 'Checkout: :date',
     'privacy_note' => 'Personal roommate details are hidden before a booking is confirmed.',
+    'private_occupant' => 'Private resident',
 
     'fields' => [
         'public_alias' => 'Public alias',
@@ -33,6 +34,7 @@ return [
         'room' => 'Room',
         'sleeping_place' => 'Sleeping place',
         'age_range' => 'Age range',
+        'location' => 'Country or city',
         'city' => 'City',
         'gender_for_room_policy' => 'Gender, when relevant to room format',
         'languages' => 'Languages',
@@ -47,6 +49,8 @@ return [
         'smoking_location' => 'Smoking location',
         'has_pet' => 'Has a pet',
         'social_level' => 'Social style',
+        'quiet_preference' => 'Quiet preference',
+        'roommate_rating' => 'Roommate rating',
         'cleanliness_level' => 'Cleanliness style',
         'participates_in_cleaning' => 'Helps with cleaning',
         'respects_personal_space' => 'Respects personal space',
@@ -78,6 +82,12 @@ return [
         'works_at_night' => 'Works at night',
         'often_at_home' => 'Often at home',
         'rarely_at_home' => 'Rarely at home',
+    ],
+
+    'wake_schedules' => [
+        'early' => 'Wakes up early',
+        'normal' => 'Regular wake time',
+        'late' => 'Wakes up late',
     ],
 
     'smoking_statuses' => [
@@ -177,6 +187,15 @@ return [
         'current_roommates_count' => 'Current residents in this room: :count.',
         'roommate' => 'Roommate',
         'private_roommate' => 'Private roommate',
+    ],
+
+    'values' => [
+        'age_range' => 'Age :age',
+        'country_city' => ':country, :city',
+        'occupant_summary' => ':name: :details',
+        'private_occupant' => 'Private resident',
+        'rating' => ':rating / 5',
+        'rating_with_reviews' => '{1}:rating / 5 from :count review|[2,*]:rating / 5 from :count reviews',
     ],
 
     'warnings' => [
