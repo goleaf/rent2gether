@@ -535,6 +535,8 @@ class DemoHostGuestSeeder extends Seeder
 
         for ($index = 1; $index <= 2; $index++) {
             $place = $places[($index - 1) % count($places)];
+            $checkIn = CarbonImmutable::now()->addDays($index * 10)->startOfDay();
+            $checkOut = $checkIn->addDays(5);
 
             SavedSearch::query()->firstOrCreate([
                 'user_id' => $guest->id,
@@ -549,11 +551,15 @@ class DemoHostGuestSeeder extends Seeder
             WaitlistItem::query()->firstOrCreate([
                 'user_id' => $guest->id,
                 'sleeping_place_id' => $place->id,
-                'desired_check_in_date' => CarbonImmutable::now()->addDays($index * 10)->toDateString(),
+                'desired_check_in_date' => $checkIn->toDateString(),
+                'desired_check_out_date' => $checkOut->toDateString(),
             ], WaitlistItem::factory()->make([
                 'user_id' => $guest->id,
                 'sleeping_place_id' => $place->id,
-                'desired_check_in_date' => CarbonImmutable::now()->addDays($index * 10)->toDateString(),
+                'desired_check_in' => $checkIn->toDateString(),
+                'desired_check_out' => $checkOut->toDateString(),
+                'desired_check_in_date' => $checkIn->toDateString(),
+                'desired_check_out_date' => $checkOut->toDateString(),
             ])->getAttributes());
         }
 

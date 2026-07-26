@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\BookingHostResponse;
 use App\Models\Booking;
+use App\Models\BookingHostResponse;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\NotificationDigest;
 use App\Models\NotificationEvent;
 use App\Models\NotificationReminder;
+use Illuminate\Database\Eloquent\Model;
 
 class NotificationNumberService
 {
@@ -51,7 +52,7 @@ class NotificationNumberService
     }
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  class-string<Model>  $model
      */
     private function nextNumber(string $prefix, string $model, string $column): string
     {

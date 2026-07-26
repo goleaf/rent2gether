@@ -4,6 +4,7 @@ namespace App\Services\Bookings;
 
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceCancellationPolicy;
+use App\Models\SleepingPlaceCancellationPolicyRule;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -83,7 +84,7 @@ class CancellationPolicyService
     }
 
     /**
-     * @return Collection<int, \App\Models\SleepingPlaceCancellationPolicyRule>
+     * @return Collection<int, SleepingPlaceCancellationPolicyRule>
      */
     public function getRules(SleepingPlaceCancellationPolicy $policy): Collection
     {

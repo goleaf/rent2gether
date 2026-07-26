@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\BookingHostUnresponsiveCase;
 use App\Models\HostUnresponsiveStatusLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,7 +21,7 @@ class HostUnresponsiveStatusLogFactory extends Factory
     {
         return [
             'host_unresponsive_case_id' => BookingHostUnresponsiveCase::factory(),
-            'booking_id' => \App\Models\Booking::factory(),
+            'booking_id' => Booking::factory(),
             'old_status' => null,
             'new_status' => 'reported',
             'reason_key' => 'host_unresponsive_reported',

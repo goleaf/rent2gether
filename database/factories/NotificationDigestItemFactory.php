@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\NotificationDigestItem;
 use App\Models\Notification;
 use App\Models\NotificationDigest;
+use App\Models\NotificationDigestItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

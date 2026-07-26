@@ -37,6 +37,7 @@ use App\Models\UserProfile;
 use App\Services\Reviews\RatingAggregateService;
 use App\Services\Reviews\RatingEventService;
 use App\Services\Reviews\RatingImpactService;
+use App\Services\Reviews\RatingSnapshotService;
 use App\Services\Reviews\ReviewEligibilityService;
 use App\Services\Reviews\ReviewMediaService;
 use App\Services\Reviews\ReviewPrivacyService;
@@ -44,9 +45,13 @@ use App\Services\Reviews\ReviewPublishingService;
 use App\Services\Reviews\ReviewRequestService;
 use App\Services\Reviews\ReviewResponseService;
 use App\Services\Reviews\ReviewService;
+use App\Services\Reviews\RoommateExperienceReviewService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -192,6 +197,251 @@ class ReviewsRatingsReputationPointTwentySixTest extends TestCase
         $this->assertArrayHasKey('roommate_summary', $public);
         $this->assertArrayNotHasKey('target_user_id', $public);
         $this->assertArrayNotHasKey('private_comment', $public);
+    }
+
+    public function test_public_roommate_summary_uses_one_aggregate_lookup_instead_of_repeated_counts(): void
+    {
+        [$booking, , , $place] = $this->createCompletedStay();
+        $room = Room::query()->findOrFail($place->room_id);
+
+        RoommateExperienceReview::factory()->create([
+            'booking_id' => $booking->id,
+            'room_id' => $room->id,
+            'property_id' => $place->property_id,
+            'sleeping_place_id' => $place->id,
+            'quiet_roommates' => true,
+            'clean_roommates' => true,
+            'friendly_roommates' => false,
+            'roommate_experience_rating' => 4,
+        ]);
+        RoommateExperienceReview::factory()->create([
+            'booking_id' => $booking->id,
+            'room_id' => $room->id,
+            'property_id' => $place->property_id,
+            'sleeping_place_id' => $place->id,
+            'quiet_roommates' => false,
+            'clean_roommates' => true,
+            'friendly_roommates' => true,
+            'roommate_experience_rating' => 2,
+        ]);
+
+        $summaryAggregateQueries = 0;
+        DB::listen(static function ($query) use (&$summaryAggregateQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (
+                str_starts_with($sql, 'select count(*) as "aggregate" from "roommate_experience_reviews"')
+                || str_starts_with($sql, 'select avg("roommate_experience_rating") as "aggregate" from "roommate_experience_reviews"')
+            ) {
+                $summaryAggregateQueries++;
+            }
+        });
+
+        $this->assertSame([
+            'reviews_count' => 2,
+            'quiet_roommates_count' => 1,
+            'clean_roommates_count' => 2,
+            'friendly_roommates_count' => 1,
+            'average_rating' => 3.0,
+        ], app(RoommateExperienceReviewService::class)->buildPublicRoommateSummary($room));
+        $this->assertLessThanOrEqual(1, $summaryAggregateQueries, 'Roommate summary should avoid repeated aggregate queries.');
+    }
+
+    public function test_roommate_summary_query_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasIndex('roommate_experience_reviews', ['room_id', 'quiet_roommates']));
+        $this->assertTrue(Schema::hasIndex('roommate_experience_reviews', ['room_id', 'clean_roommates']));
+        $this->assertTrue(Schema::hasIndex('roommate_experience_reviews', ['room_id', 'friendly_roommates']));
+        $this->assertTrue(Schema::hasIndex('roommate_experience_reviews', ['room_id', 'roommate_experience_rating']));
+    }
+
+    public function test_sleeping_place_rating_snapshot_uses_one_summary_lookup_instead_of_repeated_review_aggregates(): void
+    {
+        [$booking, $guest, $host, $place] = $this->createCompletedStay();
+        $firstReview = $this->createPublishedPlaceReview($booking, $guest, $host, $place, 4);
+        $firstReview->forceFill(['published_at' => '2026-06-20 10:00:00'])->save();
+
+        ReviewMedia::factory()->for($firstReview, 'review')->create([
+            'uploaded_by_user_id' => $guest->id,
+            'approved_for_public_display' => true,
+        ]);
+
+        $secondGuest = User::factory()->create(['name' => 'Point 26 Snapshot Guest']);
+        $secondBooking = Booking::factory()->create([
+            'bed_id' => null,
+            'guest_id' => $secondGuest->id,
+            'guest_user_id' => $secondGuest->id,
+            'host_id' => $host->id,
+            'host_user_id' => $host->id,
+            'property_id' => $place->property_id,
+            'room_id' => $place->room_id,
+            'sleeping_place_id' => $place->id,
+            'status' => BookingStatus::Completed,
+            'payment_status' => PaymentStatus::Paid,
+            'check_in' => '2026-06-16',
+            'check_out' => '2026-06-18',
+            'check_in_date' => '2026-06-16',
+            'check_out_date' => '2026-06-18',
+            'checked_in_at' => '2026-06-16 15:00:00',
+            'checked_out_at' => '2026-06-18 11:00:00',
+            'review_deadline_at' => '2026-07-02 12:00:00',
+        ]);
+        $secondReview = $this->createPublishedPlaceReview($secondBooking, $secondGuest, $host, $place, 5);
+        $secondReview->forceFill(['published_at' => '2026-06-21 10:00:00'])->save();
+
+        $reviewAggregateQueries = 0;
+        DB::listen(static function ($query) use (&$reviewAggregateQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (
+                str_starts_with($sql, 'select count(*) as "aggregate" from "reviews"')
+                || str_starts_with($sql, 'select max("published_at") as "aggregate" from "reviews"')
+            ) {
+                $reviewAggregateQueries++;
+            }
+        });
+
+        $snapshot = (new RatingSnapshotService(new class extends RatingAggregateService
+        {
+            /**
+             * @param  array<string, int|null>  $targetIds
+             * @return Collection<int, RatingAggregate>
+             */
+            public function recalculateTarget(string $targetType, array $targetIds): Collection
+            {
+                return collect();
+            }
+
+            /**
+             * @param  array<string, int|null>  $targetIds
+             */
+            public function getAggregate(string $targetType, array $targetIds, string $metricKey): ?RatingAggregate
+            {
+                return new RatingAggregate([
+                    'rating_average' => $metricKey === 'overall' ? 4.5 : 0,
+                    'rating_count' => $metricKey === 'overall' ? 2 : 0,
+                ]);
+            }
+        }))->recalculateSleepingPlace($place);
+
+        $this->assertSame(2, $snapshot->published_reviews_count);
+        $this->assertSame(1, $snapshot->photo_reviews_count);
+        $this->assertSame('2026-06-21 10:00:00', $snapshot->last_review_at?->format('Y-m-d H:i:s'));
+        $this->assertLessThanOrEqual(1, $reviewAggregateQueries, 'Sleeping-place rating snapshot should avoid repeated review aggregate lookups.');
+    }
+
+    public function test_person_rating_snapshots_avoid_repeated_review_count_aggregates(): void
+    {
+        [$booking, $guest, $host, $place] = $this->createCompletedStay();
+
+        Review::factory()->create([
+            'booking_id' => $booking->id,
+            'reviewer_id' => $guest->id,
+            'reviewee_id' => $host->id,
+            'author_user_id' => $guest->id,
+            'author_type' => 'guest',
+            'target_user_id' => $host->id,
+            'target_type' => 'host',
+            'guest_user_id' => $guest->id,
+            'host_user_id' => $host->id,
+            'type' => 'problem_resolution',
+            'review_subject_type' => 'host',
+            'bed_id' => null,
+            'sleeping_place_id' => $place->id,
+            'room_id' => $place->room_id,
+            'property_id' => $place->property_id,
+            'status' => 'published',
+            'is_public' => true,
+            'published_at' => now(),
+            'visible_at' => now(),
+        ]);
+
+        Review::factory()->create([
+            'booking_id' => $booking->id,
+            'reviewer_id' => $host->id,
+            'reviewee_id' => $guest->id,
+            'author_user_id' => $host->id,
+            'author_type' => 'host',
+            'target_user_id' => $guest->id,
+            'target_type' => 'guest',
+            'guest_user_id' => $guest->id,
+            'host_user_id' => $host->id,
+            'type' => 'guest_check_out',
+            'review_subject_type' => 'guest',
+            'bed_id' => null,
+            'sleeping_place_id' => $place->id,
+            'room_id' => $place->room_id,
+            'property_id' => $place->property_id,
+            'recommend_guest' => true,
+            'status' => 'published',
+            'is_public' => true,
+            'published_at' => now(),
+            'visible_at' => now(),
+        ]);
+
+        Review::factory()->create([
+            'booking_id' => $booking->id,
+            'reviewer_id' => $host->id,
+            'reviewee_id' => $guest->id,
+            'author_user_id' => $host->id,
+            'author_type' => 'host',
+            'target_user_id' => $guest->id,
+            'target_type' => 'guest',
+            'guest_user_id' => $guest->id,
+            'host_user_id' => $host->id,
+            'type' => 'host_to_guest',
+            'review_subject_type' => 'guest',
+            'bed_id' => null,
+            'sleeping_place_id' => $place->id,
+            'room_id' => $place->room_id,
+            'property_id' => $place->property_id,
+            'recommend_guest' => false,
+            'status' => 'published',
+            'is_public' => true,
+            'published_at' => now(),
+            'visible_at' => now(),
+        ]);
+
+        $standaloneReviewCountQueries = 0;
+        DB::listen(static function ($query) use (&$standaloneReviewCountQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (preg_match('/^select count\((?:distinct "booking_id"|\*)\) as "?aggregate"? from "reviews"/', $sql) === 1) {
+                $standaloneReviewCountQueries++;
+            }
+        });
+
+        $snapshotService = new RatingSnapshotService(new class extends RatingAggregateService
+        {
+            /**
+             * @param  array<string, int|null>  $targetIds
+             * @return Collection<int, RatingAggregate>
+             */
+            public function recalculateTarget(string $targetType, array $targetIds): Collection
+            {
+                return collect();
+            }
+
+            /**
+             * @param  array<string, int|null>  $targetIds
+             */
+            public function getAggregate(string $targetType, array $targetIds, string $metricKey): ?RatingAggregate
+            {
+                return new RatingAggregate([
+                    'rating_average' => $metricKey === 'overall' ? 4.5 : 0,
+                    'rating_count' => $metricKey === 'overall' ? 2 : 0,
+                ]);
+            }
+        });
+
+        $hostSnapshot = $snapshotService->recalculateHost($host);
+        $guestSnapshot = $snapshotService->recalculateGuest($guest);
+
+        $this->assertSame(1, $hostSnapshot->completed_stays_count);
+        $this->assertSame(1, $guestSnapshot->completed_stays_count);
+        $this->assertSame(1, $guestSnapshot->recommended_by_hosts_count);
+        $this->assertSame(1, $guestSnapshot->not_recommended_by_hosts_count);
+        $this->assertLessThanOrEqual(2, $standaloneReviewCountQueries, 'Person reputation snapshots should avoid repeated standalone review count queries.');
     }
 
     public function test_rating_aggregate_recalculates_multiple_published_reviews_for_same_sleeping_place(): void

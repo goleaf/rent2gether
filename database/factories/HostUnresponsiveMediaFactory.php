@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\BookingHostUnresponsiveCase;
 use App\Models\HostUnresponsiveMedia;
 use App\Models\User;
@@ -21,7 +22,7 @@ class HostUnresponsiveMediaFactory extends Factory
     {
         return [
             'host_unresponsive_case_id' => BookingHostUnresponsiveCase::factory(),
-            'booking_id' => \App\Models\Booking::factory(),
+            'booking_id' => Booking::factory(),
             'uploaded_by_user_id' => User::factory(),
             'media_type' => 'photo',
             'media_role' => 'guest_waiting_evidence',

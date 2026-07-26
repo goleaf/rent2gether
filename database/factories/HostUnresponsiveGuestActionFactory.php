@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\BookingHostUnresponsiveCase;
 use App\Models\HostUnresponsiveGuestAction;
 use App\Models\User;
@@ -21,7 +22,7 @@ class HostUnresponsiveGuestActionFactory extends Factory
     {
         return [
             'host_unresponsive_case_id' => BookingHostUnresponsiveCase::factory(),
-            'booking_id' => \App\Models\Booking::factory(),
+            'booking_id' => Booking::factory(),
             'guest_user_id' => User::factory(),
             'action_type' => 'reported_host_not_answering',
             'message' => $this->faker->sentence(),

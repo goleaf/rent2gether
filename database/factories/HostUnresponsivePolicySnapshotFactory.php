@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\HostUnresponsivePolicySnapshot;
 use App\Models\Property;
 use App\Models\SleepingPlace;
@@ -20,7 +21,7 @@ class HostUnresponsivePolicySnapshotFactory extends Factory
     public function definition(): array
     {
         return [
-            'booking_id' => \App\Models\Booking::factory(),
+            'booking_id' => Booking::factory(),
             'sleeping_place_id' => SleepingPlace::factory(),
             'property_id' => Property::factory(),
             'pre_check_in_response_minutes' => 240,

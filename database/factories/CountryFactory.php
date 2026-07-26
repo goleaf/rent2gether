@@ -40,8 +40,19 @@ class CountryFactory extends Factory
     {
         do {
             $code = strtoupper($this->faker->unique()->lexify(str_repeat('?', $length)));
-        } while (Country::query()->where($column, $code)->exists());
+        } while ($this->countryCodeExists($column, $code));
 
         return $code;
+    }
+
+    private function countryCodeExists(string $column, string $code): bool
+    {
+        $query = Country::query()->where($column, $code);
+
+        if ($column === 'iso2') {
+            $query->orWhere('code', $code);
+        }
+
+        return $query->exists();
     }
 }

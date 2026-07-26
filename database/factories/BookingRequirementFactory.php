@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\BookingRequirement;
 use App\Models\Booking;
+use App\Models\BookingRequirement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

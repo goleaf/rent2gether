@@ -11,7 +11,6 @@ use App\Models\BookingRequest;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
-use App\Models\SleepingPlaceBookingDateLock;
 use App\Models\User;
 use App\Services\BookingRequests\BookingRequestCreationService;
 use App\Services\BookingRequests\BookingRequestHostResponseService;

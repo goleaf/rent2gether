@@ -5,6 +5,7 @@ namespace App\Services\Reviews;
 use App\Models\Review;
 use App\Models\Room;
 use App\Models\RoommateExperienceReview;
+use Illuminate\Database\Eloquent\Builder;
 
 class RoommateExperienceReviewService
 {
@@ -40,14 +41,33 @@ class RoommateExperienceReviewService
      */
     public function buildPublicRoommateSummary(Room $room): array
     {
-        $query = RoommateExperienceReview::query()->where('room_id', $room->id);
+        $room = Room::query()
+            ->select(['id'])
+            ->withCount([
+                'roommateExperienceReviews as roommate_reviews_count',
+                'roommateExperienceReviews as quiet_roommates_count' => fn (Builder $query) => $query->where('quiet_roommates', true),
+                'roommateExperienceReviews as clean_roommates_count' => fn (Builder $query) => $query->where('clean_roommates', true),
+                'roommateExperienceReviews as friendly_roommates_count' => fn (Builder $query) => $query->where('friendly_roommates', true),
+            ])
+            ->withAvg('roommateExperienceReviews as roommate_average_rating', 'roommate_experience_rating')
+            ->find($room->id);
+
+        if (! $room instanceof Room) {
+            return [
+                'reviews_count' => 0,
+                'quiet_roommates_count' => 0,
+                'clean_roommates_count' => 0,
+                'friendly_roommates_count' => 0,
+                'average_rating' => 0.0,
+            ];
+        }
 
         return [
-            'reviews_count' => (int) $query->count(),
-            'quiet_roommates_count' => (int) (clone $query)->where('quiet_roommates', true)->count(),
-            'clean_roommates_count' => (int) (clone $query)->where('clean_roommates', true)->count(),
-            'friendly_roommates_count' => (int) (clone $query)->where('friendly_roommates', true)->count(),
-            'average_rating' => round((float) ($query->avg('roommate_experience_rating') ?: 0), 2),
+            'reviews_count' => (int) $room->roommate_reviews_count,
+            'quiet_roommates_count' => (int) $room->quiet_roommates_count,
+            'clean_roommates_count' => (int) $room->clean_roommates_count,
+            'friendly_roommates_count' => (int) $room->friendly_roommates_count,
+            'average_rating' => round((float) ($room->roommate_average_rating ?: 0), 2),
         ];
     }
 }

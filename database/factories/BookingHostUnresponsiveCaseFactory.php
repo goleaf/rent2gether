@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\BookingHostUnresponsiveCase;
 use App\Models\Property;
 use App\Models\Room;
@@ -23,7 +24,7 @@ class BookingHostUnresponsiveCaseFactory extends Factory
     {
         return [
             'case_number' => sprintf('HU-%s-%06d', now()->format('Y'), $this->faker->unique()->numberBetween(1, 999999)),
-            'booking_id' => \App\Models\Booking::factory(),
+            'booking_id' => Booking::factory(),
             'guest_user_id' => User::factory(),
             'host_user_id' => User::factory()->host(),
             'property_id' => Property::factory(),

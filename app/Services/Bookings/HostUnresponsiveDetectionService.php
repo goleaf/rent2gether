@@ -5,11 +5,12 @@ namespace App\Services\Bookings;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingHostUnresponsiveCase;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 
 class HostUnresponsiveDetectionService
 {
-    public function canReport(\App\Models\User $guest, Booking $booking): bool
+    public function canReport(User $guest, Booking $booking): bool
     {
         return (int) $booking->guest_user_id === (int) $guest->id
             && in_array($this->statusValue($booking), $this->allowedStatuses(), true)

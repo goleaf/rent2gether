@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\BookingListingMismatchResolutionOption;
 use App\Models\BookingListingMismatchReport;
+use App\Models\BookingListingMismatchResolutionOption;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

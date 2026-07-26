@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\NotificationAction;
 use App\Models\Notification;
+use App\Models\NotificationAction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

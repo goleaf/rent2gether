@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\BookingLifecycleEvent;
 use App\Models\Booking;
+use App\Models\BookingLifecycleEvent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

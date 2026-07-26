@@ -3,6 +3,7 @@
 namespace App\Livewire\Host\Bulk;
 
 use App\Models\Booking;
+use App\Models\HostBulkActionBatch;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 abstract class BaseHostBulkComponent extends Component
@@ -95,13 +97,18 @@ abstract class BaseHostBulkComponent extends Component
 
     public string $identicalType = 'single';
 
+    #[Locked]
     public ?int $lastBatchId = null;
 
-    /** @var array<string, mixed> */
-    public array $preview = [];
+    public string $bulkSummaryMode = '';
 
-    /** @var array<string, mixed> */
-    public array $result = [];
+    public int $resultSelectedCount = 0;
+
+    public int $resultAffectedCount = 0;
+
+    public int $resultSkippedCount = 0;
+
+    public int $resultFailedCount = 0;
 
     public string $noticeKey = '';
 
@@ -130,14 +137,13 @@ abstract class BaseHostBulkComponent extends Component
     {
         $this->targetType = $this->defaultTargetTypeForAction($this->actionType);
         $this->selectedTargetIds = [];
-        $this->preview = [];
-        $this->result = [];
+        $this->clearBulkSummary();
     }
 
     public function updatedTargetType(): void
     {
         $this->selectedTargetIds = [];
-        $this->preview = [];
+        $this->clearPreviewSummary();
     }
 
     public function selectVisibleTargets(): void
@@ -152,7 +158,7 @@ abstract class BaseHostBulkComponent extends Component
     public function clearTargets(): void
     {
         $this->selectedTargetIds = [];
-        $this->preview = [];
+        $this->clearPreviewSummary();
     }
 
     public function previewBulkAction(HostBulkActionService $service): void
@@ -166,9 +172,11 @@ abstract class BaseHostBulkComponent extends Component
             $this->payloadForAction(),
         );
 
+        $service->preview($batch);
+
         $this->lastBatchId = $batch->id;
-        $this->preview = $service->preview($batch);
-        $this->result = [];
+        $this->bulkSummaryMode = 'preview';
+        $this->resetManualResultCounts();
         $this->noticeKey = 'host_bulk.messages.preview_before_apply';
     }
 
@@ -186,8 +194,8 @@ abstract class BaseHostBulkComponent extends Component
         $processed = $service->process($service->confirm($batch));
 
         $this->lastBatchId = $processed->id;
-        $this->preview = $processed->preview_json ?? [];
-        $this->result = $service->getResult($processed);
+        $this->bulkSummaryMode = 'preview_result';
+        $this->resetManualResultCounts();
         $this->noticeKey = 'host_bulk.messages.completed';
     }
 
@@ -201,7 +209,7 @@ abstract class BaseHostBulkComponent extends Component
         $room = $permissions->ensureHostOwnsTarget($this->host(), 'room', (int) $this->cloneRoomId);
         $clone = $cloneService->cloneRoom($this->roomModel($room), ['copy_photos' => $this->copyPhotos]);
 
-        $this->result = $this->singleResult($clone->id);
+        $this->showManualResult($this->singleResult($clone->id));
         $this->noticeKey = 'host_bulk.messages.clone_room_completed';
     }
 
@@ -221,7 +229,7 @@ abstract class BaseHostBulkComponent extends Component
             'copy_calendar' => $this->copyCalendar,
         ]);
 
-        $this->result = $this->singleResult($clone->id);
+        $this->showManualResult($this->singleResult($clone->id));
         $this->noticeKey = 'host_bulk.messages.clone_sleeping_place_completed';
     }
 
@@ -248,12 +256,12 @@ abstract class BaseHostBulkComponent extends Component
             'type' => $this->identicalType,
         ]);
 
-        $this->result = [
+        $this->showManualResult([
             'selected_count' => $this->identicalCount,
             'affected_count' => $created->count(),
             'skipped_count' => max(0, $this->identicalCount - $created->count()),
             'failed_count' => 0,
-        ];
+        ]);
         $this->noticeKey = 'host_bulk.messages.create_identical_places_completed';
     }
 
@@ -392,8 +400,12 @@ abstract class BaseHostBulkComponent extends Component
 
     public function render(): View
     {
+        $summaryBatch = $this->summaryBatch();
+
         return view('livewire.host.bulk.shell', [
             'section' => $this->section,
+            'preview' => $this->previewSummary($summaryBatch),
+            'result' => $this->resultSummary($summaryBatch),
         ])->layout('layouts.app', [
             'title' => __('host_bulk.title'),
         ]);
@@ -676,6 +688,119 @@ abstract class BaseHostBulkComponent extends Component
         }
 
         return (string) $value;
+    }
+
+    private function clearBulkSummary(): void
+    {
+        $this->lastBatchId = null;
+        $this->bulkSummaryMode = '';
+        $this->resetManualResultCounts();
+    }
+
+    private function clearPreviewSummary(): void
+    {
+        if ($this->bulkSummaryMode === 'preview') {
+            $this->clearBulkSummary();
+
+            return;
+        }
+
+        if ($this->bulkSummaryMode === 'preview_result') {
+            $this->bulkSummaryMode = 'result';
+        }
+    }
+
+    private function resetManualResultCounts(): void
+    {
+        $this->resultSelectedCount = 0;
+        $this->resultAffectedCount = 0;
+        $this->resultSkippedCount = 0;
+        $this->resultFailedCount = 0;
+    }
+
+    /**
+     * @param  array<string, int>  $summary
+     */
+    private function showManualResult(array $summary): void
+    {
+        $this->lastBatchId = null;
+        $this->bulkSummaryMode = 'result';
+        $this->resultSelectedCount = (int) ($summary['selected_count'] ?? 0);
+        $this->resultAffectedCount = (int) ($summary['affected_count'] ?? 0);
+        $this->resultSkippedCount = (int) ($summary['skipped_count'] ?? 0);
+        $this->resultFailedCount = (int) ($summary['failed_count'] ?? 0);
+    }
+
+    private function summaryBatch(): ?HostBulkActionBatch
+    {
+        if ($this->lastBatchId === null || $this->bulkSummaryMode === '') {
+            return null;
+        }
+
+        return HostBulkActionBatch::query()
+            ->select([
+                'id',
+                'user_id',
+                'selected_count',
+                'affected_count',
+                'skipped_count',
+                'failed_count',
+                'preview_json',
+                'result_json',
+            ])
+            ->whereKey($this->lastBatchId)
+            ->where('user_id', $this->host()->id)
+            ->first();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function previewSummary(?HostBulkActionBatch $batch): array
+    {
+        if (! in_array($this->bulkSummaryMode, ['preview', 'preview_result'], true) || $batch === null) {
+            return [];
+        }
+
+        return $batch->preview_json ?? $this->summaryFromBatch($batch);
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function resultSummary(?HostBulkActionBatch $batch): array
+    {
+        if (! in_array($this->bulkSummaryMode, ['result', 'preview_result'], true)) {
+            return [];
+        }
+
+        if ($batch instanceof HostBulkActionBatch) {
+            return $batch->result_json ?? $this->summaryFromBatch($batch);
+        }
+
+        if (($this->resultSelectedCount + $this->resultAffectedCount + $this->resultSkippedCount + $this->resultFailedCount) === 0) {
+            return [];
+        }
+
+        return [
+            'selected_count' => $this->resultSelectedCount,
+            'affected_count' => $this->resultAffectedCount,
+            'skipped_count' => $this->resultSkippedCount,
+            'failed_count' => $this->resultFailedCount,
+        ];
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function summaryFromBatch(HostBulkActionBatch $batch): array
+    {
+        return [
+            'selected_count' => (int) $batch->selected_count,
+            'affected_count' => (int) $batch->affected_count,
+            'skipped_count' => (int) $batch->skipped_count,
+            'failed_count' => (int) $batch->failed_count,
+        ];
     }
 
     /**

@@ -32,11 +32,13 @@ use App\Services\HostCleaning\HostCleaningChecklistService;
 use App\Services\HostCleaning\HostCleaningFindingService;
 use App\Services\HostCleaning\HostCleaningPhotoService;
 use App\Services\HostCleaning\HostCleaningReadinessService;
+use App\Services\HostCleaning\HostCleaningService;
 use App\Services\HostCleaning\HostCleaningTaskService;
 use App\Services\HostCleaning\HostCleaningTemplateService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -66,6 +68,7 @@ class HostCleaningFeatureTest extends TestCase
         $this->assertTrue(Schema::hasColumn('host_cleaning_tasks', 'booking_check_out_id'));
         $this->assertTrue(Schema::hasColumn('host_cleaning_tasks', 'assigned_person_name'));
         $this->assertTrue(Schema::hasIndex('host_cleaning_tasks', ['user_id', 'scheduled_date']));
+        $this->assertTrue(Schema::hasIndex('host_cleaning_tasks', ['user_id', 'cleaning_type']));
         $this->assertTrue(Schema::hasIndex('host_cleaning_tasks', ['booking_check_out_id']));
         $this->assertTrue(Schema::hasIndex('host_cleaning_task_items', ['host_cleaning_task_id', 'item_key']));
         $this->assertTrue(Schema::hasIndex('host_cleaning_task_photos', ['host_cleaning_task_id', 'photo_type']));
@@ -123,6 +126,50 @@ class HostCleaningFeatureTest extends TestCase
         $sameTask = app(HostCleaningTaskService::class)->createAfterCheckout($checkOut);
 
         $this->assertSame($task->id, $sameTask->id);
+    }
+
+    public function test_cleaning_summary_uses_one_aggregate_lookup_instead_of_repeated_counts(): void
+    {
+        $host = User::factory()->create();
+        $otherHost = User::factory()->create();
+
+        HostCleaningTask::factory()->for($host, 'user')->create([
+            'scheduled_date' => now()->toDateString(),
+            'status' => 'planned',
+            'cleaning_type' => 'after_check_out',
+        ]);
+        HostCleaningTask::factory()->for($host, 'user')->create([
+            'scheduled_date' => now()->toDateString(),
+            'status' => 'overdue',
+            'cleaning_type' => 'before_check_in',
+        ]);
+        HostCleaningTask::factory()->for($host, 'user')->create([
+            'scheduled_date' => now()->addDay()->toDateString(),
+            'status' => 'overdue',
+            'cleaning_type' => 'after_check_out',
+        ]);
+        HostCleaningTask::factory()->for($otherHost, 'user')->create([
+            'scheduled_date' => now()->toDateString(),
+            'status' => 'overdue',
+            'cleaning_type' => 'after_check_out',
+        ]);
+
+        $summaryCountQueries = 0;
+        DB::listen(static function ($query) use (&$summaryCountQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select count(*) as "aggregate" from "host_cleaning_tasks"')) {
+                $summaryCountQueries++;
+            }
+        });
+
+        $this->assertSame([
+            'today' => 2,
+            'overdue' => 2,
+            'after_check_out' => 2,
+            'before_check_in' => 1,
+        ], app(HostCleaningService::class)->summary($host));
+        $this->assertLessThanOrEqual(1, $summaryCountQueries, 'Host cleaning summary should avoid repeated count queries.');
     }
 
     public function test_start_complete_readiness_photos_and_responsible_person_work_without_cleaner_role(): void

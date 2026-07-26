@@ -6,12 +6,12 @@ use App\Models\GuestReputationSnapshot;
 use App\Models\HostReputationSnapshot;
 use App\Models\Property;
 use App\Models\PropertyRatingSnapshot;
-use App\Models\Review;
 use App\Models\Room;
 use App\Models\RoomRatingSnapshot;
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceRatingSnapshot;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 class RatingSnapshotService
 {
@@ -32,7 +32,7 @@ class RatingSnapshotService
                 'problem_resolution_rating' => $this->metric('host', $targetIds, 'problem_resolution'),
                 'hospitality_rating' => $this->metric('host', $targetIds, 'host_communication'),
                 'reviews_count' => $overall?->rating_count ?: 0,
-                'completed_stays_count' => Review::query()->where('target_user_id', $host->id)->where('status', 'published')->distinct('booking_id')->count('booking_id'),
+                'completed_stays_count' => $this->completedPublishedStaysForTarget($host),
                 'last_recalculated_at' => now(),
             ],
         );
@@ -43,6 +43,13 @@ class RatingSnapshotService
         $targetIds = ['target_user_id' => $guest->id];
         $this->aggregates->recalculateTarget('guest', $targetIds);
         $overall = $this->aggregates->getAggregate('guest', $targetIds, 'overall');
+        $recommendationSummary = User::query()
+            ->select(['id'])
+            ->withCount([
+                'targetedReviews as recommended_by_hosts_count' => fn (Builder $query) => $query->published()->where('recommend_guest', true),
+                'targetedReviews as not_recommended_by_hosts_count' => fn (Builder $query) => $query->published()->where('recommend_guest', false),
+            ])
+            ->find($guest->id);
 
         return GuestReputationSnapshot::query()->updateOrCreate(
             ['guest_user_id' => $guest->id],
@@ -56,9 +63,9 @@ class RatingSnapshotService
                 'care_for_property_rating' => $this->metric('guest', $targetIds, 'care_for_property'),
                 'payment_reliability_rating' => $this->metric('guest', $targetIds, 'payment_reliability'),
                 'reviews_count' => $overall?->rating_count ?: 0,
-                'completed_stays_count' => Review::query()->where('target_user_id', $guest->id)->where('status', 'published')->distinct('booking_id')->count('booking_id'),
-                'recommended_by_hosts_count' => Review::query()->where('target_user_id', $guest->id)->where('status', 'published')->where('recommend_guest', true)->count(),
-                'not_recommended_by_hosts_count' => Review::query()->where('target_user_id', $guest->id)->where('status', 'published')->where('recommend_guest', false)->count(),
+                'completed_stays_count' => $this->completedPublishedStaysForTarget($guest),
+                'recommended_by_hosts_count' => (int) ($recommendationSummary?->recommended_by_hosts_count ?? 0),
+                'not_recommended_by_hosts_count' => (int) ($recommendationSummary?->not_recommended_by_hosts_count ?? 0),
                 'last_recalculated_at' => now(),
             ],
         );
@@ -73,6 +80,14 @@ class RatingSnapshotService
         ];
         $this->aggregates->recalculateTarget('sleeping_place', $targetIds);
         $overall = $this->aggregates->getAggregate('sleeping_place', $targetIds, 'overall');
+        $reviewSummary = SleepingPlace::query()
+            ->select(['id'])
+            ->withCount([
+                'reviews as published_reviews_count' => fn (Builder $query) => $query->where('status', 'published'),
+                'reviews as photo_reviews_count' => fn (Builder $query) => $query->whereHas('reviewMedia'),
+            ])
+            ->withMax(['reviews as last_review_at' => fn (Builder $query) => $query->where('status', 'published')], 'published_at')
+            ->find($place->id);
 
         return SleepingPlaceRatingSnapshot::query()->updateOrCreate(
             ['sleeping_place_id' => $place->id],
@@ -93,9 +108,9 @@ class RatingSnapshotService
                 'value_for_money_rating' => $this->metric('sleeping_place', $targetIds, 'value_for_money'),
                 'problem_resolution_rating' => $this->metric('sleeping_place', $targetIds, 'problem_resolution'),
                 'reviews_count' => $overall?->rating_count ?: 0,
-                'published_reviews_count' => Review::query()->where('sleeping_place_id', $place->id)->where('status', 'published')->count(),
-                'photo_reviews_count' => Review::query()->where('sleeping_place_id', $place->id)->whereHas('reviewMedia')->count(),
-                'last_review_at' => Review::query()->where('sleeping_place_id', $place->id)->where('status', 'published')->max('published_at'),
+                'published_reviews_count' => (int) ($reviewSummary?->published_reviews_count ?? 0),
+                'photo_reviews_count' => (int) ($reviewSummary?->photo_reviews_count ?? 0),
+                'last_review_at' => $reviewSummary?->last_review_at,
                 'last_recalculated_at' => now(),
             ],
         );
@@ -155,5 +170,13 @@ class RatingSnapshotService
     private function metric(string $targetType, array $targetIds, string $metricKey): float
     {
         return (float) ($this->aggregates->getAggregate($targetType, $targetIds, $metricKey)?->rating_average ?: 0);
+    }
+
+    private function completedPublishedStaysForTarget(User $user): int
+    {
+        return (int) $user->targetedReviews()
+            ->published()
+            ->distinct('booking_id')
+            ->count('booking_id');
     }
 }

@@ -405,6 +405,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Lists related Host Cleaning Task records owned by this host User.
+     */
+    public function hostCleaningTasks(): HasMany
+    {
+        return $this->hasMany(HostCleaningTask::class, 'user_id');
+    }
+
+    /**
      * Fetches the single Host Calendar View Setting record used by this User.
      */
     public function hostCalendarViewSetting(): HasOne
@@ -482,6 +490,14 @@ class User extends Authenticatable
     public function reviewsReceived(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
+    /**
+     * Lists Point 26 Review records where this User is the reputation target.
+     */
+    public function targetedReviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'target_user_id');
     }
 
     /**

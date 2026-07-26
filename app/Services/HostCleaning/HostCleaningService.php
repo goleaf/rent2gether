@@ -4,6 +4,7 @@ namespace App\Services\HostCleaning;
 
 use App\Models\HostCleaningTask;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\CursorPaginator;
 
 class HostCleaningService
@@ -47,13 +48,30 @@ class HostCleaningService
 
     public function summary(User $host): array
     {
-        $base = HostCleaningTask::query()->where('user_id', $host->id);
+        $host = User::query()
+            ->select(['id'])
+            ->withCount([
+                'hostCleaningTasks as host_cleaning_today_count' => fn (Builder $query) => $query->whereDate('scheduled_date', now()->toDateString()),
+                'hostCleaningTasks as host_cleaning_overdue_count' => fn (Builder $query) => $query->where('status', 'overdue'),
+                'hostCleaningTasks as host_cleaning_after_check_out_count' => fn (Builder $query) => $query->where('cleaning_type', 'after_check_out'),
+                'hostCleaningTasks as host_cleaning_before_check_in_count' => fn (Builder $query) => $query->where('cleaning_type', 'before_check_in'),
+            ])
+            ->find($host->id);
+
+        if (! $host instanceof User) {
+            return [
+                'today' => 0,
+                'overdue' => 0,
+                'after_check_out' => 0,
+                'before_check_in' => 0,
+            ];
+        }
 
         return [
-            'today' => (clone $base)->whereDate('scheduled_date', now()->toDateString())->count(),
-            'overdue' => (clone $base)->where('status', 'overdue')->count(),
-            'after_check_out' => (clone $base)->where('cleaning_type', 'after_check_out')->count(),
-            'before_check_in' => (clone $base)->where('cleaning_type', 'before_check_in')->count(),
+            'today' => (int) $host->host_cleaning_today_count,
+            'overdue' => (int) $host->host_cleaning_overdue_count,
+            'after_check_out' => (int) $host->host_cleaning_after_check_out_count,
+            'before_check_in' => (int) $host->host_cleaning_before_check_in_count,
         ];
     }
 }

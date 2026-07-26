@@ -540,6 +540,14 @@ class Room extends Model
     }
 
     /**
+     * Lists privacy-safe roommate experience reviews summarized for this Room.
+     */
+    public function roommateExperienceReviews(): HasMany
+    {
+        return $this->hasMany(RoommateExperienceReview::class);
+    }
+
+    /**
      * Lists inventory items attached to this Room.
      */
     public function inventoryItems(): HasMany

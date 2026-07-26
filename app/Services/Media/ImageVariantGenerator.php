@@ -5,6 +5,7 @@ namespace App\Services\Media;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
+use Throwable;
 
 class ImageVariantGenerator
 {
@@ -62,17 +63,44 @@ class ImageVariantGenerator
     {
         $path = $file->getRealPath();
 
-        if (! is_string($path) || ! is_readable($path)) {
-            throw new RuntimeException('The uploaded image could not be read.');
+        if (is_string($path) && is_readable($path)) {
+            $contents = file_get_contents($path);
+
+            if (is_string($contents) && $contents !== '') {
+                return $contents;
+            }
         }
 
-        $contents = file_get_contents($path);
+        $previous = null;
 
-        if ($contents === false) {
-            throw new RuntimeException('The uploaded image could not be read.');
+        try {
+            $contents = $file->get();
+
+            if (is_string($contents) && $contents !== '') {
+                return $contents;
+            }
+        } catch (Throwable $exception) {
+            $previous = $exception;
         }
 
-        return $contents;
+        try {
+            if (method_exists($file, 'readStream')) {
+                $stream = $file->readStream();
+
+                if (is_resource($stream)) {
+                    $contents = stream_get_contents($stream);
+                    fclose($stream);
+
+                    if (is_string($contents) && $contents !== '') {
+                        return $contents;
+                    }
+                }
+            }
+        } catch (Throwable $exception) {
+            $previous = $exception;
+        }
+
+        throw new RuntimeException('The uploaded image could not be read.', previous: $previous);
     }
 
     /**
@@ -160,7 +188,7 @@ class ImageVariantGenerator
     {
         try {
             return Storage::disk($disk)->size($path);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $fallback;
         }
     }

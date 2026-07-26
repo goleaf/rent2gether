@@ -4,6 +4,7 @@ namespace App\Services\Properties;
 
 use App\Models\Property;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 class PropertyProfileService
 {
@@ -52,10 +53,20 @@ class PropertyProfileService
 
     public function updateCounts(Property $property): Property
     {
-        $activeRooms = $property->rooms()->active()->count();
-        $activeSleepingPlaces = $property->sleepingPlaces()->active()->count();
-        $occupiedSleepingPlaces = $property->sleepingPlaces()->where('status', 'occupied')->count();
-        $unavailableSleepingPlaces = $property->sleepingPlaces()->whereNotIn('status', ['active', 'occupied'])->count();
+        $counted = Property::query()
+            ->select(['id'])
+            ->withCount([
+                'rooms as active_rooms_count' => fn (Builder $query) => $query->active(),
+                'sleepingPlaces as active_sleeping_places_count' => fn (Builder $query) => $query->active(),
+                'sleepingPlaces as occupied_sleeping_places_count' => fn (Builder $query) => $query->where('status', 'occupied'),
+                'sleepingPlaces as unavailable_sleeping_places_count' => fn (Builder $query) => $query->whereNotIn('status', ['active', 'occupied']),
+            ])
+            ->find($property->id);
+
+        $activeRooms = (int) ($counted?->active_rooms_count ?? 0);
+        $activeSleepingPlaces = (int) ($counted?->active_sleeping_places_count ?? 0);
+        $occupiedSleepingPlaces = (int) ($counted?->occupied_sleeping_places_count ?? 0);
+        $unavailableSleepingPlaces = (int) ($counted?->unavailable_sleeping_places_count ?? 0);
 
         $property->update([
             'active_rooms_count' => $activeRooms,

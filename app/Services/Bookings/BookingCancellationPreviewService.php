@@ -5,7 +5,6 @@ namespace App\Services\Bookings;
 use App\Models\Booking;
 use App\Models\BookingCancellationPreview;
 use App\Models\User;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class BookingCancellationPreviewService

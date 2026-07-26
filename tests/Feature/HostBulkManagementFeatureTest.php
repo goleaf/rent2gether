@@ -416,6 +416,42 @@ class HostBulkManagementFeatureTest extends TestCase
         $this->assertSame('14.75', $listing['places'][0]->fresh()->cleaning_fee);
     }
 
+    public function test_host_bulk_livewire_panel_keeps_preview_and_result_summaries_out_of_public_state(): void
+    {
+        $listing = $this->listing(places: 2);
+
+        $component = Livewire::actingAs($listing['host'])
+            ->test(HostBulkActionsPanel::class)
+            ->set('actionType', 'change_cleaning_fee')
+            ->set('targetType', 'sleeping_place')
+            ->set('selectedTargetIds', [$listing['places'][0]->id, $listing['places'][1]->id])
+            ->set('cleaningFee', '14.75')
+            ->call('previewBulkAction')
+            ->assertHasNoErrors()
+            ->assertSee(__('host_bulk.preview'))
+            ->assertSee(__('host_bulk.messages.affected_count', ['count' => 2]));
+
+        $previewSnapshotData = $component->snapshot['data'] ?? [];
+
+        $this->assertIsArray($previewSnapshotData);
+        $this->assertArrayHasKey('lastBatchId', $previewSnapshotData);
+        $this->assertArrayNotHasKey('preview', $previewSnapshotData);
+        $this->assertArrayNotHasKey('result', $previewSnapshotData);
+
+        $component
+            ->call('applyBulkAction')
+            ->assertHasNoErrors()
+            ->assertSee(__('host_bulk.result'))
+            ->assertSee(__('host_bulk.messages.affected_count', ['count' => 2]));
+
+        $resultSnapshotData = $component->snapshot['data'] ?? [];
+
+        $this->assertIsArray($resultSnapshotData);
+        $this->assertArrayHasKey('lastBatchId', $resultSnapshotData);
+        $this->assertArrayNotHasKey('preview', $resultSnapshotData);
+        $this->assertArrayNotHasKey('result', $resultSnapshotData);
+    }
+
     public function test_bulk_livewire_components_render_in_english_and_russian(): void
     {
         $listing = $this->listing();

@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\BookingHostUnresponsiveCase;
-use App\Models\HostUnresponsiveRepresentativeResponse;
 use App\Models\HostRepresentative;
+use App\Models\HostUnresponsiveRepresentativeResponse;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +23,7 @@ class HostUnresponsiveRepresentativeResponseFactory extends Factory
     {
         return [
             'host_unresponsive_case_id' => BookingHostUnresponsiveCase::factory(),
-            'booking_id' => \App\Models\Booking::factory(),
+            'booking_id' => Booking::factory(),
             'host_representative_id' => HostRepresentative::factory(),
             'representative_user_id' => User::factory(),
             'response_type' => 'i_can_help',

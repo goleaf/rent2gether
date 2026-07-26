@@ -31,7 +31,9 @@ use App\Services\Properties\PropertyAccessService;
 use App\Services\Properties\PropertyCompletionService;
 use App\Services\Properties\PropertyGuestSummaryService;
 use App\Services\Properties\PropertyPrivacyService;
+use App\Services\Properties\PropertyProfileService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -89,6 +91,44 @@ class ExtendedPropertyFieldsTest extends TestCase
         $this->assertDatabaseMissing('property_location_details', ['property_id' => $property->id]);
         $this->assertDatabaseMissing('property_condition_details', ['property_id' => $property->id]);
         $this->assertDatabaseMissing('property_access_details', ['property_id' => $property->id]);
+    }
+
+    public function test_property_count_refresh_uses_one_aggregate_lookup_instead_of_repeated_counts(): void
+    {
+        $property = Property::factory()->create([
+            'active_rooms_count' => 0,
+            'active_sleeping_places_count' => 0,
+            'occupied_sleeping_places_count' => 0,
+            'free_sleeping_places_count' => 0,
+            'unavailable_sleeping_places_count' => 0,
+        ]);
+        $activeRoom = Room::factory()->for($property)->create(['status' => RoomStatus::Active->value]);
+        Room::factory()->for($property)->create(['status' => RoomStatus::Hidden->value]);
+
+        SleepingPlace::factory()->for($property)->for($activeRoom)->create(['status' => SleepingPlaceStatus::Active->value]);
+        SleepingPlace::factory()->for($property)->for($activeRoom)->create(['status' => SleepingPlaceStatus::Active->value]);
+        SleepingPlace::factory()->for($property)->for($activeRoom)->create(['status' => SleepingPlaceStatus::Repair->value]);
+
+        $countQueries = 0;
+        DB::listen(static function ($query) use (&$countQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (
+                str_starts_with($sql, 'select count(*) as "aggregate" from "rooms"')
+                || str_starts_with($sql, 'select count(*) as "aggregate" from "sleeping_places"')
+            ) {
+                $countQueries++;
+            }
+        });
+
+        $updated = app(PropertyProfileService::class)->updateCounts($property);
+
+        $this->assertSame(1, $updated->active_rooms_count);
+        $this->assertSame(2, $updated->active_sleeping_places_count);
+        $this->assertSame(0, $updated->occupied_sleeping_places_count);
+        $this->assertSame(2, $updated->free_sleeping_places_count);
+        $this->assertSame(1, $updated->unavailable_sleeping_places_count);
+        $this->assertLessThanOrEqual(1, $countQueries, 'Property count refresh should avoid repeated count queries.');
     }
 
     public function test_property_services_build_privacy_safe_guest_summary_and_confirmed_access(): void

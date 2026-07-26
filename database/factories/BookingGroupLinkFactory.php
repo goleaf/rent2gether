@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\BookingGroupLink;
 use App\Models\Booking;
+use App\Models\BookingGroupLink;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\User;

@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\BookingRequest;
+use App\Models\BookingRequestStatusLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\BookingRequestStatusLog>
+ * @extends Factory<BookingRequestStatusLog>
  */
 class BookingRequestStatusLogFactory extends Factory
 {

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\NotificationDeliveryAttempt;
 use App\Models\Notification;
 use App\Models\NotificationDelivery;
+use App\Models\NotificationDeliveryAttempt;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

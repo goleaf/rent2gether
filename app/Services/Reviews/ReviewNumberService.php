@@ -5,6 +5,7 @@ namespace App\Services\Reviews;
 use App\Models\RatingEvent;
 use App\Models\Review;
 use App\Models\ReviewRequest;
+use Illuminate\Database\Eloquent\Model;
 
 class ReviewNumberService
 {
@@ -43,7 +44,7 @@ class ReviewNumberService
     }
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  class-string<Model>  $model
      */
     private function nextNumber(string $prefix, string $model, string $column): string
     {

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\BookingStatusLog;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
+use App\Models\BookingStatusLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
