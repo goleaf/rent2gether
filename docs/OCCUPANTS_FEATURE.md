@@ -35,6 +35,14 @@ Important indexes:
 - `co_living_visibility_settings`: user.
 - `room_occupant_snapshots`: room/status, room/date range, booking, user, sleeping place, status/checkout, before-booking visibility, after-booking visibility.
 
+## Guest Search Criteria
+
+Guest search can use neighbor criteria only as co-living compatibility signals. It must not expose private profiles or become a discriminatory decision system.
+
+Search reads compact, privacy-filtered data from `room_occupant_snapshots`, `room_current_occupancy_snapshots`, `property_current_occupancy_snapshots`, `room_compatibility_profiles`, and `room_rating_snapshots`. Supported filters include current people counts, broad age range, lifestyle signals, student/worker/tourist/long-term mix, quiet/social presence, home-presence rhythm, night work, early/late schedule, smoking/pet signals, broad room gender mix, communication language, and aggregate roommate guest rating.
+
+Before-booking snapshot filters must require `can_show_before_booking = true`. Date-aware searches use the same half-open overlap rule as occupant summaries. Searches without selected dates use current checked-in/in-progress/leaving-soon occupants only.
+
 ## Date Overlap
 
 Occupants use the half-open stay range `[check_in_date, check_out_date)`.

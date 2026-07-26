@@ -12,7 +12,7 @@ use Livewire\Component;
 class WaitlistManager extends Component
 {
     #[Locked]
-    public Bed $bed;
+    public int $bedId;
 
     public string $desiredCheckIn = '';
 
@@ -26,15 +26,25 @@ class WaitlistManager extends Component
 
     public function mount(Bed $bed): void
     {
-        $this->bed = $bed;
+        $this->bedId = $bed->id;
         $this->maxPrice = $bed->price_per_night;
     }
 
     #[Computed]
-    public function existingEntry()
+    public function bed(): Bed
     {
-        return WaitlistEntry::where('user_id', auth()->id())
-            ->where('bed_id', $this->bed->id)
+        return Bed::query()
+            ->select(['id', 'price_per_night'])
+            ->findOrFail($this->bedId);
+    }
+
+    #[Computed]
+    public function existingEntry(): ?WaitlistEntry
+    {
+        return WaitlistEntry::query()
+            ->select(['id', 'user_id', 'bed_id', 'desired_check_in', 'desired_check_out', 'status'])
+            ->where('user_id', auth()->id())
+            ->where('bed_id', $this->bedId)
             ->where('status', 'waiting')
             ->first();
     }
@@ -48,7 +58,7 @@ class WaitlistManager extends Component
 
         WaitlistEntry::create([
             'user_id' => auth()->id(),
-            'bed_id' => $this->bed->id,
+            'bed_id' => $this->bedId,
             'desired_check_in' => $this->desiredCheckIn,
             'desired_check_out' => $this->desiredCheckOut,
             'max_price' => $this->maxPrice,
@@ -63,7 +73,7 @@ class WaitlistManager extends Component
     public function leave(): void
     {
         WaitlistEntry::where('user_id', auth()->id())
-            ->where('bed_id', $this->bed->id)
+            ->where('bed_id', $this->bedId)
             ->where('status', 'waiting')
             ->update(['status' => 'cancelled']);
 

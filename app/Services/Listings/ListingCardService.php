@@ -248,6 +248,8 @@ class ListingCardService
      */
     private function compatibilityData(SleepingPlace $place, ListingCardContext $context): array
     {
+        $showWarnings = ($context->filters['show_compatibility_warnings'] ?? true) !== false;
+
         if (! $context->userId) {
             return ['fit_status' => null, 'score' => null, 'warnings' => []];
         }
@@ -264,12 +266,12 @@ class ListingCardService
             return [
                 'fit_status' => $result->fitStatus,
                 'score' => $result->score,
-                'warnings' => collect([...$result->blockingReasons, ...$result->warningReasons])
+                'warnings' => $showWarnings ? collect([...$result->blockingReasons, ...$result->warningReasons])
                     ->pluck('message')
                     ->filter()
                     ->take(2)
                     ->values()
-                    ->all(),
+                    ->all() : [],
             ];
         }
 
@@ -287,7 +289,7 @@ class ListingCardService
         return [
             'fit_status' => $result['fit_level'] ?? null,
             'score' => isset($result['score']) ? (int) $result['score'] : null,
-            'warnings' => array_slice($result['warning_reasons'] ?? [], 0, 2),
+            'warnings' => $showWarnings ? array_slice($result['warning_reasons'] ?? [], 0, 2) : [],
         ];
     }
 

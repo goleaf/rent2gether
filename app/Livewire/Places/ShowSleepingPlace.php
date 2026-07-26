@@ -63,14 +63,6 @@ class ShowSleepingPlace extends Component
 
     public string $messageBody = '';
 
-    /** @var array<string, mixed>|null */
-    public ?array $quote = null;
-
-    public ?string $availabilityWarning = null;
-
-    /** @var list<string> */
-    public array $unavailableDates = [];
-
     public function mount(SleepingPlace $sleepingPlace): void
     {
         $this->sleepingPlaceId = $sleepingPlace->id;
@@ -105,78 +97,142 @@ class ShowSleepingPlace extends Component
     public function refreshQuote(): void
     {
         $this->resetValidation();
-        $this->quote = null;
-        $this->availabilityWarning = null;
-        $this->unavailableDates = [];
+
+        unset($this->dateEvaluation);
+        unset($this->place);
+    }
+
+    /**
+     * @return array{quote:array<string,mixed>|null,availabilityWarning:string|null,unavailableDates:list<string>}
+     */
+    #[Computed]
+    public function dateEvaluation(): array
+    {
+        $empty = $this->emptyDateEvaluation();
 
         if ($this->checkIn === '' || $this->checkOut === '') {
-            return;
+            return $empty;
         }
 
         try {
             $checkIn = CarbonImmutable::parse($this->checkIn)->startOfDay();
             $checkOut = CarbonImmutable::parse($this->checkOut)->startOfDay();
         } catch (\Throwable) {
-            $this->availabilityWarning = __('listing.detail.booking.use_valid_dates');
-
-            return;
+            return [
+                ...$empty,
+                'availabilityWarning' => __('listing.detail.booking.use_valid_dates'),
+            ];
         }
 
         if ($checkIn->isBefore(CarbonImmutable::today())) {
-            $this->availabilityWarning = __('listing.detail.booking.past_dates');
-
-            return;
+            return [
+                ...$empty,
+                'availabilityWarning' => __('listing.detail.booking.past_dates'),
+            ];
         }
 
         if ($checkOut->lessThanOrEqualTo($checkIn)) {
-            $this->availabilityWarning = __('listing.detail.booking.checkout_after_checkin');
-
-            return;
+            return [
+                ...$empty,
+                'availabilityWarning' => __('listing.detail.booking.checkout_after_checkin'),
+            ];
         }
 
-        $place = $this->place();
+        $place = $this->place;
         $nights = (int) $checkIn->diffInDays($checkOut);
         $guestsCount = max(1, $this->guestsCount);
 
         if ($guestsCount > $place->max_guests) {
-            $this->availabilityWarning = trans_choice('listing.detail.booking.max_guests', $place->max_guests, [
-                'count' => $place->max_guests,
-            ]);
-
-            return;
+            return [
+                ...$empty,
+                'availabilityWarning' => trans_choice('listing.detail.booking.max_guests', $place->max_guests, [
+                    'count' => $place->max_guests,
+                ]),
+            ];
         }
 
         if ($place->min_nights && $nights < $place->min_nights) {
-            $this->availabilityWarning = trans_choice('listing.detail.booking.min_nights', (int) $place->min_nights, [
-                'count' => (int) $place->min_nights,
-            ]);
-
-            return;
+            return [
+                ...$empty,
+                'availabilityWarning' => trans_choice('listing.detail.booking.min_nights', (int) $place->min_nights, [
+                    'count' => (int) $place->min_nights,
+                ]),
+            ];
         }
 
         if ($place->max_nights && $nights > $place->max_nights) {
-            $this->availabilityWarning = trans_choice('listing.detail.booking.max_nights', (int) $place->max_nights, [
-                'count' => (int) $place->max_nights,
-            ]);
-
-            return;
+            return [
+                ...$empty,
+                'availabilityWarning' => trans_choice('listing.detail.booking.max_nights', (int) $place->max_nights, [
+                    'count' => (int) $place->max_nights,
+                ]),
+            ];
         }
 
         $availability = app(AvailabilityService::class);
 
-        if (! $availability->isAvailable($place, $checkIn, $checkOut)) {
-            $this->unavailableDates = $availability->unavailableDates($place, $checkIn, $checkOut);
-            $this->availabilityWarning = __('listing.detail.booking.unavailable_title');
-
-            return;
+        if (! $availability->isAvailable($place, $checkIn, $checkOut, usePrefetchedAvailabilityDays: true)) {
+            return [
+                'quote' => null,
+                'availabilityWarning' => __('listing.detail.booking.unavailable_title'),
+                'unavailableDates' => $availability->unavailableDates($place, $checkIn, $checkOut),
+            ];
         }
 
         $guest = auth()->user();
         $guest = $guest instanceof User ? $guest : new User;
 
-        $this->quote = app(PricingService::class)
-            ->calculate($guest, $place, $checkIn, $checkOut, $guestsCount)
-            ->toArray();
+        return [
+            'quote' => app(PricingService::class)
+                ->calculate($guest, $place, $checkIn, $checkOut, $guestsCount)
+                ->toArray(),
+            'availabilityWarning' => null,
+            'unavailableDates' => [],
+        ];
+    }
+
+    /**
+     * @return array{quote:null,availabilityWarning:null,unavailableDates:list<string>}
+     */
+    private function emptyDateEvaluation(): array
+    {
+        return [
+            'quote' => null,
+            'availabilityWarning' => null,
+            'unavailableDates' => [],
+        ];
+    }
+
+    /**
+     * @return array{0:CarbonImmutable,1:CarbonImmutable}|null
+     */
+    private function validatedPrefetchDateRange(): ?array
+    {
+        if ($this->checkIn === '') {
+            return null;
+        }
+
+        try {
+            $checkIn = CarbonImmutable::parse($this->checkIn)->startOfDay();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $checkOut = $checkIn->addDays(14);
+
+        if ($this->checkOut !== '') {
+            try {
+                $selectedCheckOut = CarbonImmutable::parse($this->checkOut)->startOfDay();
+
+                if ($selectedCheckOut->greaterThan($checkIn)) {
+                    $checkOut = $selectedCheckOut->max($checkOut);
+                }
+            } catch (\Throwable) {
+                return [$checkIn, $checkOut];
+            }
+        }
+
+        return [$checkIn, $checkOut];
     }
 
     public function toggleFavorite(): void
@@ -212,7 +268,7 @@ class ShowSleepingPlace extends Component
 
         if ($this->contactOpen && $this->messageBody === '') {
             $this->messageBody = __('listing.detail.contact.default_message', [
-                'title' => $this->title($this->place()),
+                'title' => $this->title($this->place),
             ]);
         }
     }
@@ -250,7 +306,7 @@ class ShowSleepingPlace extends Component
             return;
         }
 
-        $place = $this->place();
+        $place = $this->place;
         $host = $place->property?->host;
 
         if (! $host instanceof User || $host->id === $guest->id) {
@@ -276,9 +332,11 @@ class ShowSleepingPlace extends Component
 
     public function render(): View
     {
-        $place = $this->place();
+        $place = $this->place;
         $title = $this->title($place);
         $gallery = $this->gallery();
+        $dateEvaluation = $this->dateEvaluation;
+        $quote = $dateEvaluation['quote'];
 
         return view('livewire.places.show-sleeping-place', [
             'place' => $place,
@@ -286,8 +344,10 @@ class ShowSleepingPlace extends Component
             'summary' => $this->summary($place),
             'gallery' => $gallery,
             'primaryImage' => $gallery[0] ?? null,
-            'decisionFlow' => $this->decisionFlow($place),
-            'priceBreakdown' => $this->priceBreakdown($place),
+            'decisionFlow' => $this->decisionFlow($place, $quote),
+            'priceBreakdown' => $this->priceBreakdown($place, $quote),
+            'availabilityWarning' => $dateEvaluation['availabilityWarning'],
+            'unavailableDates' => $dateEvaluation['unavailableDates'],
             'extendedContent' => app(ListingDetailContentService::class)->forSleepingPlace($place, auth()->user()),
             'exactFeatures' => $this->exactFeatures($place),
             'sleepingPlaceProfile' => app(SleepingPlaceGuestSummaryService::class)->build($place, auth()->user()),
@@ -296,10 +356,10 @@ class ShowSleepingPlace extends Component
             'amenityGroups' => $this->amenityGroups($place),
             'nearbySummary' => $this->nearbySummary($place),
             'rulesByGroup' => $this->rulesByGroup($place),
-            'calendarPreview' => $this->calendarPreview($place),
+            'calendarPreview' => $this->calendarPreview($place, $quote),
             'mapDetails' => $this->mapDetails($place),
             'safetyDetails' => $this->safetyDetails($place),
-            'cancellationDetails' => $this->cancellationDetails($place),
+            'cancellationDetails' => $this->cancellationDetails($place, $quote),
             'faqItems' => $this->faqItems($place),
         ])->layout('layouts.app', ['title' => $title]);
     }
@@ -315,6 +375,7 @@ class ShowSleepingPlace extends Component
         $ruleTranslationScope = fn ($query) => $query
             ->select(['id', 'rule_id', 'locale', 'name'])
             ->whereIn('locale', $locales);
+        $dateRange = $this->validatedPrefetchDateRange();
 
         return SleepingPlace::query()
             ->select([
@@ -418,6 +479,8 @@ class ShowSleepingPlace extends Component
                 'amenities.translations' => $amenityTranslationScope,
                 'rules' => fn ($query) => $query->select(['rules.id', 'rules.slug', 'rules.category', 'rules.status']),
                 'rules.translations' => $ruleTranslationScope,
+                'calendarSettings:id,sleeping_place_id,active,booking_mode,request_only,default_status,same_day_turnover_allowed,default_check_in_time,default_check_out_time,earliest_check_in_time,latest_check_out_time,check_in_time_from,check_in_time_until,check_out_time_until',
+                'turnoverRules:id,sleeping_place_id,min_gap_minutes,cleaning_required_between_guests,cleaning_gap_minutes,inspection_required_after_checkout,inspection_gap_minutes,same_day_turnover_allowed,morning_checkout_evening_checkin_allowed,same_day_turnover_requires_cleaning_done,same_day_turnover_requires_inspection_done,earliest_new_check_in_time,latest_previous_check_out_time',
                 'room' => fn ($query) => $query
                     ->select([
                         'id',
@@ -602,6 +665,36 @@ class ShowSleepingPlace extends Component
                         'rules.translations' => $ruleTranslationScope,
                     ]),
             ])
+            ->when($dateRange !== null, function ($query) use ($dateRange): void {
+                [$checkIn, $checkOut] = $dateRange;
+
+                $query->with(['availabilityDays' => fn ($relation) => $relation
+                    ->select([
+                        'id',
+                        'sleeping_place_id',
+                        'date',
+                        'status',
+                        'price_override',
+                        'min_nights_override',
+                        'max_nights_override',
+                        'check_in_allowed',
+                        'check_out_allowed',
+                    ])
+                    ->whereDate('date', '>=', $checkIn->toDateString())
+                    ->whereDate('date', '<=', $checkOut->toDateString())
+                    ->where(function ($availabilityQuery): void {
+                        $availabilityQuery->whereNotNull('price_override')
+                            ->orWhereNotNull('min_nights_override')
+                            ->orWhereNotNull('max_nights_override')
+                            ->orWhere('check_in_allowed', false)
+                            ->orWhere('check_out_allowed', false)
+                            ->orWhereIn('status', AvailabilityStatus::blocksStayValues())
+                            ->orWhereIn('status', [
+                                AvailabilityStatus::CheckInOnly->value,
+                                AvailabilityStatus::CheckOutOnly->value,
+                            ]);
+                    })]);
+            })
             ->findOrFail($this->sleepingPlaceId);
     }
 
@@ -610,7 +703,7 @@ class ShowSleepingPlace extends Component
      */
     private function gallery(): array
     {
-        $place = $this->place();
+        $place = $this->place;
         $targets = [
             [SleepingPlace::class, $place->id],
             [Room::class, $place->room_id],
@@ -669,14 +762,14 @@ class ShowSleepingPlace extends Component
     /**
      * @return list<array{label:string,value:string}>
      */
-    private function decisionFlow(SleepingPlace $place): array
+    private function decisionFlow(SleepingPlace $place, ?array $quote): array
     {
         return [
             $this->row('listing.detail.flow.property', $this->label($place->property?->type)),
             $this->row('listing.detail.flow.room', $this->label($place->room?->type)),
             $this->row('listing.detail.flow.place', $this->label($place->type)),
             $this->row('listing.detail.flow.dates', $this->dateRangeSummary()),
-            $this->row('listing.detail.flow.price', $this->priceSummary($place)),
+            $this->row('listing.detail.flow.price', $this->priceSummary($place, $quote)),
             $this->row('listing.detail.flow.booking', $this->bookingModeLabel($place)),
         ];
     }
@@ -693,11 +786,11 @@ class ShowSleepingPlace extends Component
      *     non_refundable:?string
      * }
      */
-    private function priceBreakdown(SleepingPlace $place): array
+    private function priceBreakdown(SleepingPlace $place, ?array $quote): array
     {
-        $currency = strtoupper((string) (($this->quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
+        $currency = strtoupper((string) (($quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
 
-        if (! $this->quote) {
+        if (! $quote) {
             $lines = [
                 [
                     'label' => __('listing.detail.booking.base_nightly_amount'),
@@ -739,7 +832,7 @@ class ShowSleepingPlace extends Component
             ];
         }
 
-        $allDatePrices = collect($this->quote['date_prices'] ?? []);
+        $allDatePrices = collect($quote['date_prices'] ?? []);
         $datePrices = $allDatePrices
             ->take(7)
             ->map(function (array $datePrice) use ($currency): array {
@@ -757,7 +850,7 @@ class ShowSleepingPlace extends Component
             ->all();
 
         $hasDailyPrices = $datePrices !== [];
-        $lines = collect($this->quote['line_items'] ?? [])
+        $lines = collect($quote['line_items'] ?? [])
             ->reject(fn (array $item): bool => ($item['type'] ?? '') === 'total'
                 || ($hasDailyPrices && ($item['type'] ?? '') === 'nightly_base'))
             ->map(function (array $item) use ($currency): array {
@@ -775,16 +868,16 @@ class ShowSleepingPlace extends Component
 
         return [
             'has_quote' => true,
-            'summary' => trans_choice('listing.detail.booking.price_summary', (int) $this->quote['nights_count'], [
-                'count' => (int) $this->quote['nights_count'],
-                'total' => $this->money((float) $this->quote['total_amount'], $currency),
+            'summary' => trans_choice('listing.detail.booking.price_summary', (int) $quote['nights_count'], [
+                'count' => (int) $quote['nights_count'],
+                'total' => $this->money((float) $quote['total_amount'], $currency),
             ]),
             'date_prices' => $datePrices,
             'remaining_dates_count' => max(0, $allDatePrices->count() - count($datePrices)),
             'lines' => $lines,
-            'total' => $this->money((float) $this->quote['total_amount'], $currency),
-            'refundable' => $this->money((float) $this->quote['refundable_amount'], $currency),
-            'non_refundable' => $this->money((float) $this->quote['non_refundable_amount'], $currency),
+            'total' => $this->money((float) $quote['total_amount'], $currency),
+            'refundable' => $this->money((float) $quote['refundable_amount'], $currency),
+            'non_refundable' => $this->money((float) $quote['non_refundable_amount'], $currency),
         ];
     }
 
@@ -941,22 +1034,30 @@ class ShowSleepingPlace extends Component
     /**
      * @return array{days:list<array{label:string,weekday:string,status_label:string,is_selected:bool,is_blocked:bool,price:?string,check_in_allowed:bool,check_out_allowed:bool}>, range_label:string, fallback:string}
      */
-    private function calendarPreview(SleepingPlace $place): array
+    private function calendarPreview(SleepingPlace $place, ?array $quote): array
     {
         $start = $this->calendarStartDate();
         $end = $start->addDays(14);
         $selectedStart = $this->parseDateOrNull($this->checkIn);
         $selectedEnd = $this->parseDateOrNull($this->checkOut);
-        $currency = strtoupper((string) (($this->quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
+        $currency = strtoupper((string) (($quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
 
-        $availabilityByDate = AvailabilityDay::query()
-            ->select(['id', 'sleeping_place_id', 'date', 'status', 'price_override', 'check_in_allowed', 'check_out_allowed'])
-            ->where('sleeping_place_id', $place->id)
-            ->where('date', '>=', $start->toDateString())
-            ->where('date', '<', $end->toDateString())
-            ->orderBy('date')
-            ->get()
-            ->keyBy(fn (AvailabilityDay $day): string => $day->date->toDateString());
+        $availabilityByDate = $place->relationLoaded('availabilityDays')
+            ? $place->availabilityDays
+                ->filter(function (AvailabilityDay $day) use ($start, $end): bool {
+                    $date = CarbonImmutable::parse($day->date)->startOfDay();
+
+                    return $date->greaterThanOrEqualTo($start) && $date->lessThan($end);
+                })
+                ->keyBy(fn (AvailabilityDay $day): string => $day->date->toDateString())
+            : AvailabilityDay::query()
+                ->select(['id', 'sleeping_place_id', 'date', 'status', 'price_override', 'check_in_allowed', 'check_out_allowed'])
+                ->where('sleeping_place_id', $place->id)
+                ->where('date', '>=', $start->toDateString())
+                ->where('date', '<', $end->toDateString())
+                ->orderBy('date')
+                ->get()
+                ->keyBy(fn (AvailabilityDay $day): string => $day->date->toDateString());
 
         $days = [];
 
@@ -1040,11 +1141,11 @@ class ShowSleepingPlace extends Component
     /**
      * @return array{rows:list<array{label:string,value:string}>}
      */
-    private function cancellationDetails(SleepingPlace $place): array
+    private function cancellationDetails(SleepingPlace $place, ?array $quote): array
     {
         $hostProfile = $place->property?->host?->hostProfile;
         $policy = (string) ($hostProfile?->default_cancellation_policy ?: 'flexible');
-        $deadline = $this->quote['cancellation_deadline'] ?? null;
+        $deadline = $quote['cancellation_deadline'] ?? null;
 
         return [
             'rows' => [
@@ -1289,12 +1390,12 @@ class ShowSleepingPlace extends Component
         ]);
     }
 
-    private function priceSummary(SleepingPlace $place): string
+    private function priceSummary(SleepingPlace $place, ?array $quote): string
     {
-        $currency = strtoupper((string) (($this->quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
+        $currency = strtoupper((string) (($quote['currency'] ?? null) ?: ($place->currency ?: 'EUR')));
 
-        if ($this->quote) {
-            return $this->money((float) $this->quote['total_amount'], $currency);
+        if ($quote) {
+            return $this->money((float) $quote['total_amount'], $currency);
         }
 
         return __('listing.detail.flow.price_from', [

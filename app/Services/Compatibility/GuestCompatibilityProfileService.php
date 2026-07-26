@@ -102,6 +102,7 @@ class GuestCompatibilityProfileService
                 'needs_quiet_at_night' => null,
                 'comfortable_with_shared_room' => true,
                 'comfortable_with_strangers' => true,
+                'i_do_not_smoke' => true,
                 'i_accept_living_with_strangers' => true,
                 'i_accept_shared_room' => true,
                 'max_people_in_room' => null,
@@ -120,8 +121,8 @@ class GuestCompatibilityProfileService
     public function updateProfile(User $user, array $data): GuestCompatibilityProfile
     {
         $profile = $this->createDefaultForUser($user);
-        $payload = Arr::only($data, $this->fields);
-        $profile->fill($payload + $this->legacyPayload($payload));
+        $payload = $this->normalizePromptPayload(Arr::only($data, $this->fields));
+        $profile->fill(array_replace($payload, $this->legacyPayload($payload)));
         $profile->save();
 
         app(CompatibilityCacheService::class)->forgetForUser($user);
@@ -229,26 +230,111 @@ class GuestCompatibilityProfileService
      */
     private function legacyPayload(array $payload): array
     {
-        return [
-            'smokes' => $payload['i_smoke'] ?? null,
-            'wakes_up_early' => $payload['i_wake_up_early'] ?? null,
-            'works_at_night' => $payload['i_work_at_night'] ?? null,
-            'student' => $payload['i_study'] ?? null,
-            'remote_worker' => $payload['i_work_remotely'] ?? null,
-            'often_home' => $payload['i_often_stay_home'] ?? null,
-            'rarely_home' => $payload['i_rarely_stay_home'] ?? null,
-            'needs_quiet_at_night' => $payload['i_need_quiet_at_night'] ?? ($payload['i_like_quiet'] ?? null),
-            'needs_workspace' => $payload['i_need_desk'] ?? null,
-            'needs_fast_wifi' => $payload['i_need_fast_internet'] ?? null,
-            'needs_locker' => $payload['i_need_locker'] ?? null,
-            'needs_late_entry' => $payload['i_need_late_entry'] ?? null,
-            'travelling_with_pet' => $payload['i_travel_with_pet'] ?? null,
-            'comfortable_with_strangers' => $payload['i_accept_living_with_strangers'] ?? null,
-            'comfortable_with_shared_room' => $payload['i_accept_shared_room'] ?? null,
-            'wants_private_room' => $payload['i_want_private_room'] ?? null,
-            'ready_to_join_cleaning' => $payload['i_am_ready_to_help_cleaning'] ?? null,
-            'social_level' => ($payload['i_am_social'] ?? false) ? 'social' : null,
-        ];
+        $legacy = [];
+        $this->copyBoolean($legacy, $payload, 'i_smoke', 'smokes');
+        $this->copyBoolean($legacy, $payload, 'i_wake_up_early', 'wakes_up_early');
+        $this->copyBoolean($legacy, $payload, 'i_sleep_late', 'sleeps_late');
+        $this->copyBoolean($legacy, $payload, 'i_work_at_night', 'works_at_night');
+        $this->copyBoolean($legacy, $payload, 'i_study', 'student');
+        $this->copyBoolean($legacy, $payload, 'i_work_remotely', 'remote_worker');
+        $this->copyBoolean($legacy, $payload, 'i_often_stay_home', 'often_home');
+        $this->copyBoolean($legacy, $payload, 'i_rarely_stay_home', 'rarely_home');
+        $this->copyBoolean($legacy, $payload, 'i_need_desk', 'needs_workspace');
+        $this->copyBoolean($legacy, $payload, 'i_need_fast_internet', 'needs_fast_wifi');
+        $this->copyBoolean($legacy, $payload, 'i_need_locker', 'needs_locker');
+        $this->copyBoolean($legacy, $payload, 'i_need_late_entry', 'needs_late_entry');
+        $this->copyBoolean($legacy, $payload, 'i_travel_with_pet', 'travelling_with_pet');
+        $this->copyBoolean($legacy, $payload, 'i_accept_living_with_strangers', 'comfortable_with_strangers');
+        $this->copyBoolean($legacy, $payload, 'i_accept_shared_room', 'comfortable_with_shared_room');
+        $this->copyBoolean($legacy, $payload, 'i_want_private_room', 'wants_private_room');
+        $this->copyBoolean($legacy, $payload, 'i_am_ready_to_help_cleaning', 'ready_to_join_cleaning');
+
+        if ((bool) ($payload['i_do_not_smoke'] ?? false)) {
+            $legacy['smokes'] = false;
+            $legacy['smoking_preference'] = 'non_smoker';
+        }
+
+        if ((bool) ($payload['i_smoke'] ?? false)) {
+            $smokingPreference = $payload['smoking_preference'] ?? 'smoker';
+
+            $legacy['smokes'] = true;
+            $legacy['smoking_preference'] = $smokingPreference === 'non_smoker' ? 'smoker' : $smokingPreference;
+        }
+
+        if ((bool) ($payload['i_like_quiet'] ?? false) || (bool) ($payload['i_need_quiet_at_night'] ?? false)) {
+            $legacy['needs_quiet_at_night'] = true;
+            $legacy['sensitive_to_noise_at_night'] = true;
+        } elseif (array_key_exists('i_am_ok_with_noise', $payload) && (bool) $payload['i_am_ok_with_noise']) {
+            $legacy['needs_quiet_at_night'] = false;
+            $legacy['sensitive_to_noise_at_night'] = false;
+        }
+
+        if ((bool) ($payload['i_am_social'] ?? false)) {
+            $legacy['social_level'] = 'social';
+        }
+
+        if ((bool) ($payload['i_prefer_not_to_socialize'] ?? false)) {
+            $legacy['social_level'] = 'quiet';
+            $legacy['prefers_private_space'] = true;
+        }
+
+        if ((bool) ($payload['i_like_cleanliness'] ?? false)) {
+            $legacy['cleanliness_expectation'] = 'strict';
+        }
+
+        if ((bool) ($payload['i_do_not_want_many_people'] ?? false) && ! isset($payload['max_people_in_room'])) {
+            $legacy['max_people_in_room'] = 4;
+        }
+
+        return $legacy;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function normalizePromptPayload(array $payload): array
+    {
+        if ((bool) ($payload['i_smoke'] ?? false)) {
+            $payload['i_do_not_smoke'] = false;
+        }
+
+        if ((bool) ($payload['i_do_not_smoke'] ?? false)) {
+            $payload['i_smoke'] = false;
+        }
+
+        if ((bool) ($payload['i_often_stay_home'] ?? false)) {
+            $payload['i_rarely_stay_home'] = false;
+        }
+
+        if ((bool) ($payload['i_rarely_stay_home'] ?? false)) {
+            $payload['i_often_stay_home'] = false;
+        }
+
+        if ((bool) ($payload['i_am_social'] ?? false)) {
+            $payload['i_prefer_not_to_socialize'] = false;
+        }
+
+        if ((bool) ($payload['i_prefer_not_to_socialize'] ?? false)) {
+            $payload['i_am_social'] = false;
+        }
+
+        if ((bool) ($payload['i_like_quiet'] ?? false) || (bool) ($payload['i_need_quiet_at_night'] ?? false)) {
+            $payload['i_am_ok_with_noise'] = false;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $legacy
+     * @param  array<string, mixed>  $payload
+     */
+    private function copyBoolean(array &$legacy, array $payload, string $source, string $target): void
+    {
+        if (array_key_exists($source, $payload)) {
+            $legacy[$target] = (bool) $payload[$source];
+        }
     }
 
     /**

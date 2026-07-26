@@ -50,8 +50,8 @@
                             <span class="min-w-0">{{ __('booking.guests') }}</span>
                         </span>
                     </flux:label>
-                    <flux:input type="number" wire:model.change="guestCount" min="1" :error="$errors->first('guestCount')" icon="user" />
-                    <flux:error name="guestCount" />
+                    <flux:input type="number" wire:model.change="guestsCount" min="1" :error="$errors->first('guestsCount')" icon="user" />
+                    <flux:error name="guestsCount" />
                 </flux:field>
                                 <flux:field>
                     <flux:label>
@@ -75,7 +75,7 @@
         </div>
 
         <div class="space-y-4">
-            @if($priceBreakdown)
+            @if($priceSummary)
                 <flux:card class="space-y-3">
                     <flux:heading size="sm">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -84,42 +84,22 @@
                         </span>
                     </flux:heading>
                     <div class="space-y-1 text-sm">
-                        <div class="flex justify-between">
-                            <span>{{ $priceBreakdown['nights'] }} {{ __('booking.nights') }}</span>
-                            <span>&euro;{{ number_format($priceBreakdown['subtotal'], 2) }}</span>
-                        </div>
-                        @if($priceBreakdown['discount'] > 0)
-                            <div class="flex justify-between text-green-600">
-                                <span>{{ __('booking.discount') }}</span>
-                                <span>-&euro;{{ number_format($priceBreakdown['discount'], 2) }}</span>
+                        @foreach($priceSummary['rows'] as $line)
+                            <div class="{{ $line['class'] }}">
+                                <span>{{ $line['label'] }}</span>
+                                <span>{{ $line['amount'] }}</span>
                             </div>
-                        @endif
-                        @if($priceBreakdown['cleaning_fee'] > 0)
-                            <div class="flex justify-between">
-                                <span>{{ __('booking.cleaning_fee') }}</span>
-                                <span>&euro;{{ number_format($priceBreakdown['cleaning_fee'], 2) }}</span>
-                            </div>
-                        @endif
-                        @if($priceBreakdown['deposit'] > 0)
-                            <div class="flex justify-between">
-                                <span>{{ __('booking.deposit') }}</span>
-                                <span>&euro;{{ number_format($priceBreakdown['deposit'], 2) }}</span>
-                            </div>
-                        @endif
-                        <div class="flex justify-between">
-                            <span>{{ __('booking.service_fee') }}</span>
-                            <span>&euro;{{ number_format($priceBreakdown['service_fee'], 2) }}</span>
-                        </div>
+                        @endforeach
                         <flux:separator />
                         <div class="flex justify-between font-semibold text-base">
-                            <span>{{ __('booking.total') }}</span>
-                            <span>&euro;{{ number_format($priceBreakdown['total'], 2) }}</span>
+                            <span>{{ $priceSummary['total_label'] }}</span>
+                            <span>{{ $priceSummary['total_amount'] }}</span>
                         </div>
                     </div>
                 </flux:card>
             @endif
 
-            @if($compatibility)
+            @if($compatibilitySummary)
                 <flux:card class="space-y-2">
                     <flux:heading size="sm">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -128,14 +108,14 @@
                         </span>
                     </flux:heading>
                     <div class="flex items-center gap-2">
-                        <div class="text-2xl font-bold {{ $compatibility['score'] >= 70 ? 'text-green-600' : ($compatibility['score'] >= 40 ? 'text-yellow-600' : 'text-red-600') }}">
-                            {{ $compatibility['score'] }}%
+                        <div class="text-2xl font-bold {{ $compatibilitySummary['score_class'] }}">
+                            {{ $compatibilitySummary['score_label'] }}
                         </div>
                     </div>
-                    @foreach($compatibility['warnings'] as $warning)
+                    @foreach($compatibilitySummary['warnings'] as $warning)
                         <flux:badge color="yellow" size="sm" icon="exclamation-triangle">{{ $warning }}</flux:badge>
                     @endforeach
-                    @foreach($compatibility['matches'] as $match)
+                    @foreach($compatibilitySummary['matches'] as $match)
                         <flux:badge color="green" size="sm" icon="check-circle">{{ $match }}</flux:badge>
                     @endforeach
                 </flux:card>

@@ -61,8 +61,12 @@ return [
         'problem_photo' => 'Problem photo',
         'media_role' => 'Media role',
         'media_path' => 'Media path',
+        'media_photo' => 'Photo',
         'media_caption' => 'Caption',
         'status' => 'Check-in status',
+        'host_contact' => 'Host contact',
+        'representative_contact' => 'Representative contact',
+        'arrival_note' => 'Arrival note',
     ],
     'sections' => [
         'checklist' => 'Check-in checklist',
@@ -70,6 +74,9 @@ return [
         'problems' => 'Check-in problems',
         'instructions' => 'Instructions',
         'media' => 'Photos and media',
+        'arrival' => 'Arrival',
+        'contact' => 'Contact',
+        'host_checklist' => 'Host arrival checklist',
     ],
     'statuses' => [
         'not_started' => 'Not started',
@@ -117,6 +124,8 @@ return [
         'send_instruction' => 'Send instruction',
         'upload_media' => 'Add media',
         'mark_resolved' => 'Mark resolved',
+        'save_before_photo' => 'Save before photo',
+        'save_checklist' => 'Save checklist',
     ],
     'problems' => [
         'cannot_enter' => 'Cannot enter',
@@ -230,6 +239,10 @@ return [
         'problem_reported' => 'The check-in problem was sent to the host.',
         'check_in_confirmed' => 'Check-in is confirmed.',
         'checked_in' => 'Check-in is confirmed. The stay has started.',
+        'contact_hidden' => 'Host contact appears when this booking is confirmed.',
+        'no_representative_contact' => 'No representative contact is assigned for this check-in.',
+        'before_photo_saved' => 'Before check-in photo was saved.',
+        'checklist_saved' => 'Check-in checklist was saved.',
     ],
     'privacy' => [
         'address_hidden' => 'The exact address is shown only when the booking rules allow it.',
@@ -246,6 +259,10 @@ return [
         'guest_arrived' => 'Guest arrived for check-in.',
         'check_in_problem' => 'Guest reported a check-in problem.',
         'check_in_escalation' => 'Check-in needs attention.',
+        'support_attention_required' => 'Check-in support attention is required.',
+    ],
+    'console' => [
+        'reminders_sent' => 'Check-in reminders sent: :count.',
     ],
     'validation' => [
         'not_your_booking' => 'This check-in belongs to another guest.',
@@ -260,7 +277,12 @@ return [
             'media_type' => 'media type',
             'media_role' => 'media role',
             'path' => 'media path',
+            'photo' => 'photo',
             'caption' => 'caption',
+            'actual_arrival_time' => 'actual arrival time',
+            'met_by' => 'met by',
+            'before_photo' => 'before check-in photo',
+            'problem_photo' => 'problem photo',
         ],
     ],
     'events' => [

@@ -13,18 +13,26 @@ class ServiceFeeCalculatorService
 
     public function calculateGuestServiceFee(BookingQuote $quote): float
     {
-        $settings = $this->settings->getForSleepingPlace($quote->sleepingPlace);
-        $base = $this->quoteBaseForFees($quote);
-
-        return $this->calculateByType($base, $settings->guest_service_fee_type, $settings->guest_service_fee_value);
+        return $this->calculateGuestServiceFeeForBase($quote, $this->quoteBaseForFees($quote));
     }
 
     public function calculateHostServiceFee(BookingQuote $quote): float
     {
-        $settings = $this->settings->getForSleepingPlace($quote->sleepingPlace);
-        $base = $this->quoteBaseForFees($quote);
+        return $this->calculateHostServiceFeeForBase($quote, $this->quoteBaseForFees($quote));
+    }
 
-        return $this->calculateByType($base, $settings->host_service_fee_type, $settings->host_service_fee_value);
+    public function calculateGuestServiceFeeForBase(BookingQuote $quote, float $base): float
+    {
+        $settings = $this->settings->getForSleepingPlace($quote->sleepingPlace);
+
+        return $this->calculateByType($this->money($base), $settings->guest_service_fee_type, $settings->guest_service_fee_value);
+    }
+
+    public function calculateHostServiceFeeForBase(BookingQuote $quote, float $base): float
+    {
+        $settings = $this->settings->getForSleepingPlace($quote->sleepingPlace);
+
+        return $this->calculateByType($this->money($base), $settings->host_service_fee_type, $settings->host_service_fee_value);
     }
 
     private function quoteBaseForFees(BookingQuote $quote): float

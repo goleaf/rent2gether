@@ -12,6 +12,7 @@ use App\Models\Room;
 use App\Models\Rule;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Catalog\AmenityRuleCatalog;
 use Database\Seeders\AmenityRuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -33,8 +34,8 @@ class AmenityRuleSystemTest extends TestCase
     {
         $this->seed(AmenityRuleSeeder::class);
 
-        $this->assertSame(49, Amenity::query()->count());
-        $this->assertSame(21, Rule::query()->count());
+        $this->assertSame(count(AmenityRuleCatalog::amenities()), Amenity::query()->count());
+        $this->assertSame(count(AmenityRuleCatalog::rules()), Rule::query()->count());
         $this->assertDatabaseHas('amenities', [
             'slug' => 'fast_wifi',
             'category' => 'work_study',
@@ -53,6 +54,26 @@ class AmenityRuleSystemTest extends TestCase
         $this->assertDatabaseHas('rule_translations', [
             'locale' => 'ru',
             'name' => 'Тихие часы после 22:00',
+        ]);
+        $this->assertDatabaseHas('rules', [
+            'slug' => 'smoking_allowed',
+            'category' => 'smoking',
+            'requires_confirmation' => true,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseHas('rule_translations', [
+            'locale' => 'ru',
+            'name' => 'Можно курить',
+        ]);
+        $this->assertDatabaseHas('rules', [
+            'slug' => 'no_sleeping_place_changes_without_permission',
+            'category' => 'shared_room_behavior',
+            'requires_confirmation' => true,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseHas('rule_translations', [
+            'locale' => 'ru',
+            'name' => 'Нельзя менять спальное место без разрешения',
         ]);
     }
 

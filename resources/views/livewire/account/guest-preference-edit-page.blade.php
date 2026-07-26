@@ -63,4 +63,6 @@
             </flux:button>
         </div>
     </form>
+
+    <livewire:profile.guest-compatibility-profile-form />
 </x-ui.page>

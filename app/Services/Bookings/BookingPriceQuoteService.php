@@ -265,7 +265,6 @@ class BookingPriceQuoteService
             'calendarSettings',
             'calendarDays',
             'pricingSettings',
-            'datePrices',
             'pricingDiscountRules',
         ]);
     }

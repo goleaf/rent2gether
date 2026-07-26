@@ -9,6 +9,19 @@ use App\Services\Localization\SupportedContentLocales;
 class SleepingPlaceCompletionService
 {
     /**
+     * @return array{percentage:int,items:list<array{key:string,label:string,complete:bool}>}
+     */
+    public function evaluate(SleepingPlace $place): array
+    {
+        $items = $this->items($place);
+
+        return [
+            'percentage' => $this->percentageForItems($items),
+            'items' => $items,
+        ];
+    }
+
+    /**
      * @return list<array{key:string,label:string,complete:bool}>
      */
     public function items(SleepingPlace $place): array
@@ -47,7 +60,14 @@ class SleepingPlaceCompletionService
 
     public function percentage(SleepingPlace $place): int
     {
-        $items = $this->items($place);
+        return $this->percentageForItems($this->items($place));
+    }
+
+    /**
+     * @param  list<array{key:string,label:string,complete:bool}>  $items
+     */
+    private function percentageForItems(array $items): int
+    {
         $complete = count(array_filter($items, fn (array $item): bool => $item['complete']));
 
         return (int) round(($complete / max(1, count($items))) * 100);

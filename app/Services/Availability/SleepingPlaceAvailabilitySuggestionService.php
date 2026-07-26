@@ -2,6 +2,7 @@
 
 namespace App\Services\Availability;
 
+use App\Enums\SleepingPlaceStatus;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -44,6 +45,27 @@ class SleepingPlaceAvailabilitySuggestionService
         return $dates;
     }
 
+    public function isRangeAvailable(SleepingPlace $place, CarbonInterface $checkIn, CarbonInterface $checkOut): bool
+    {
+        return $this->availability->isAvailable($place, $checkIn, $checkOut);
+    }
+
+    /**
+     * @return Collection<int, array{check_out:string,nights:int,available:bool,reasons:list<string>,minimum_nights_override:int}>
+     */
+    public function checkoutCandidateAvailability(SleepingPlace $place, CarbonInterface $checkIn, int $maxNights): Collection
+    {
+        return $this->availability->checkoutCandidateAvailability($place, $checkIn, $maxNights);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function blockingReasons(SleepingPlace $place, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
+    {
+        return $this->availability->getBlockingReasons($place, $checkIn, $checkOut);
+    }
+
     public function suggestSameRoomAlternatives(Room $room, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
     {
         return $this->availablePlaces($room->sleepingPlaces(), $checkIn, $checkOut);
@@ -54,13 +76,53 @@ class SleepingPlaceAvailabilitySuggestionService
         return $this->availablePlaces($property->sleepingPlaces(), $checkIn, $checkOut);
     }
 
-    public function suggestSameHostAlternatives(User $host, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
+    public function suggestSameHostAlternatives(User|int $host, CarbonInterface $checkIn, CarbonInterface $checkOut, ?int $excludeSleepingPlaceId = null): Collection
     {
-        return $this->availablePlaces(SleepingPlace::query()->where('user_id', $host->id), $checkIn, $checkOut);
+        $hostId = $host instanceof User ? $host->id : $host;
+
+        return $this->availablePlaces(
+            SleepingPlace::query()->where('user_id', $hostId),
+            $checkIn,
+            $checkOut,
+            $excludeSleepingPlaceId,
+        );
     }
 
-    private function availablePlaces(mixed $query, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
+    public function suggestNeighborRoomAlternatives(SleepingPlace $place, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
     {
+        if (! $place->property_id || ! $place->room_id) {
+            return collect();
+        }
+
+        return $this->availablePlaces(
+            SleepingPlace::query()
+                ->where('property_id', $place->property_id)
+                ->where('room_id', '!=', $place->room_id),
+            $checkIn,
+            $checkOut,
+            $place->id,
+        );
+    }
+
+    public function suggestSimilarSleepingPlaces(SleepingPlace $place, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
+    {
+        $query = SleepingPlace::query()
+            ->where('status', SleepingPlaceStatus::Active)
+            ->whereKeyNot($place->id);
+
+        if ($place->place_type) {
+            $query->where('place_type', $place->place_type);
+        }
+
+        return $this->availablePlaces($query, $checkIn, $checkOut);
+    }
+
+    private function availablePlaces(mixed $query, CarbonInterface $checkIn, CarbonInterface $checkOut, ?int $excludeSleepingPlaceId = null): Collection
+    {
+        if ($excludeSleepingPlaceId !== null) {
+            $query->whereKeyNot($excludeSleepingPlaceId);
+        }
+
         return $query
             ->select(['id', 'room_id', 'property_id', 'user_id', 'title', 'display_name', 'base_price', 'base_price_per_night', 'currency', 'status'])
             ->orderBy('sort_order')

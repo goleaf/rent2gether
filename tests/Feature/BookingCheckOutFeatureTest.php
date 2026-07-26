@@ -331,6 +331,26 @@ class BookingCheckOutFeatureTest extends TestCase
             ->assertSee(__('check_out.title', [], 'en'));
     }
 
+    public function test_checkout_issue_report_sheet_keeps_photo_paths_out_of_public_state(): void
+    {
+        $listing = $this->listing();
+        $booking = $this->booking($listing);
+        app(BookingCheckOutService::class)->createForBooking($booking);
+
+        $component = Livewire::actingAs($listing['host'])
+            ->test(CheckOutIssueReportSheet::class, ['booking' => $booking])
+            ->set('issueType', 'damage')
+            ->set('severity', 'high')
+            ->set('description', 'The locker door is damaged after checkout.')
+            ->assertSee(__('check_out.title'));
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('bookingId', $encodedSnapshot);
+        $this->assertStringContainsString('checkOutId', $encodedSnapshot);
+        $this->assertStringNotContainsString('photoPaths', $encodedSnapshot);
+    }
+
     /**
      * @return array{guest:User, host:User, property:Property, room:Room, place:SleepingPlace}
      */

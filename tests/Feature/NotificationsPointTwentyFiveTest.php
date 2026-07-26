@@ -10,11 +10,9 @@ use App\Models\Booking;
 use App\Models\ConversationSystemEvent;
 use App\Models\HostRepresentative;
 use App\Models\Notification;
-use App\Models\NotificationDelivery;
 use App\Models\NotificationDigest;
 use App\Models\NotificationEvent;
 use App\Models\NotificationReminder;
-use App\Models\NotificationTemplate;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -94,6 +92,45 @@ class NotificationsPointTwentyFiveTest extends TestCase
         $this->assertTrue(app(NotificationPrivacyService::class)->canView($guest, $guestNotification));
         $this->assertFalse(app(NotificationPrivacyService::class)->canView($guest, $hostNotification));
         $this->assertTrue(app(NotificationPrivacyService::class)->canView($host, $hostNotification));
+    }
+
+    public function test_notification_action_services_expose_only_safe_internal_action_urls(): void
+    {
+        $guest = User::factory()->create();
+        $unsafeNotification = Notification::factory()->create([
+            'user_id' => $guest->id,
+            'recipient_user_id' => $guest->id,
+            'action_type' => 'open_booking',
+            'action_url' => 'javascript:alert(1)',
+            'status' => 'created',
+            'expired_at' => null,
+        ]);
+        $internalNotification = Notification::factory()->create([
+            'user_id' => $guest->id,
+            'recipient_user_id' => $guest->id,
+            'action_type' => 'open_booking',
+            'action_url' => url('/en/bookings/123/payment?from=notification#pay'),
+            'status' => 'created',
+            'expired_at' => null,
+        ]);
+        $cancelledNotification = Notification::factory()->create([
+            'user_id' => $guest->id,
+            'recipient_user_id' => $guest->id,
+            'action_type' => 'open_booking',
+            'action_url' => url('/en/bookings/123/payment'),
+            'status' => 'cancelled',
+            'expired_at' => null,
+        ]);
+
+        $actions = app(NotificationActionService::class);
+        $privacy = app(NotificationPrivacyService::class);
+
+        $this->assertNull($actions->getActionUrl($unsafeNotification));
+        $this->assertNull($privacy->filterForUser($guest, $unsafeNotification)['action_url']);
+        $this->assertSame('/en/bookings/123/payment?from=notification#pay', $actions->getActionUrl($internalNotification));
+        $this->assertSame('/en/bookings/123/payment?from=notification#pay', $privacy->filterForUser($guest, $internalNotification)['action_url']);
+        $this->assertNull($actions->getActionUrl($cancelledNotification));
+        $this->assertNull($privacy->filterForUser($guest, $cancelledNotification)['action_url']);
     }
 
     public function test_deliveries_preferences_quiet_hours_and_future_channels_work(): void

@@ -50,14 +50,14 @@
         <div class="flex items-end justify-between pt-1">
             <div>
                 <span class="text-lg font-semibold text-zinc-900 dark:text-white">
-                    €{{ number_format($bed->price_per_night, 0) }}
+                    {{ $nightlyPrice }}
                 </span>
                 <span class="text-sm text-zinc-500 dark:text-zinc-400">/{{ __('listing.bed.nightly_rate') }}</span>
             </div>
 
-            @if($nights > 0)
+            @if($totalPrice)
                 <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
-                    €{{ number_format($this->priceSummary['total'] ?? 0, 0) }} {{ __('search.price_total') }}
+                    {{ $totalPrice }} {{ __('search.price_total') }}
                 </flux:text>
             @endif
         </div>

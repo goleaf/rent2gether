@@ -4,10 +4,23 @@ namespace App\Livewire\Profile;
 
 use App\Services\Compatibility\GuestCompatibilityProfileService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class GuestCompatibilityProfileForm extends Component
 {
+    /** @var list<string> */
+    private const STEPS = [
+        'smoking_pets',
+        'sleep_schedule',
+        'work_study',
+        'social_quiet',
+        'cleanliness',
+        'room_people',
+        'sleeping_place',
+        'entry',
+    ];
+
     public string $step = 'smoking_pets';
 
     public ?bool $smokes = null;
@@ -118,6 +131,56 @@ class GuestCompatibilityProfileForm extends Component
 
     public ?bool $needs247Access = null;
 
+    public bool $iSmoke = false;
+
+    public bool $iDoNotSmoke = false;
+
+    public bool $iWakeUpEarly = false;
+
+    public bool $iSleepLate = false;
+
+    public bool $iWorkAtNight = false;
+
+    public bool $iStudy = false;
+
+    public bool $iWorkRemotely = false;
+
+    public bool $iOftenStayHome = false;
+
+    public bool $iRarelyStayHome = false;
+
+    public bool $iLikeQuiet = false;
+
+    public bool $iAmOkWithNoise = false;
+
+    public bool $iAmSocial = false;
+
+    public bool $iPreferNotToSocialize = false;
+
+    public bool $iLikeCleanliness = false;
+
+    public bool $iAmReadyToHelpCleaning = false;
+
+    public bool $iAcceptLivingWithStrangers = true;
+
+    public bool $iDoNotWantManyPeople = false;
+
+    public bool $iWantPrivateRoom = false;
+
+    public bool $iAcceptSharedRoom = true;
+
+    public bool $iNeedDesk = false;
+
+    public bool $iNeedFastInternet = false;
+
+    public bool $iNeedLocker = false;
+
+    public bool $iNeedQuietAtNight = false;
+
+    public bool $iNeedLateEntry = false;
+
+    public bool $iTravelWithPet = false;
+
     public function mount(GuestCompatibilityProfileService $profiles): void
     {
         $user = auth()->user();
@@ -181,16 +244,42 @@ class GuestCompatibilityProfileForm extends Component
         $this->hasPetAllergy = $profile->has_pet_allergy;
         $this->needsSelfCheckIn = $profile->needs_self_check_in;
         $this->needs247Access = $profile->needs_24_7_access;
+        $this->iSmoke = (bool) $profile->i_smoke;
+        $this->iDoNotSmoke = (bool) $profile->i_do_not_smoke;
+        $this->iWakeUpEarly = (bool) $profile->i_wake_up_early;
+        $this->iSleepLate = (bool) $profile->i_sleep_late;
+        $this->iWorkAtNight = (bool) $profile->i_work_at_night;
+        $this->iStudy = (bool) $profile->i_study;
+        $this->iWorkRemotely = (bool) $profile->i_work_remotely;
+        $this->iOftenStayHome = (bool) $profile->i_often_stay_home;
+        $this->iRarelyStayHome = (bool) $profile->i_rarely_stay_home;
+        $this->iLikeQuiet = (bool) $profile->i_like_quiet;
+        $this->iAmOkWithNoise = (bool) $profile->i_am_ok_with_noise;
+        $this->iAmSocial = (bool) $profile->i_am_social;
+        $this->iPreferNotToSocialize = (bool) $profile->i_prefer_not_to_socialize;
+        $this->iLikeCleanliness = (bool) $profile->i_like_cleanliness;
+        $this->iAmReadyToHelpCleaning = (bool) $profile->i_am_ready_to_help_cleaning;
+        $this->iAcceptLivingWithStrangers = (bool) $profile->i_accept_living_with_strangers;
+        $this->iDoNotWantManyPeople = (bool) $profile->i_do_not_want_many_people;
+        $this->iWantPrivateRoom = (bool) $profile->i_want_private_room;
+        $this->iAcceptSharedRoom = (bool) $profile->i_accept_shared_room;
+        $this->iNeedDesk = (bool) $profile->i_need_desk;
+        $this->iNeedFastInternet = (bool) $profile->i_need_fast_internet;
+        $this->iNeedLocker = (bool) $profile->i_need_locker;
+        $this->iNeedQuietAtNight = (bool) $profile->i_need_quiet_at_night;
+        $this->iNeedLateEntry = (bool) $profile->i_need_late_entry;
+        $this->iTravelWithPet = (bool) $profile->i_travel_with_pet;
     }
 
     public function save(GuestCompatibilityProfileService $profiles): void
     {
         $validated = $this->validate([
-            'step' => ['required', 'string'],
+            'step' => ['required', Rule::in(self::STEPS)],
             'smokes' => ['nullable', 'boolean'],
-            'smokingPreference' => ['nullable', 'string', 'max:50'],
-            'tobaccoSmellSensitivity' => ['nullable', 'string', 'max:50'],
+            'smokingPreference' => ['nullable', Rule::in(['non_smoker', 'outside_only', 'smoker', 'indoor'])],
+            'tobaccoSmellSensitivity' => ['nullable', Rule::in(['low', 'medium', 'high'])],
             'maxPeopleInRoom' => ['nullable', 'integer', 'min:1', 'max:12'],
+            ...$this->promptValidationRules(),
         ], attributes: [
             'maxPeopleInRoom' => __('compatibility.fields.max_people_in_room'),
         ]);
@@ -269,7 +358,105 @@ class GuestCompatibilityProfileForm extends Component
             'has_pet_allergy' => $this->hasPetAllergy,
             'needs_self_check_in' => $this->needsSelfCheckIn,
             'needs_24_7_access' => $this->needs247Access,
+            'i_smoke' => $this->iSmoke,
+            'i_do_not_smoke' => $this->iDoNotSmoke,
+            'i_wake_up_early' => $this->iWakeUpEarly,
+            'i_sleep_late' => $this->iSleepLate,
+            'i_work_at_night' => $this->iWorkAtNight,
+            'i_study' => $this->iStudy,
+            'i_work_remotely' => $this->iWorkRemotely,
+            'i_often_stay_home' => $this->iOftenStayHome,
+            'i_rarely_stay_home' => $this->iRarelyStayHome,
+            'i_like_quiet' => $this->iLikeQuiet,
+            'i_am_ok_with_noise' => $this->iAmOkWithNoise,
+            'i_am_social' => $this->iAmSocial,
+            'i_prefer_not_to_socialize' => $this->iPreferNotToSocialize,
+            'i_like_cleanliness' => $this->iLikeCleanliness,
+            'i_am_ready_to_help_cleaning' => $this->iAmReadyToHelpCleaning,
+            'i_accept_living_with_strangers' => $this->iAcceptLivingWithStrangers,
+            'i_do_not_want_many_people' => $this->iDoNotWantManyPeople,
+            'i_want_private_room' => $this->iWantPrivateRoom,
+            'i_accept_shared_room' => $this->iAcceptSharedRoom,
+            'i_need_desk' => $this->iNeedDesk,
+            'i_need_fast_internet' => $this->iNeedFastInternet,
+            'i_need_locker' => $this->iNeedLocker,
+            'i_need_quiet_at_night' => $this->iNeedQuietAtNight,
+            'i_need_late_entry' => $this->iNeedLateEntry,
+            'i_travel_with_pet' => $this->iTravelWithPet,
         ];
+    }
+
+    /**
+     * @return list<array{property:string,label:string,icon:string}>
+     */
+    public function promptFieldOptions(): array
+    {
+        return collect($this->promptPropertyMap())
+            ->map(fn (string $column, string $property): array => [
+                'property' => $property,
+                'label' => trans('compatibility.prompt_fields.'.$column),
+                'icon' => $this->promptIcon($column),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function promptValidationRules(): array
+    {
+        return collect(array_keys($this->promptPropertyMap()))
+            ->mapWithKeys(fn (string $property): array => [$property => ['boolean']])
+            ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function promptPropertyMap(): array
+    {
+        return [
+            'iSmoke' => 'i_smoke',
+            'iDoNotSmoke' => 'i_do_not_smoke',
+            'iWakeUpEarly' => 'i_wake_up_early',
+            'iSleepLate' => 'i_sleep_late',
+            'iWorkAtNight' => 'i_work_at_night',
+            'iStudy' => 'i_study',
+            'iWorkRemotely' => 'i_work_remotely',
+            'iOftenStayHome' => 'i_often_stay_home',
+            'iRarelyStayHome' => 'i_rarely_stay_home',
+            'iLikeQuiet' => 'i_like_quiet',
+            'iAmOkWithNoise' => 'i_am_ok_with_noise',
+            'iAmSocial' => 'i_am_social',
+            'iPreferNotToSocialize' => 'i_prefer_not_to_socialize',
+            'iLikeCleanliness' => 'i_like_cleanliness',
+            'iAmReadyToHelpCleaning' => 'i_am_ready_to_help_cleaning',
+            'iAcceptLivingWithStrangers' => 'i_accept_living_with_strangers',
+            'iDoNotWantManyPeople' => 'i_do_not_want_many_people',
+            'iWantPrivateRoom' => 'i_want_private_room',
+            'iAcceptSharedRoom' => 'i_accept_shared_room',
+            'iNeedDesk' => 'i_need_desk',
+            'iNeedFastInternet' => 'i_need_fast_internet',
+            'iNeedLocker' => 'i_need_locker',
+            'iNeedQuietAtNight' => 'i_need_quiet_at_night',
+            'iNeedLateEntry' => 'i_need_late_entry',
+            'iTravelWithPet' => 'i_travel_with_pet',
+        ];
+    }
+
+    private function promptIcon(string $column): string
+    {
+        return match ($column) {
+            'i_wake_up_early', 'i_sleep_late', 'i_work_at_night', 'i_need_quiet_at_night' => 'moon',
+            'i_study' => 'academic-cap',
+            'i_work_remotely', 'i_need_desk', 'i_need_fast_internet' => 'computer-desktop',
+            'i_am_social', 'i_prefer_not_to_socialize', 'i_accept_living_with_strangers', 'i_do_not_want_many_people' => 'users',
+            'i_like_cleanliness', 'i_am_ready_to_help_cleaning' => 'sparkles',
+            'i_want_private_room', 'i_accept_shared_room', 'i_need_locker' => 'home-modern',
+            'i_need_late_entry' => 'clock',
+            default => 'scale',
+        };
     }
 
     public function render(): View

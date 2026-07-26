@@ -138,7 +138,10 @@ class LocalizationCatalogueTest extends TestCase
 
     public function test_missing_translation_command_reports_clean_catalogue(): void
     {
-        $this->assertSame(0, Artisan::call('translations:missing'));
-        $this->assertStringContainsString('All', Artisan::output());
+        $exitCode = Artisan::call('translations:missing');
+        $output = Artisan::output();
+
+        $this->assertSame(0, $exitCode, $output);
+        $this->assertStringContainsString('All', $output);
     }
 }

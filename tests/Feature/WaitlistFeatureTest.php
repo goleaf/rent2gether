@@ -297,6 +297,33 @@ class WaitlistFeatureTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_waitlist_offer_page_keeps_offer_model_out_of_public_state(): void
+    {
+        $guest = User::factory()->create();
+        $place = $this->createPlace('Offer payload place', ['base_price_per_night' => 20, 'deposit_amount' => 0]);
+
+        app(WaitlistService::class)->join($guest, $place, $this->context());
+        $offer = app(WaitlistAvailabilityService::class)->handlePlaceBecameAvailable(
+            $place,
+            CarbonImmutable::parse('2026-07-10'),
+            CarbonImmutable::parse('2026-07-12'),
+        );
+
+        $component = Livewire::actingAs($guest)
+            ->test(WaitlistOfferPage::class, ['waitlistOffer' => $offer])
+            ->assertSet('waitlistOfferId', $offer->id)
+            ->assertViewHas('offer', fn (WaitlistOffer $viewOffer): bool => $viewOffer->is($offer))
+            ->assertViewHas('item', fn (?WaitlistItem $item): bool => $item?->is($offer->waitlistItem) === true)
+            ->assertSee(__('waitlist.offer_available'));
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('waitlistOfferId', $encodedSnapshot);
+        $this->assertStringNotContainsString('App\\\\Models\\\\WaitlistOffer', $encodedSnapshot);
+        $this->assertStringNotContainsString('App\\\\Models\\\\WaitlistItem', $encodedSnapshot);
+        $this->assertLessThan(13_000, strlen($encodedSnapshot), 'Waitlist offer page snapshot should keep full offer models out of public state.');
+    }
+
     public function test_waitlist_routes_render_in_english_and_russian(): void
     {
         $guest = User::factory()->create();

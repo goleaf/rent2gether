@@ -89,6 +89,8 @@ class BookingCheckInProblemService
             'status' => 'problem_reported',
         ])->save();
 
+        $this->notifySupportIfNeeded($problem->refresh(), $validated);
+
         if ($problem->problem_type === 'host_not_answering') {
             app(BookingCheckInHostUnresponsiveIntegrationService::class)->createCaseFromCheckInProblem($problem);
         }
@@ -239,5 +241,28 @@ class BookingCheckInProblemService
             'wrong_sleeping_place',
             'sleeping_place_occupied',
         ], true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function notifySupportIfNeeded(BookingCheckInProblem $problem, array $validated): void
+    {
+        $severity = (string) ($validated['severity'] ?? 'medium');
+        $guestWantsHelp = (bool) ($validated['guest_wants_help'] ?? false);
+
+        if (! $guestWantsHelp && ! in_array($severity, ['high', 'urgent', 'emergency', 'critical'], true)) {
+            return;
+        }
+
+        app(BookingCheckInAlertService::class)->createAlert(
+            $problem->checkIn,
+            'support_attention_required',
+            in_array($severity, ['low', 'medium', 'high', 'urgent', 'emergency', 'critical'], true) ? $severity : 'high',
+            [
+                'problem_type' => $problem->problem_type,
+                'guest_wants_help' => $guestWantsHelp,
+            ],
+        );
     }
 }

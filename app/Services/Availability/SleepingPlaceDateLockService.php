@@ -213,25 +213,46 @@ class SleepingPlaceDateLockService
             ]);
         }
 
-        return DB::transaction(function () use ($place, $dates, $attributes): Collection {
+        $rangeStart = $dates[0];
+        $rangeEnd = $this->date($checkOut)->toDateString();
+
+        return DB::transaction(function () use ($place, $dates, $rangeStart, $rangeEnd, $attributes): Collection {
             $locks = collect();
+            $dateSet = array_flip($dates);
+            $existingByDate = collect();
+
+            $existingLocks = $place->bookingDateLocks()
+                ->where('date', '>=', $rangeStart)
+                ->where('date', '<', $rangeEnd)
+                ->where('status', 'active')
+                ->orderBy('date')
+                ->get();
+
+            foreach ($existingLocks as $existing) {
+                $date = $existing->date->toDateString();
+
+                if (! array_key_exists($date, $dateSet)) {
+                    continue;
+                }
+
+                if (($attributes['booking_id'] ?? null) && (int) $existing->booking_id === (int) $attributes['booking_id']) {
+                    $existingByDate->put($date, $existing);
+
+                    continue;
+                }
+
+                throw ValidationException::withMessages([
+                    'check_in_date' => __('availability.messages.range_overlaps_existing_booking'),
+                ]);
+            }
 
             foreach ($dates as $date) {
-                $existing = $place->bookingDateLocks()
-                    ->whereDate('date', $date)
-                    ->where('status', 'active')
-                    ->first();
+                $existing = $existingByDate->get($date);
 
                 if ($existing instanceof SleepingPlaceBookingDateLock) {
-                    if (($attributes['booking_id'] ?? null) && (int) $existing->booking_id === (int) $attributes['booking_id']) {
-                        $locks->push($existing);
+                    $locks->push($existing);
 
-                        continue;
-                    }
-
-                    throw ValidationException::withMessages([
-                        'check_in_date' => __('availability.messages.range_overlaps_existing_booking'),
-                    ]);
+                    continue;
                 }
 
                 try {

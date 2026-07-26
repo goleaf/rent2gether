@@ -88,7 +88,11 @@ class BookingQuoteSuggestionService
      */
     public function suggestSimilarPlaces(BookingQuote $quote): Collection
     {
-        return collect();
+        $quote->loadMissing('sleepingPlace');
+
+        return $quote->sleepingPlace instanceof SleepingPlace
+            ? $this->placeAlternatives($quote, $this->suggestions->suggestSimilarSleepingPlaces($quote->sleepingPlace, $quote->check_in_date, $quote->check_out_date), 'similar_place', 80)
+            : collect();
     }
 
     /**
@@ -102,6 +106,7 @@ class BookingQuoteSuggestionService
             ->merge($this->suggestSameRoomAlternatives($quote))
             ->merge($this->suggestSamePropertyAlternatives($quote))
             ->merge($this->suggestSameHostAlternatives($quote))
+            ->merge($this->suggestSimilarPlaces($quote))
             ->values();
     }
 

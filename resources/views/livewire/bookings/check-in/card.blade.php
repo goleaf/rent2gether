@@ -54,6 +54,154 @@
             </div>
         @endisset
 
+        @if ($variant === 'guest_page')
+            <div class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.contact') }}</p>
+
+                @if ($hostContact && ($hostContact['name'] || $hostContact['phone']))
+                    <div class="space-y-1 text-sm text-zinc-700 dark:text-zinc-200">
+                        <p>
+                            <span class="text-zinc-500">{{ __('check_in.fields.host') }}:</span>
+                            <span class="font-medium">{{ $hostContact['name'] ?? __('check_in.empty.unknown_guest') }}</span>
+                        </p>
+
+                        @if ($hostContact['phone'])
+                            <p>
+                                <span class="text-zinc-500">{{ __('app.profile.phone') }}:</span>
+                                <a class="font-medium text-sky-700 underline decoration-sky-300 underline-offset-4 dark:text-sky-300"
+                                    href="{{ $hostContact['tel_href'] }}">
+                                    {{ $hostContact['phone'] }}
+                                </a>
+                            </p>
+                        @endif
+                    </div>
+                @else
+                    <p class="text-sm text-zinc-600 dark:text-zinc-300">{{ __('check_in.messages.contact_hidden') }}</p>
+                @endif
+
+                <p class="text-xs text-zinc-500">{{ __('check_in.messages.no_representative_contact') }}</p>
+            </div>
+
+            <form wire:submit="markArrived" class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.arrival') }}</p>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.actual_arrival_time') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="time" wire:model.change="actualArrivalTime" icon="clock" />
+                    <flux:error name="actualArrivalTime" />
+                </flux:field>
+
+                <div class="grid grid-cols-1 gap-2">
+                    <flux:button type="button" variant="filled" class="w-full" wire:click="markOnTheWay" wire:loading.attr="disabled" icon="arrow-right">
+                        {{ __('check_in.actions.i_am_on_the_way') }}
+                    </flux:button>
+
+                    <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="key">
+                        {{ __('check_in.actions.i_arrived') }}
+                    </flux:button>
+                </div>
+            </form>
+
+            <form wire:submit="saveBeforePhoto" class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.fields.before_place_photo') }}</p>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="camera" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.media_photo') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="file" wire:model="beforePhoto" accept="image/*" icon="camera" />
+                    <flux:error name="beforePhoto" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="pencil" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.media_caption') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="mediaCaption" />
+                    <flux:error name="mediaCaption" />
+                </flux:field>
+
+                <flux:button type="submit" variant="filled" class="w-full" wire:loading.attr="disabled" icon="camera">
+                    {{ __('check_in.actions.save_before_photo') }}
+                </flux:button>
+            </form>
+
+            <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="check-circle">
+                {{ __('check_in.actions.confirm_check_in') }}
+            </flux:button>
+
+            <form wire:submit="reportProblem" class="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+                <p class="text-sm font-medium text-amber-950 dark:text-amber-100">{{ __('check_in.actions.problem') }}</p>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="tag" variant="mini" class="size-4 shrink-0 text-amber-500/80 dark:text-amber-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_type') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="problemType">
+                        @foreach ($problemOptions as $problemType => $problemLabel)
+                            <flux:select.option value="{{ $problemType }}">{{ $problemLabel }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="problemType" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="exclamation-triangle" variant="mini" class="size-4 shrink-0 text-amber-500/80 dark:text-amber-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_severity') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="severity">
+                        @foreach ($severityOptions as $severityKey => $severityLabel)
+                            <flux:select.option value="{{ $severityKey }}">{{ $severityLabel }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="severity" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="pencil" variant="mini" class="size-4 shrink-0 text-amber-500/80 dark:text-amber-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_description') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:textarea wire:model.blur="description" />
+                    <flux:error name="description" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="camera" variant="mini" class="size-4 shrink-0 text-amber-500/80 dark:text-amber-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.problem_photo') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="file" wire:model="problemPhoto" accept="image/*" icon="camera" />
+                    <flux:error name="problemPhoto" />
+                </flux:field>
+
+                <flux:button type="submit" variant="danger" class="w-full" wire:loading.attr="disabled" icon="exclamation-triangle">
+                    {{ __('check_in.actions.report_problem') }}
+                </flux:button>
+            </form>
+        @endif
+
         @if ($steps->isNotEmpty())
             <div class="space-y-2">
                 <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.steps') }}</p>
@@ -133,7 +281,7 @@
             </div>
         @endif
 
-        @if ($variant === 'arrival_button' || $variant === 'guest_page')
+        @if ($variant === 'arrival_button')
             <flux:button type="button" variant="primary" class="w-full" wire:click="markArrived" wire:loading.attr="disabled" icon="key">
                 {{ __('check_in.actions.i_arrived') }}
             </flux:button>
@@ -161,8 +309,8 @@
                         </span>
                     </flux:label>
                     <flux:select wire:model.change="problemType">
-                    @foreach (array_keys(__('check_in.problems')) as $problemType)
-                        <flux:select.option value="{{ $problemType }}">{{ __('check_in.problems.' . $problemType) }}</flux:select.option>
+                    @foreach ($problemOptions as $problemType => $problemLabel)
+                        <flux:select.option value="{{ $problemType }}">{{ $problemLabel }}</flux:select.option>
                     @endforeach
                 </flux:select>
                     <flux:error name="problemType" />
@@ -175,8 +323,8 @@
                         </span>
                     </flux:label>
                     <flux:select wire:model.change="severity">
-                    @foreach (array_keys(__('check_in.severities')) as $severityKey)
-                        <flux:select.option value="{{ $severityKey }}">{{ __('check_in.severities.' . $severityKey) }}</flux:select.option>
+                    @foreach ($severityOptions as $severityKey => $severityLabel)
+                        <flux:select.option value="{{ $severityKey }}">{{ $severityLabel }}</flux:select.option>
                     @endforeach
                 </flux:select>
                     <flux:error name="severity" />
@@ -213,8 +361,8 @@
                         </span>
                     </flux:label>
                     <flux:select wire:model.change="mediaRole">
-                    @foreach (array_keys(__('check_in.media_roles')) as $mediaRole)
-                        <flux:select.option value="{{ $mediaRole }}">{{ __('check_in.media_roles.' . $mediaRole) }}</flux:select.option>
+                    @foreach ($mediaRoleOptions as $mediaRole => $mediaRoleLabel)
+                        <flux:select.option value="{{ $mediaRole }}">{{ $mediaRoleLabel }}</flux:select.option>
                     @endforeach
                 </flux:select>
                     <flux:error name="mediaRole" />
@@ -223,11 +371,11 @@
                     <flux:label>
                         <span class="inline-flex min-w-0 items-center gap-1.5">
                             <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                            <span class="min-w-0">{{ __('check_in.fields.media_path') }}</span>
+                            <span class="min-w-0">{{ __('check_in.fields.media_photo') }}</span>
                         </span>
                     </flux:label>
-                    <flux:input wire:model.blur="path" icon="calendar-days" />
-                    <flux:error name="path" />
+                    <flux:input type="file" wire:model="photo" accept="image/*" icon="camera" />
+                    <flux:error name="photo" />
                 </flux:field>
                                 <flux:field>
                     <flux:label>

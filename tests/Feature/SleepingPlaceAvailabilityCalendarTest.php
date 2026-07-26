@@ -19,6 +19,7 @@ use App\Services\Availability\SleepingPlaceDateLockService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -42,6 +43,27 @@ class SleepingPlaceAvailabilityCalendarTest extends TestCase
             'date' => '2026-07-15',
             'status' => 'active',
         ]);
+    }
+
+    public function test_booking_date_locks_prefetch_existing_locks_once_for_long_range(): void
+    {
+        $place = $this->sleepingPlace();
+        $booking = $this->booking($place, '2026-08-01', '2026-08-31');
+        $lockSelects = [];
+
+        DB::listen(function ($query) use (&$lockSelects): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select') && str_contains($sql, 'sleeping_place_booking_date_locks')) {
+                $lockSelects[] = $query->sql;
+            }
+        });
+
+        app(SleepingPlaceDateLockService::class)->createLocksForBooking($booking);
+        $lockSelectCount = count($lockSelects);
+
+        $this->assertSame(30, $place->bookingDateLocks()->where('status', 'active')->count());
+        $this->assertLessThanOrEqual(1, $lockSelectCount);
     }
 
     public function test_active_date_lock_unique_index_prevents_double_booking_race(): void

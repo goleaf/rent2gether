@@ -50,6 +50,7 @@ class RoomOccupantSnapshotFactory extends Factory
             'wake_schedule_snapshot' => null,
             'home_presence_level_snapshot' => 'balanced',
             'smokes_snapshot' => false,
+            'has_pet_snapshot' => false,
             'social_level_snapshot' => 'calm',
             'prefers_quiet_snapshot' => true,
             'roommate_rating_average_snapshot' => 4.8,

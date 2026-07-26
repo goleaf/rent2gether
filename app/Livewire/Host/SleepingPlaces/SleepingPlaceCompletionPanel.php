@@ -12,16 +12,14 @@ class SleepingPlaceCompletionPanel extends Component
 {
     use HandlesSleepingPlaceStep;
 
-    /** @var list<array{key:string,label:string,complete:bool}> */
-    public array $items = [];
-
-    public int $percentage = 0;
-
-    public function mount(SleepingPlace $sleepingPlace, SleepingPlaceCompletionService $service): void
+    public function mount(SleepingPlace $sleepingPlace): void
     {
         $this->mountSleepingPlace($sleepingPlace);
-        $place = $sleepingPlace->fresh([
-            'property',
+    }
+
+    public function render(SleepingPlaceCompletionService $service): View
+    {
+        $place = $this->sleepingPlace()->loadMissing([
             'translations',
             'physicalDetails',
             'comfortDetails',
@@ -30,12 +28,8 @@ class SleepingPlaceCompletionPanel extends Component
             'conditionDetails',
         ]);
 
-        $this->items = $service->items($place);
-        $this->percentage = $service->percentage($place);
-    }
-
-    public function render(): View
-    {
-        return view('livewire.host.sleeping-places.sleeping-place-completion-panel');
+        return view('livewire.host.sleeping-places.sleeping-place-completion-panel', [
+            'completion' => $service->evaluate($place),
+        ]);
     }
 }

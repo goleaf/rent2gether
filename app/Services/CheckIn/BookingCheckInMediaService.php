@@ -26,7 +26,7 @@ class BookingCheckInMediaService
             'visibility' => ['nullable', 'string', 'in:guest_and_host,host_only,guest_only,internal'],
         ], [], __('check_in.validation.attributes'))->validate();
 
-        return BookingCheckInMedia::query()->create([
+        $media = BookingCheckInMedia::query()->create([
             'booking_check_in_id' => $checkIn->id,
             'booking_id' => $checkIn->booking_id,
             'uploaded_by_user_id' => $user->id,
@@ -37,6 +37,10 @@ class BookingCheckInMediaService
             'caption' => $validated['caption'] ?? null,
             'visibility' => $validated['visibility'] ?? 'guest_and_host',
         ]);
+
+        $this->syncCheckInMediaFields($user, $checkIn, $media);
+
+        return $media->refresh();
     }
 
     private function ensureParticipant(User $user, BookingCheckIn $checkIn): void
@@ -46,5 +50,21 @@ class BookingCheckInMediaService
                 'booking' => __('check_in.validation.not_participant'),
             ]);
         }
+    }
+
+    private function syncCheckInMediaFields(User $user, BookingCheckIn $checkIn, BookingCheckInMedia $media): void
+    {
+        $column = match ($media->media_role) {
+            'before_check_in_sleeping_place' => 'before_place_photo_path',
+            'before_check_in_room' => 'before_room_photo_path',
+            default => null,
+        };
+
+        if ($column === null) {
+            return;
+        }
+
+        $checkIn->forceFill([$column => $media->path])->save();
+        app(BookingCheckInChecklistService::class)->markItemCompleted($user, $checkIn->refresh(), 'before_photo_uploaded');
     }
 }

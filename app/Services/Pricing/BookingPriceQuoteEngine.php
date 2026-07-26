@@ -80,7 +80,7 @@ class BookingPriceQuoteEngine
             $quote->forceFill($changes)->save();
         }
 
-        $quote->loadMissing(['guest', 'sleepingPlace.pricingSettings', 'sleepingPlace.datePrices', 'sleepingPlace.pricingDiscountRules']);
+        $quote->loadMissing(['guest', 'sleepingPlace.pricingSettings', 'sleepingPlace.pricingDiscountRules']);
         $settings = $this->settings->getForSleepingPlace($quote->sleepingPlace);
         $quote->forceFill([
             'currency' => strtoupper((string) ($quote->currency ?: $settings->currency)),
@@ -108,7 +108,7 @@ class BookingPriceQuoteEngine
     public function buildQuoteLines(BookingQuote $quote): Collection
     {
         $lines = $this->nightlyLines->buildNightLines($quote);
-        $accommodationBeforeDiscount = $this->nightlyLines->calculateAccommodationBeforeDiscount($quote);
+        $accommodationBeforeDiscount = $this->lineAmountFromCollection($lines);
         $quote->forceFill(['accommodation_amount' => $accommodationBeforeDiscount])->save();
 
         $discountLines = $this->createDiscountLines($quote);
@@ -119,22 +119,33 @@ class BookingPriceQuoteEngine
         $feeLines = $this->createFeeLines($quote, $accommodationAfterDiscount);
         $depositLine = $this->createDepositLine($quote);
         $taxLines = $this->createTaxLines($quote);
+        $allLines = $lines
+            ->merge($discountLines)
+            ->merge($feeLines)
+            ->merge($taxLines)
+            ->when($depositLine instanceof BookingQuoteLine, fn (Collection $collection): Collection => $collection->push($depositLine))
+            ->values();
 
-        $cleaningFee = $this->lineAmount($quote, 'cleaning_fee');
-        $guestServiceFee = $this->lineAmount($quote, 'service_fee');
-        $taxAmount = $this->lineAmount($quote, 'tax_future');
-        $cityFee = $this->lineAmount($quote, 'city_fee_future');
-        $deposit = $this->lineAmount($quote, 'deposit');
+        $earlyCheckInFee = $this->lineAmountFromCollection($feeLines, 'early_check_in_fee');
+        $lateCheckoutFee = $this->lineAmountFromCollection($feeLines, 'late_checkout_fee');
+        $extraGuestFee = $this->lineAmountFromCollection($feeLines, 'extra_guest_fee');
+        $cleaningFee = $this->lineAmountFromCollection($feeLines, 'cleaning_fee');
+        $guestServiceFee = $this->lineAmountFromCollection($feeLines, 'service_fee');
+        $taxAmount = $this->lineAmountFromCollection($taxLines, 'tax_future');
+        $cityFee = $this->lineAmountFromCollection($taxLines, 'city_fee_future');
+        $deposit = $depositLine instanceof BookingQuoteLine ? $this->money($depositLine->amount) : 0.0;
         $depositPayable = $depositLine instanceof BookingQuoteLine && $depositLine->is_payable_now ? $deposit : 0.0;
         $totalWithoutDeposit = $this->money($accommodationAfterDiscount
-            + $this->lineAmount($quote, 'early_check_in_fee')
-            + $this->lineAmount($quote, 'late_checkout_fee')
-            + $this->lineAmount($quote, 'extra_guest_fee')
+            + $earlyCheckInFee
+            + $lateCheckoutFee
+            + $extraGuestFee
             + $cleaningFee
             + $guestServiceFee
             + $taxAmount
             + $cityFee);
         $totalPayable = $this->money($totalWithoutDeposit + $depositPayable);
+        $hostServiceFeeBase = $this->money($accommodationAfterDiscount + $earlyCheckInFee + $lateCheckoutFee + $extraGuestFee);
+        $hostPayoutBase = $this->money($hostServiceFeeBase + $cleaningFee);
 
         $quote->forceFill([
             'cleaning_fee_amount' => $cleaningFee,
@@ -149,20 +160,15 @@ class BookingPriceQuoteEngine
         ])->save();
 
         $quote->forceFill([
-            'host_payout_preview_amount' => $this->hostPayout->calculateHostPayout($quote),
-            'refundable_amount' => $this->refundability->calculateRefundableAmount($quote),
-            'non_refundable_amount' => $this->refundability->calculateNonRefundableAmount($quote),
+            'host_payout_preview_amount' => $this->hostPayout->calculateHostPayoutFromAmounts($quote, $hostPayoutBase, $hostServiceFeeBase),
+            'refundable_amount' => $this->refundability->calculateRefundableAmountFromLines($allLines),
+            'non_refundable_amount' => $this->refundability->calculateNonRefundableAmountFromLines($totalPayable, $allLines),
             'requires_host_time_approval' => $this->requiresHostTimeApproval($quote),
         ])->save();
 
         $this->createTimeApprovalWarnings($quote);
 
-        return $lines
-            ->merge($discountLines)
-            ->merge($feeLines)
-            ->merge($taxLines)
-            ->when($depositLine instanceof BookingQuoteLine, fn (Collection $collection): Collection => $collection->push($depositLine))
-            ->values();
+        return $allLines;
     }
 
     /**
@@ -305,7 +311,12 @@ class BookingPriceQuoteEngine
             'cleaning_fee_amount' => $this->money($fees['cleaning_fee']),
         ])->save();
 
-        $guestServiceFee = $this->serviceFees->calculateGuestServiceFee($quote);
+        $guestServiceFee = $this->serviceFees->calculateGuestServiceFeeForBase($quote, $this->money(
+            $accommodationAfterDiscount
+            + $fees['early_check_in_fee']
+            + $fees['late_checkout_fee']
+            + $fees['extra_guest_fee']
+        ));
 
         if ($guestServiceFee > 0) {
             $lines->push($quote->lines()->create($this->linePayload(
@@ -437,9 +448,15 @@ class BookingPriceQuoteEngine
         ];
     }
 
-    private function lineAmount(BookingQuote $quote, string $type): float
+    /**
+     * @param  Collection<int, BookingQuoteLine>  $lines
+     */
+    private function lineAmountFromCollection(Collection $lines, ?string $type = null): float
     {
-        return $this->money($quote->lines()->where('line_type', $type)->sum('amount'));
+        return $this->money($lines
+            ->when($type !== null, fn (Collection $collection): Collection => $collection
+                ->filter(fn (BookingQuoteLine $line): bool => $line->line_type === $type))
+            ->sum(fn (BookingQuoteLine $line): float => (float) $line->amount));
     }
 
     private function money(mixed $amount): float

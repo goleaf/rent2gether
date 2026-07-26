@@ -61,8 +61,12 @@ return [
         'problem_photo' => 'Фото проблемы',
         'media_role' => 'Назначение медиа',
         'media_path' => 'Путь к медиа',
+        'media_photo' => 'Фото',
         'media_caption' => 'Подпись',
         'status' => 'Статус заселения',
+        'host_contact' => 'Контакт хозяина',
+        'representative_contact' => 'Контакт представителя',
+        'arrival_note' => 'Заметка о прибытии',
     ],
     'sections' => [
         'checklist' => 'Чеклист заселения',
@@ -70,6 +74,9 @@ return [
         'problems' => 'Проблемы заселения',
         'instructions' => 'Инструкция',
         'media' => 'Фото и медиа',
+        'arrival' => 'Прибытие',
+        'contact' => 'Контакт',
+        'host_checklist' => 'Чеклист встречи',
     ],
     'statuses' => [
         'not_started' => 'Не начато',
@@ -117,6 +124,8 @@ return [
         'send_instruction' => 'Отправить инструкцию',
         'upload_media' => 'Добавить медиа',
         'mark_resolved' => 'Отметить как решенное',
+        'save_before_photo' => 'Сохранить фото до заселения',
+        'save_checklist' => 'Сохранить чеклист',
     ],
     'problems' => [
         'cannot_enter' => 'Не могу попасть внутрь',
@@ -230,6 +239,10 @@ return [
         'problem_reported' => 'Проблема с заселением отправлена хозяину.',
         'check_in_confirmed' => 'Заселение подтверждено.',
         'checked_in' => 'Заселение подтверждено. Период проживания начался.',
+        'contact_hidden' => 'Контакт хозяина появится после подтверждения бронирования.',
+        'no_representative_contact' => 'Представитель для этого заселения не назначен.',
+        'before_photo_saved' => 'Фото до заселения сохранено.',
+        'checklist_saved' => 'Чеклист заселения сохранен.',
     ],
     'privacy' => [
         'address_hidden' => 'Точный адрес показывается только когда это разрешено правилами бронирования.',
@@ -246,6 +259,10 @@ return [
         'guest_arrived' => 'Гость приехал на заселение.',
         'check_in_problem' => 'Гость сообщил о проблеме с заселением.',
         'check_in_escalation' => 'Заселение требует внимания.',
+        'support_attention_required' => 'Заселение требует внимания поддержки.',
+    ],
+    'console' => [
+        'reminders_sent' => 'Отправлено напоминаний о заселении: :count.',
     ],
     'validation' => [
         'not_your_booking' => 'Это заселение относится к другому гостю.',
@@ -260,7 +277,12 @@ return [
             'media_type' => 'тип медиа',
             'media_role' => 'назначение медиа',
             'path' => 'путь к медиа',
+            'photo' => 'фото',
             'caption' => 'подпись',
+            'actual_arrival_time' => 'фактическое время прибытия',
+            'met_by' => 'кто встретил гостя',
+            'before_photo' => 'фото до заселения',
+            'problem_photo' => 'фото проблемы',
         ],
     ],
     'events' => [

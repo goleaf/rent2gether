@@ -26,6 +26,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -165,18 +166,69 @@ class PublicSleepingPlaceDetailTest extends TestCase
             ->assertSee('Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.');
     }
 
-    public function test_selected_dates_update_price(): void
+    public function test_selected_dates_update_price_without_storing_quote_in_public_snapshot(): void
     {
         $place = $this->createPlace('Price test place');
 
         $component = Livewire::test(ShowSleepingPlace::class, ['sleepingPlace' => $place])
             ->set('checkIn', '2026-07-10')
-            ->set('checkOut', '2026-07-15');
+            ->set('checkOut', '2026-07-15')
+            ->assertViewHas('priceBreakdown', function (array $priceBreakdown): bool {
+                return $priceBreakdown['has_quote'] === true
+                    && $priceBreakdown['total'] !== null
+                    && $priceBreakdown['remaining_dates_count'] === 0
+                    && count($priceBreakdown['date_prices']) === 5;
+            })
+            ->refresh()
+            ->assertViewHas('priceBreakdown', function (array $priceBreakdown): bool {
+                return $priceBreakdown['has_quote'] === true
+                    && $priceBreakdown['total'] !== null
+                    && $priceBreakdown['remaining_dates_count'] === 0
+                    && count($priceBreakdown['date_prices']) === 5;
+            });
 
-        $quote = $component->get('quote');
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
 
-        $this->assertSame(5, $quote['nights_count']);
-        $this->assertSame(192.5, $quote['total_amount']);
+        $this->assertStringContainsString('sleepingPlaceId', $encodedSnapshot);
+        $this->assertStringNotContainsString('"quote"', $encodedSnapshot);
+        $this->assertStringNotContainsString('"line_items"', $encodedSnapshot);
+        $this->assertStringNotContainsString('"availabilityWarning"', $encodedSnapshot);
+        $this->assertStringNotContainsString('"unavailableDates"', $encodedSnapshot);
+        $this->assertLessThan(20_000, strlen($encodedSnapshot), 'Sleeping-place detail snapshot should keep calculated booking preview data out of public Livewire state.');
+    }
+
+    public function test_detail_reuses_prefetched_availability_days_for_price_and_calendar_preview(): void
+    {
+        $place = $this->createPlace('Availability query place');
+        AvailabilityDay::factory()->for($place)->create([
+            'date' => '2026-07-12',
+            'status' => AvailabilityStatus::Available,
+            'price_override' => 45,
+        ]);
+
+        $availabilityDaySelects = 0;
+
+        DB::listen(static function ($query) use (&$availabilityDaySelects): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select') && str_contains($sql, 'from "availability_days"')) {
+                $availabilityDaySelects++;
+            }
+        });
+
+        Livewire::withQueryParams([
+            'in' => '2026-07-10',
+            'out' => '2026-07-15',
+        ])
+            ->test(ShowSleepingPlace::class, ['sleepingPlace' => $place])
+            ->assertViewHas('priceBreakdown', function (array $priceBreakdown): bool {
+                return $priceBreakdown['has_quote'] === true
+                    && collect($priceBreakdown['date_prices'])->contains(
+                        fn (array $datePrice): bool => $datePrice['source'] === __('listing.detail.booking.price_sources.date_override')
+                    );
+            });
+
+        $this->assertLessThanOrEqual(1, $availabilityDaySelects, 'Sleeping-place detail should reuse the prefetched availability days for quote pricing and calendar preview rendering.');
     }
 
     public function test_unavailable_warning_is_shown(): void

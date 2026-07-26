@@ -13,11 +13,45 @@ use Livewire\Component;
 class ShowProfile extends Component
 {
     #[Locked]
-    public User $user;
+    public int $userId;
 
     public function mount(User $user): void
     {
-        $this->user = $user;
+        $this->userId = $user->id;
+    }
+
+    #[Computed]
+    public function user(): User
+    {
+        return User::query()
+            ->select([
+                'id',
+                'name',
+                'phone',
+                'phone_verified',
+                'email_verified_at',
+                'avatar',
+                'avatar_path',
+                'date_of_birth',
+                'city',
+                'languages',
+                'bio',
+                'occupation',
+                'identity_verified',
+                'identity_verified_at',
+                'is_host',
+                'rating_as_guest',
+                'rating_as_host',
+                'completed_stays_count',
+                'hosted_stays_count',
+                'created_at',
+            ])
+            ->with([
+                'profile:id,user_id,display_name,avatar_path,city_id,occupation,languages_json,phone,email_verified_at,phone_verified_at,identity_verified_at',
+                'profile.city:id,name',
+                'setting:id,user_id,privacy_preferences_json',
+            ])
+            ->findOrFail($this->userId);
     }
 
     #[Computed]
@@ -62,6 +96,8 @@ class ShowProfile extends Component
 
     public function render(): View
     {
-        return view('livewire.profile.show-profile');
+        return view('livewire.profile.show-profile', [
+            'user' => $this->user,
+        ]);
     }
 }

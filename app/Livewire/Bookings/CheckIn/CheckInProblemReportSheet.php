@@ -18,11 +18,6 @@ class CheckInProblemReportSheet extends Component
 
     public string $description = '';
 
-    /**
-     * @var list<string>
-     */
-    public array $photoPaths = [];
-
     public function report(): void
     {
         $checkIn = $this->checkIn();
@@ -32,7 +27,6 @@ class CheckInProblemReportSheet extends Component
                 'problem_type' => $this->problemType,
                 'severity' => $this->severity,
                 'description' => $this->description,
-                'photo_paths' => $this->photoPaths,
             ]);
             $this->refreshCheckInState();
         }

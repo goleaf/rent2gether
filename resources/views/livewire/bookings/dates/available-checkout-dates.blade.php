@@ -6,6 +6,19 @@
         </span>
     </flux:heading>
 
+    @if(($earliestCheckoutDate ?? null) || ($latestCheckoutDate ?? null))
+        <div class="grid gap-2 sm:grid-cols-2">
+            <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                <flux:text size="xs" class="text-zinc-500 dark:text-zinc-400">{{ __('booking_dates.messages.earliest_checkout') }}</flux:text>
+                <flux:text size="sm" class="font-medium">{{ $earliestCheckoutDate ?: __('booking_dates.empty.no_checkout_dates') }}</flux:text>
+            </div>
+            <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                <flux:text size="xs" class="text-zinc-500 dark:text-zinc-400">{{ __('booking_dates.messages.latest_checkout') }}</flux:text>
+                <flux:text size="sm" class="font-medium">{{ $latestCheckoutDate ?: __('booking_dates.empty.no_checkout_dates') }}</flux:text>
+            </div>
+        </div>
+    @endif
+
     @if($dates)
         <div class="grid gap-2 sm:grid-cols-2">
             @foreach($dates as $date)
@@ -17,5 +30,21 @@
         </div>
     @else
         <flux:callout variant="secondary" :text="__('booking_dates.empty.select_check_in_first')"  icon="information-circle" />
+    @endif
+
+    @if($unavailableCheckoutDates ?? [])
+        <div class="space-y-2">
+            <flux:text size="sm" class="font-medium">{{ __('booking_dates.messages.blocked_checkout_dates') }}</flux:text>
+            @foreach($unavailableCheckoutDates as $date)
+                <flux:callout
+                    variant="secondary"
+                    icon="information-circle"
+                    :text="__('booking_dates.messages.checkout_unavailable_reason', [
+                        'date' => $date['check_out'],
+                        'reason' => __($date['message_keys'][0] ?? 'booking_dates.validation.sleeping_place_unavailable'),
+                    ])"
+                />
+            @endforeach
+        </div>
     @endif
 </flux:card>

@@ -4,12 +4,17 @@ namespace App\Livewire\Bookings\CheckIn\Concerns;
 
 use App\Models\Booking;
 use App\Models\BookingCheckIn;
+use App\Services\CheckIn\BookingCheckInInstructionService;
 use App\Services\CheckIn\BookingCheckInService;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 
 trait LoadsBookingCheckIn
 {
+    #[Locked]
     public ?int $bookingId = null;
 
+    #[Locked]
     public ?int $checkInId = null;
 
     public string $status = 'not_started';
@@ -98,12 +103,18 @@ trait LoadsBookingCheckIn
     protected function checkInViewData(string $variant): array
     {
         $checkIn = $this->checkIn();
+        $booking = $this->booking();
 
         return [
             'variant' => $variant,
-            'booking' => $this->booking(),
+            'booking' => $booking,
             'checkIn' => $checkIn,
             'status' => $checkIn?->status ?? $this->status,
+            'instructions' => $this->visibleInstructions($checkIn),
+            'hostContact' => $this->hostContact($checkIn, $booking),
+            'problemOptions' => $this->translationOptions('check_in.problems'),
+            'severityOptions' => $this->translationOptions('check_in.severities'),
+            'mediaRoleOptions' => $this->translationOptions('check_in.media_roles'),
             'items' => $checkIn?->checklistItems ?? collect(),
             'steps' => $checkIn?->steps ?? collect(),
             'media' => $checkIn?->media ?? collect(),
@@ -111,5 +122,62 @@ trait LoadsBookingCheckIn
             'problems' => $checkIn?->problems ?? collect(),
             'alerts' => $checkIn?->alerts ?? collect(),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function visibleInstructions(?BookingCheckIn $checkIn): ?array
+    {
+        $user = Auth::user();
+
+        if (! $checkIn || ! $user || (int) $checkIn->guest_user_id !== (int) $user->id) {
+            return null;
+        }
+
+        return app(BookingCheckInInstructionService::class)->getVisibleInstructions($user, $checkIn);
+    }
+
+    /**
+     * @return array{name:?string, phone:?string, tel_href:?string, chat:bool}|null
+     */
+    private function hostContact(?BookingCheckIn $checkIn, ?Booking $booking): ?array
+    {
+        $user = Auth::user();
+
+        if (! $checkIn || ! $user || (int) $checkIn->guest_user_id !== (int) $user->id) {
+            return null;
+        }
+
+        if (! $booking) {
+            return null;
+        }
+
+        $contact = app(BookingCheckInInstructionService::class)->getHostContact($user, $booking);
+        $phone = is_string($contact['phone'] ?? null) ? $contact['phone'] : null;
+        $tel = $phone ? preg_replace('/[^0-9+]/', '', $phone) : null;
+
+        return [
+            'name' => is_string($contact['name'] ?? null) ? $contact['name'] : null,
+            'phone' => $phone,
+            'tel_href' => $tel ? 'tel:'.$tel : null,
+            'chat' => (bool) ($contact['chat'] ?? false),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function translationOptions(string $key): array
+    {
+        $options = __($key);
+
+        if (! is_array($options)) {
+            return [];
+        }
+
+        return collect($options)
+            ->mapWithKeys(fn (string $label, string $value): array => [$value => $label])
+            ->all();
     }
 }

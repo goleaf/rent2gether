@@ -21,7 +21,7 @@ use Illuminate\Support\Collection;
 
 class AvailabilityService
 {
-    public function isAvailable(Bed|SleepingPlace $place, CarbonInterface|string $checkIn, CarbonInterface|string $checkOut): bool
+    public function isAvailable(Bed|SleepingPlace $place, CarbonInterface|string $checkIn, CarbonInterface|string $checkOut, bool $usePrefetchedAvailabilityDays = false): bool
     {
         if ($place instanceof Bed) {
             return $this->isLegacyBedAvailable($place, $checkIn, $checkOut);
@@ -41,10 +41,10 @@ class AvailabilityService
         return $this->blockingBookingQuery($place, $start, $end)->doesntExist()
             && $this->activeDateLockQuery($place, $start, $end)->doesntExist()
             && $this->activeCalendarBlockQuery($place, $start, $end)->doesntExist()
-            && $this->blockingAvailabilityQuery($place, $start, $end)->doesntExist()
+            && $this->availabilityRangeHasNoBlocks($place, $start, $end, $usePrefetchedAvailabilityDays)
             && $this->blockingCalendarDayQuery($place, $start, $end)->doesntExist()
-            && $this->checkInRestrictionQuery($place, $start)->doesntExist()
-            && $this->checkOutRestrictionQuery($place, $end)->doesntExist()
+            && $this->availabilityAllowsCheckIn($place, $start, $usePrefetchedAvailabilityDays)
+            && $this->availabilityAllowsCheckOut($place, $end, $usePrefetchedAvailabilityDays)
             && $this->calendarCheckInRestrictionQuery($place, $start)->doesntExist()
             && $this->calendarCheckOutRestrictionQuery($place, $end)->doesntExist()
             && $this->bookingModeAllowsRange($place)
@@ -76,6 +76,62 @@ class AvailabilityService
             'status' => $status,
             'reasons' => $reasons->values()->all(),
         ];
+    }
+
+    /**
+     * @return Collection<int, array{check_out:string,nights:int,available:bool,reasons:list<string>,minimum_nights_override:int}>
+     */
+    public function checkoutCandidateAvailability(SleepingPlace $place, CarbonInterface|string $checkIn, int $maxNights = 30): Collection
+    {
+        $start = $this->date($checkIn);
+        $maxNights = max(1, min(60, $maxNights));
+        $windowEnd = $start->addDays($maxNights);
+        $snapshot = $this->rangeConstraintSnapshot($place, $start, $windowEnd);
+        $commonReasons = collect();
+
+        if (! $this->hierarchyIsAvailable($place)) {
+            $commonReasons->push('hierarchy_unavailable');
+        }
+
+        if (! $this->bookingModeAllowsRange($place)) {
+            $commonReasons->push('temporarily_hidden');
+        }
+
+        $turnover = app(SleepingPlaceTurnoverService::class)->validateTurnover($place, $start, $start->addDay());
+
+        if (! $turnover['allowed']) {
+            $commonReasons->push($turnover['reason_key'] ?? 'turnover_not_allowed');
+        }
+
+        return collect(range(1, $maxNights))
+            ->map(function (int $nights) use ($start, $snapshot, $commonReasons): array {
+                $checkOut = $start->addDays($nights);
+                $reasons = $commonReasons->values();
+
+                if ($this->hasCheckInRestriction($snapshot, $start)) {
+                    $reasons->push('check_in_not_allowed');
+                }
+
+                if ($this->hasCheckOutRestriction($snapshot, $checkOut)) {
+                    $reasons->push('check_out_not_allowed');
+                }
+
+                foreach ($this->dateRange($start, $checkOut) as $date) {
+                    foreach ($snapshot['date_reasons'][$date] ?? [] as $reason) {
+                        $reasons->push($reason);
+                    }
+                }
+
+                $reasons = $reasons->unique()->values();
+
+                return [
+                    'check_out' => $checkOut->toDateString(),
+                    'nights' => $nights,
+                    'available' => $reasons->isEmpty(),
+                    'reasons' => $reasons->all(),
+                    'minimum_nights_override' => $this->minimumNightsOverrideForRange($snapshot, $start, $checkOut),
+                ];
+            });
     }
 
     /**
@@ -244,12 +300,22 @@ class AvailabilityService
         $nights = max(1, min(60, $nights));
         $cursor = $this->date($desiredStart);
         $limit = $cursor->addDays(90);
+        $windowStart = $cursor;
+        $windowEnd = $limit->addDays($nights);
+        $snapshot = $this->rangeConstraintSnapshot($place, $windowStart, $windowEnd);
+        $previousBookings = $place->bookings()
+            ->select(['id', 'sleeping_place_id', 'check_out_date', 'check_out_time', 'status'])
+            ->whereNotIn('status', $this->nonBlockingBookingStatuses())
+            ->where('check_out_date', '>=', $windowStart->toDateString())
+            ->where('check_out_date', '<=', $limit->toDateString())
+            ->get()
+            ->keyBy(fn (Booking $booking): string => $this->date($booking->check_out_date)->toDateString());
         $ranges = [];
 
         while ($cursor->lessThanOrEqualTo($limit) && count($ranges) < 3) {
             $checkOut = $cursor->addDays($nights);
 
-            if ($this->isAvailable($place, $cursor, $checkOut)) {
+            if ($this->prefetchedRangeIsAvailable($place, $snapshot, $cursor, $checkOut, $previousBookings)) {
                 $ranges[] = [
                     'check_in' => $cursor->toDateString(),
                     'check_out' => $checkOut->toDateString(),
@@ -474,6 +540,24 @@ class AvailabilityService
             ->whereDate('date', '<', $end->toDateString());
     }
 
+    private function availabilityRangeHasNoBlocks(SleepingPlace $place, CarbonImmutable $start, CarbonImmutable $end, bool $usePrefetchedAvailabilityDays): bool
+    {
+        if (! $usePrefetchedAvailabilityDays || ! $place->relationLoaded('availabilityDays')) {
+            return $this->blockingAvailabilityQuery($place, $start, $end)->doesntExist();
+        }
+
+        return $place->availabilityDays
+            ->every(function ($day) use ($start, $end): bool {
+                $date = $this->date($day->date);
+
+                return ! (
+                    $date->greaterThanOrEqualTo($start)
+                    && $date->lessThan($end)
+                    && in_array($this->statusValue($day->status), AvailabilityStatus::blocksStayValues(), true)
+                );
+            });
+    }
+
     private function blockingCalendarDayQuery(SleepingPlace $place, CarbonImmutable $start, CarbonImmutable $end): HasMany
     {
         return $place->calendarDays()
@@ -492,6 +576,18 @@ class AvailabilityService
             });
     }
 
+    private function availabilityAllowsCheckIn(SleepingPlace $place, CarbonImmutable $start, bool $usePrefetchedAvailabilityDays): bool
+    {
+        if (! $usePrefetchedAvailabilityDays || ! $place->relationLoaded('availabilityDays')) {
+            return $this->checkInRestrictionQuery($place, $start)->doesntExist();
+        }
+
+        $day = $place->availabilityDays
+            ->first(fn ($day): bool => $this->date($day->date)->isSameDay($start));
+
+        return ! $this->calendarRecordDisallows($day, 'check_in');
+    }
+
     private function checkOutRestrictionQuery(SleepingPlace $place, CarbonImmutable $end): HasMany
     {
         return $place->availabilityDays()
@@ -500,6 +596,18 @@ class AvailabilityService
                 $query->where('check_out_allowed', false)
                     ->orWhere('status', AvailabilityStatus::CheckInOnly->value);
             });
+    }
+
+    private function availabilityAllowsCheckOut(SleepingPlace $place, CarbonImmutable $end, bool $usePrefetchedAvailabilityDays): bool
+    {
+        if (! $usePrefetchedAvailabilityDays || ! $place->relationLoaded('availabilityDays')) {
+            return $this->checkOutRestrictionQuery($place, $end)->doesntExist();
+        }
+
+        $day = $place->availabilityDays
+            ->first(fn ($day): bool => $this->date($day->date)->isSameDay($end));
+
+        return ! $this->calendarRecordDisallows($day, 'check_out');
     }
 
     private function calendarCheckInRestrictionQuery(SleepingPlace $place, CarbonImmutable $start): HasMany
@@ -552,7 +660,7 @@ class AvailabilityService
 
     private function reasonForStatus(BackedEnum|string $status): string
     {
-        $status = $status instanceof BackedEnum ? (string) $status->value : $status;
+        $status = $this->statusValue($status);
 
         return match ($status) {
             'payment_pending', 'pending_payment', 'host_confirmation_pending', 'pending_host_confirmation', 'pending_approval', 'booked', 'guest_checked_in', 'occupied' => 'range_overlaps_existing_booking',
@@ -566,6 +674,215 @@ class AvailabilityService
             'request_only' => 'request_only',
             default => 'date_unavailable',
         };
+    }
+
+    /**
+     * @return array{
+     *     date_reasons:array<string,list<string>>,
+     *     availability_days:array<string,mixed>,
+     *     calendar_days:array<string,mixed>,
+     *     minimum_nights_overrides:array<string,int>
+     * }
+     */
+    private function rangeConstraintSnapshot(SleepingPlace $place, CarbonImmutable $start, CarbonImmutable $end): array
+    {
+        $dateReasons = [];
+
+        $this->blockingBookingQuery($place, $start, $end)
+            ->select(['id', 'sleeping_place_id', 'check_in_date', 'check_out_date'])
+            ->get()
+            ->each(function (Booking $booking) use (&$dateReasons, $start, $end): void {
+                $this->addRangeReason(
+                    $dateReasons,
+                    $this->date($booking->check_in_date),
+                    $this->date($booking->check_out_date),
+                    $start,
+                    $end,
+                    'range_overlaps_existing_booking',
+                );
+            });
+
+        $this->activeDateLockQuery($place, $start, $end)
+            ->select(['id', 'sleeping_place_id', 'date', 'lock_type'])
+            ->get()
+            ->each(fn ($lock): mixed => $this->addDateReason($dateReasons, $this->date($lock->date)->toDateString(), 'range_overlaps_existing_booking'));
+
+        $this->activeCalendarBlockQuery($place, $start, $end)
+            ->select(['id', 'sleeping_place_id', 'room_id', 'property_id', 'starts_at', 'ends_at', 'block_type'])
+            ->get()
+            ->each(function ($block) use (&$dateReasons, $start, $end): void {
+                $reason = $this->reasonForBlockType($block->block_type);
+                $blockStart = CarbonImmutable::instance($block->starts_at);
+                $blockEnd = CarbonImmutable::instance($block->ends_at);
+
+                foreach ($this->dateRange($start, $end) as $date) {
+                    $dayStart = $this->date($date);
+                    $dayEnd = $dayStart->addDay();
+
+                    if ($blockStart->lessThan($dayEnd) && $blockEnd->greaterThan($dayStart)) {
+                        $this->addDateReason($dateReasons, $date, $reason);
+                    }
+                }
+            });
+
+        $availabilityDays = $place->availabilityDays()
+            ->select(['id', 'sleeping_place_id', 'date', 'status', 'check_in_allowed', 'check_out_allowed', 'min_nights_override'])
+            ->where('date', '>=', $start->toDateString())
+            ->where('date', '<=', $end->toDateString())
+            ->get()
+            ->keyBy(fn ($day): string => $this->date($day->date)->toDateString());
+        $calendarDays = $place->calendarDays()
+            ->select(['id', 'sleeping_place_id', 'date', 'status', 'check_in_allowed', 'check_out_allowed'])
+            ->where('date', '>=', $start->toDateString())
+            ->where('date', '<=', $end->toDateString())
+            ->get()
+            ->keyBy(fn ($day): string => $this->date($day->date)->toDateString());
+        $minimumNightsOverrides = [];
+
+        foreach ($availabilityDays as $date => $day) {
+            if (in_array($this->statusValue($day->status), AvailabilityStatus::blocksStayValues(), true)) {
+                $this->addDateReason($dateReasons, $date, $this->reasonForStatus($day->status));
+            }
+
+            if ($day->min_nights_override !== null) {
+                $minimumNightsOverrides[$date] = (int) $day->min_nights_override;
+            }
+        }
+
+        foreach ($calendarDays as $date => $day) {
+            if (in_array($this->statusValue($day->status), AvailabilityStatus::blocksStayValues(), true)) {
+                $this->addDateReason($dateReasons, $date, $this->reasonForStatus($day->status));
+            }
+        }
+
+        return [
+            'date_reasons' => $dateReasons,
+            'availability_days' => $availabilityDays->all(),
+            'calendar_days' => $calendarDays->all(),
+            'minimum_nights_overrides' => $minimumNightsOverrides,
+        ];
+    }
+
+    /**
+     * @param  array{
+     *     date_reasons:array<string,list<string>>,
+     *     availability_days:array<string,mixed>,
+     *     calendar_days:array<string,mixed>,
+     *     minimum_nights_overrides:array<string,int>
+     * }  $snapshot
+     * @param  Collection<string, Booking>  $previousBookings
+     */
+    private function prefetchedRangeIsAvailable(SleepingPlace $place, array $snapshot, CarbonImmutable $checkIn, CarbonImmutable $checkOut, Collection $previousBookings): bool
+    {
+        if (! $this->hierarchyIsAvailable($place) || ! $this->bookingModeAllowsRange($place)) {
+            return false;
+        }
+
+        if ($this->hasCheckInRestriction($snapshot, $checkIn) || $this->hasCheckOutRestriction($snapshot, $checkOut)) {
+            return false;
+        }
+
+        foreach ($this->dateRange($checkIn, $checkOut) as $date) {
+            if (($snapshot['date_reasons'][$date] ?? []) !== []) {
+                return false;
+            }
+        }
+
+        $previousBooking = $previousBookings->get($checkIn->toDateString());
+
+        if ($previousBooking instanceof Booking) {
+            return app(SleepingPlaceTurnoverService::class)->validateTurnover($place, $checkIn, $checkOut)['allowed'];
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array{
+     *     date_reasons:array<string,list<string>>,
+     *     availability_days:array<string,mixed>,
+     *     calendar_days:array<string,mixed>,
+     *     minimum_nights_overrides:array<string,int>
+     * }  $snapshot
+     */
+    private function hasCheckInRestriction(array $snapshot, CarbonImmutable $date): bool
+    {
+        return $this->calendarRecordDisallows($snapshot['availability_days'][$date->toDateString()] ?? null, 'check_in')
+            || $this->calendarRecordDisallows($snapshot['calendar_days'][$date->toDateString()] ?? null, 'check_in');
+    }
+
+    /**
+     * @param  array{
+     *     date_reasons:array<string,list<string>>,
+     *     availability_days:array<string,mixed>,
+     *     calendar_days:array<string,mixed>,
+     *     minimum_nights_overrides:array<string,int>
+     * }  $snapshot
+     */
+    private function hasCheckOutRestriction(array $snapshot, CarbonImmutable $date): bool
+    {
+        return $this->calendarRecordDisallows($snapshot['availability_days'][$date->toDateString()] ?? null, 'check_out')
+            || $this->calendarRecordDisallows($snapshot['calendar_days'][$date->toDateString()] ?? null, 'check_out');
+    }
+
+    private function calendarRecordDisallows(mixed $record, string $boundary): bool
+    {
+        if (! $record) {
+            return false;
+        }
+
+        return $boundary === 'check_in'
+            ? ! (bool) $record->check_in_allowed || $this->statusValue($record->status) === AvailabilityStatus::CheckOutOnly->value
+            : ! (bool) $record->check_out_allowed || $this->statusValue($record->status) === AvailabilityStatus::CheckInOnly->value;
+    }
+
+    /**
+     * @param  array{
+     *     date_reasons:array<string,list<string>>,
+     *     availability_days:array<string,mixed>,
+     *     calendar_days:array<string,mixed>,
+     *     minimum_nights_overrides:array<string,int>
+     * }  $snapshot
+     */
+    private function minimumNightsOverrideForRange(array $snapshot, CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        $minimum = 0;
+
+        foreach ($this->dateRange($start, $end) as $date) {
+            $minimum = max($minimum, $snapshot['minimum_nights_overrides'][$date] ?? 0);
+        }
+
+        return $minimum;
+    }
+
+    /**
+     * @param  array<string,list<string>>  $dateReasons
+     */
+    private function addRangeReason(array &$dateReasons, CarbonImmutable $rangeStart, CarbonImmutable $rangeEnd, CarbonImmutable $windowStart, CarbonImmutable $windowEnd, string $reason): void
+    {
+        $start = $rangeStart->max($windowStart);
+        $end = $rangeEnd->min($windowEnd);
+
+        foreach ($this->dateRange($start, $end) as $date) {
+            $this->addDateReason($dateReasons, $date, $reason);
+        }
+    }
+
+    /**
+     * @param  array<string,list<string>>  $dateReasons
+     */
+    private function addDateReason(array &$dateReasons, string $date, string $reason): void
+    {
+        $dateReasons[$date] ??= [];
+
+        if (! in_array($reason, $dateReasons[$date], true)) {
+            $dateReasons[$date][] = $reason;
+        }
+    }
+
+    private function statusValue(BackedEnum|string|null $status): string
+    {
+        return $status instanceof BackedEnum ? (string) $status->value : (string) $status;
     }
 
     private function statusForBooking(Booking $booking): AvailabilityStatus

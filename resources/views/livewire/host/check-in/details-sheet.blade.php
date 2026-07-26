@@ -68,6 +68,80 @@
             </div>
         @endif
 
+        @if ($variant === 'host_details_sheet')
+            <form wire:submit="saveChecklist" class="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                <p class="text-sm font-medium text-zinc-950 dark:text-white">{{ __('check_in.sections.host_checklist') }}</p>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.actual_arrival_time') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input type="time" wire:model.change="actualArrivalTime" icon="clock" />
+                    <flux:error name="actualArrivalTime" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="user" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('check_in.fields.met_by') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:input wire:model.blur="metByName" icon="user" />
+                    <flux:error name="metByName" />
+                </flux:field>
+
+                <div class="grid grid-cols-1 gap-3 text-sm">
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="keysHandedOver" />
+                        <span>{{ __('check_in.fields.keys_handed_over') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="doorCodeShared" />
+                        <span>{{ __('check_in.fields.door_code_shared') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="roomShown" />
+                        <span>{{ __('check_in.fields.room_shown') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="sleepingPlaceShown" />
+                        <span>{{ __('check_in.fields.sleeping_place_shown') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="rulesExplained" />
+                        <span>{{ __('check_in.fields.rules_explained') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="beddingGiven" />
+                        <span>{{ __('check_in.fields.bedding_given') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="towelGiven" />
+                        <span>{{ __('check_in.fields.towel_given') }}</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                        <flux:checkbox wire:model.change="lockerGiven" />
+                        <span>{{ __('check_in.fields.locker_given') }}</span>
+                    </label>
+                </div>
+
+                <flux:button type="submit" variant="filled" class="w-full" wire:loading.attr="disabled" icon="check-circle">
+                    {{ __('check_in.actions.save_checklist') }}
+                </flux:button>
+            </form>
+        @endif
+
         @if ($variant === 'host_confirm_button' || $variant === 'host_details_sheet')
             <flux:button type="button" variant="primary" class="w-full" wire:click="confirm" wire:loading.attr="disabled" icon="key">
                 {{ __('check_in.actions.host_confirm_check_in') }}

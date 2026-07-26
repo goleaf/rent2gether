@@ -459,6 +459,8 @@ return [
         'check_in_today' => 'Check-in is today.',
         'check_in_instruction_available' => 'Check-in instructions are available.',
         'guest_arrived' => 'The guest marked that they arrived.',
+        'guest_confirmed_check_in' => 'The guest confirmed check-in.',
+        'host_confirmed_check_in' => 'The host confirmed check-in.',
         'check_in_problem' => 'There is a check-in problem.',
         'host_unresponsive_reported' => 'The guest reported that the host is not responding.',
         'checkout_soon' => 'Checkout is coming soon.',

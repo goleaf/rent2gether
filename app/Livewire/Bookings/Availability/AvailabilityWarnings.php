@@ -8,10 +8,20 @@ use Livewire\Component;
 class AvailabilityWarnings extends Component
 {
     /** @var list<string> */
-    public array $reasons = [];
+    private array $reasons = [];
+
+    /**
+     * @param  list<string>  $reasons
+     */
+    public function mount(array $reasons = []): void
+    {
+        $this->reasons = $reasons;
+    }
 
     public function render(): View
     {
-        return view('livewire.bookings.availability.availability-warnings');
+        return view('livewire.bookings.availability.availability-warnings', [
+            'reasons' => $this->reasons,
+        ]);
     }
 }

@@ -113,6 +113,36 @@ class BookingExtensionFlowTest extends TestCase
         $this->assertSame(168.0, $preview['new_total']);
     }
 
+    public function test_extend_stay_keeps_preview_out_of_livewire_public_state(): void
+    {
+        [$guest, , $booking] = $this->createStay();
+
+        $component = Livewire::actingAs($guest)
+            ->test(ExtendStay::class, ['booking' => $booking])
+            ->assertSet('bookingId', $booking->id)
+            ->assertSet('requestedNewCheckout', '2026-06-25')
+            ->assertViewHas('preview', function (?array $preview): bool {
+                return is_array($preview)
+                    && $preview['additional_nights'] === 1
+                    && $preview['additional_amount'] === 20.0
+                    && $preview['total_extra'] === 21.0;
+            })
+            ->set('requestedNewCheckout', '2026-06-26')
+            ->assertViewHas('preview', function (?array $preview): bool {
+                return is_array($preview)
+                    && $preview['additional_nights'] === 2
+                    && $preview['additional_amount'] === 40.0
+                    && $preview['total_extra'] === 42.0;
+            });
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('bookingId', $encodedSnapshot);
+        $this->assertStringNotContainsString('"preview"', $encodedSnapshot);
+        $this->assertStringNotContainsString('additional_amount', $encodedSnapshot);
+        $this->assertLessThan(13_000, strlen($encodedSnapshot), 'Extend stay snapshot should keep calculated preview data out of public Livewire state.');
+    }
+
     public function test_host_approval_flow_moves_extension_to_payment_then_updates_booking_after_payment(): void
     {
         [$guest, $host, $booking, $place] = $this->createStay();

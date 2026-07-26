@@ -7,15 +7,17 @@ use App\Enums\CancellationPolicy;
 use App\Models\Bed;
 use App\Models\Room;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class BedForm extends Component
 {
     #[Locked]
-    public Room $room;
+    public int $roomId;
 
-    public ?Bed $bed = null;
+    #[Locked]
+    public ?int $bedId = null;
 
     public string $title = '';
 
@@ -67,10 +69,13 @@ class BedForm extends Component
 
     public function mount(Room $room, ?Bed $bed = null): void
     {
-        $this->room = $room;
+        $this->authorizeRoom($room);
+        $this->roomId = $room->id;
 
         if ($bed?->exists) {
-            $this->bed = $bed;
+            abort_unless((int) $bed->room_id === (int) $room->id, 404);
+
+            $this->bedId = $bed->id;
             $this->title = $bed->title;
             $this->type = $bed->type?->value ?? 'single';
             $this->maxGuests = $bed->max_guests ?? 1;
@@ -100,6 +105,9 @@ class BedForm extends Component
 
     public function save(): void
     {
+        $room = $this->room;
+        $this->authorizeRoom($room);
+
         $this->validate([
             'title' => ['required', 'string', 'max:255'],
             'pricePerNight' => ['required', 'numeric', 'min:1'],
@@ -107,7 +115,7 @@ class BedForm extends Component
         ]);
 
         $data = [
-            'room_id' => $this->room->id,
+            'room_id' => $room->id,
             'title' => $this->title,
             'type' => $this->type,
             'max_guests' => $this->maxGuests,
@@ -135,15 +143,19 @@ class BedForm extends Component
             'status' => 'active',
         ];
 
-        if ($this->bed) {
-            $this->bed->update($data);
+        $bed = $this->bed;
+
+        if ($bed) {
+            abort_unless((int) $bed->room_id === (int) $room->id, 404);
+
+            $bed->update($data);
             session()->flash('success', __('notifications.flash.bed_updated'));
         } else {
             Bed::create($data);
             session()->flash('success', __('notifications.flash.bed_created'));
         }
 
-        $this->redirect(route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $this->room->property]), navigate: true);
+        $this->redirect(route('host.properties.show', ['locale' => app()->getLocale(), 'property' => $room->property]), navigate: true);
     }
 
     public function bedTypes(): array
@@ -162,6 +174,64 @@ class BedForm extends Component
 
     public function render(): View
     {
-        return view('livewire.host.bed-form');
+        return view('livewire.host.bed-form', [
+            'room' => $this->room,
+            'bed' => $this->bed,
+        ]);
+    }
+
+    #[Computed]
+    public function room(): Room
+    {
+        return Room::query()
+            ->select(['id', 'property_id', 'title'])
+            ->with(['property:id,host_user_id,title'])
+            ->findOrFail($this->roomId);
+    }
+
+    #[Computed]
+    public function bed(): ?Bed
+    {
+        if ($this->bedId === null) {
+            return null;
+        }
+
+        return Bed::query()
+            ->select([
+                'id',
+                'room_id',
+                'title',
+                'type',
+                'max_guests',
+                'price_per_night',
+                'price_weekend',
+                'price_weekly',
+                'price_monthly',
+                'cleaning_fee',
+                'deposit',
+                'discount_weekly',
+                'discount_monthly',
+                'min_nights',
+                'max_nights',
+                'instant_book',
+                'cancellation_policy',
+                'has_locker',
+                'has_outlet',
+                'has_lamp',
+                'has_curtain',
+                'has_shelf',
+                'has_luggage_space',
+                'has_linen',
+                'has_towel',
+                'description',
+            ])
+            ->findOrFail($this->bedId);
+    }
+
+    private function authorizeRoom(Room $room): void
+    {
+        $room->loadMissing('property:id,host_user_id,title');
+
+        abort_unless((int) $room->property?->host_user_id === (int) auth()->id(), 403);
     }
 }

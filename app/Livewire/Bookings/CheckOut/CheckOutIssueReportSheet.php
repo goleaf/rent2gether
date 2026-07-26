@@ -24,9 +24,6 @@ class CheckOutIssueReportSheet extends Component
 
     public bool $cleaningNeeded = false;
 
-    /** @var list<string> */
-    public array $photoPaths = [];
-
     public function report(): void
     {
         $checkOut = $this->checkOut();
@@ -39,7 +36,6 @@ class CheckOutIssueReportSheet extends Component
                 'deposit_related' => $this->depositRelated,
                 'repair_needed' => $this->repairNeeded,
                 'cleaning_needed' => $this->cleaningNeeded,
-                'photo_paths' => $this->photoPaths,
             ]);
             $this->refreshCheckOutState();
         }

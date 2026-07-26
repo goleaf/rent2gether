@@ -4,7 +4,10 @@ namespace App\Services\Pricing;
 
 use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceDatePrice;
+use App\Models\SleepingPlacePricingSetting;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 
 class DatePriceResolverService
 {
@@ -25,6 +28,65 @@ class DatePriceResolverService
         $settings = $this->settings->getForSleepingPlace($place);
         $override = $this->getDateOverride($place, $date);
 
+        return $this->resolveFromSettings($settings, $date, $override);
+    }
+
+    /**
+     * @return Collection<string, array{amount:float,line_type:string,source:string,date_price_id:int|null}>
+     */
+    public function resolveNightPriceDetailsForRange(
+        SleepingPlace $place,
+        CarbonInterface $checkIn,
+        CarbonInterface $checkOut,
+    ): Collection {
+        $settings = $this->settings->getForSleepingPlace($place);
+        $overrides = $this->dateOverridesForRange($place, $checkIn, $checkOut);
+        $resolved = collect();
+
+        for ($date = CarbonImmutable::instance($checkIn); $date->lessThan(CarbonImmutable::instance($checkOut)); $date = $date->addDay()) {
+            $dateKey = $date->toDateString();
+
+            $resolved->put($dateKey, $this->resolveFromSettings(
+                $settings,
+                $date,
+                $overrides->get($dateKey),
+            ));
+        }
+
+        return $resolved;
+    }
+
+    public function getDateOverride(SleepingPlace $place, CarbonInterface $date): ?SleepingPlaceDatePrice
+    {
+        $dateStart = CarbonImmutable::instance($date)->startOfDay();
+        $dateEnd = $dateStart->addDay();
+        $dateKey = $dateStart->toDateString();
+
+        if ($place->relationLoaded('datePrices')) {
+            return $place->datePrices
+                ->filter(fn (SleepingPlaceDatePrice $price): bool => $price->date->toDateString() === $dateKey)
+                ->sortBy(fn (SleepingPlaceDatePrice $price): int => $this->datePricePriority($price->price_type))
+                ->first();
+        }
+
+        return SleepingPlaceDatePrice::query()
+            ->select(['id', 'sleeping_place_id', 'date', 'price', 'currency', 'price_type'])
+            ->where('sleeping_place_id', $place->id)
+            ->where('date', '>=', $dateStart)
+            ->where('date', '<', $dateEnd)
+            ->get()
+            ->sortBy(fn (SleepingPlaceDatePrice $price): int => $this->datePricePriority($price->price_type))
+            ->first();
+    }
+
+    /**
+     * @return array{amount:float,line_type:string,source:string,date_price_id:int|null}
+     */
+    private function resolveFromSettings(
+        SleepingPlacePricingSetting $settings,
+        CarbonInterface $date,
+        ?SleepingPlaceDatePrice $override,
+    ): array {
         if ($override instanceof SleepingPlaceDatePrice) {
             return [
                 'amount' => $this->money($override->price),
@@ -69,17 +131,6 @@ class DatePriceResolverService
         ];
     }
 
-    public function getDateOverride(SleepingPlace $place, CarbonInterface $date): ?SleepingPlaceDatePrice
-    {
-        $prices = $place->datePrices()
-            ->whereDate('date', $date->toDateString())
-            ->get();
-
-        return $prices
-            ->sortBy(fn (SleepingPlaceDatePrice $price): int => $this->datePricePriority($price->price_type))
-            ->first();
-    }
-
     /**
      * @param  array<int, string>  $weekendDays
      */
@@ -105,6 +156,39 @@ class DatePriceResolverService
             SleepingPlaceDatePrice::TYPE_SPECIAL_EVENT => 5,
             default => 10,
         };
+    }
+
+    /**
+     * @return Collection<string, SleepingPlaceDatePrice>
+     */
+    private function dateOverridesForRange(SleepingPlace $place, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
+    {
+        $startDate = CarbonImmutable::instance($checkIn)->startOfDay();
+        $endDate = CarbonImmutable::instance($checkOut)->startOfDay();
+        $start = $startDate->toDateString();
+        $end = $endDate->toDateString();
+
+        if ($start >= $end) {
+            return collect();
+        }
+
+        $prices = $place->relationLoaded('datePrices')
+            ? $place->datePrices
+                ->filter(fn (SleepingPlaceDatePrice $price): bool => $price->date->toDateString() >= $start
+                    && $price->date->toDateString() < $end)
+                ->values()
+            : SleepingPlaceDatePrice::query()
+                ->select(['id', 'sleeping_place_id', 'date', 'price', 'currency', 'price_type'])
+                ->where('sleeping_place_id', $place->id)
+                ->where('date', '>=', $startDate)
+                ->where('date', '<', $endDate)
+                ->get();
+
+        return $prices
+            ->groupBy(fn (SleepingPlaceDatePrice $price): string => $price->date->toDateString())
+            ->map(fn (Collection $datePrices): SleepingPlaceDatePrice => $datePrices
+                ->sortBy(fn (SleepingPlaceDatePrice $price): int => $this->datePricePriority($price->price_type))
+                ->first());
     }
 
     private function money(mixed $amount): float

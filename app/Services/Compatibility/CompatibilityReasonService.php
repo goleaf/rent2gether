@@ -66,6 +66,18 @@ class CompatibilityReasonService
             $reasons[] = $this->positive('late_entry_match', 8);
         }
 
+        if ($profile->cleanliness_expectation === 'strict' && $profile->ready_to_join_cleaning) {
+            $reasons[] = $this->positive('cleaning_match', 5);
+        }
+
+        if ($profile->comfortable_with_strangers && $room->is_shared) {
+            $reasons[] = $this->positive('strangers_match', 4);
+        }
+
+        if ($profile->needs_quiet_at_night === false && $room->quiet_hours_enabled === false) {
+            $reasons[] = $this->positive('noise_tolerance_match', 4);
+        }
+
         return $this->unique($reasons);
     }
 
@@ -135,6 +147,18 @@ class CompatibilityReasonService
             $reasons[] = $this->warning('many_people_conflict', 30);
         }
 
+        if ($profile->wants_private_room && $room->is_shared) {
+            $reasons[] = $this->warning('private_room_conflict', 25);
+        }
+
+        if ($profile->comfortable_with_shared_room === false && $room->is_shared) {
+            $reasons[] = $this->warning('shared_room_conflict', 30);
+        }
+
+        if ($profile->comfortable_with_strangers === false && $room->is_shared) {
+            $reasons[] = $this->warning('strangers_conflict', 20);
+        }
+
         if ($profile->needs_late_entry && $room->late_entry_allowed === false) {
             $reasons[] = $this->warning('late_entry_conflict', 20);
         }
@@ -181,6 +205,14 @@ class CompatibilityReasonService
         }
 
         if ($profile->smoking_preference === 'indoor' && $room->smoking_allowed === false) {
+            $reasons[] = $this->blocking('indoor_smoking_forbidden');
+        }
+
+        if (
+            $profile->smokes
+            && $room->smoking_allowed === false
+            && $this->hasAny($context->propertyRules, ['no_smoking', 'strict_no_smoking', 'smoking_forbidden'])
+        ) {
             $reasons[] = $this->blocking('indoor_smoking_forbidden');
         }
 

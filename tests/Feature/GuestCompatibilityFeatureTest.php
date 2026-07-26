@@ -27,6 +27,7 @@ use App\Models\SleepingPlaceCompatibilityProfile;
 use App\Models\User;
 use App\Services\Compatibility\CompatibilityCacheService;
 use App\Services\Compatibility\CompatibilityCalculatorService;
+use App\Services\Compatibility\GuestCompatibilityProfileService;
 use App\Services\Compatibility\RoomCompatibilityProfileService;
 use App\Services\Compatibility\SleepingPlaceCompatibilityProfileService;
 use App\Services\Listings\ListingCardQueryService;
@@ -135,10 +136,84 @@ class GuestCompatibilityFeatureTest extends TestCase
         $this->assertTrue($placeProfile->has_power_socket);
     }
 
+    public function test_profile_form_saves_quick_prompt_fields_and_normalizes_canonical_values(): void
+    {
+        $guest = User::factory()->create();
+
+        Livewire::actingAs($guest)
+            ->test(GuestCompatibilityProfileForm::class)
+            ->set('iSmoke', true)
+            ->set('iWakeUpEarly', true)
+            ->set('iSleepLate', true)
+            ->set('iWorkAtNight', true)
+            ->set('iStudy', true)
+            ->set('iWorkRemotely', true)
+            ->set('iOftenStayHome', true)
+            ->set('iLikeQuiet', true)
+            ->set('iAmSocial', true)
+            ->set('iLikeCleanliness', true)
+            ->set('iAmReadyToHelpCleaning', true)
+            ->set('iAcceptLivingWithStrangers', true)
+            ->set('iDoNotWantManyPeople', true)
+            ->set('iWantPrivateRoom', true)
+            ->set('iAcceptSharedRoom', true)
+            ->set('iNeedDesk', true)
+            ->set('iNeedFastInternet', true)
+            ->set('iNeedLocker', true)
+            ->set('iNeedQuietAtNight', true)
+            ->set('iNeedLateEntry', true)
+            ->set('iTravelWithPet', true)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSee(__('compatibility.messages.profile_saved'));
+
+        $profile = GuestCompatibilityProfile::query()->where('user_id', $guest->id)->firstOrFail();
+
+        $this->assertTrue($profile->i_smoke);
+        $this->assertFalse($profile->i_do_not_smoke);
+        $this->assertTrue($profile->smokes);
+        $this->assertSame('smoker', $profile->smoking_preference);
+        $this->assertTrue($profile->wakes_up_early);
+        $this->assertTrue($profile->sleeps_late);
+        $this->assertTrue($profile->works_at_night);
+        $this->assertTrue($profile->student);
+        $this->assertTrue($profile->remote_worker);
+        $this->assertTrue($profile->often_home);
+        $this->assertTrue($profile->needs_quiet_at_night);
+        $this->assertTrue($profile->sensitive_to_noise_at_night);
+        $this->assertSame('social', $profile->social_level);
+        $this->assertSame('strict', $profile->cleanliness_expectation);
+        $this->assertTrue($profile->ready_to_join_cleaning);
+        $this->assertTrue($profile->comfortable_with_strangers);
+        $this->assertTrue($profile->wants_private_room);
+        $this->assertTrue($profile->comfortable_with_shared_room);
+        $this->assertSame(4, $profile->max_people_in_room);
+        $this->assertTrue($profile->needs_workspace);
+        $this->assertTrue($profile->needs_fast_wifi);
+        $this->assertTrue($profile->needs_locker);
+        $this->assertTrue($profile->needs_late_entry);
+        $this->assertTrue($profile->travelling_with_pet);
+
+        app(GuestCompatibilityProfileService::class)->updateProfile($guest, [
+            'i_do_not_smoke' => true,
+        ]);
+        app(GuestCompatibilityProfileService::class)->updateProfile($guest, [
+            'i_need_desk' => true,
+        ]);
+
+        $profile->refresh();
+
+        $this->assertFalse($profile->smokes);
+        $this->assertSame('non_smoker', $profile->smoking_preference);
+        $this->assertTrue($profile->needs_workspace);
+    }
+
     public function test_calculator_scores_matches_warnings_blocking_reasons_and_cache(): void
     {
         $guest = User::factory()->create();
         GuestCompatibilityProfile::factory()->for($guest, 'user')->create([
+            'smokes' => true,
+            'smoking_preference' => 'smoker',
             'needs_quiet_at_night' => true,
             'remote_worker' => true,
             'needs_workspace' => true,
@@ -191,6 +266,7 @@ class GuestCompatibilityFeatureTest extends TestCase
 
         $this->assertSame('not_suitable', $result->fitStatus);
         $this->assertContains('pet_forbidden', collect($result->blockingReasons)->pluck('key')->all());
+        $this->assertContains('indoor_smoking_forbidden', collect($result->blockingReasons)->pluck('key')->all());
         $this->assertContains('upper_bunk_conflict', collect($result->warningReasons)->pluck('key')->all());
         $this->assertContains('locker_missing', collect($result->warningReasons)->pluck('key')->all());
         $this->assertContains('workspace_missing', collect($result->warningReasons)->pluck('key')->all());

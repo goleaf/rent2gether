@@ -6,7 +6,10 @@ use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingCheckIn;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class BookingCheckInService
@@ -23,22 +26,24 @@ class BookingCheckInService
     {
         $booking->loadMissing(['property:id,host_user_id', 'room:id', 'sleepingPlace:id']);
 
-        $checkIn = BookingCheckIn::query()->updateOrCreate(
-            ['booking_id' => $booking->id],
-            [
-                'guest_user_id' => $booking->guest_user_id,
-                'host_user_id' => $booking->host_user_id,
-                'property_id' => $booking->property_id,
-                'room_id' => $booking->room_id,
-                'sleeping_place_id' => $booking->sleeping_place_id,
-                'check_in_date' => $this->dateString($booking->check_in_date),
-                'planned_check_in_time' => $this->timeString($booking->arrival_time ?: $booking->check_in_time),
-                'planned_check_in_window' => $this->timeString($booking->check_in_time),
-                'check_in_window' => $this->timeString($booking->check_in_time),
-                'instructions_available_at' => now(),
-                'status' => $booking->checked_in_at ? 'checked_in' : 'instructions_available',
-            ],
-        );
+        $checkIn = BookingCheckIn::query()->firstOrNew(['booking_id' => $booking->id]);
+        $isNew = ! $checkIn->exists;
+
+        $checkIn->forceFill([
+            'guest_user_id' => $booking->guest_user_id,
+            'host_user_id' => $booking->host_user_id,
+            'property_id' => $booking->property_id,
+            'room_id' => $booking->room_id,
+            'sleeping_place_id' => $booking->sleeping_place_id,
+            'check_in_date' => $this->dateString($booking->check_in_date),
+            'planned_check_in_time' => $this->timeString($booking->arrival_time ?: $booking->check_in_time),
+            'planned_check_in_window' => $this->timeString($booking->check_in_time),
+            'check_in_window' => $this->timeString($booking->check_in_time),
+            'instructions_available_at' => $checkIn->instructions_available_at ?: now(),
+            'status' => $isNew || in_array($checkIn->status, [null, '', 'not_started'], true)
+                ? ($booking->checked_in_at ? 'checked_in' : 'instructions_available')
+                : $checkIn->status,
+        ])->save();
 
         $this->checklist->createDefaultChecklist($checkIn);
         $this->steps->createDefaultSteps($checkIn);
@@ -61,24 +66,31 @@ class BookingCheckInService
         return $this->createForBooking($booking);
     }
 
-    public function markGuestArrived(User $guest, BookingCheckIn $checkIn): BookingCheckIn
+    public function markGuestArrived(User $guest, BookingCheckIn $checkIn, ?CarbonInterface $actualArrivalAt = null): BookingCheckIn
     {
-        $this->ensureGuestOwnsCheckIn($guest, $checkIn);
+        return DB::transaction(function () use ($guest, $checkIn, $actualArrivalAt): BookingCheckIn {
+            $this->ensureGuestOwnsCheckIn($guest, $checkIn);
 
-        $checkIn = $this->statuses->transition($checkIn, 'guest_arrived', $guest, [
-            'reason_key' => 'check_in.events.guest_arrived',
-        ]);
-        $this->steps->markStepCompleted($checkIn, 'guest_arrived', $guest);
+            $checkIn = $this->statuses->transition($checkIn, 'guest_arrived', $guest, [
+                'reason_key' => 'check_in.events.guest_arrived',
+            ]);
 
-        app(BookingCheckInAlertService::class)->createAlert(
-            $checkIn->refresh(),
-            'guest_arrived',
-            'low',
-            ['guest' => $checkIn->guest?->name],
-        );
-        $this->notifications->notifyHostGuestArrived($checkIn->refresh());
+            if ($actualArrivalAt instanceof CarbonInterface) {
+                $checkIn->forceFill(['actual_arrival_at' => $actualArrivalAt])->save();
+            }
 
-        return $checkIn->refresh();
+            $this->steps->markStepCompleted($checkIn->refresh(), 'guest_arrived', $guest);
+
+            app(BookingCheckInAlertService::class)->createAlert(
+                $checkIn->refresh(),
+                'guest_arrived',
+                'low',
+                ['guest' => $checkIn->guest?->name],
+            );
+            $this->notifications->notifyHostGuestArrived($checkIn->refresh());
+
+            return $checkIn->refresh();
+        });
     }
 
     public function markGuestOnTheWay(User $guest, BookingCheckIn $checkIn): BookingCheckIn
@@ -118,6 +130,63 @@ class BookingCheckInService
         $this->notifications->notifyGuestHostConfirmed($checkIn->refresh());
 
         return $this->completeCheckIn($checkIn->refresh());
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @throws ValidationException
+     */
+    public function recordHostChecklist(User $host, BookingCheckIn $checkIn, array $data): BookingCheckIn
+    {
+        $this->ensureHostOwnsCheckIn($host, $checkIn);
+
+        $validated = Validator::make($data, [
+            'actual_arrival_at' => ['nullable', 'date'],
+            'met_by_type' => ['nullable', 'string', 'in:host,representative,self_check_in,other'],
+            'met_by_name' => ['nullable', 'string', 'max:120'],
+            'keys_handed_over' => ['nullable', 'boolean'],
+            'door_code_shared' => ['nullable', 'boolean'],
+            'room_shown' => ['nullable', 'boolean'],
+            'sleeping_place_shown' => ['nullable', 'boolean'],
+            'rules_explained' => ['nullable', 'boolean'],
+            'bedding_given' => ['nullable', 'boolean'],
+            'towel_given' => ['nullable', 'boolean'],
+            'locker_given' => ['nullable', 'boolean'],
+        ], [], __('check_in.validation.attributes'))->validate();
+
+        return DB::transaction(function () use ($host, $checkIn, $validated): BookingCheckIn {
+            $checkIn->forceFill([
+                'actual_arrival_at' => $validated['actual_arrival_at'] ?? $checkIn->actual_arrival_at,
+                'met_by_type' => $validated['met_by_type'] ?? $checkIn->met_by_type ?? 'host',
+                'met_by_name' => $validated['met_by_name'] ?? $checkIn->met_by_name,
+                'keys_handed_over' => (bool) ($validated['keys_handed_over'] ?? false),
+                'door_code_shared' => (bool) ($validated['door_code_shared'] ?? false),
+                'door_code_provided' => (bool) ($validated['door_code_shared'] ?? false),
+                'room_shown' => (bool) ($validated['room_shown'] ?? false),
+                'sleeping_place_shown' => (bool) ($validated['sleeping_place_shown'] ?? false),
+                'rules_explained' => (bool) ($validated['rules_explained'] ?? false),
+                'bedding_given' => (bool) ($validated['bedding_given'] ?? false),
+                'bedding_issued' => (bool) ($validated['bedding_given'] ?? false),
+                'towel_given' => (bool) ($validated['towel_given'] ?? false),
+                'towel_issued' => (bool) ($validated['towel_given'] ?? false),
+                'locker_given' => (bool) ($validated['locker_given'] ?? false),
+                'locker_assigned' => (bool) ($validated['locker_given'] ?? false),
+            ])->save();
+
+            $this->syncChecklistFields($host, $checkIn->refresh(), [
+                'keys_handed_over' => ['item' => 'keys_handed_over', 'step' => 'keys_handed_over'],
+                'door_code_shared' => ['item' => 'door_code_shared', 'step' => 'door_code_provided'],
+                'room_shown' => ['item' => 'room_shown', 'step' => 'room_shown'],
+                'sleeping_place_shown' => ['item' => 'sleeping_place_shown', 'step' => 'sleeping_place_shown'],
+                'rules_explained' => ['item' => 'rules_explained', 'step' => 'rules_explained'],
+                'bedding_given' => ['item' => 'bedding_given', 'step' => 'bedding_issued'],
+                'towel_given' => ['item' => 'towel_given', 'step' => 'towel_issued'],
+                'locker_given' => ['item' => 'locker_given', 'step' => 'locker_assigned'],
+            ]);
+
+            return $checkIn->refresh();
+        });
     }
 
     public function completeCheckIn(BookingCheckIn $checkIn): BookingCheckIn
@@ -201,6 +270,21 @@ class BookingCheckInService
             throw ValidationException::withMessages([
                 'booking' => __('check_in.validation.not_host_booking'),
             ]);
+        }
+    }
+
+    /**
+     * @param  array<string, array{item:string, step:string}>  $fields
+     */
+    private function syncChecklistFields(User $host, BookingCheckIn $checkIn, array $fields): void
+    {
+        foreach ($fields as $column => $keys) {
+            if (! (bool) $checkIn->{$column}) {
+                continue;
+            }
+
+            $this->checklist->markItemCompleted($host, $checkIn->refresh(), $keys['item']);
+            $this->steps->markStepCompleted($checkIn->refresh(), $keys['step'], $host);
         }
     }
 

@@ -19,6 +19,8 @@ It must not expose private profile data or make decisions from protected or sens
 
 `guest_compatibility_profiles` stores the guest's matching answers. It belongs to `users` and is deleted with the user. Important indexed fields include quiet-at-night, remote-worker, workspace, fast Wi-Fi, room people limit, upper-bunk avoidance, locker need, pet allergy, and travelling with pet.
 
+The same table also stores the quick prompt fields prefixed with `i_`, including smoking, no smoking, wake/sleep rhythm, night work, study, remote work, home presence, quiet/noise tolerance, social style, cleanliness, cleaning participation, stranger/shared-room comfort, private-room preference, desk, fast internet, locker, night quiet, late entry, and travelling with a pet. `GuestCompatibilityProfileService` normalizes those quick answers into the older canonical fields used by the calculator, without clearing unrelated canonical fields during partial updates.
+
 `guest_compatibility_visibility_settings` stores privacy choices. Defaults allow matching but do not expose detailed answers to hosts or future roommates.
 
 `room_compatibility_profiles` stores a compact room profile for matching: shared/private shape, max/current people, noise/light, quiet hours, night work/light, workspace, lockers, smoking, pets, kitchen night use, washing machine, long-stay support, and late entry.
@@ -26,6 +28,8 @@ It must not expose private profile data or make decisions from protected or sens
 `sleeping_place_compatibility_profiles` stores a compact sleeping-place profile: type, bunk level, sofa/floor mattress flags, curtain, locker, lock, socket, USB, lamp, shelf, luggage space, bedding, towel, privacy/noise/light, mobility suitability, min/max nights, extension, and instant booking.
 
 `compatibility_results` caches date-aware calculation results by user, property, room, sleeping place, selected dates, score, fit status, reason JSON, and expiry.
+
+Search filters use cached `compatibility_results` only when the guest is authenticated, valid check-in/check-out dates are present, and a compatibility filter is active. The search subquery is supported by `compat_results_user_dates_fit_place_idx` on `user_id`, `check_in_date`, `check_out_date`, `fit_status`, and `sleeping_place_id`.
 
 ## Models
 
@@ -73,6 +77,7 @@ Blocking reasons are important rule conflicts:
 - guest travels with a pet but pets are not allowed
 - guest has pet allergy and pets are present
 - selected stay violates min/max nights
+- guest smokes and the room/property has a strict no-smoking rule
 - guest needs self check-in or late/24-7 entry and it is unavailable
 - sleeping place is explicitly unsuitable for limited mobility needs
 
@@ -85,6 +90,7 @@ Warnings are practical comfort risks:
 - upper bunk when guest avoids it
 - missing locker, lock, workspace, fast Wi-Fi, socket, bedding, or curtain
 - room has more people than the guest prefers
+- guest wants a private room or avoids strangers, but the room is shared
 
 Warnings should help the guest decide; they should not block booking unless the flow explicitly requires confirmation.
 
@@ -101,6 +107,8 @@ Livewire class components:
 - `Bookings/CompatibilityCheckBeforeBooking`
 
 The profile form is a mobile wizard with short steps. Public listing cards show only a compact score badge and up to two warnings. Listing detail lazy-loads the summary and details sheet next to the booking form. Booking pre-check blocks only blocking reasons; warnings can be acknowledged.
+
+The account guest-preferences page embeds the full compatibility profile form. The account privacy page embeds compatibility privacy settings. No controllers, Filament resources, Volt components, or SPA routes are used.
 
 ## Privacy
 
@@ -119,6 +127,7 @@ Never expose:
 - Cards use selected columns and eager-load compact room/place compatibility profiles.
 - `ListingCardService` caches the current compatibility user inside the service instance to avoid one user query per card.
 - Date-aware compatibility results are cached in `compatibility_results`.
+- Search compatibility filtering uses the cached result table instead of recalculating per row during search.
 - Detail summary and details sheet are lazy Livewire components.
 - Do not load full galleries, reviews, bookings, private profiles, or occupant personal data for compatibility.
 
@@ -140,6 +149,7 @@ Covered by `tests/Feature/GuestCompatibilityFeatureTest.php`:
 - calculator scores, warnings, blocking reasons, cache, and invalidation
 - perfect match with translated reasons
 - Livewire profile, privacy, summary, badge, filter, booking check
+- search compatibility filtering by minimum fit and important-conflict hiding
 - listing card compatibility badge
 - English and Russian copy
 

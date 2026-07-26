@@ -278,7 +278,12 @@ class AvailabilityCalendarFlowTest extends TestCase
             ->set('checkOut', '2026-07-12')
             ->call('checkAvailability')
             ->assertHasNoErrors()
-            ->assertSet('result.available', true)
+            ->assertViewHas('result', function (?array $result): bool {
+                return is_array($result)
+                    && $result['available'] === true
+                    && $result['unavailable_dates'] === []
+                    && $result['nearest_ranges'] === [];
+            })
             ->assertSee(Lang::get('availability.checker.available_title', [], 'en'));
     }
 
@@ -295,10 +300,52 @@ class AvailabilityCalendarFlowTest extends TestCase
             ->set('checkOut', '2026-07-12')
             ->call('checkAvailability')
             ->assertHasNoErrors()
-            ->assertSet('result.available', false)
-            ->assertSet('result.unavailable_dates.0', '2026-07-10')
-            ->assertSet('result.nearest_ranges.0.check_in', '2026-07-11')
+            ->assertViewHas('result', function (?array $result): bool {
+                return is_array($result)
+                    && $result['available'] === false
+                    && $result['unavailable_dates'][0]['date'] === '2026-07-10'
+                    && $result['unavailable_dates'][0]['label'] !== ''
+                    && $result['nearest_ranges'][0]['check_in'] === '2026-07-11'
+                    && $result['nearest_ranges'][0]['label'] !== '';
+            })
             ->assertSee(Lang::get('availability.checker.unavailable_title', [], 'en'));
+    }
+
+    public function test_guest_availability_checker_keeps_results_out_of_livewire_public_state(): void
+    {
+        [, $place] = $this->hostSleepingPlace();
+        AvailabilityDay::factory()->for($place)->create([
+            'date' => '2026-07-10',
+            'status' => AvailabilityStatus::Repair,
+        ]);
+
+        $component = Livewire::test(AvailabilityChecker::class, ['sleepingPlaceId' => $place->id])
+            ->set('checkIn', '2026-07-10')
+            ->set('checkOut', '2026-07-12')
+            ->call('checkAvailability')
+            ->assertHasNoErrors()
+            ->assertViewHas('result', function (?array $result): bool {
+                return is_array($result)
+                    && $result['available'] === false
+                    && $result['unavailable_dates'][0]['date'] === '2026-07-10'
+                    && $result['nearest_ranges'][0]['check_in'] === '2026-07-11';
+            })
+            ->refresh()
+            ->assertViewHas('result', function (?array $result): bool {
+                return is_array($result)
+                    && $result['available'] === false
+                    && $result['unavailable_dates'][0]['date'] === '2026-07-10'
+                    && $result['nearest_ranges'][0]['check_in'] === '2026-07-11';
+            });
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('sleepingPlaceId', $encodedSnapshot);
+        $this->assertStringContainsString('availabilityRequested', $encodedSnapshot);
+        $this->assertStringNotContainsString('result', $encodedSnapshot);
+        $this->assertStringNotContainsString('unavailable_dates', $encodedSnapshot);
+        $this->assertStringNotContainsString('nearest_ranges', $encodedSnapshot);
+        $this->assertLessThan(12_000, strlen($encodedSnapshot), 'Availability checker snapshot should keep availability details out of public state.');
     }
 
     /**

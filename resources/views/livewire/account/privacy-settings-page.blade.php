@@ -233,4 +233,6 @@
             </flux:button>
         </div>
     </form>
+
+    <livewire:profile.guest-compatibility-privacy-settings />
 </x-ui.page>

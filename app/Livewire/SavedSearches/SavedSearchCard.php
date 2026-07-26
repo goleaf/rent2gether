@@ -15,7 +15,7 @@ class SavedSearchCard extends Component
     public int $searchId;
 
     /** @var array<string, mixed> */
-    public array $card = [];
+    private array $card = [];
 
     /**
      * @param  array<string, mixed>  $card
@@ -52,7 +52,9 @@ class SavedSearchCard extends Component
 
     public function render(): View
     {
-        return view('livewire.saved-searches.saved-search-card');
+        return view('livewire.saved-searches.saved-search-card', [
+            'card' => $this->card,
+        ]);
     }
 
     private function withSearch(callable $callback): void

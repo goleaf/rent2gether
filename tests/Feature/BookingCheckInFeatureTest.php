@@ -19,6 +19,8 @@ use App\Models\Booking;
 use App\Models\BookingCheckInAlert;
 use App\Models\BookingCheckInChecklistItem;
 use App\Models\BookingCheckInProblemReport;
+use App\Models\Notification;
+use App\Models\NotificationReminder;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -29,8 +31,10 @@ use App\Services\CheckIn\BookingCheckInInstructionService;
 use App\Services\CheckIn\BookingCheckInProblemService;
 use App\Services\CheckIn\BookingCheckInReminderService;
 use App\Services\CheckIn\BookingCheckInService;
+use App\Services\Notifications\CheckInNotificationIntegrationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -110,6 +114,12 @@ class BookingCheckInFeatureTest extends TestCase
 
         $this->assertSame('guest_arrived', $arrived->status);
         $this->assertNotNull($arrived->actual_arrival_at);
+        $this->assertDatabaseHas('notifications', [
+            'recipient_user_id' => $listing['host']->id,
+            'recipient_type' => 'host',
+            'booking_id' => $booking->id,
+            'type' => 'guest_arrived',
+        ]);
 
         $report = app(BookingCheckInProblemService::class)->reportProblem($listing['guest'], $arrived, [
             'problem_type' => 'code_not_working',
@@ -206,14 +216,81 @@ class BookingCheckInFeatureTest extends TestCase
 
         $sentForGuest = app(BookingCheckInReminderService::class)->sendDueReminders($listing['guest']);
         $sentForHost = app(BookingCheckInReminderService::class)->sendDueReminders($listing['host']);
+        $sentForHostAgain = app(BookingCheckInReminderService::class)->sendDueReminders($listing['host']);
 
         $this->assertSame(1, $sentForGuest);
-        $this->assertSame(0, $sentForHost);
+        $this->assertSame(1, $sentForHost);
+        $this->assertSame(0, $sentForHostAgain);
         $this->assertSame('reminder_sent', $checkIn->fresh()->status);
         $this->assertNotNull($checkIn->fresh()->last_reminder_sent_at);
+        $this->assertSame(2, Notification::query()->where('booking_id', $booking->id)->where('type', 'check_in_soon')->count());
+        $this->assertDatabaseHas('notifications', [
+            'recipient_user_id' => $listing['guest']->id,
+            'recipient_type' => 'guest',
+            'booking_id' => $booking->id,
+            'type' => 'check_in_soon',
+            'action_url' => route('guest.bookings.check-in', ['locale' => 'en', 'booking' => $booking]),
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'recipient_user_id' => $listing['host']->id,
+            'recipient_type' => 'host',
+            'booking_id' => $booking->id,
+            'type' => 'check_in_soon',
+            'action_url' => route('host.bookings.manage', ['locale' => 'en', 'booking' => $booking]),
+        ]);
 
         $this->expectException(ValidationException::class);
         app(BookingCheckInService::class)->getForGuest(User::factory()->create(), $booking);
+    }
+
+    public function test_check_in_reminders_are_scheduled_for_guest_and_host_one_day_before_arrival(): void
+    {
+        $listing = $this->listing();
+        $booking = $this->booking($listing, [
+            'check_in_date' => '2026-06-21',
+            'check_out_date' => '2026-06-24',
+            'arrival_time' => '16:00',
+        ]);
+
+        $reminders = app(CheckInNotificationIntegrationService::class)->scheduleCheckInReminders($booking);
+        app(CheckInNotificationIntegrationService::class)->scheduleCheckInReminders($booking);
+
+        $this->assertCount(2, $reminders);
+        $this->assertSame(2, NotificationReminder::query()->where('booking_id', $booking->id)->where('reminder_type', 'check_in_soon')->count());
+        $this->assertDatabaseHas('notification_reminders', [
+            'user_id' => $listing['guest']->id,
+            'recipient_type' => 'guest',
+            'booking_id' => $booking->id,
+            'reminder_type' => 'check_in_soon',
+            'scheduled_for' => '2026-06-20 16:00:00',
+            'action_url' => route('guest.bookings.check-in', ['locale' => 'en', 'booking' => $booking]),
+        ]);
+        $this->assertDatabaseHas('notification_reminders', [
+            'user_id' => $listing['host']->id,
+            'recipient_type' => 'host',
+            'booking_id' => $booking->id,
+            'reminder_type' => 'check_in_soon',
+            'scheduled_for' => '2026-06-20 16:00:00',
+            'action_url' => route('host.bookings.manage', ['locale' => 'en', 'booking' => $booking]),
+        ]);
+    }
+
+    public function test_check_in_reminder_command_sends_due_guest_and_host_notifications(): void
+    {
+        $listing = $this->listing();
+        $booking = $this->booking($listing, [
+            'check_in_date' => '2026-06-21',
+            'check_out_date' => '2026-06-24',
+        ]);
+        app(BookingCheckInService::class)->createForBooking($booking);
+
+        Artisan::call('check-in:send-reminders');
+
+        $this->assertStringContainsString(
+            __('check_in.console.reminders_sent', ['count' => 2]),
+            Artisan::output(),
+        );
+        $this->assertSame(2, Notification::query()->where('booking_id', $booking->id)->where('type', 'check_in_soon')->count());
     }
 
     public function test_check_in_livewire_components_render_in_english_and_russian(): void
@@ -239,6 +316,26 @@ class BookingCheckInFeatureTest extends TestCase
             ->get(route('guest.bookings.check-in', ['locale' => 'en', 'booking' => $booking]))
             ->assertOk()
             ->assertSee(__('check_in.title', [], 'en'));
+    }
+
+    public function test_check_in_problem_report_sheet_keeps_photo_paths_out_of_public_state(): void
+    {
+        $listing = $this->listing();
+        $booking = $this->booking($listing);
+        app(BookingCheckInService::class)->createForBooking($booking);
+
+        $component = Livewire::actingAs($listing['guest'])
+            ->test(CheckInProblemReportSheet::class, ['booking' => $booking])
+            ->set('problemType', 'code_not_working')
+            ->set('severity', 'high')
+            ->set('description', 'The building door code does not open the entrance.')
+            ->assertSee(__('check_in.title'));
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('bookingId', $encodedSnapshot);
+        $this->assertStringContainsString('checkInId', $encodedSnapshot);
+        $this->assertStringNotContainsString('photoPaths', $encodedSnapshot);
     }
 
     /**

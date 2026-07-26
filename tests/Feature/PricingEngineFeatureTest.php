@@ -21,6 +21,7 @@ use App\Services\Pricing\DatePriceResolverService;
 use App\Services\Pricing\PricingSettingsService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -52,6 +53,47 @@ class PricingEngineFeatureTest extends TestCase
         $this->assertSame(25.0, $resolver->resolveNightPrice($place, CarbonImmutable::parse('2026-07-10')));
         $this->assertSame(40.0, $resolver->resolveNightPrice($place, CarbonImmutable::parse('2027-01-01')));
         $this->assertSame(30.0, $resolver->resolveNightPrice($place, CarbonImmutable::parse('2026-07-12')));
+    }
+
+    public function test_quote_recalculation_prefetches_date_overrides_for_the_whole_range(): void
+    {
+        $guest = User::factory()->create();
+        $place = $this->sleepingPlace(price: 20);
+        $this->settings($place, ['base_nightly_price' => 20]);
+
+        for ($day = 0; $day < 30; $day++) {
+            SleepingPlaceDatePrice::factory()->create([
+                'sleeping_place_id' => $place->id,
+                'date' => CarbonImmutable::parse('2026-08-01')->addDays($day)->toDateString(),
+                'price' => 30 + $day,
+                'price_type' => SleepingPlaceDatePrice::TYPE_MANUAL_OVERRIDE,
+            ]);
+        }
+
+        $datePriceSelects = [];
+        $quoteLineAggregateSelects = [];
+
+        DB::listen(function ($query) use (&$datePriceSelects, &$quoteLineAggregateSelects): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select') && str_contains($sql, 'sleeping_place_date_prices')) {
+                $datePriceSelects[] = $query->sql;
+            }
+
+            if (str_starts_with($sql, 'select') && str_contains($sql, 'booking_quote_lines') && str_contains($sql, 'sum(')) {
+                $quoteLineAggregateSelects[] = $query->sql;
+            }
+        });
+
+        $quote = app(BookingPriceQuoteService::class)->createQuote($guest, $place, [
+            'check_in_date' => '2026-08-01',
+            'check_out_date' => '2026-08-31',
+            'guests_count' => 1,
+        ]);
+
+        $this->assertSame(30, $quote->lines()->where('line_type', 'date_override')->count());
+        $this->assertLessThanOrEqual(1, count($datePriceSelects));
+        $this->assertSame([], $quoteLineAggregateSelects);
     }
 
     public function test_guest_price_example_shows_daily_lines_discount_fees_deposit_and_total_due_now(): void

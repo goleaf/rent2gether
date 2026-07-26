@@ -20,9 +20,21 @@ class NightlyPriceLineService
     {
         $lines = collect();
         $sort = 1;
+        $quote->loadMissing('sleepingPlace');
+        $resolvedPrices = $this->prices->resolveNightPriceDetailsForRange(
+            $quote->sleepingPlace,
+            CarbonImmutable::instance($quote->check_in_date),
+            CarbonImmutable::instance($quote->check_out_date),
+        );
 
         for ($date = CarbonImmutable::instance($quote->check_in_date); $date->lessThan(CarbonImmutable::instance($quote->check_out_date)); $date = $date->addDay()) {
-            $lines->push($this->buildLineForDate($quote, $date, $sort++));
+            $resolved = $resolvedPrices->get($date->toDateString());
+
+            if ($resolved === null) {
+                $resolved = $this->prices->resolveNightPriceDetails($quote->sleepingPlace, $date);
+            }
+
+            $lines->push($this->createLine($quote, $date, $resolved, $sort++));
         }
 
         return $lines;
@@ -33,6 +45,14 @@ class NightlyPriceLineService
         $quote->loadMissing('sleepingPlace');
         $resolved = $this->prices->resolveNightPriceDetails($quote->sleepingPlace, $date);
 
+        return $this->createLine($quote, $date, $resolved, $sortOrder);
+    }
+
+    /**
+     * @param  array{amount:float,line_type:string,source:string,date_price_id:int|null}  $resolved
+     */
+    private function createLine(BookingQuote $quote, CarbonImmutable $date, array $resolved, int $sortOrder): BookingQuoteLine
+    {
         return $quote->lines()->create([
             'line_type' => $resolved['line_type'],
             'label_key' => 'pricing.line_types.'.$resolved['line_type'],

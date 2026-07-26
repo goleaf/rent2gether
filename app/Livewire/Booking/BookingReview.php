@@ -15,6 +15,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Number;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -45,14 +46,6 @@ class BookingReview extends Component
     public bool $profileReady = false;
 
     public bool $rulesAccepted = false;
-
-    /** @var array<string, mixed>|null */
-    public ?array $quote = null;
-
-    public ?string $availabilityWarning = null;
-
-    /** @var list<string> */
-    public array $unavailableDates = [];
 
     public function mount(SleepingPlace $sleepingPlace): void
     {
@@ -92,83 +85,79 @@ class BookingReview extends Component
     public function refreshQuote(): void
     {
         $this->resetValidation();
-        $this->quote = null;
-        $this->availabilityWarning = null;
-        $this->unavailableDates = [];
+        unset($this->dateEvaluation);
+    }
 
+    /**
+     * @return array{quote:array<string,mixed>|null,availabilityWarning:string|null,unavailableDates:list<string>}
+     */
+    #[Computed]
+    public function dateEvaluation(): array
+    {
         if ($this->checkIn === '' || $this->checkOut === '') {
-            return;
+            return $this->emptyDateEvaluation();
         }
 
         try {
             $checkIn = CarbonImmutable::parse($this->checkIn)->startOfDay();
             $checkOut = CarbonImmutable::parse($this->checkOut)->startOfDay();
         } catch (\Throwable) {
-            $this->availabilityWarning = __('booking.flow.errors.use_valid_dates');
-
-            return;
+            return $this->dateWarning(__('booking.flow.errors.use_valid_dates'));
         }
 
         if ($checkIn->isBefore(CarbonImmutable::today())) {
-            $this->availabilityWarning = __('booking.flow.errors.past_dates');
-
-            return;
+            return $this->dateWarning(__('booking.flow.errors.past_dates'));
         }
 
         if ($checkOut->lessThanOrEqualTo($checkIn)) {
-            $this->availabilityWarning = __('booking.flow.errors.checkout_after_checkin');
-
-            return;
+            return $this->dateWarning(__('booking.flow.errors.checkout_after_checkin'));
         }
 
-        $place = $this->place();
+        $place = $this->place;
         $nights = (int) $checkIn->diffInDays($checkOut);
         $guestsCount = max(1, $this->guestsCount);
 
         if ($guestsCount > $place->max_guests) {
-            $this->availabilityWarning = trans_choice('booking.date_selector.errors.max_guests', (int) $place->max_guests, [
+            return $this->dateWarning(trans_choice('booking.date_selector.errors.max_guests', (int) $place->max_guests, [
                 'count' => (int) $place->max_guests,
-            ]);
-
-            return;
+            ]));
         }
 
         if ($place->min_nights && $nights < $place->min_nights) {
-            $this->availabilityWarning = trans_choice('booking.date_selector.errors.min_nights', (int) $place->min_nights, [
+            return $this->dateWarning(trans_choice('booking.date_selector.errors.min_nights', (int) $place->min_nights, [
                 'count' => (int) $place->min_nights,
-            ]);
-
-            return;
+            ]));
         }
 
         if ($place->max_nights && $nights > $place->max_nights) {
-            $this->availabilityWarning = trans_choice('booking.date_selector.errors.max_nights', (int) $place->max_nights, [
+            return $this->dateWarning(trans_choice('booking.date_selector.errors.max_nights', (int) $place->max_nights, [
                 'count' => (int) $place->max_nights,
-            ]);
-
-            return;
+            ]));
         }
 
         $availability = app(AvailabilityService::class);
 
         if (! $availability->isAvailable($place, $checkIn, $checkOut)) {
-            $this->unavailableDates = $availability->unavailableDates($place, $checkIn, $checkOut);
-            $this->availabilityWarning = __('booking.flow.errors.not_available');
-
-            return;
+            return [
+                'quote' => null,
+                'availabilityWarning' => __('booking.flow.errors.not_available'),
+                'unavailableDates' => $availability->unavailableDates($place, $checkIn, $checkOut),
+            ];
         }
 
         $guest = auth()->user();
 
         if (! $guest instanceof User) {
-            $this->availabilityWarning = __('booking.date_selector.errors.login_required');
-
-            return;
+            return $this->dateWarning(__('booking.date_selector.errors.login_required'));
         }
 
-        $this->quote = app(PricingService::class)
-            ->calculate($guest, $place, $checkIn, $checkOut, $guestsCount)
-            ->toArray();
+        return [
+            'quote' => app(PricingService::class)
+                ->calculate($guest, $place, $checkIn, $checkOut, $guestsCount)
+                ->toArray(),
+            'availabilityWarning' => null,
+            'unavailableDates' => [],
+        ];
     }
 
     public function submit(): void
@@ -198,7 +187,7 @@ class BookingReview extends Component
             ?: $completedIntake?->host_message
             ?: $completedIntake?->auto_generated_host_message;
 
-        $booking = app(BookingSubmit::class)->handle($guest, $this->place(), [
+        $booking = app(BookingSubmit::class)->handle($guest, $this->place, [
             'check_in' => $validated['checkIn'],
             'check_out' => $validated['checkOut'],
             'check_in_time' => $validated['checkInTime'] ?: null,
@@ -224,7 +213,8 @@ class BookingReview extends Component
 
     public function render(): View
     {
-        $place = $this->place();
+        $place = $this->place;
+        $dateEvaluation = $this->dateEvaluation;
 
         return view('livewire.booking.booking-review', [
             'place' => $place,
@@ -233,6 +223,9 @@ class BookingReview extends Component
                 ? __('booking.flow.mode.instant')
                 : __('booking.flow.mode.request'),
             'profileChecklist' => $this->profileChecklist(),
+            'quote' => $dateEvaluation['quote'],
+            'availabilityWarning' => $dateEvaluation['availabilityWarning'],
+            'unavailableDates' => $dateEvaluation['unavailableDates'],
         ])->layout('layouts.app', ['title' => __('booking.flow.title')]);
     }
 
@@ -241,7 +234,8 @@ class BookingReview extends Component
         return Number::currency((float) $amount, $currency, app()->getLocale());
     }
 
-    private function place(): SleepingPlace
+    #[Computed]
+    public function place(): SleepingPlace
     {
         $locales = array_values(array_unique([
             app()->getLocale(),
@@ -278,6 +272,30 @@ class BookingReview extends Component
                 'property.host:id,name',
             ])
             ->findOrFail($this->sleepingPlaceId);
+    }
+
+    /**
+     * @return array{quote:null,availabilityWarning:null,unavailableDates:list<string>}
+     */
+    private function emptyDateEvaluation(): array
+    {
+        return [
+            'quote' => null,
+            'availabilityWarning' => null,
+            'unavailableDates' => [],
+        ];
+    }
+
+    /**
+     * @return array{quote:null,availabilityWarning:string,unavailableDates:list<string>}
+     */
+    private function dateWarning(string $message): array
+    {
+        return [
+            'quote' => null,
+            'availabilityWarning' => $message,
+            'unavailableDates' => [],
+        ];
     }
 
     private function title(SleepingPlace $place): string

@@ -146,6 +146,19 @@
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('booking_dates.messages.choose_checkout_helper') }}</flux:text>
             </div>
 
+            @if($checkoutCalendar['earliest_checkout_date'] || $checkoutCalendar['latest_checkout_date'])
+                <div class="grid gap-2 sm:grid-cols-2">
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <flux:text size="xs" class="text-zinc-500 dark:text-zinc-400">{{ __('booking_dates.messages.earliest_checkout') }}</flux:text>
+                        <flux:text size="sm" class="font-medium">{{ $checkoutCalendar['earliest_checkout_date'] ?: __('booking_dates.empty.no_checkout_dates') }}</flux:text>
+                    </div>
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <flux:text size="xs" class="text-zinc-500 dark:text-zinc-400">{{ __('booking_dates.messages.latest_checkout') }}</flux:text>
+                        <flux:text size="sm" class="font-medium">{{ $checkoutCalendar['latest_checkout_date'] ?: __('booking_dates.empty.no_checkout_dates') }}</flux:text>
+                    </div>
+                </div>
+            @endif
+
             @if($availableCheckoutDates)
                 <div class="grid gap-2 sm:grid-cols-2">
                     @foreach($availableCheckoutDates as $date)
@@ -157,6 +170,26 @@
                 </div>
             @else
                 <flux:callout variant="warning" icon="exclamation-triangle" :text="__('booking_dates.empty.no_checkout_dates')" />
+            @endif
+
+            @if($checkoutCalendar['unavailable_checkout_dates'])
+                <div class="space-y-2">
+                    <flux:text size="sm" class="font-medium">{{ __('booking_dates.messages.blocked_checkout_dates') }}</flux:text>
+                    @foreach($checkoutCalendar['unavailable_checkout_dates'] as $date)
+                        <flux:callout
+                            variant="secondary"
+                            icon="information-circle"
+                            :text="__('booking_dates.messages.checkout_unavailable_reason', [
+                                'date' => $date['check_out'],
+                                'reason' => __($date['message_keys'][0] ?? 'booking_dates.validation.sleeping_place_unavailable'),
+                            ])"
+                        />
+                    @endforeach
+                </div>
+            @endif
+
+            @if($checkoutCalendar['neighbor_room_alternatives'] || $checkoutCalendar['same_host_alternatives'] || $checkoutCalendar['similar_sleeping_places'])
+                <flux:callout variant="secondary" icon="information-circle" :text="__('booking_dates.messages.alternatives_available')" />
             @endif
         </flux:card>
     @endif

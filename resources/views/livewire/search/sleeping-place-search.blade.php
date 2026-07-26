@@ -97,7 +97,7 @@
     </span>
 </flux:label>
                     <flux:select wire:model.change="sort">
-                        @foreach($this->sortOptions() as $value => $label)
+                        @foreach($this->sortOptions as $value => $label)
                             <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                         @endforeach
                     </flux:select>
@@ -156,7 +156,11 @@
         <main class="min-w-0 space-y-4">
             <div class="flex items-center justify-between gap-3">
                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                    {{ trans_choice('search.summary.matched_results', $results['total'], ['count' => $results['total']]) }}
+                    @if($results['total_is_exact'])
+                        {{ trans_choice('search.summary.matched_results', $results['total'], ['count' => $results['total']]) }}
+                    @else
+                        {{ __('search.summary.matched_results_lower_bound', ['count' => $results['total']]) }}
+                    @endif
                 </flux:text>
 
                 <div wire:loading.delay wire:target="cityQuery,district,checkIn,checkOut,guestsCount,priceMin,priceMax,currency,propertyType,roomType,sleepingPlaceType,roomGenderPolicy,sort" class="text-sm text-zinc-500">

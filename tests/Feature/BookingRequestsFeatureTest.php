@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\Bookings\Requests\GuestBookingRequestPage;
 use App\Livewire\Host\BookingRequests\HostBookingRequestDetailsSheet;
 use App\Livewire\Host\BookingRequests\HostBookingRequestsPage;
+use App\Models\Booking;
 use App\Models\BookingQuote;
 use App\Models\BookingRequest;
 use App\Models\Notification;
@@ -222,6 +223,39 @@ class BookingRequestsFeatureTest extends TestCase
         $this->assertSame($place->id, $booking->sleeping_place_id);
         $this->assertTrue($booking->priceSnapshot()->exists());
         $this->assertSame(3, SleepingPlaceBookingDateLock::query()->where('booking_id', $booking->id)->where('status', 'active')->count());
+        $this->assertSame(0, SleepingPlaceBookingDateLock::query()->where('booking_request_id', $request->id)->where('status', 'active')->count());
+    }
+
+    public function test_approved_request_conversion_aborts_when_dates_become_locked_before_booking_creation(): void
+    {
+        [$guest, $host, $place] = $this->placeSetup(instant: true);
+        $quote = app(BookingPriceQuoteService::class)->createQuote($guest, $place, [
+            'check_in_date' => '2026-07-10',
+            'check_out_date' => '2026-07-13',
+            'guests_count' => 1,
+        ]);
+        $request = app(BookingRequestCreationService::class)->createFromQuote($guest, $quote, [
+            'request_type' => BookingRequest::TYPE_HOST_APPROVAL,
+            'hold_dates' => false,
+        ]);
+        app(BookingRequestHostResponseService::class)->approve($host, $request);
+
+        SleepingPlaceBookingDateLock::factory()->create([
+            'sleeping_place_id' => $place->id,
+            'date' => '2026-07-11',
+            'status' => 'active',
+        ]);
+
+        try {
+            app(BookingRequestConversionService::class)->convertApprovedRequestToBooking($request->fresh());
+            $this->fail('Approved request conversion should abort when dates are locked.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('quote', $exception->errors());
+        }
+
+        $this->assertSame(0, Booking::query()->count());
+        $this->assertNull($request->fresh()->booking_id);
+        $this->assertSame(BookingRequest::STATUS_APPROVED, $request->fresh()->status);
         $this->assertSame(0, SleepingPlaceBookingDateLock::query()->where('booking_request_id', $request->id)->where('status', 'active')->count());
     }
 

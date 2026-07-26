@@ -59,6 +59,7 @@ class RoomOccupantSnapshotService
                 'wake_schedule_snapshot' => $settings?->show_wake_schedule ? $profile?->wake_schedule : null,
                 'home_presence_level_snapshot' => $settings?->show_home_presence === false ? null : $profile?->home_presence_level,
                 'smokes_snapshot' => $settings?->show_smoking_status === false ? null : $profile?->smokes,
+                'has_pet_snapshot' => $settings?->show_pet_status ? $profile?->has_pet : null,
                 'social_level_snapshot' => $settings?->show_social_level === false ? null : $profile?->social_level,
                 'prefers_quiet_snapshot' => $settings?->show_quiet_preference === false ? null : $profile?->prefers_quiet,
                 'roommate_rating_average_snapshot' => $settings?->show_roommate_rating === false ? null : $profile?->roommate_rating_average,

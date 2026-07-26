@@ -30,7 +30,9 @@ use App\Services\CheckIn\BookingCheckInProblemService;
 use App\Services\CheckIn\BookingCheckInService;
 use App\Services\CheckIn\BookingCheckInStepService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -172,10 +174,22 @@ class BookingCheckInFlowPointTenTest extends TestCase
         $this->assertInstanceOf(BookingCheckInProblem::class, $problem);
         $this->assertNotNull($problem->source_created_host_unresponsive_case_id);
         $this->assertSame('host_unresponsive', $booking->fresh()->status->value);
+        $this->assertSame('check-ins/before-place.jpg', $checkIn->fresh()->before_place_photo_path);
         $this->assertTrue($checkIn->fresh()->keys_handed_over);
         $this->assertTrue($checkIn->fresh()->bedding_issued);
         $this->assertTrue($checkIn->fresh()->towel_issued);
         $this->assertTrue($checkIn->fresh()->locker_assigned);
+        $this->assertDatabaseHas('booking_check_in_checklist_items', [
+            'booking_check_in_id' => $checkIn->id,
+            'item_key' => 'before_photo_uploaded',
+            'status' => 'completed',
+        ]);
+        $this->assertDatabaseHas('booking_check_in_alerts', [
+            'booking_check_in_id' => $checkIn->id,
+            'alert_type' => 'support_attention_required',
+            'severity' => 'urgent',
+            'status' => 'notified_support',
+        ]);
 
         $privacy = app(BookingCheckInPrivacyService::class);
 
@@ -190,6 +204,127 @@ class BookingCheckInFlowPointTenTest extends TestCase
         ]);
 
         $this->assertFalse($privacy->canViewMedia($listing['guest'], $internalMedia));
+    }
+
+    public function test_check_in_media_uploader_stores_photo_without_exposing_final_path_in_public_state(): void
+    {
+        Storage::fake('public');
+
+        $listing = $this->listing();
+        $booking = $this->booking($listing, ['status' => BookingStatus::ReadyForCheckInCore->value]);
+        app(BookingCheckInService::class)->createForBooking($booking);
+
+        $component = Livewire::actingAs($listing['guest'])
+            ->test(CheckInMediaUploader::class, ['booking' => $booking])
+            ->set('mediaRole', 'before_check_in_sleeping_place')
+            ->set('photo', UploadedFile::fake()->image('before-check-in.jpg', 900, 600)->size(256))
+            ->set('caption', 'Bed and locker before check-in.')
+            ->call('record')
+            ->assertHasNoErrors();
+
+        $media = BookingCheckInMedia::query()->firstOrFail();
+
+        $this->assertSame($booking->id, $media->booking_id);
+        $this->assertSame($listing['guest']->id, $media->uploaded_by_user_id);
+        $this->assertSame('before_check_in_sleeping_place', $media->media_role);
+        $this->assertSame('Bed and locker before check-in.', $media->caption);
+        $this->assertStringStartsWith('check-ins/', $media->path);
+
+        Storage::disk('public')->assertExists($media->path);
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('bookingId', $encodedSnapshot);
+        $this->assertStringContainsString('checkInId', $encodedSnapshot);
+        $this->assertStringNotContainsString($media->path, $encodedSnapshot);
+    }
+
+    public function test_guest_check_in_page_handles_arrival_photo_confirmation_and_problem_report(): void
+    {
+        Storage::fake('public');
+
+        $listing = $this->listing();
+        $booking = $this->booking($listing, ['status' => BookingStatus::ReadyForCheckInCore->value]);
+        app(BookingCheckInService::class)->createForBooking($booking);
+
+        $component = Livewire::actingAs($listing['guest'])
+            ->test(GuestCheckInPage::class, ['booking' => $booking])
+            ->assertSee(__('check_in.title', [], 'en'))
+            ->assertSee('Peace Street 12')
+            ->assertSee('+37060000000')
+            ->set('actualArrivalTime', '16:20')
+            ->call('markArrived')
+            ->assertHasNoErrors()
+            ->set('beforePhoto', UploadedFile::fake()->image('before-place.jpg', 900, 600)->size(256))
+            ->set('mediaCaption', 'Sleeping place before I used it.')
+            ->call('saveBeforePhoto')
+            ->assertHasNoErrors()
+            ->call('confirm')
+            ->assertHasNoErrors()
+            ->set('problemType', 'cannot_enter')
+            ->set('severity', 'urgent')
+            ->set('description', 'I still need help with the entrance.')
+            ->set('problemPhoto', UploadedFile::fake()->image('problem.jpg', 900, 600)->size(256))
+            ->call('reportProblem')
+            ->assertHasNoErrors();
+
+        $checkIn = app(BookingCheckInService::class)->getForGuest($listing['guest'], $booking);
+
+        $this->assertSame('problem_reported', $checkIn->status);
+        $this->assertNotNull($checkIn->guest_confirmed_at);
+        $this->assertSame('2026-06-21 16:20:00', $checkIn->actual_arrival_at?->format('Y-m-d H:i:s'));
+        $this->assertNotNull($checkIn->before_place_photo_path);
+        $this->assertSame(2, BookingCheckInMedia::query()->where('booking_check_in_id', $checkIn->id)->count());
+        $this->assertDatabaseHas('booking_check_in_alerts', [
+            'booking_check_in_id' => $checkIn->id,
+            'alert_type' => 'support_attention_required',
+            'status' => 'notified_support',
+        ]);
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringNotContainsString((string) $checkIn->before_place_photo_path, $encodedSnapshot);
+    }
+
+    public function test_host_check_in_details_sheet_saves_arrival_checklist_fields(): void
+    {
+        $listing = $this->listing();
+        $booking = $this->booking($listing, ['status' => BookingStatus::ReadyForCheckInCore->value]);
+        $checkIn = app(BookingCheckInService::class)->createForBooking($booking);
+
+        Livewire::actingAs($listing['host'])
+            ->test(HostCheckInDetailsSheet::class, ['booking' => $booking])
+            ->set('actualArrivalTime', '16:10')
+            ->set('metByName', 'Point Ten Host')
+            ->set('keysHandedOver', true)
+            ->set('doorCodeShared', true)
+            ->set('roomShown', true)
+            ->set('sleepingPlaceShown', true)
+            ->set('rulesExplained', true)
+            ->set('beddingGiven', true)
+            ->set('towelGiven', true)
+            ->set('lockerGiven', true)
+            ->call('saveChecklist')
+            ->assertHasNoErrors();
+
+        $checkIn->refresh();
+
+        $this->assertSame('2026-06-21 16:10:00', $checkIn->actual_arrival_at?->format('Y-m-d H:i:s'));
+        $this->assertSame('Point Ten Host', $checkIn->met_by_name);
+        $this->assertTrue($checkIn->keys_handed_over);
+        $this->assertTrue($checkIn->door_code_shared);
+        $this->assertTrue($checkIn->door_code_provided);
+        $this->assertTrue($checkIn->room_shown);
+        $this->assertTrue($checkIn->sleeping_place_shown);
+        $this->assertTrue($checkIn->rules_explained);
+        $this->assertTrue($checkIn->bedding_given);
+        $this->assertTrue($checkIn->towel_given);
+        $this->assertTrue($checkIn->locker_given);
+        $this->assertDatabaseHas('booking_check_in_steps', [
+            'booking_check_in_id' => $checkIn->id,
+            'step_key' => 'rules_explained',
+            'status' => 'completed',
+        ]);
     }
 
     public function test_required_check_in_livewire_components_render_in_english_and_russian(): void

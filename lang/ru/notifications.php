@@ -459,6 +459,8 @@ return [
         'check_in_today' => 'Сегодня заезд.',
         'check_in_instruction_available' => 'Инструкция по заселению доступна.',
         'guest_arrived' => 'Гость отметил, что приехал.',
+        'guest_confirmed_check_in' => 'Гость подтвердил заселение.',
+        'host_confirmed_check_in' => 'Хозяин подтвердил заселение.',
         'check_in_problem' => 'Проблема с заселением.',
         'host_unresponsive_reported' => 'Гость сообщил, что хозяин не отвечает.',
         'checkout_soon' => 'Скоро выезд.',

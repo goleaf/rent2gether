@@ -35,7 +35,7 @@ class NotificationPrivacyService
             'category' => $notification->notification_category,
             'priority' => $notification->priority,
             'action_type' => $notification->action_type,
-            'action_url' => $this->canAct($user, $notification) ? $notification->action_url : null,
+            'action_url' => $this->canAct($user, $notification) ? $notification->safe_action_url : null,
             'payload' => $this->hideSensitivePayload($notification),
         ];
     }

@@ -60,7 +60,7 @@
                     </flux:heading>
                     <div class="flex flex-wrap gap-2">
                         @foreach($result['unavailable_dates'] as $date)
-                            <flux:badge size="sm" icon="calendar-days">{{ \Carbon\CarbonImmutable::parse($date)->translatedFormat('d M') }}</flux:badge>
+                            <flux:badge size="sm" icon="calendar-days">{{ $date['label'] }}</flux:badge>
                         @endforeach
                     </div>
                 </div>
@@ -77,11 +77,7 @@
                     <div class="space-y-2">
                         @foreach($result['nearest_ranges'] as $range)
                             <div class="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
-                                {{ __('availability.checker.range_label', [
-                                    'check_in' => \Carbon\CarbonImmutable::parse($range['check_in'])->translatedFormat('d M'),
-                                    'check_out' => \Carbon\CarbonImmutable::parse($range['check_out'])->translatedFormat('d M'),
-                                    'nights' => $range['nights'],
-                                ]) }}
+                                {{ $range['label'] }}
                             </div>
                         @endforeach
                     </div>

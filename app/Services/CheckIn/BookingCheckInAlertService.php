@@ -31,12 +31,21 @@ class BookingCheckInAlertService
             $this->notifyHost($alert);
         }
 
+        if ($alertType === 'support_attention_required') {
+            $this->notifySupport($alert);
+        }
+
         return $alert->refresh();
     }
 
     public function notifyHost(BookingCheckInAlert $alert): void
     {
         $alert->forceFill(['status' => 'notified_host'])->save();
+    }
+
+    public function notifySupport(BookingCheckInAlert $alert): void
+    {
+        $alert->forceFill(['status' => 'notified_support'])->save();
     }
 
     public function resolveAlert(User $host, BookingCheckInAlert $alert): BookingCheckInAlert

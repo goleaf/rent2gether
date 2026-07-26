@@ -36,6 +36,13 @@ class DemoSeederTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake('public');
+    }
+
     public function test_database_seeder_creates_a_marketplace_demo_dataset_with_bulk_coverage(): void
     {
         $this->seed(DatabaseSeeder::class);

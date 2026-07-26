@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\AvailabilityStatus;
 use App\Enums\BookingStatus;
 use App\Livewire\Bookings\Dates\DateSelectionPanel;
 use App\Livewire\Bookings\Quotes\BookingQuoteSummary;
+use App\Models\AvailabilityDay;
 use App\Models\BookingQuote;
 use App\Models\Property;
 use App\Models\Room;
@@ -12,12 +14,15 @@ use App\Models\SleepingPlace;
 use App\Models\SleepingPlaceBookingDateLock;
 use App\Models\SleepingPlaceCalendarBlock;
 use App\Models\User;
+use App\Services\Availability\AvailabilityService;
+use App\Services\Bookings\BookingDateSelectionService;
 use App\Services\Bookings\BookingDateValidationService;
 use App\Services\Bookings\BookingPriceQuoteService;
 use App\Services\Bookings\BookingQuoteConversionService;
 use App\Services\Bookings\StayLengthCalculatorService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -141,6 +146,107 @@ class BookingDatesAndQuotesFeatureTest extends TestCase
         $this->assertContains('check_in_weekday_not_allowed', $results);
         $this->assertContains('check_out_weekday_not_allowed', $results);
         $this->assertContains('guests_count_too_high', $results);
+    }
+
+    public function test_check_in_calendar_returns_bounds_reasons_and_alternative_places(): void
+    {
+        $guest = User::factory()->create();
+        $host = User::factory()->host()->create();
+        $place = $this->sleepingPlace(host: $host);
+
+        AvailabilityDay::factory()->for($place)->create([
+            'date' => '2026-07-12',
+            'status' => AvailabilityStatus::Repair,
+        ]);
+
+        $neighborRoom = Room::factory()->for($place->property)->create(['user_id' => $host->id]);
+        SleepingPlace::factory()->for($place->property)->for($neighborRoom)->create([
+            'user_id' => $host->id,
+            'place_type' => $place->place_type,
+            'base_price' => 22,
+            'base_price_per_night' => 22,
+        ]);
+
+        $otherProperty = Property::factory()->create(['host_user_id' => $host->id]);
+        $otherRoom = Room::factory()->for($otherProperty)->create(['user_id' => $host->id]);
+        SleepingPlace::factory()->for($otherProperty)->for($otherRoom)->create([
+            'user_id' => $host->id,
+            'place_type' => $place->place_type,
+            'base_price' => 24,
+            'base_price_per_night' => 24,
+        ]);
+
+        $calendar = app(BookingDateSelectionService::class)
+            ->checkoutCalendar($guest, $place, '2026-07-10', 5);
+
+        $this->assertSame('2026-07-11', $calendar['earliest_checkout_date']);
+        $this->assertSame('2026-07-12', $calendar['latest_checkout_date']);
+        $this->assertSame(['2026-07-11', '2026-07-12'], collect($calendar['available_checkout_dates'])->pluck('check_out')->all());
+
+        $blockedCheckout = collect($calendar['unavailable_checkout_dates'])->firstWhere('check_out', '2026-07-13');
+
+        $this->assertIsArray($blockedCheckout);
+        $this->assertContains('repair', $blockedCheckout['reasons']);
+        $this->assertContains('booking_dates.validation.sleeping_place_repair', $blockedCheckout['message_keys']);
+        $this->assertNotEmpty($calendar['nearest_available_ranges']);
+        $this->assertNotEmpty($calendar['neighbor_room_alternatives']);
+        $this->assertNotEmpty($calendar['same_host_alternatives']);
+        $this->assertNotEmpty($calendar['similar_sleeping_places']);
+    }
+
+    public function test_checkout_calendar_uses_place_host_id_without_loading_host_model(): void
+    {
+        $guest = User::factory()->create();
+        $host = User::factory()->host()->create();
+        $place = $this->sleepingPlace(host: $host);
+        $otherProperty = Property::factory()->create(['host_user_id' => $host->id]);
+        $otherRoom = Room::factory()->for($otherProperty)->create(['user_id' => $host->id]);
+        SleepingPlace::factory()->for($otherProperty)->for($otherRoom)->create([
+            'user_id' => $host->id,
+            'place_type' => $place->place_type,
+            'base_price' => 24,
+            'base_price_per_night' => 24,
+        ]);
+
+        $userLookups = 0;
+        DB::listen(static function ($query) use (&$userLookups): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select') && str_contains($sql, 'from "users"')) {
+                $userLookups++;
+            }
+        });
+
+        $calendar = app(BookingDateSelectionService::class)
+            ->checkoutCalendar($guest, $place, '2026-07-10', 5);
+
+        $this->assertNotEmpty($calendar['same_host_alternatives']);
+        $this->assertSame(0, $userLookups, 'Checkout calendar already has the host id on sleeping_places and should not load the host model for same-host alternatives.');
+    }
+
+    public function test_checkout_candidate_availability_prefetches_date_range_once(): void
+    {
+        $place = $this->sleepingPlace();
+
+        AvailabilityDay::factory()->for($place)->create([
+            'date' => '2026-07-12',
+            'status' => AvailabilityStatus::Repair,
+            'min_nights_override' => 3,
+        ]);
+
+        $queries = [];
+        DB::listen(function ($query) use (&$queries): void {
+            $queries[] = $query->sql;
+        });
+
+        $candidates = app(AvailabilityService::class)
+            ->checkoutCandidateAvailability($place, '2026-07-10', 30);
+
+        $this->assertCount(30, $candidates);
+        $this->assertTrue($candidates->firstWhere('check_out', '2026-07-11')['available']);
+        $this->assertContains('repair', $candidates->firstWhere('check_out', '2026-07-13')['reasons']);
+        $this->assertSame(3, $candidates->firstWhere('check_out', '2026-07-13')['minimum_nights_override']);
+        $this->assertLessThanOrEqual(12, count($queries));
     }
 
     public function test_expired_quote_cannot_convert_and_valid_quote_converts_with_locks_and_snapshots(): void

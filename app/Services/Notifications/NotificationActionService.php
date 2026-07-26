@@ -63,6 +63,10 @@ class NotificationActionService
 
     public function getActionUrl(Notification $notification): ?string
     {
-        return $notification->expired_at ? null : $notification->action_url;
+        if ($notification->expired_at || in_array($notification->status, ['expired', 'cancelled', 'archived'], true)) {
+            return null;
+        }
+
+        return $notification->safe_action_url;
     }
 }

@@ -10,6 +10,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -22,9 +23,6 @@ class ExtendStay extends Component
 
     public string $guestMessage = '';
 
-    /** @var array<string, mixed>|null */
-    public ?array $preview = null;
-
     public ?int $extensionId = null;
 
     public function mount(Booking $booking): void
@@ -33,7 +31,7 @@ class ExtendStay extends Component
 
         $this->bookingId = $booking->id;
 
-        $extension = $this->activeExtension();
+        $extension = $this->activeExtension;
 
         if ($extension) {
             $this->extensionId = $extension->id;
@@ -41,14 +39,12 @@ class ExtendStay extends Component
                 ?: $extension->new_check_out?->toDateString()
                 ?: '';
             $this->guestMessage = $extension->guest_message ?: '';
-            $this->preview = $this->previewFromExtension($extension);
 
             return;
         }
 
         $currentCheckout = CarbonImmutable::parse($booking->check_out_date ?: $booking->check_out)->startOfDay();
         $this->requestedNewCheckout = $currentCheckout->addDay()->toDateString();
-        $this->refreshPreview();
     }
 
     public function updatedRequestedNewCheckout(): void
@@ -59,23 +55,12 @@ class ExtendStay extends Component
     public function refreshPreview(): void
     {
         $this->resetErrorBag('requestedNewCheckout');
-        $this->preview = null;
 
         if ($this->requestedNewCheckout === '') {
             return;
         }
 
-        try {
-            $this->preview = app(ExtensionService::class)->preview(
-                auth()->user(),
-                $this->booking(),
-                $this->requestedNewCheckout,
-            );
-        } catch (ValidationException $exception) {
-            $this->copyValidationErrors($exception);
-        } catch (AuthorizationException) {
-            abort(403);
-        }
+        $this->previewForView();
     }
 
     public function submit(): void
@@ -85,7 +70,7 @@ class ExtendStay extends Component
         try {
             $extension = app(ExtensionService::class)->request(
                 auth()->user(),
-                $this->booking(),
+                $this->booking,
                 $this->requestedNewCheckout,
                 $this->blankToNull($this->guestMessage),
             );
@@ -98,7 +83,7 @@ class ExtendStay extends Component
         }
 
         $this->extensionId = $extension->id;
-        $this->preview = $this->previewFromExtension($extension);
+        unset($this->activeExtension);
 
         session()->flash('success', $extension->status === BookingExtensionStatus::AwaitingPayment
             ? __('notifications.flash.extension_ready_for_payment')
@@ -107,7 +92,7 @@ class ExtendStay extends Component
 
     public function payExtension(): void
     {
-        $extension = $this->activeExtension();
+        $extension = $this->activeExtension;
 
         if (! $extension) {
             $this->addError('extension', __('booking.extension.errors.status_changed'));
@@ -126,7 +111,8 @@ class ExtendStay extends Component
         }
 
         $this->extensionId = $extension->id;
-        $this->preview = $this->previewFromExtension($extension);
+        unset($this->activeExtension);
+        unset($this->booking);
 
         session()->flash('success', __('notifications.flash.extension_payment_recorded'));
 
@@ -138,7 +124,7 @@ class ExtendStay extends Component
 
     public function cancelExtension(): void
     {
-        $extension = $this->activeExtension();
+        $extension = $this->activeExtension;
 
         if (! $extension) {
             $this->addError('extension', __('booking.extension.errors.status_changed'));
@@ -157,21 +143,24 @@ class ExtendStay extends Component
         }
 
         $this->extensionId = null;
-        $this->preview = null;
+        unset($this->activeExtension);
+
         session()->flash('success', __('notifications.flash.extension_cancelled'));
         $this->refreshPreview();
     }
 
     public function render(): View
     {
-        $booking = $this->booking();
-        $extension = $this->activeExtension();
+        $booking = $this->booking;
+        $extension = $this->activeExtension;
+        $preview = $this->previewForView();
 
         return view('livewire.extensions.extend-stay', [
             'booking' => $booking,
             'extension' => $extension,
+            'preview' => $preview,
             'placeTitle' => $this->placeTitle($booking),
-            'statusValue' => $this->statusValue($extension),
+            'statusValue' => $this->statusValue($extension, $preview),
             'canUseDemoPayment' => app()->environment(['local', 'testing']),
         ])->layout('layouts.app', [
             'title' => __('booking.extension.title'),
@@ -188,13 +177,13 @@ class ExtendStay extends Component
             ?: __('booking.bed');
     }
 
-    private function statusValue(?BookingExtension $extension): ?string
+    private function statusValue(?BookingExtension $extension, ?array $preview): ?string
     {
         if ($extension?->status instanceof BookingExtensionStatus) {
             return $extension->status->value;
         }
 
-        return $extension?->status ?: ($this->preview['next_status'] ?? null);
+        return $extension?->status ?: ($preview['next_status'] ?? null);
     }
 
     /**
@@ -218,7 +207,8 @@ class ExtendStay extends Component
         return is_array($attributes) ? $attributes : [];
     }
 
-    private function booking(): Booking
+    #[Computed]
+    public function booking(): Booking
     {
         return Booking::query()
             ->select([
@@ -267,9 +257,27 @@ class ExtendStay extends Component
             ->findOrFail($this->bookingId);
     }
 
-    private function activeExtension(): ?BookingExtension
+    #[Computed]
+    public function activeExtension(): ?BookingExtension
     {
         $query = BookingExtension::query()
+            ->select([
+                'id',
+                'booking_id',
+                'current_checkout_date',
+                'requested_new_checkout_date',
+                'new_check_out',
+                'additional_nights',
+                'additional_amount',
+                'discount_amount',
+                'total_extra',
+                'new_total',
+                'currency',
+                'payment_required',
+                'requires_host_approval',
+                'guest_message',
+                'status',
+            ])
             ->where('booking_id', $this->bookingId ?? 0)
             ->whereIn('status', [
                 BookingExtensionStatus::AwaitingHostApproval->value,
@@ -286,6 +294,36 @@ class ExtendStay extends Component
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    private function previewForView(): ?array
+    {
+        if ($this->requestedNewCheckout === '') {
+            return null;
+        }
+
+        $extension = $this->activeExtension;
+
+        if ($extension && $this->requestedNewCheckout === $this->extensionCheckoutDate($extension)) {
+            return $this->previewFromExtension($extension);
+        }
+
+        try {
+            return app(ExtensionService::class)->preview(
+                auth()->user(),
+                $this->booking,
+                $this->requestedNewCheckout,
+            );
+        } catch (ValidationException $exception) {
+            $this->copyValidationErrors($exception);
+
+            return null;
+        } catch (AuthorizationException) {
+            abort(403);
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function previewFromExtension(BookingExtension $extension): array
@@ -299,13 +337,19 @@ class ExtendStay extends Component
             'service_fee_amount' => round((float) $extension->total_extra - max(0.0, (float) $extension->additional_amount - (float) $extension->discount_amount), 2),
             'total_extra' => (float) $extension->total_extra,
             'new_total' => (float) $extension->new_total,
-            'currency' => $extension->booking?->currency ?: 'EUR',
+            'currency' => $extension->currency ?: 'EUR',
             'payment_required' => (bool) $extension->payment_required,
             'requires_host_approval' => (bool) $extension->requires_host_approval,
             'next_status' => $extension->status instanceof BookingExtensionStatus
                 ? $extension->status->value
                 : (string) $extension->status,
         ];
+    }
+
+    private function extensionCheckoutDate(BookingExtension $extension): ?string
+    {
+        return $extension->requested_new_checkout_date?->toDateString()
+            ?: $extension->new_check_out?->toDateString();
     }
 
     private function copyValidationErrors(ValidationException $exception): void

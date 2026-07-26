@@ -18,6 +18,7 @@ use App\Livewire\Host\SleepingPlaces\SleepingPlacePhysicalStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlacePositionStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlacePricingStep;
 use App\Livewire\Host\SleepingPlaces\SleepingPlaceStorageStep;
+use App\Livewire\Listings\Detail\SleepingPlaceInfoSection;
 use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Room;
@@ -156,6 +157,21 @@ class ExtendedSleepingPlaceFieldsTest extends TestCase
         $this->assertStringContainsString(__('sleeping_place.warnings.near_door'), $encoded);
         $this->assertStringNotContainsString('Host internal lower bunk', $encoded);
         $this->assertStringNotContainsString('Private host condition note', $encoded);
+    }
+
+    public function test_sleeping_place_detail_sections_keep_profile_summary_out_of_public_state(): void
+    {
+        [$place, $guest] = $this->placeWithDetails();
+
+        $component = Livewire::actingAs($guest)
+            ->test(SleepingPlaceInfoSection::class, ['sleepingPlace' => $place])
+            ->assertSee('Lower bunk with curtain');
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('sleepingPlaceId', $encodedSnapshot);
+        $this->assertStringNotContainsString('profile', $encodedSnapshot);
+        $this->assertStringNotContainsString('A lower bunk with curtain, lamp, socket, and locker.', $encodedSnapshot);
     }
 
     public function test_host_extended_sleeping_place_steps_update_data_and_block_other_hosts(): void

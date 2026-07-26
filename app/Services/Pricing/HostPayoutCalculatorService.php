@@ -22,6 +22,11 @@ class HostPayoutCalculatorService
         return $this->money($hostBase - $this->calculateHostServiceFee($quote));
     }
 
+    public function calculateHostPayoutFromAmounts(BookingQuote $quote, float $hostBase, float $hostServiceFeeBase): float
+    {
+        return $this->money($hostBase - $this->serviceFees->calculateHostServiceFeeForBase($quote, $hostServiceFeeBase));
+    }
+
     public function calculateHostPayoutDate(BookingQuote $quote): Carbon
     {
         return Carbon::instance($quote->check_out_date)->addDay()->setTime(12, 0);

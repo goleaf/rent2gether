@@ -309,6 +309,7 @@ use App\Models\SleepingPlacePhysicalDetail;
 use App\Models\SleepingPlacePositionDetail;
 use App\Models\SleepingPlacePricingSetting;
 use App\Models\SleepingPlaceRatingSnapshot;
+use App\Models\SleepingPlaceRule;
 use App\Models\SleepingPlaceStorageDetail;
 use App\Models\SleepingPlaceTemplate;
 use App\Models\SleepingPlaceTranslation;
@@ -799,6 +800,16 @@ class BulkMarketplaceSeeder extends Seeder
         $roomIds = array_column($roomRows, 'id');
         $sleepingPlaceRows = $this->sleepingPlaceRows();
         $sleepingPlaceIds = array_column($sleepingPlaceRows, 'id');
+        $ruleRows = Rule::query()
+            ->select(['id', 'slug'])
+            ->orderBy('id')
+            ->limit(self::TARGET_COUNT)
+            ->get()
+            ->map(fn (Rule $rule): array => [
+                'id' => (int) $rule->id,
+                'slug' => (string) $rule->slug,
+            ])
+            ->all();
 
         $this->seedMissingOwnedRows(
             PropertyAddress::class,
@@ -890,6 +901,21 @@ class BulkMarketplaceSeeder extends Seeder
                 fn (int $sleepingPlaceId): Model => $modelClass::factory()->create(['sleeping_place_id' => $sleepingPlaceId]),
             );
         }
+
+        $this->seedFactoryRows(
+            SleepingPlaceRule::class,
+            function (int $index) use ($sleepingPlaceIds, $ruleRows): array {
+                $rule = $this->pick($ruleRows, $index);
+
+                return [
+                    'sleeping_place_id' => $this->pick($sleepingPlaceIds, $index),
+                    'rule_id' => $rule['id'],
+                    'rule_key' => $rule['slug'],
+                    'sort_order' => $index % 20,
+                    'status' => 'active',
+                ];
+            },
+        );
 
         $this->seedSleepingPlaceCalendarDays($sleepingPlaceIds);
 

@@ -73,6 +73,8 @@ class NotificationTemplateService
             'check_in_today' => ['notification_category' => 'check_in', 'default_priority' => 'urgent', 'default_action_type' => 'open_check_in', 'is_critical' => false],
             'check_in_instruction_available' => ['notification_category' => 'check_in', 'default_priority' => 'high', 'default_action_type' => 'open_check_in', 'is_critical' => false],
             'guest_arrived' => ['notification_category' => 'check_in', 'default_priority' => 'urgent', 'default_action_type' => 'open_check_in', 'is_critical' => false],
+            'guest_confirmed_check_in' => ['notification_category' => 'check_in', 'default_priority' => 'high', 'default_action_type' => 'open_check_in', 'is_critical' => false],
+            'host_confirmed_check_in' => ['notification_category' => 'check_in', 'default_priority' => 'high', 'default_action_type' => 'open_check_in', 'is_critical' => false],
             'check_in_problem' => ['notification_category' => 'check_in', 'default_priority' => 'critical', 'default_action_type' => 'open_check_in', 'is_critical' => true],
             'host_unresponsive_reported' => ['notification_category' => 'host_unresponsive', 'default_priority' => 'critical', 'default_action_type' => 'open_host_unresponsive', 'is_critical' => true],
             'checkout_soon' => ['notification_category' => 'check_out', 'default_priority' => 'high', 'default_action_type' => 'open_check_out', 'is_critical' => false],

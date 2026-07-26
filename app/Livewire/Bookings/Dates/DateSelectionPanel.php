@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Bookings\Dates;
 
-use App\Models\Booking;
 use App\Models\BookingQuote;
 use App\Models\BookingRequest;
 use App\Models\SleepingPlace;
@@ -14,6 +13,7 @@ use App\Services\Bookings\BookingQuotePrivacyService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Number;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -46,9 +46,6 @@ class DateSelectionPanel extends Component
 
     public ?int $quoteId = null;
 
-    /** @var list<array{check_out:string,nights:int,chargeable_days:int,calendar_presence_days:int}> */
-    public array $availableCheckoutDates = [];
-
     public function mount(
         int|SleepingPlace $sleepingPlace,
         string $checkInDate = '',
@@ -69,17 +66,12 @@ class DateSelectionPanel extends Component
 
             return;
         }
-
-        if ($this->checkInDate !== '') {
-            $this->refreshAvailableCheckoutDates();
-        }
     }
 
     public function updatedCheckInDate(): void
     {
         $this->checkOutDate = '';
         $this->quoteId = null;
-        $this->refreshAvailableCheckoutDates();
     }
 
     public function updatedCheckOutDate(): void
@@ -126,12 +118,9 @@ class DateSelectionPanel extends Component
 
         if ($this->checkInDate === '') {
             $this->quoteId = null;
-            $this->availableCheckoutDates = [];
 
             return;
         }
-
-        $this->refreshAvailableCheckoutDates();
 
         if ($this->checkOutDate === '') {
             $this->quoteId = null;
@@ -150,7 +139,7 @@ class DateSelectionPanel extends Component
         try {
             $quote = $this->quoteId
                 ? $dates->updateQuotePreview($this->quote(), $this->quotePayload())
-                : $dates->createQuotePreview($guest, $this->sleepingPlace(), $this->quotePayload());
+                : $dates->createQuotePreview($guest, $this->sleepingPlace, $this->quotePayload());
 
             $this->quoteId = $quote->id;
         } catch (ValidationException $exception) {
@@ -217,9 +206,12 @@ class DateSelectionPanel extends Component
         $privacy = app(BookingQuotePrivacyService::class);
         $quote = $this->quoteId ? $this->quote() : null;
         $guest = auth()->user();
+        $checkoutCalendar = $this->checkoutCalendar();
 
         return view('livewire.bookings.dates.date-selection-panel', [
             'quote' => $quote,
+            'checkoutCalendar' => $checkoutCalendar,
+            'availableCheckoutDates' => $checkoutCalendar['available_checkout_dates'],
             'quoteSummary' => $quote instanceof BookingQuote && $guest instanceof User
                 ? $privacy->filterForGuest($guest, $quote)
                 : null,
@@ -234,27 +226,60 @@ class DateSelectionPanel extends Component
         return Number::currency((float) $amount, $currency, app()->getLocale());
     }
 
-    private function refreshAvailableCheckoutDates(): void
+    /**
+     * @return array{
+     *     available_checkout_dates:list<array{check_out:string,nights:int,chargeable_days:int,calendar_presence_days:int}>,
+     *     unavailable_checkout_dates:list<array{check_out:string,nights:int,reasons:list<string>,message_keys:list<string>}>,
+     *     earliest_checkout_date:?string,
+     *     latest_checkout_date:?string,
+     *     min_checkout_date:string|null,
+     *     max_checkout_date:string|null,
+     *     nearest_available_ranges:list<array{check_in:string,check_out:string,nights:int}>,
+     *     similar_sleeping_places:list<array<string,mixed>>,
+     *     same_host_alternatives:list<array<string,mixed>>,
+     *     neighbor_room_alternatives:list<array<string,mixed>>
+     * }
+     */
+    private function checkoutCalendar(): array
     {
-        $dates = app(BookingDateSelectionService::class);
-
-        if ($this->checkInDate === '') {
-            $this->availableCheckoutDates = [];
-
-            return;
-        }
-
         $guest = auth()->user();
 
-        if (! $guest instanceof User) {
-            $this->availableCheckoutDates = [];
-
-            return;
+        if (! $guest instanceof User || $this->checkInDate === '') {
+            return $this->emptyCheckoutCalendar();
         }
 
-        $this->availableCheckoutDates = $dates
-            ->availableCheckoutDates($guest, $this->sleepingPlace(), $this->checkInDate)
-            ->all();
+        return app(BookingDateSelectionService::class)
+            ->checkoutCalendar($guest, $this->sleepingPlace, $this->checkInDate);
+    }
+
+    /**
+     * @return array{
+     *     available_checkout_dates:list<array{check_out:string,nights:int,chargeable_days:int,calendar_presence_days:int}>,
+     *     unavailable_checkout_dates:list<array{check_out:string,nights:int,reasons:list<string>,message_keys:list<string>}>,
+     *     earliest_checkout_date:?string,
+     *     latest_checkout_date:?string,
+     *     min_checkout_date:string|null,
+     *     max_checkout_date:string|null,
+     *     nearest_available_ranges:list<array{check_in:string,check_out:string,nights:int}>,
+     *     similar_sleeping_places:list<array<string,mixed>>,
+     *     same_host_alternatives:list<array<string,mixed>>,
+     *     neighbor_room_alternatives:list<array<string,mixed>>
+     * }
+     */
+    private function emptyCheckoutCalendar(): array
+    {
+        return [
+            'available_checkout_dates' => [],
+            'unavailable_checkout_dates' => [],
+            'earliest_checkout_date' => null,
+            'latest_checkout_date' => null,
+            'min_checkout_date' => null,
+            'max_checkout_date' => null,
+            'nearest_available_ranges' => [],
+            'similar_sleeping_places' => [],
+            'same_host_alternatives' => [],
+            'neighbor_room_alternatives' => [],
+        ];
     }
 
     /**
@@ -278,7 +303,8 @@ class DateSelectionPanel extends Component
         ];
     }
 
-    private function sleepingPlace(): SleepingPlace
+    #[Computed]
+    public function sleepingPlace(): SleepingPlace
     {
         return SleepingPlace::query()
             ->select([
@@ -289,6 +315,7 @@ class DateSelectionPanel extends Component
                 'status',
                 'title',
                 'display_name',
+                'place_type',
                 'base_price',
                 'base_price_per_night',
                 'weekly_price',

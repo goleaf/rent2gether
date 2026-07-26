@@ -4,18 +4,26 @@ namespace App\Livewire\Listings\Detail\Concerns;
 
 use App\Models\SleepingPlace;
 use App\Services\SleepingPlaces\SleepingPlaceGuestSummaryService;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 
 trait LoadsSleepingPlaceProfileSection
 {
+    #[Locked]
     public int $sleepingPlaceId;
-
-    /** @var array<string, mixed> */
-    public array $profile = [];
 
     protected function mountSleepingPlaceSection(int|SleepingPlace $sleepingPlace): void
     {
         $this->sleepingPlaceId = $sleepingPlace instanceof SleepingPlace ? $sleepingPlace->id : $sleepingPlace;
-        $this->profile = app(SleepingPlaceGuestSummaryService::class)->build($this->place(), auth()->user());
+    }
+
+    /**
+     * @return array{title:string,badges:list<string>,sections:list<array{key:string,title:string,open:bool,items:list<array{label:string,value:string}>,warnings:list<string>}>}
+     */
+    #[Computed]
+    public function profile(): array
+    {
+        return app(SleepingPlaceGuestSummaryService::class)->build($this->place(), auth()->user());
     }
 
     protected function place(): SleepingPlace
