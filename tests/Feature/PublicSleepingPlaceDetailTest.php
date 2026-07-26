@@ -166,21 +166,30 @@ class PublicSleepingPlaceDetailTest extends TestCase
         $this->assertTrue(Schema::hasColumn('property_translations', 'short_description'));
         $this->assertTrue(Schema::hasColumn('room_translations', 'room_description'));
         $this->assertTrue(Schema::hasColumn('sleeping_place_translations', 'sleeping_place_description'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_translations', 'full_description'));
+        $this->assertTrue(Schema::hasColumn('property_translations', 'host_contact_instructions'));
 
         $place = $this->createPlace('Instruction place', 'Место с инструкциями');
 
         $place->property->translations()->where('locale', 'en')->update([
-            'short_description' => 'A calm place with clear house instructions.',
-            'full_description' => 'You will sleep in a lower bunk inside a shared but quiet apartment.',
+            'short_description' => 'Property fallback short description should not win.',
+            'full_description' => 'Property fallback full description should not win.',
             'why_convenient' => 'The bus stop and grocery store are close.',
+            'suitable_for' => 'Suitable for students, workers, and quiet long-stay guests.',
+            'not_suitable_for' => 'Not suitable for loud parties or guests who need a private room.',
+            'main_pros' => 'Property fallback pros should not win.',
+            'important_cons' => 'Property fallback cons should not win.',
+            'what_to_know_beforehand' => 'Property fallback notes should not win.',
             'what_is_included' => 'Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.',
             'what_is_not_included' => 'Laundry powder and personal hygiene items are not included.',
             'what_to_bring' => 'Bring your passport, charger, slippers, and a small locker padlock.',
             'where_to_store_belongings' => 'Keep your suitcase under the lower bunk and valuables in the locker.',
+            'where_to_store_food' => 'Keep dry food in the labeled kitchen box and cold food on one fridge shelf.',
             'kitchen_instructions' => 'Use the kitchen before 22:00 and wash dishes right away.',
             'bathroom_instructions' => 'Keep showers short at night and wipe the floor after use.',
             'laundry_instructions' => 'Wash clothes after 09:00 and dry them on the shared rack.',
             'key_pickup_instructions' => 'Private exact key safe code 1234 near the apartment door.',
+            'night_entry_instructions' => 'Private night entrance code 9999.',
             'host_contact_instructions' => 'Private host phone +370 600 00000.',
             'problem_instructions' => 'Message the host in the app if something feels wrong.',
             'lost_key_instructions' => 'Tell the host in the app if a key is lost.',
@@ -198,36 +207,97 @@ class PublicSleepingPlaceDetailTest extends TestCase
             'who_lives_nearby_text' => 'Only the guest count is shown before booking.',
             'storage_instructions' => 'Use the shelf beside the bed for daily items.',
             'shared_space_instructions' => 'Keep shared paths clear for other guests.',
+            'food_rules_text' => 'Room fallback food rules should not win.',
         ]);
 
         $place->translations()->where('locale', 'en')->update([
+            'short_description' => 'Place-level short description appears first.',
+            'full_description' => 'Full place description explains the sleeping place in detail.',
             'sleeping_place_description' => 'The lower bunk has a lamp, socket, shelf, and locker.',
-            'sleeping_place_pros' => 'Lower bunk, easy access, and calmer corner.',
-            'what_is_included_for_place' => 'Lamp, socket, bedding, towel, and locker are included for this place.',
-            'what_guest_should_bring_for_place' => 'Bring earplugs if you are sensitive to shared-room noise.',
+            'main_pros' => 'Lower bunk, easy access, and calmer corner.',
+            'important_cons' => 'The room is shared, so absolute silence is not guaranteed.',
+            'special_notes' => 'Check quiet hours and storage rules before arrival.',
+            'what_is_included' => 'Lamp, socket, bedding, towel, and locker are included for this place.',
+            'what_guest_should_bring' => 'Bring earplugs if you are sensitive to shared-room noise.',
+            'storage_instructions' => 'Use the personal locker for documents and laptop.',
+        ]);
+
+        $place->translations()->where('locale', 'ru')->update([
+            'short_description' => 'Краткое описание самого спального места.',
         ]);
 
         $this->get(route('places.show', ['locale' => 'en', 'sleepingPlace' => $place]))
             ->assertOk()
+            ->assertSee('data-detail-section="extended-description"', false)
+            ->assertSee('#extended-description')
             ->assertSee(__('listing_detail.sections.description'))
             ->assertSee(__('listing_detail.sections.included'))
             ->assertSee(__('listing_detail.sections.storage'))
+            ->assertSee(__('listing_detail.sections.food_storage'))
             ->assertSee(__('listing_detail.sections.kitchen'))
             ->assertSee(__('listing_detail.sections.bathroom'))
             ->assertSee(__('listing_detail.sections.laundry'))
             ->assertSee(__('listing_detail.sections.keys'))
+            ->assertSee(__('listing_detail.sections.host_contact'))
             ->assertSee(__('listing_detail.sections.problem'))
+            ->assertSee(__('listing_detail.fields.listing_title'))
+            ->assertSee(__('listing_detail.fields.short_description'))
+            ->assertSee(__('listing_detail.fields.full_description'))
+            ->assertSee(__('listing_detail.fields.suitable_for'))
+            ->assertSee(__('listing_detail.fields.not_suitable_for'))
+            ->assertSee(__('listing_detail.fields.pros'))
+            ->assertSee(__('listing_detail.fields.cons'))
+            ->assertSee(__('listing_detail.fields.what_to_know'))
+            ->assertSee(__('listing_detail.fields.what_is_included'))
+            ->assertSee(__('listing_detail.fields.what_is_not_included'))
+            ->assertSee(__('listing_detail.fields.what_to_bring'))
+            ->assertSee(__('listing_detail.fields.food_storage'))
+            ->assertSee(__('listing_detail.fields.kitchen'))
+            ->assertSee(__('listing_detail.fields.bathroom'))
+            ->assertSee(__('listing_detail.fields.laundry'))
+            ->assertSee(__('listing_detail.fields.key_pickup'))
+            ->assertSee(__('listing_detail.fields.night_entry'))
+            ->assertSee(__('listing_detail.fields.host_contact'))
+            ->assertSee(__('listing_detail.fields.problem'))
+            ->assertSee(__('listing_detail.fields.lost_key'))
+            ->assertSee(__('listing_detail.fields.neighbor_conflict'))
+            ->assertSee(__('listing_detail.fields.repair_problem'))
+            ->assertSee('Place-level short description appears first.')
+            ->assertSee('Full place description explains the sleeping place in detail.')
+            ->assertSee('Suitable for students, workers, and quiet long-stay guests.')
+            ->assertSee('Not suitable for loud parties or guests who need a private room.')
+            ->assertSee('Lower bunk, easy access, and calmer corner.')
+            ->assertSee('The room is shared, so absolute silence is not guaranteed.')
+            ->assertSee('Check quiet hours and storage rules before arrival.')
             ->assertSee('Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.')
+            ->assertSee('Lamp, socket, bedding, towel, and locker are included for this place.')
+            ->assertSee('Laundry powder and personal hygiene items are not included.')
             ->assertSee('Bring your passport, charger, slippers, and a small locker padlock.')
+            ->assertSee('Bring earplugs if you are sensitive to shared-room noise.')
+            ->assertSee('Use the personal locker for documents and laptop.')
+            ->assertSee('Keep your suitcase under the lower bunk and valuables in the locker.')
+            ->assertSee('Keep dry food in the labeled kitchen box and cold food on one fridge shelf.')
             ->assertSee('Use the kitchen before 22:00 and wash dishes right away.')
+            ->assertSee('Keep showers short at night and wipe the floor after use.')
+            ->assertSee('Wash clothes after 09:00 and dry them on the shared rack.')
             ->assertSee('Message the host in the app if something feels wrong.')
+            ->assertSee('Tell the host in the app if a key is lost.')
+            ->assertSee('Step away first, then message the host about the conflict.')
+            ->assertSee('Tell the host if something breaks or stops working.')
+            ->assertSee(__('listing_detail.hints.address_after_booking'))
+            ->assertSee(__('listing_detail.hints.contact_after_booking'))
+            ->assertDontSee('Property fallback short description should not win.')
+            ->assertDontSee('Property fallback full description should not win.')
+            ->assertDontSee('Property fallback pros should not win.')
+            ->assertDontSee('Property fallback cons should not win.')
+            ->assertDontSee('Property fallback notes should not win.')
             ->assertDontSee('Private host phone +370 600 00000')
             ->assertDontSee('Private exact key safe code 1234 near the apartment door.')
-            ->assertDontSee(__('listing_detail.sections.food_storage'));
+            ->assertDontSee('Private night entrance code 9999.');
 
         $this->get(route('places.show', ['locale' => 'ru', 'sleepingPlace' => $place]))
             ->assertOk()
-            ->assertSee('Спокойное место с понятными правилами проживания.')
+            ->assertSee('Краткое описание самого спального места.')
             ->assertSee('Wi-Fi, bedding, utilities, and weekly kitchen cleaning are included.');
     }
 

@@ -3,7 +3,7 @@
 ])
 
 @if($sections !== [])
-    <flux:card class="space-y-4">
+    <flux:card id="extended-description" data-detail-section="extended-description" class="space-y-4">
         <div>
             <flux:heading size="lg">
                 <span class="inline-flex min-w-0 items-center gap-2">

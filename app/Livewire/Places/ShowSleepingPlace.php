@@ -751,6 +751,7 @@ class ShowSleepingPlace extends Component
             'sleeping_place' => '#sleeping-place-details',
             'room' => '#room-details',
             'nearby' => '#nearby-occupants',
+            'extended' => '#extended-description',
             'property' => '#property-details',
             'amenities' => '#amenities',
             'rules' => '#rules',

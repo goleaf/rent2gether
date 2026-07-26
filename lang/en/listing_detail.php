@@ -30,6 +30,7 @@ return [
         'repair_problem' => 'What to do if something breaks',
     ],
     'fields' => [
+        'listing_title' => 'Listing title',
         'short_description' => 'Short description',
         'full_description' => 'Full description',
         'sleeping_place_description' => 'Sleeping place',
@@ -45,6 +46,7 @@ return [
         'what_is_not_included' => 'Not included',
         'what_to_bring' => 'Bring with you',
         'bring_for_place' => 'Bring for this place',
+        'sleeping_place_storage' => 'At the sleeping place',
         'belongings_storage' => 'Belongings',
         'room_storage' => 'Room storage',
         'shared_space' => 'Shared space',

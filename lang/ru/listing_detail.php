@@ -30,6 +30,7 @@ return [
         'repair_problem' => 'Что делать при поломке',
     ],
     'fields' => [
+        'listing_title' => 'Название объявления',
         'short_description' => 'Краткое описание',
         'full_description' => 'Полное описание',
         'sleeping_place_description' => 'Спальное место',
@@ -45,6 +46,7 @@ return [
         'what_is_not_included' => 'Не включено',
         'what_to_bring' => 'Взять с собой',
         'bring_for_place' => 'Взять для этого места',
+        'sleeping_place_storage' => 'У спального места',
         'belongings_storage' => 'Вещи',
         'room_storage' => 'Хранение в комнате',
         'shared_space' => 'Общее пространство',

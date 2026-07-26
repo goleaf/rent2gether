@@ -112,6 +112,7 @@ return [
                 'sleeping_place' => 'Спальное место',
                 'room' => 'Комната',
                 'nearby' => 'Кто рядом',
+                'extended' => 'Детали',
                 'property' => 'Объект',
                 'amenities' => 'Удобства',
                 'rules' => 'Правила',

@@ -112,6 +112,7 @@ return [
                 'sleeping_place' => 'Sleeping place',
                 'room' => 'Room',
                 'nearby' => 'Nearby people',
+                'extended' => 'Details',
                 'property' => 'Property',
                 'amenities' => 'Amenities',
                 'rules' => 'Rules',
