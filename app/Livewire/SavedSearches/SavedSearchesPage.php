@@ -6,6 +6,7 @@ use App\Models\SavedSearch;
 use App\Models\User;
 use App\Services\SavedSearches\SavedSearchService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -37,14 +38,33 @@ class SavedSearchesPage extends Component
     #[Computed]
     public function summary(): array
     {
-        $query = SavedSearch::query()->forUser((int) auth()->id());
+        $user = User::query()
+            ->select(['id'])
+            ->withCount([
+                'savedSearches as saved_searches_total_count',
+                'savedSearches as saved_searches_active_count' => fn (Builder $query) => $query->active(),
+                'savedSearches as saved_searches_new_count' => fn (Builder $query) => $query->where('new_matches_count', '>', 0),
+                'savedSearches as saved_searches_price_drops_count' => fn (Builder $query) => $query->where('price_drops_count', '>', 0),
+                'savedSearches as saved_searches_available_again_count' => fn (Builder $query) => $query->where('available_again_count', '>', 0),
+            ])
+            ->find((int) auth()->id());
+
+        if (! $user instanceof User) {
+            return [
+                'total' => 0,
+                'active' => 0,
+                'new' => 0,
+                'price_drops' => 0,
+                'available_again' => 0,
+            ];
+        }
 
         return [
-            'total' => (clone $query)->count(),
-            'active' => (clone $query)->active()->count(),
-            'new' => (clone $query)->where('new_matches_count', '>', 0)->count(),
-            'price_drops' => (clone $query)->where('price_drops_count', '>', 0)->count(),
-            'available_again' => (clone $query)->where('available_again_count', '>', 0)->count(),
+            'total' => (int) $user->saved_searches_total_count,
+            'active' => (int) $user->saved_searches_active_count,
+            'new' => (int) $user->saved_searches_new_count,
+            'price_drops' => (int) $user->saved_searches_price_drops_count,
+            'available_again' => (int) $user->saved_searches_available_again_count,
         ];
     }
 

@@ -10,7 +10,10 @@ use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
+use App\Livewire\SavedSearches\CreateSavedSearchSheet;
+use App\Livewire\SavedSearches\EditSavedSearchSheet;
 use App\Livewire\SavedSearches\SavedSearchesPage;
+use App\Livewire\SavedSearches\SavedSearchNotificationSettings;
 use App\Livewire\SavedSearches\SavedSearchPage;
 use App\Livewire\SavedSearches\SaveSearchButton;
 use App\Models\Amenity;
@@ -30,7 +33,9 @@ use App\Services\SavedSearches\SavedSearchService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -70,10 +75,13 @@ class SavedSearchesFeatureTest extends TestCase
             'guests_count' => 1,
             'budget_max' => 30,
             'currency' => 'EUR',
-            'require_wifi' => true,
-            'require_locker' => true,
+            'room_type' => RoomType::Shared->value,
+            'sleeping_place_type' => SleepingPlaceType::Single->value,
+            'required_amenities' => ['wifi', 'locker', 'workspace'],
+            'excluded_conditions' => ['smoking', 'mixed_room'],
             'only_instant_booking' => true,
             'only_verified_hosts' => true,
+            'notify_price_drops' => false,
             'notification_frequency' => 'daily',
         ]);
 
@@ -82,6 +90,14 @@ class SavedSearchesFeatureTest extends TestCase
         $this->assertSame(7, $search->nights_count);
         $this->assertSame(8, $search->calendar_days_count);
         $this->assertTrue($search->require_wifi);
+        $this->assertTrue($search->require_locker);
+        $this->assertTrue($search->require_workspace);
+        $this->assertTrue($search->avoid_smoking);
+        $this->assertTrue($search->avoid_mixed_room);
+        $this->assertSame([RoomType::Shared->value], $search->room_types_json);
+        $this->assertSame([SleepingPlaceType::Single->value], $search->sleeping_place_types_json);
+        $this->assertSame(['wifi', 'locker', 'workspace'], $search->amenities);
+        $this->assertFalse($search->notify_price_drops);
         $this->assertTrue($search->notify_new_matches);
 
         $service->update($guest, $search, ['title' => 'Updated search', 'budget_max' => 25]);
@@ -89,6 +105,10 @@ class SavedSearchesFeatureTest extends TestCase
         $this->assertSame('Updated search', $search->refresh()->title);
         $this->assertSame('Updated search', $search->name);
         $this->assertSame('25.00', (string) $search->budget_max);
+        $this->assertSame([RoomType::Shared->value], $search->room_types_json);
+        $this->assertSame([SleepingPlaceType::Single->value], $search->sleeping_place_types_json);
+        $this->assertTrue($search->avoid_smoking);
+        $this->assertFalse($search->notify_price_drops);
 
         $service->pause($guest, $search);
         $this->assertSame('paused', $search->refresh()->status);
@@ -283,6 +303,87 @@ class SavedSearchesFeatureTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_create_and_edit_sheets_persist_full_saved_search_filters(): void
+    {
+        $guest = User::factory()->create();
+        $city = $this->city('Vilnius');
+
+        Livewire::actingAs($guest)
+            ->test(CreateSavedSearchSheet::class)
+            ->set('title', 'Full saved search')
+            ->set('description', 'Need a calm weekly stay')
+            ->set('cityQuery', 'Vil')
+            ->call('selectCity', $city->id)
+            ->set('district', 'Old Town')
+            ->set('checkInDate', '2026-07-10')
+            ->set('checkOutDate', '2026-07-17')
+            ->set('budgetMin', '15')
+            ->set('budgetMax', '35')
+            ->set('currency', 'eur')
+            ->set('roomType', RoomType::Shared->value)
+            ->set('sleepingPlaceType', SleepingPlaceType::BunkBottom->value)
+            ->set('requiredAmenities.wifi', true)
+            ->set('requiredAmenities.locker', true)
+            ->set('excludedConditions.smoking', true)
+            ->set('onlyVerifiedHosts', true)
+            ->set('onlyInstantBooking', true)
+            ->set('notifyPriceDrops', false)
+            ->set('notificationFrequency', 'weekly')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertDispatched('saved-search-created');
+
+        $search = SavedSearch::query()->whereBelongsTo($guest, 'user')->firstOrFail();
+
+        $this->assertSame('Full saved search', $search->title);
+        $this->assertSame($city->id, $search->city_id);
+        $this->assertSame('Old Town', $search->district);
+        $this->assertSame(7, $search->nights_count);
+        $this->assertSame('15.00', (string) $search->budget_min);
+        $this->assertSame('35.00', (string) $search->budget_max);
+        $this->assertSame('EUR', $search->currency);
+        $this->assertSame(RoomType::Shared->value, $search->room_type);
+        $this->assertSame(SleepingPlaceType::BunkBottom->value, $search->bed_type);
+        $this->assertTrue($search->require_wifi);
+        $this->assertTrue($search->require_locker);
+        $this->assertTrue($search->avoid_smoking);
+        $this->assertTrue($search->only_verified_hosts);
+        $this->assertTrue($search->only_instant_booking);
+        $this->assertFalse($search->notify_price_drops);
+        $this->assertSame('weekly', $search->notification_frequency);
+
+        Livewire::actingAs($guest)
+            ->test(EditSavedSearchSheet::class, ['savedSearchId' => $search->id])
+            ->set('budgetMin', '40')
+            ->set('budgetMax', '20')
+            ->call('save')
+            ->assertHasErrors(['budgetMax'])
+            ->set('budgetMin', '20')
+            ->set('budgetMax', '40')
+            ->set('roomType', RoomType::Private->value)
+            ->set('sleepingPlaceType', SleepingPlaceType::Single->value)
+            ->set('requiredAmenities.wifi', false)
+            ->set('requiredAmenities.workspace', true)
+            ->set('excludedConditions.smoking', false)
+            ->set('excludedConditions.pets', true)
+            ->set('status', 'paused')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertDispatched('saved-search-updated');
+
+        $search->refresh();
+
+        $this->assertSame('40.00', (string) $search->budget_max);
+        $this->assertSame(RoomType::Private->value, $search->room_type);
+        $this->assertSame(SleepingPlaceType::Single->value, $search->bed_type);
+        $this->assertFalse($search->require_wifi);
+        $this->assertTrue($search->require_workspace);
+        $this->assertFalse($search->avoid_smoking);
+        $this->assertTrue($search->avoid_pets);
+        $this->assertSame('paused', $search->status);
+        $this->assertFalse($search->is_active);
+    }
+
     public function test_saved_search_pages_render_in_english_and_russian(): void
     {
         $guest = User::factory()->create();
@@ -296,6 +397,106 @@ class SavedSearchesFeatureTest extends TestCase
             ->get(route('saved-searches.index', ['locale' => 'ru']))
             ->assertOk()
             ->assertSee(__('saved_searches.title', [], 'ru'));
+    }
+
+    public function test_saved_search_livewire_actions_reject_untrusted_notification_frequency(): void
+    {
+        $guest = User::factory()->create();
+        $city = $this->city('Vilnius');
+        $search = SavedSearch::factory()->for($guest)->for($city)->create([
+            'notification_frequency' => 'daily',
+        ]);
+
+        Livewire::actingAs($guest)
+            ->test(SaveSearchButton::class, [
+                'cityId' => $city->id,
+                'cityName' => 'Vilnius',
+            ])
+            ->set('title', 'Unsafe frequency search')
+            ->set('notificationFrequency', 'every_second')
+            ->call('save')
+            ->assertHasErrors(['notificationFrequency' => 'in']);
+
+        $this->assertDatabaseMissing('saved_searches', [
+            'user_id' => $guest->id,
+            'title' => 'Unsafe frequency search',
+        ]);
+
+        Livewire::actingAs($guest)
+            ->test(SavedSearchNotificationSettings::class, ['savedSearchId' => $search->id])
+            ->set('notificationFrequency', 'every_second')
+            ->call('save')
+            ->assertHasErrors(['notificationFrequency' => 'in']);
+
+        $this->assertSame('daily', $search->refresh()->notification_frequency);
+    }
+
+    public function test_saved_search_summary_uses_one_aggregate_lookup_instead_of_repeated_counts(): void
+    {
+        $guest = User::factory()->create();
+        $notDue = [
+            'notify_new_matches' => false,
+            'notify_price_drops' => false,
+            'notify_available_again' => false,
+            'notify_better_match' => false,
+            'next_check_at' => now()->addDay(),
+        ];
+
+        SavedSearch::factory()->for($guest)->create([
+            ...$notDue,
+            'status' => 'active',
+            'is_active' => true,
+            'new_matches_count' => 2,
+        ]);
+        SavedSearch::factory()->for($guest)->create([
+            ...$notDue,
+            'status' => 'active',
+            'is_active' => true,
+            'price_drops_count' => 1,
+        ]);
+        SavedSearch::factory()->for($guest)->create([
+            ...$notDue,
+            'status' => 'paused',
+            'is_active' => false,
+            'available_again_count' => 1,
+        ]);
+        SavedSearch::factory()->for(User::factory())->create([
+            ...$notDue,
+            'status' => 'active',
+            'is_active' => true,
+            'new_matches_count' => 10,
+        ]);
+
+        $summaryCountQueries = 0;
+        DB::listen(static function ($query) use (&$summaryCountQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select count(*) as "aggregate" from "saved_searches"')) {
+                $summaryCountQueries++;
+            }
+        });
+
+        $component = Livewire::actingAs($guest)
+            ->test(SavedSearchesPage::class)
+            ->assertSee(__('saved_searches.title'));
+
+        $this->assertSame([
+            'total' => 3,
+            'active' => 2,
+            'new' => 1,
+            'price_drops' => 1,
+            'available_again' => 1,
+        ], $component->instance()->summary());
+        $this->assertLessThanOrEqual(1, $summaryCountQueries, 'Saved search summary should avoid five separate count queries on every render.');
+    }
+
+    public function test_saved_search_query_order_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasIndex('saved_searches', 'saved_searches_user_status_active_next_idx'));
+        $this->assertTrue(Schema::hasIndex('saved_search_results', 'ss_results_search_matched_id_idx'));
+        $this->assertTrue(Schema::hasIndex('saved_search_results', 'ss_results_search_new_matched_idx'));
+        $this->assertTrue(Schema::hasIndex('saved_search_results', 'ss_results_search_price_matched_idx'));
+        $this->assertTrue(Schema::hasIndex('saved_search_results', 'ss_results_search_available_matched_idx'));
     }
 
     private function city(string $name): City

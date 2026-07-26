@@ -17,8 +17,13 @@ return [
     'check_out' => 'Check-out date',
     'nights_count' => 'Nights',
     'budget' => 'Budget',
+    'budget_min' => 'Minimum budget',
+    'budget_max' => 'Maximum budget',
+    'currency' => 'Currency',
     'room_type' => 'Room type',
     'sleeping_place_type' => 'Sleeping place type',
+    'any_room_type' => 'Any room type',
+    'any_sleeping_place_type' => 'Any sleeping place type',
     'required_amenities' => 'Required amenities',
     'excluded_conditions' => 'Excluded conditions',
     'verified_hosts_only' => 'Verified hosts only',
@@ -28,6 +33,7 @@ return [
     'notify_available_again' => 'Notify when a place is available again',
     'notify_better_match' => 'Notify about better matches',
     'notification_frequency' => 'Notification frequency',
+    'search_status' => 'Search status',
     'notification_settings' => 'Notification settings',
     'notification_settings_helper' => 'Choose which updates should create in-app notifications.',
     'quiet_hours_enabled' => 'Quiet hours',
@@ -58,7 +64,15 @@ return [
     'never_checked' => 'Not checked yet',
     'result_missing' => 'Sleeping place unavailable',
     'suggested_title_budget' => 'up to :amount :currency',
+    'city_population' => ':count people',
+    'city_empty' => 'No matching city yet. Try another spelling.',
     'last_checked_label' => 'Checked: :time',
+    'placeholders' => [
+        'city' => 'Start typing a city',
+    ],
+    'validation' => [
+        'budget_order' => 'The maximum budget must be greater than or equal to the minimum budget.',
+    ],
     'defaults' => [
         'title' => 'Saved search',
     ],
@@ -88,6 +102,7 @@ return [
         'new_matches' => '{0} No new places|{1} :count new place|[2,*] :count new places',
         'price_drops' => '{0} No price drops|{1} :count price drop|[2,*] :count price drops',
         'available_again' => '{0} None back yet|{1} :count back|[2,*] :count back',
+        'nights' => '{1} :count night|[2,*] :count nights',
     ],
     'empty' => [
         'title' => 'No saved searches yet',
@@ -111,6 +126,18 @@ return [
     'filters' => [
         'wifi' => 'Wi-Fi',
         'locker' => 'Locker',
+    ],
+    'amenities' => [
+        'wifi' => 'Wi-Fi',
+        'kitchen' => 'Kitchen',
+        'washing_machine' => 'Washing machine',
+        'locker' => 'Locker',
+        'workspace' => 'Workspace',
+    ],
+    'excluded' => [
+        'smoking' => 'Smoking allowed',
+        'pets' => 'Pets allowed',
+        'mixed_room' => 'Mixed room',
     ],
     'availability' => [
         'available' => 'Available',

@@ -17,8 +17,13 @@ return [
     'check_out' => 'Дата выезда',
     'nights_count' => 'Ночи',
     'budget' => 'Бюджет',
+    'budget_min' => 'Минимальный бюджет',
+    'budget_max' => 'Максимальный бюджет',
+    'currency' => 'Валюта',
     'room_type' => 'Тип комнаты',
     'sleeping_place_type' => 'Тип спального места',
+    'any_room_type' => 'Любой тип комнаты',
+    'any_sleeping_place_type' => 'Любой тип спального места',
     'required_amenities' => 'Обязательные удобства',
     'excluded_conditions' => 'Запрещённые условия',
     'verified_hosts_only' => 'Только проверенные хозяева',
@@ -28,6 +33,7 @@ return [
     'notify_available_again' => 'Уведомлять, если место снова доступно',
     'notify_better_match' => 'Уведомлять о более подходящих местах',
     'notification_frequency' => 'Частота уведомлений',
+    'search_status' => 'Статус поиска',
     'notification_settings' => 'Настройки уведомлений',
     'notification_settings_helper' => 'Выберите, какие изменения создают уведомления в приложении.',
     'quiet_hours_enabled' => 'Тихие часы',
@@ -58,7 +64,15 @@ return [
     'never_checked' => 'Пока не проверялось',
     'result_missing' => 'Спальное место недоступно',
     'suggested_title_budget' => 'до :amount :currency',
+    'city_population' => ':count жителей',
+    'city_empty' => 'Город пока не найден. Попробуйте другое написание.',
     'last_checked_label' => 'Проверено: :time',
+    'placeholders' => [
+        'city' => 'Начните вводить город',
+    ],
+    'validation' => [
+        'budget_order' => 'Максимальный бюджет должен быть больше или равен минимальному.',
+    ],
     'defaults' => [
         'title' => 'Сохранённый поиск',
     ],
@@ -88,6 +102,7 @@ return [
         'new_matches' => '{0} Новых мест нет|{1} :count новое место|[2,4] :count новых места|[5,*] :count новых мест',
         'price_drops' => '{0} Снижений цены нет|{1} :count снижение цены|[2,4] :count снижения цены|[5,*] :count снижений цены',
         'available_again' => '{0} Пока ничего не вернулось|{1} :count снова доступно|[2,4] :count снова доступны|[5,*] :count снова доступны',
+        'nights' => '{1} :count ночь|[2,4] :count ночи|[5,*] :count ночей',
     ],
     'empty' => [
         'title' => 'Пока нет сохранённых поисков',
@@ -111,6 +126,18 @@ return [
     'filters' => [
         'wifi' => 'Wi‑Fi',
         'locker' => 'Шкафчик',
+    ],
+    'amenities' => [
+        'wifi' => 'Wi‑Fi',
+        'kitchen' => 'Кухня',
+        'washing_machine' => 'Стиральная машина',
+        'locker' => 'Шкафчик',
+        'workspace' => 'Рабочее место',
+    ],
+    'excluded' => [
+        'smoking' => 'Можно курить',
+        'pets' => 'Можно с животными',
+        'mixed_room' => 'Смешанная комната',
     ],
     'availability' => [
         'available' => 'Доступно',

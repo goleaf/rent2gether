@@ -5,7 +5,9 @@ namespace App\Livewire\SavedSearches;
 use App\Models\SavedSearch;
 use App\Models\User;
 use App\Services\SavedSearches\SavedSearchService;
+use App\Support\SavedSearches\SavedSearchFormOptions;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -54,9 +56,21 @@ class SavedSearchNotificationSettings extends Component
         abort_unless($user instanceof User, 403);
 
         $this->validate([
+            'notifyNewMatches' => ['boolean'],
+            'notifyPriceDrops' => ['boolean'],
+            'notifyAvailableAgain' => ['boolean'],
+            'notifyBetterMatch' => ['boolean'],
+            'notificationFrequency' => ['required', Rule::in(SavedSearchFormOptions::notificationFrequencies())],
+            'quietHoursEnabled' => ['boolean'],
             'quietHoursStart' => ['nullable', 'date_format:H:i'],
             'quietHoursEnd' => ['nullable', 'date_format:H:i'],
         ], [], [
+            'notifyNewMatches' => __('saved_searches.notify_new_matches'),
+            'notifyPriceDrops' => __('saved_searches.notify_price_drops'),
+            'notifyAvailableAgain' => __('saved_searches.notify_available_again'),
+            'notifyBetterMatch' => __('saved_searches.notify_better_match'),
+            'notificationFrequency' => __('saved_searches.notification_frequency'),
+            'quietHoursEnabled' => __('saved_searches.quiet_hours_enabled'),
             'quietHoursStart' => __('saved_searches.quiet_hours_start'),
             'quietHoursEnd' => __('saved_searches.quiet_hours_end'),
         ]);

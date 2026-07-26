@@ -4,8 +4,10 @@ namespace App\Livewire\SavedSearches;
 
 use App\Models\User;
 use App\Services\SavedSearches\SavedSearchService;
+use App\Support\SavedSearches\SavedSearchFormOptions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class SaveSearchButton extends Component
@@ -86,8 +88,16 @@ class SaveSearchButton extends Component
 
         $this->validate([
             'title' => ['required', 'string', 'max:160'],
+            'notifyNewMatches' => ['boolean'],
+            'notifyPriceDrops' => ['boolean'],
+            'notifyAvailableAgain' => ['boolean'],
+            'notificationFrequency' => ['required', Rule::in(SavedSearchFormOptions::notificationFrequencies())],
         ], [], [
             'title' => __('saved_searches.search_name'),
+            'notifyNewMatches' => __('saved_searches.notify_new_matches'),
+            'notifyPriceDrops' => __('saved_searches.notify_price_drops'),
+            'notifyAvailableAgain' => __('saved_searches.notify_available_again'),
+            'notificationFrequency' => __('saved_searches.notification_frequency'),
         ]);
 
         $savedSearches->create($user, $this->payload());

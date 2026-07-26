@@ -43,11 +43,35 @@
         </div>
 
         <div class="flex flex-wrap gap-2">
+            @if($this->search->room_type)
+                <flux:badge size="sm" icon="home-modern">{{ __('statuses.room_type.'.$this->search->room_type) }}</flux:badge>
+            @endif
+            @if($this->search->bed_type)
+                <flux:badge size="sm" icon="moon">{{ __('statuses.sleeping_place_type.'.$this->search->bed_type) }}</flux:badge>
+            @endif
             @if($this->search->require_wifi)
                 <flux:badge size="sm" icon="heart">{{ __('saved_searches.filters.wifi') }}</flux:badge>
             @endif
             @if($this->search->require_locker)
                 <flux:badge size="sm" icon="heart">{{ __('saved_searches.filters.locker') }}</flux:badge>
+            @endif
+            @if($this->search->require_kitchen)
+                <flux:badge size="sm" icon="heart">{{ __('saved_searches.amenities.kitchen') }}</flux:badge>
+            @endif
+            @if($this->search->require_washing_machine)
+                <flux:badge size="sm" icon="heart">{{ __('saved_searches.amenities.washing_machine') }}</flux:badge>
+            @endif
+            @if($this->search->require_workspace)
+                <flux:badge size="sm" icon="heart">{{ __('saved_searches.amenities.workspace') }}</flux:badge>
+            @endif
+            @if($this->search->avoid_smoking)
+                <flux:badge size="sm" color="amber" icon="exclamation-triangle">{{ __('saved_searches.excluded.smoking') }}</flux:badge>
+            @endif
+            @if($this->search->avoid_pets)
+                <flux:badge size="sm" color="amber" icon="exclamation-triangle">{{ __('saved_searches.excluded.pets') }}</flux:badge>
+            @endif
+            @if($this->search->avoid_mixed_room)
+                <flux:badge size="sm" color="amber" icon="exclamation-triangle">{{ __('saved_searches.excluded.mixed_room') }}</flux:badge>
             @endif
             @if($this->search->only_instant_booking)
                 <flux:badge size="sm" color="green" icon="check-circle">{{ __('saved_searches.instant_booking_only') }}</flux:badge>
