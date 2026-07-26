@@ -62,7 +62,7 @@ Stores host actions such as marking a hint as completed.
 - `HostListingQualityService`: calculates completion score, missing required fields, recommended fields, critical issues, and publish readiness.
 - `HostPhotoHintService`: detects missing photo coverage.
 - `HostDescriptionHintService`: detects missing listing text.
-- `HostPricingHintService`: detects price position and missing pricing policies.
+- `HostPricingHintService`: detects price position against active same-currency sleeping places in the same district when district data exists, then missing pricing policies.
 - `HostRulesHintService`: detects missing rules.
 - `HostCalendarHintService`: detects missing or weak availability setup.
 - `HostSafetyHintService`: detects missing safety and room clarity.
