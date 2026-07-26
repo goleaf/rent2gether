@@ -6,10 +6,9 @@ use App\Enums\BookingStatus;
 use App\Enums\CancellationPolicy;
 use App\Enums\PaymentStatus;
 use App\Livewire\Bookings\Cancellations\CancellationPreviewCard;
+use App\Livewire\Bookings\Cancellations\GuestCancellationPage;
 use App\Livewire\Host\Cancellations\HostCancellationDetailsSheet;
 use App\Models\Booking;
-use App\Models\BookingCancellation;
-use App\Models\BookingCancellationPreview;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
@@ -304,6 +303,48 @@ class BookingCancellationFlowPointFifteenTest extends TestCase
             ->test(HostCancellationDetailsSheet::class, ['cancellation' => $cancellation])
             ->assertSee(__('cancellations.host_title'))
             ->assertSee(__('cancellations.fields.total_refund'));
+    }
+
+    public function test_host_cancellation_sheet_rejects_cancellation_owned_by_another_host(): void
+    {
+        [, $host] = $this->createPaidBooking();
+        [$otherGuest, , , $otherBooking] = $this->createPaidBooking();
+
+        app(CancellationPolicySnapshotService::class)->createForBooking($otherBooking);
+
+        $preview = app(BookingCancellationPreviewService::class)->createPreview($otherGuest, $otherBooking, [
+            'cancellation_type' => 'guest_fault',
+            'reason_key' => 'changed_plans',
+        ]);
+        $cancellation = app(BookingCancellationService::class)->confirmCancellation($otherGuest, $preview);
+
+        Livewire::actingAs($host)
+            ->test(HostCancellationDetailsSheet::class, ['cancellation' => $cancellation])
+            ->assertForbidden();
+    }
+
+    public function test_guest_cancellation_page_rejects_context_owned_by_another_guest(): void
+    {
+        [$guest] = $this->createPaidBooking();
+        [$otherGuest, , , $otherBooking] = $this->createPaidBooking();
+
+        app(CancellationPolicySnapshotService::class)->createForBooking($otherBooking);
+
+        $preview = app(BookingCancellationPreviewService::class)->createPreview($otherGuest, $otherBooking, [
+            'cancellation_type' => 'guest_fault',
+            'reason_key' => 'changed_plans',
+        ]);
+        $cancellation = app(BookingCancellationService::class)->confirmCancellation($otherGuest, $preview);
+
+        foreach ([
+            ['booking' => $otherBooking],
+            ['preview' => $preview],
+            ['cancellation' => $cancellation],
+        ] as $parameters) {
+            Livewire::actingAs($guest)
+                ->test(GuestCancellationPage::class, $parameters)
+                ->assertForbidden();
+        }
     }
 
     /**
