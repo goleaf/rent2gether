@@ -34,6 +34,10 @@ final readonly class VisibleListingCardsQuery
             ->withCount([
                 'reviews as published_reviews_count' => fn (Builder $query) => $query->visible()->guestToPlace(),
             ])
+            ->withCount([
+                'bookings as guest_hint_bookings_count',
+                'favorites as guest_hint_favorites_count',
+            ])
             ->withAvg([
                 'reviews as published_reviews_rating' => fn (Builder $query) => $query->visible()->guestToPlace(),
             ], 'overall_rating')
@@ -204,9 +208,13 @@ final readonly class VisibleListingCardsQuery
                     'max_guests',
                     'occupied_places_count',
                     'available_places_count',
+                    'free_sleeping_places_count',
+                    'current_guests_count',
+                    'sleeping_places_count',
                     'has_desk',
                     'has_chair',
                     'noise_level',
+                    'can_talk_at_night',
                 ])
                 ->with([
                     'translations' => fn ($translation) => $translation
@@ -236,6 +244,11 @@ final readonly class VisibleListingCardsQuery
                     'title',
                     'current_guests_count',
                     'current_residents_count',
+                    'show_exact_address_before_booking',
+                    'cleanliness_level',
+                    'safety_level',
+                    'emergency_contact_name',
+                    'emergency_contact_phone',
                 ])
                 ->with([
                     'translations' => fn ($translation) => $translation
@@ -281,12 +294,14 @@ final readonly class VisibleListingCardsQuery
             'sleeping_places.has_towel',
             'sleeping_places.has_locker',
             'sleeping_places.has_luggage_space',
+            'sleeping_places.is_top_bunk',
             'sleeping_places.is_accessible',
             'sleeping_places.max_guests',
             'sleeping_places.base_price_per_night',
             'sleeping_places.weekly_price',
             'sleeping_places.monthly_price',
             'sleeping_places.weekend_price',
+            'sleeping_places.holiday_price',
             'sleeping_places.cleaning_fee',
             'sleeping_places.deposit_amount',
             'sleeping_places.currency',
@@ -295,6 +310,8 @@ final readonly class VisibleListingCardsQuery
             'sleeping_places.instant_booking_enabled',
             'sleeping_places.requires_host_approval',
             'sleeping_places.extensions_allowed',
+            'sleeping_places.can_extend',
+            'sleeping_places.sleeping_place_type',
             'sleeping_places.created_at',
         ];
     }

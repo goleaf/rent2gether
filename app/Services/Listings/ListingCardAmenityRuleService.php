@@ -33,6 +33,8 @@ class ListingCardAmenityRuleService
         'pets_by_request',
         'no_guests',
         'late_check_in_allowed',
+        'identity_verification_required',
+        'verified_guest_only',
     ];
 
     public function __construct(private readonly LocalizedModelContentResolver $translations) {}

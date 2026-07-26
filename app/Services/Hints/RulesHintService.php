@@ -7,6 +7,7 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Services\Hints\Concerns\BuildsGuestHints;
+use Illuminate\Support\Collection;
 
 class RulesHintService
 {
@@ -72,8 +73,8 @@ class RulesHintService
 
     private function containsRule(mixed $rules, string $rule): bool
     {
-        return collect(is_array($rules) ? $rules : [])
-            ->map(fn (mixed $item): string => (string) $item)
+        return collect($rules instanceof Collection || is_array($rules) ? $rules : [])
+            ->map(fn (mixed $item): string => (string) (data_get($item, 'slug') ?: data_get($item, 'rule_key') ?: $item))
             ->contains($rule);
     }
 }

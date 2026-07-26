@@ -5,13 +5,20 @@ namespace App\Services\Hints;
 use App\Data\Hints\GuestHintData;
 use App\Data\Hints\HintContext;
 use App\Data\Occupants\DateRange;
+use App\Enums\SleepingPlaceStatus;
 use App\Models\Favorite;
+use App\Models\Property;
 use App\Models\SleepingPlace;
 use App\Services\Hints\Concerns\BuildsGuestHints;
 
 class PriceHintService
 {
     use BuildsGuestHints;
+
+    /**
+     * @var array<int, float|null>
+     */
+    private array $averageBasePriceByCityId = [];
 
     public function isCheaperThanAreaAverage(SleepingPlace $place, HintContext $context): ?GuestHintData
     {
@@ -23,11 +30,7 @@ class PriceHintService
             return null;
         }
 
-        $average = SleepingPlace::query()
-            ->where('id', '!=', $place->id)
-            ->whereNotNull('base_price_per_night')
-            ->whereHas('property', fn ($property) => $property->where('city_id', $cityId))
-            ->avg('base_price_per_night');
+        $average = $this->averageBasePriceForCity((int) $cityId);
 
         if (! $average || $price >= ((float) $average * 0.85)) {
             return null;
@@ -46,11 +49,7 @@ class PriceHintService
             return null;
         }
 
-        $average = SleepingPlace::query()
-            ->where('id', '!=', $place->id)
-            ->whereNotNull('base_price_per_night')
-            ->whereHas('property', fn ($property) => $property->where('city_id', $cityId))
-            ->avg('base_price_per_night');
+        $average = $this->averageBasePriceForCity((int) $cityId);
 
         if (! $average || $price <= ((float) $average * 1.2)) {
             return null;
@@ -67,29 +66,38 @@ class PriceHintService
 
         for ($date = $range->checkIn; $date->lessThan($range->checkOut); $date = $date->addDay()) {
             if ($date->isWeekend()) {
-                return $this->hint('weekend_price_change', 'price', 'info', 'low', 50, detail: true, source: 'price');
+                return $this->hint('weekend_price_change', 'price', 'info', 'medium', 82, card: true, detail: true, source: 'price');
             }
         }
 
         return null;
     }
 
-    public function hasWeeklyDiscount(SleepingPlace $place, int $nights): ?GuestHintData
+    public function hasWeekendPriceDifference(SleepingPlace $place): ?GuestHintData
     {
-        if ($place->weekly_price === null || $nights < 7) {
+        if ($place->weekend_price === null || (float) $place->weekend_price === (float) $place->base_price_per_night) {
             return null;
         }
 
-        return $this->hint('weekly_discount', 'discount', 'discount', 'medium', 84, card: true, source: 'price');
+        return $this->hint('weekend_price_change', 'price', 'info', 'low', 50, card: true, source: 'price');
+    }
+
+    public function hasWeeklyDiscount(SleepingPlace $place, int $nights): ?GuestHintData
+    {
+        if ($place->weekly_price === null || ((int) ($place->max_nights ?? 0) > 0 && (int) $place->max_nights < 7)) {
+            return null;
+        }
+
+        return $this->hint('weekly_discount', 'discount', 'discount', 'medium', $nights >= 7 ? 84 : 48, card: true, source: 'price');
     }
 
     public function hasMonthlyDiscount(SleepingPlace $place, int $nights): ?GuestHintData
     {
-        if ($place->monthly_price === null || $nights < 30) {
+        if ($place->monthly_price === null || ((int) ($place->max_nights ?? 0) > 0 && (int) $place->max_nights < 30)) {
             return null;
         }
 
-        return $this->hint('monthly_discount', 'discount', 'discount', 'medium', 82, card: true, source: 'price');
+        return $this->hint('monthly_discount', 'discount', 'discount', 'medium', $nights >= 30 ? 82 : 47, card: true, source: 'price');
     }
 
     public function hasDeposit(SleepingPlace $place): ?GuestHintData
@@ -136,5 +144,20 @@ class PriceHintService
             favorites: true,
             source: 'favorites',
         );
+    }
+
+    private function averageBasePriceForCity(int $cityId): ?float
+    {
+        if (! array_key_exists($cityId, $this->averageBasePriceByCityId)) {
+            $average = SleepingPlace::query()
+                ->where('status', SleepingPlaceStatus::Active->value)
+                ->whereNotNull('base_price_per_night')
+                ->whereIn('property_id', Property::query()->select('id')->where('city_id', $cityId))
+                ->avg('base_price_per_night');
+
+            $this->averageBasePriceByCityId[$cityId] = $average === null ? null : (float) $average;
+        }
+
+        return $this->averageBasePriceByCityId[$cityId];
     }
 }

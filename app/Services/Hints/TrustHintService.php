@@ -61,7 +61,9 @@ class TrustHintService
 
     public function isOftenBooked(SleepingPlace $place): ?GuestHintData
     {
-        if ($place->bookings()->count() < 5) {
+        $count = (int) ($place->getAttribute('guest_hint_bookings_count') ?? $place->bookings()->count());
+
+        if ($count < 5) {
             return null;
         }
 
@@ -70,7 +72,9 @@ class TrustHintService
 
     public function isOftenFavorited(SleepingPlace $place): ?GuestHintData
     {
-        if ($place->favorites()->count() < 5) {
+        $count = (int) ($place->getAttribute('guest_hint_favorites_count') ?? $place->favorites()->count());
+
+        if ($count < 5) {
             return null;
         }
 

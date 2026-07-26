@@ -14,6 +14,7 @@ final readonly class HintContext
         public string $locale = 'en',
         public int $guestsCount = 1,
         public string $surface = 'card',
+        public bool $includeAreaPriceComparisons = true,
     ) {}
 
     public function hasDates(): bool

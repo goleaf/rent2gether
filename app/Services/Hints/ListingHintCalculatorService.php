@@ -87,12 +87,16 @@ class ListingHintCalculatorService
     /**
      * @return Collection<int, GuestHintData>
      */
-    public function calculateStaticHints(SleepingPlace $place): Collection
+    public function calculateStaticHints(SleepingPlace $place, bool $includeAreaPriceComparisons = true): Collection
     {
         $this->loadPlace($place);
         $host = $this->host($place);
 
         $hints = collect([
+            $includeAreaPriceComparisons ? $this->prices->isCheaperThanAreaAverage($place, new HintContext(locale: app()->getLocale())) : null,
+            $this->prices->hasWeekendPriceDifference($place),
+            $this->prices->hasWeeklyDiscount($place, 0),
+            $this->prices->hasMonthlyDiscount($place, 0),
             $this->trust->hasHighCleanlinessRating($place),
             $this->trust->hasHighSafetyRating($place),
             $this->trust->hasManyReviews($place),
@@ -137,8 +141,8 @@ class ListingHintCalculatorService
             ->find($context->userId) : null;
 
         $hints = collect([
-            $this->prices->isCheaperThanAreaAverage($place, $context),
-            $this->prices->isMoreExpensiveThanSimilar($place, $context),
+            $context->includeAreaPriceComparisons ? $this->prices->isCheaperThanAreaAverage($place, $context) : null,
+            $context->includeAreaPriceComparisons ? $this->prices->isMoreExpensiveThanSimilar($place, $context) : null,
             $this->prices->hasWeeklyDiscount($place, $nights),
             $this->prices->hasMonthlyDiscount($place, $nights),
             $this->prices->hasDeposit($place),

@@ -3,6 +3,7 @@
 namespace App\Services\Listings;
 
 use App\Data\Hints\GuestHintData;
+use App\Data\Hints\HintContext;
 use App\Data\Listings\ListingCardContext;
 use App\Data\Listings\ListingCardData;
 use App\Data\Occupants\DateRange;
@@ -14,6 +15,7 @@ use App\Services\Availability\AvailabilityService;
 use App\Services\Compatibility\CompatibilityCalculatorService;
 use App\Services\Compatibility\CompatibilityService;
 use App\Services\Hints\HintPriorityService;
+use App\Services\Hints\ListingHintCalculatorService;
 use BackedEnum;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
@@ -35,6 +37,7 @@ class ListingCardService
         private readonly AvailabilityService $availability,
         private readonly CompatibilityService $compatibility,
         private readonly CompatibilityCalculatorService $compatibilityCalculator,
+        private readonly ListingHintCalculatorService $hintCalculator,
         private readonly HintPriorityService $hintPriority,
     ) {}
 
@@ -179,19 +182,41 @@ class ListingCardService
      */
     private function cardHints(SleepingPlace $place, ListingCardContext $context): array
     {
-        if (! $place->relationLoaded('listingHintSnapshots')) {
-            return [];
-        }
+        $snapshotHints = $place->relationLoaded('listingHintSnapshots')
+            ? $place->listingHintSnapshots
+                ->toBase()
+                ->map(fn ($snapshot): GuestHintData => GuestHintData::fromSnapshot($snapshot))
+                ->filter(fn (GuestHintData $hint): bool => $hint->showOnCard)
+            : collect();
+
+        $dynamicHints = $context->hasDates() || $context->userId
+            ? $this->hintCalculator->calculateDynamicHints($place, $this->hintContext($context))
+            : collect();
 
         return $this->hintPriority
             ->chooseForCard(
-                $place->listingHintSnapshots
-                    ->map(fn ($snapshot): GuestHintData => GuestHintData::fromSnapshot($snapshot))
+                $this->hintPriority->preventDuplicateSimilarHints($snapshotHints
+                    ->merge($dynamicHints)
                     ->filter(fn (GuestHintData $hint): bool => $hint->showOnCard),
+                ),
                 3,
             )
             ->map(fn (GuestHintData $hint): array => $hint->toArray($context->locale))
             ->all();
+    }
+
+    private function hintContext(ListingCardContext $context): HintContext
+    {
+        return new HintContext(
+            checkInDate: $context->checkInDate,
+            checkOutDate: $context->checkOutDate,
+            nightsCount: $context->nights(),
+            userId: $context->userId,
+            locale: $context->locale,
+            guestsCount: $context->guestsCount,
+            surface: 'card',
+            includeAreaPriceComparisons: false,
+        );
     }
 
     /**

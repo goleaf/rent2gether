@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Data\Hints\HintContext;
 use App\Data\Listings\ListingCardContext;
 use App\Enums\AvailabilityStatus;
 use App\Enums\GenderType;
@@ -16,16 +17,21 @@ use App\Livewire\Search\SleepingPlaceSearch;
 use App\Livewire\Waitlist\JoinWaitlistButton;
 use App\Models\Amenity;
 use App\Models\AvailabilityDay;
+use App\Models\Booking;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\GuestCompatibilityProfile;
+use App\Models\GuestCompatibilityVisibilitySetting;
 use App\Models\HostProfile;
 use App\Models\MediaItem;
 use App\Models\Property;
 use App\Models\Review;
 use App\Models\Room;
+use App\Models\RoomOccupantSnapshot;
 use App\Models\Rule;
 use App\Models\SleepingPlace;
 use App\Models\User;
+use App\Services\Hints\ListingHintCalculatorService;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
 use Carbon\Carbon;
@@ -89,6 +95,163 @@ class ListingCardFeatureTest extends TestCase
         $this->assertTrue($card->instantBookingEnabled);
         $this->assertTrue($card->isAvailable);
         $this->assertContains('verified_host', collect($card->badges)->pluck('key')->all());
+    }
+
+    public function test_guest_hint_calculator_covers_prompted_search_hint_keys(): void
+    {
+        $guest = User::factory()->create();
+        GuestCompatibilityProfile::factory()->for($guest, 'user')->create([
+            'avoids_upper_bunk' => true,
+            'needs_locker' => true,
+        ]);
+        GuestCompatibilityVisibilitySetting::factory()->for($guest, 'user')->create();
+
+        $city = $this->city('Vilnius');
+        $place = $this->createPlace(
+            'Prompt hint place',
+            [
+                'base_price_per_night' => 20,
+                'weekly_price' => 120,
+                'monthly_price' => 420,
+                'weekend_price' => 30,
+                'deposit_amount' => 50,
+                'instant_booking_enabled' => true,
+                'requires_host_approval' => false,
+                'extensions_allowed' => true,
+                'can_extend' => true,
+                'is_top_bunk' => true,
+                'has_locker' => false,
+                'type' => SleepingPlaceType::BunkTop->value,
+                'sleeping_place_type' => SleepingPlaceType::BunkTop->value,
+                'max_nights' => 60,
+            ],
+            [
+                'show_exact_address_before_booking' => false,
+                'cleanliness_level' => 'excellent',
+                'safety_level' => 'excellent',
+                'rules' => ['quiet_hours', 'no_smoking'],
+            ],
+            $city,
+        );
+        $this->createPlace('Area average comparison place', [
+            'base_price_per_night' => 80,
+        ], city: $city);
+
+        $place->room->update([
+            'available_places_count' => 1,
+            'free_sleeping_places_count' => 1,
+            'sleeping_places_count' => 4,
+            'current_guests_count' => 3,
+            'can_talk_at_night' => false,
+            'rules' => ['quiet_hours'],
+        ]);
+        $place->property->host->hostProfile->update(['response_time_minutes' => 20]);
+        $place->rules()->attach($this->rule('identity_verification_required'));
+
+        Booking::factory()
+            ->count(5)
+            ->for($place, 'sleepingPlace')
+            ->for($place->property)
+            ->for($place->room)
+            ->create([
+                'bed_id' => null,
+                'host_user_id' => $place->property->host_user_id,
+            ]);
+
+        RoomOccupantSnapshot::factory()
+            ->count(3)
+            ->for($place->room)
+            ->for($place, 'sleepingPlace')
+            ->create([
+                'status' => RoomOccupantSnapshot::STATUS_CURRENT,
+                'check_in_date' => '2026-07-01',
+                'check_out_date' => '2026-08-01',
+            ]);
+
+        $calculator = app(ListingHintCalculatorService::class);
+        $context = new HintContext(
+            checkInDate: '2026-07-10',
+            checkOutDate: '2026-08-09',
+            nightsCount: 30,
+            userId: $guest->id,
+            locale: 'en',
+            surface: 'card',
+        );
+        $keys = $calculator
+            ->calculateStaticHints($place->fresh())
+            ->merge($calculator->calculateDynamicHints($place->fresh(), $context))
+            ->pluck('key')
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ([
+            'cheaper_than_area_average',
+            'often_booked',
+            'one_place_left',
+            'host_responds_fast',
+            'high_cleanliness_rating',
+            'people_already_in_room',
+            'available_for_longer_stay',
+            'weekend_price_change',
+            'weekly_discount',
+            'monthly_discount',
+            'address_after_booking',
+            'deposit_required',
+            'identity_verification_required',
+            'strict_quiet_hours',
+            'criteria_mismatch',
+        ] as $expectedHintKey) {
+            $this->assertContains($expectedHintKey, $keys);
+        }
+    }
+
+    public function test_search_listing_card_payload_renders_dynamic_guest_hints_without_snapshots(): void
+    {
+        $place = $this->createPlace('Dynamic search hint place', [
+            'base_price_per_night' => 30,
+            'weekly_price' => 180,
+            'weekend_price' => 42,
+            'deposit_amount' => 0,
+            'extensions_allowed' => false,
+            'can_extend' => false,
+            'max_nights' => 30,
+        ], [
+            'rules' => [],
+            'cleanliness_level' => 'normal',
+            'safety_level' => 'normal',
+        ]);
+        $place->room->update([
+            'available_places_count' => 1,
+            'free_sleeping_places_count' => 1,
+            'current_guests_count' => 0,
+            'can_talk_at_night' => true,
+            'rules' => [],
+            'noise_level' => 'moderate',
+        ]);
+        $place->property->host->hostProfile->update([
+            'response_time_minutes' => 120,
+            'rating_average' => 0,
+            'reviews_count' => 0,
+            'verified_at' => null,
+        ]);
+        $place->property->host->update(['identity_verified' => false]);
+
+        $context = $this->context(checkIn: '2026-07-10', checkOut: '2026-07-17');
+        $loaded = app(ListingCardQueryService::class)->forComparison([$place->id], $context)->firstOrFail();
+        $card = app(ListingCardService::class)->build($loaded, $context)->toArray();
+        $hintKeys = collect($card['hints'])->pluck('key')->all();
+
+        $this->assertContains('one_place_left', $hintKeys);
+        $this->assertContains('weekly_discount', $hintKeys);
+        $this->assertContains('weekend_price_change', $hintKeys);
+
+        $this->blade('<x-listings.card :card="$card" card-variant="search" />', [
+            'card' => $card,
+        ])
+            ->assertSee(__('guest_hints.messages.one_place_left'))
+            ->assertSee(__('guest_hints.messages.weekly_discount'))
+            ->assertSee(__('guest_hints.messages.weekend_price_change'));
     }
 
     public function test_listing_card_without_dates_shows_nightly_price_only(): void
