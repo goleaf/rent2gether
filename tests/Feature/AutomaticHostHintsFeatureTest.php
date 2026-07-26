@@ -8,6 +8,8 @@ use App\Enums\RoomStatus;
 use App\Enums\SleepingPlaceStatus;
 use App\Livewire\Host\Hints\DismissHostHintButton;
 use App\Livewire\Host\Hints\HostBeforePublishChecklist;
+use App\Livewire\Host\Hints\HostHintCard;
+use App\Livewire\Host\Hints\HostHintDetailsSheet;
 use App\Livewire\Host\Hints\HostHintsPanel;
 use App\Livewire\Host\Hints\HostListingQualityScore;
 use App\Livewire\Host\Hints\HostWizardHints;
@@ -110,7 +112,10 @@ class AutomaticHostHintsFeatureTest extends TestCase
             ->all();
 
         $this->assertContains('add_main_sleeping_place_photo', $keys);
+        $this->assertContains('add_sleeping_place_photos', $keys);
         $this->assertContains('add_room_photos', $keys);
+        $this->assertContains('listing_without_photos_gets_less_requests', $keys);
+        $this->assertContains('add_exact_rules', $keys);
         $this->assertContains('add_locker_info', $keys);
         $this->assertContains('add_current_occupants_count', $keys);
         $this->assertContains('price_above_area_average', $keys);
@@ -124,6 +129,70 @@ class AutomaticHostHintsFeatureTest extends TestCase
         $this->assertContains('missing_bathroom_rules', $keys);
         $this->assertContains('missing_emergency_contact', $keys);
         $this->assertContains('calendar_not_open', $keys);
+    }
+
+    public function test_pricing_hints_compare_against_same_district_average(): void
+    {
+        $isolated = $this->listing(
+            propertyOverrides: ['district' => 'Quiet Hill'],
+            placeOverrides: ['base_price_per_night' => 95],
+        );
+
+        $this->listing(
+            propertyOverrides: ['district' => 'Old Town'],
+            placeOverrides: ['status' => SleepingPlaceStatus::Active, 'base_price_per_night' => 30],
+        );
+
+        app(HostHintService::class)->refreshHintsForSleepingPlace($isolated['place']);
+
+        $isolatedKeys = HostHintSnapshot::query()
+            ->where('sleeping_place_id', $isolated['place']->id)
+            ->pluck('hint_key')
+            ->all();
+
+        $this->assertNotContains('price_above_area_average', $isolatedKeys);
+        $this->assertNotContains('price_below_area_average', $isolatedKeys);
+
+        SleepingPlace::factory()
+            ->for($isolated['property'])
+            ->for($isolated['room'])
+            ->create([
+                'status' => SleepingPlaceStatus::Active,
+                'base_price_per_night' => 30,
+                'currency' => 'EUR',
+            ]);
+
+        app(HostHintService::class)->refreshHintsForSleepingPlace($isolated['place']);
+
+        $sameDistrictKeys = HostHintSnapshot::query()
+            ->where('sleeping_place_id', $isolated['place']->id)
+            ->pluck('hint_key')
+            ->all();
+
+        $this->assertContains('price_above_area_average', $sameDistrictKeys);
+
+        $below = $this->listing(
+            propertyOverrides: ['district' => 'Station'],
+            placeOverrides: ['base_price_per_night' => 20],
+        );
+
+        SleepingPlace::factory()
+            ->for($below['property'])
+            ->for($below['room'])
+            ->create([
+                'status' => SleepingPlaceStatus::Active,
+                'base_price_per_night' => 60,
+                'currency' => 'EUR',
+            ]);
+
+        app(HostHintService::class)->refreshHintsForSleepingPlace($below['place']);
+
+        $belowKeys = HostHintSnapshot::query()
+            ->where('sleeping_place_id', $below['place']->id)
+            ->pluck('hint_key')
+            ->all();
+
+        $this->assertContains('price_below_area_average', $belowKeys);
     }
 
     public function test_quality_score_publish_readiness_and_completion_actions_work(): void
@@ -219,6 +288,59 @@ class AutomaticHostHintsFeatureTest extends TestCase
         Livewire::actingAs($listing['host'])
             ->test(HostHintsPanel::class)
             ->assertSee(__('host_hints.dashboard_title', [], 'ru'));
+    }
+
+    public function test_host_hint_card_keeps_display_payload_out_of_public_state(): void
+    {
+        $listing = $this->listing();
+        $hint = HostHintSnapshot::factory()
+            ->forTarget($listing['host'], $listing['property'], $listing['room'], $listing['place'])
+            ->create([
+                'hint_key' => 'add_main_sleeping_place_photo',
+                'message_key' => 'host_hints.messages.add_main_sleeping_place_photo',
+                'message_params_json' => [],
+                'show_in_dashboard' => true,
+            ]);
+
+        $component = Livewire::actingAs($listing['host'])
+            ->test(HostHintCard::class, [
+                'hint' => $hint->toDisplayArray(app()->getLocale()),
+                'context' => 'dashboard',
+                'showDismiss' => true,
+            ])
+            ->assertSee(__('host_hints.messages.add_main_sleeping_place_photo'));
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('hintId', $encodedSnapshot);
+        $this->assertStringNotContainsString('host_hints.messages.add_main_sleeping_place_photo', $encodedSnapshot);
+        $this->assertStringNotContainsString(__('host_hints.messages.add_main_sleeping_place_photo'), $encodedSnapshot);
+    }
+
+    public function test_host_hint_details_sheet_keeps_display_payload_out_of_public_state(): void
+    {
+        $listing = $this->listing();
+        $hint = HostHintSnapshot::factory()
+            ->forTarget($listing['host'], $listing['property'], $listing['room'], $listing['place'])
+            ->create([
+                'hint_key' => 'add_main_sleeping_place_photo',
+                'message_key' => 'host_hints.messages.add_main_sleeping_place_photo',
+                'message_params_json' => [],
+            ]);
+
+        $component = Livewire::actingAs($listing['host'])
+            ->test(HostHintDetailsSheet::class, [
+                'hint' => $hint->toDisplayArray(app()->getLocale()),
+            ])
+            ->call('open')
+            ->assertSee(__('host_hints.messages.add_main_sleeping_place_photo'));
+
+        $encodedSnapshot = json_encode($component->snapshot, JSON_THROW_ON_ERROR);
+
+        $this->assertStringContainsString('hintId', $encodedSnapshot);
+        $this->assertStringContainsString('open', $encodedSnapshot);
+        $this->assertStringNotContainsString('host_hints.messages.add_main_sleeping_place_photo', $encodedSnapshot);
+        $this->assertStringNotContainsString(__('host_hints.messages.add_main_sleeping_place_photo'), $encodedSnapshot);
     }
 
     public function test_dismiss_host_hint_button_records_dismissal_and_refuses_critical_before_publish(): void

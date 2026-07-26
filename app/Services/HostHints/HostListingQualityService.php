@@ -77,13 +77,13 @@ class HostListingQualityService
     private function checks(Property|Room|SleepingPlace $target): array
     {
         if ($target instanceof SleepingPlace) {
-            $target->loadMissing(['translations', 'mediaItems', 'availabilityDays', 'property.host.hostProfile', 'room']);
+            $target->loadMissing(['translations', 'property.host.hostProfile', 'room']);
 
             return [
                 $this->check('title', $target->translations->contains(fn ($translation): bool => filled($translation->title)) || filled($target->display_name), true),
-                $this->check('photos', $target->mediaItems->where('status', 'active')->isNotEmpty(), true, true),
+                $this->check('photos', $this->hasActiveMedia($target), true, true),
                 $this->check('price', (float) $target->base_price_per_night > 0, true, true),
-                $this->check('calendar', $target->availabilityDays->isNotEmpty(), true, true),
+                $this->check('calendar', $target->availabilityDays()->exists(), true, true),
                 $this->check('access', filled($target->property?->host?->hostProfile?->default_check_in_time) && filled($target->property?->host?->hostProfile?->default_check_out_time), true),
                 $this->check('rules', filled($target->room?->room_rules_text) || $target->property?->rules()->exists() === true, true),
                 $this->check('deposit', (float) $target->deposit_amount > 0),
@@ -125,5 +125,14 @@ class HostListingQualityService
             'required' => $required,
             'critical' => $critical,
         ];
+    }
+
+    private function hasActiveMedia(Property|Room|SleepingPlace $target): bool
+    {
+        if ($target->relationLoaded('mediaItems')) {
+            return $target->mediaItems->where('status', 'active')->isNotEmpty();
+        }
+
+        return $target->mediaItems()->active()->exists();
     }
 }

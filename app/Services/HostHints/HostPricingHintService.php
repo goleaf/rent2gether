@@ -2,8 +2,11 @@
 
 namespace App\Services\HostHints;
 
+use App\Enums\SleepingPlaceStatus;
+use App\Models\Property;
 use App\Models\SleepingPlace;
 use App\Services\HostHints\Concerns\BuildsHostHints;
+use Illuminate\Database\Eloquent\Builder;
 
 class HostPricingHintService
 {
@@ -102,17 +105,30 @@ class HostPricingHintService
 
     private function areaAverage(SleepingPlace $place): ?float
     {
-        $cityId = $place->property?->city_id;
+        $property = $place->property;
 
-        if (! $cityId) {
+        if (! $property instanceof Property || ! $property->city_id) {
             return null;
         }
 
+        $areaProperties = Property::query()
+            ->select('id')
+            ->where('city_id', $property->city_id)
+            ->when(
+                filled($property->district_id),
+                fn (Builder $query): Builder => $query->where('district_id', $property->district_id),
+                fn (Builder $query): Builder => filled($property->district)
+                    ? $query->where('district', $property->district)
+                    : $query,
+            );
+
         $average = SleepingPlace::query()
             ->whereKeyNot($place->id)
+            ->where('status', SleepingPlaceStatus::Active->value)
+            ->where('currency', $place->currency ?: 'EUR')
             ->whereNotNull('base_price_per_night')
             ->where('base_price_per_night', '>', 0)
-            ->whereHas('property', fn ($query) => $query->where('city_id', $cityId))
+            ->whereIn('property_id', $areaProperties)
             ->avg('base_price_per_night');
 
         return $average === null ? null : (float) $average;

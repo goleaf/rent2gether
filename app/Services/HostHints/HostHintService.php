@@ -104,9 +104,13 @@ class HostHintService
     {
         $place = $place->fresh([
             'property.host.hostProfile',
+            'property.mediaItems:id,mediable_type,mediable_id,collection,status,is_primary,is_cover',
+            'property.rules:id,slug,category',
             'property.translations',
             'property.accessDetails',
             'room',
+            'room.mediaItems:id,mediable_type,mediable_id,collection,status,is_primary,is_cover',
+            'mediaItems:id,mediable_type,mediable_id,collection,status,is_primary,is_cover',
             'translations',
         ]) ?? $place;
 

@@ -7,6 +7,7 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Services\HostHints\Concerns\BuildsHostHints;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class HostRulesHintService
 {
@@ -34,8 +35,11 @@ class HostRulesHintService
 
     public function missingHouseRules(Property $property): bool
     {
-        return $property->rules()->doesntExist()
-            && $property->translations()->whereNotNull('house_rules_text')->where('house_rules_text', '!=', '')->doesntExist();
+        $hasRuleRecords = $property->relationLoaded('rules')
+            ? collect($property->getRelation('rules'))->isNotEmpty()
+            : $property->rules()->exists();
+
+        return ! $hasRuleRecords && ! $this->hasTranslatedHouseRuleLike($property, ['']);
     }
 
     public function missingKitchenRules(Property $property): bool
@@ -57,19 +61,92 @@ class HostRulesHintService
 
     private function hasRuleLike(Property $property, string $needle): bool
     {
+        $needles = $this->needlesFor($needle);
         $jsonRules = collect($property->getAttribute('rules') ?? [])
-            ->filter(fn (mixed $value): bool => str_contains((string) $value, $needle))
+            ->flatten()
+            ->filter(fn (mixed $value): bool => Str::contains(Str::lower((string) $value), $needles))
             ->isNotEmpty();
 
         if ($jsonRules) {
             return true;
         }
 
-        return $property->rules()
-            ->where(function (Builder $query) use ($needle): void {
-                $query->where('slug', 'like', '%'.$needle.'%')
-                    ->orWhere('category', 'like', '%'.$needle.'%');
+        if ($property->relationLoaded('rules')) {
+            $hasLoadedRule = collect($property->getRelation('rules'))
+                ->filter(function ($rule) use ($needles): bool {
+                    return Str::contains(Str::lower((string) $rule->slug), $needles)
+                        || Str::contains(Str::lower((string) $rule->category), $needles);
+                })
+                ->isNotEmpty();
+
+            if ($hasLoadedRule) {
+                return true;
+            }
+        } else {
+            $hasStoredRule = $property->rules()
+                ->where(function (Builder $query) use ($needles): void {
+                    foreach ($needles as $ruleNeedle) {
+                        $query->orWhere('slug', 'like', '%'.$ruleNeedle.'%')
+                            ->orWhere('category', 'like', '%'.$ruleNeedle.'%');
+                    }
+                })
+                ->exists();
+
+            if ($hasStoredRule) {
+                return true;
+            }
+        }
+
+        return $this->hasTranslatedHouseRuleLike($property, $needles);
+    }
+
+    /**
+     * @param  list<string>  $needles
+     */
+    private function hasTranslatedHouseRuleLike(Property $property, array $needles): bool
+    {
+        if ($property->relationLoaded('translations')) {
+            return $property->translations
+                ->filter(function ($translation) use ($needles): bool {
+                    $text = Str::lower((string) $translation->house_rules_text);
+
+                    return $needles === ['']
+                        ? filled($text)
+                        : Str::contains($text, $needles);
+                })
+                ->isNotEmpty();
+        }
+
+        $query = $property->translations()
+            ->whereNotNull('house_rules_text')
+            ->where('house_rules_text', '!=', '');
+
+        if ($needles === ['']) {
+            return $query->exists();
+        }
+
+        return $query
+            ->where(function (Builder $builder) use ($needles): void {
+                foreach ($needles as $textNeedle) {
+                    $builder->orWhere('house_rules_text', 'like', '%'.$textNeedle.'%');
+                }
             })
             ->exists();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function needlesFor(string $needle): array
+    {
+        return match ($needle) {
+            'bathroom' => ['bathroom', 'shower', 'ванн', 'душ'],
+            'kitchen' => ['kitchen', 'cook', 'кухн', 'готов'],
+            'lost_key' => ['lost_key', 'lost key', 'key lost', 'потер', 'ключ'],
+            'pet' => ['pet', 'pets', 'animal', 'животн', 'питом'],
+            'quiet' => ['quiet', 'noise', 'тиш', 'шум'],
+            'smoking' => ['smoking', 'smoke', 'кур'],
+            default => [$needle],
+        };
     }
 }

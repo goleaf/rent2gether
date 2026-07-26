@@ -15,7 +15,7 @@
         @endif
     </div>
 
-    @if($showDismiss && (! ($hint['critical_before_publish'] ?? false) || $context !== 'before_publish'))
+    @if($showDismiss && ! empty($hint['id']) && (! ($hint['critical_before_publish'] ?? false) || $context !== 'before_publish'))
         <livewire:host.hints.dismiss-host-hint-button
             :hint-id="$hint['id']"
             :context="$context"
