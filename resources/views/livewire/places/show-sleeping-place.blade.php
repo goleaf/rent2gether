@@ -9,7 +9,7 @@
         {{ __('listing.detail.actions.back_to_search') }}
     </flux:button>
 
-    <section aria-labelledby="place-gallery-title" class="space-y-3">
+    <section id="place-photos" data-detail-section="photos" aria-labelledby="place-gallery-title" class="space-y-3">
         <flux:heading id="place-gallery-title" size="lg">
             <span class="inline-flex min-w-0 items-center gap-2">
                 <flux:icon name="photo" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -29,9 +29,9 @@
                 />
             </div>
 
-            @if(count($gallery) > 1)
+            @if($secondaryImages)
                 <div class="flex gap-2 overflow-x-auto pb-1">
-                    @forelse(array_slice($gallery, 1) as $image)
+                    @forelse($secondaryImages as $image)
                         <img
                             src="{{ $image['thumb_url'] }}"
                             alt="{{ $image['alt'] }}"
@@ -65,6 +65,44 @@
             </flux:heading>
             <flux:text class="text-zinc-600 dark:text-zinc-400">{{ __('listing.detail.helper') }}</flux:text>
         </div>
+
+        <flux:card id="listing-overview" data-detail-section="short-description" class="space-y-4">
+            <div class="space-y-2">
+                <flux:heading size="lg">
+                    <span class="inline-flex min-w-0 items-center gap-2">
+                        <flux:icon name="sparkles" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('listing.detail.overview.title') }}</span>
+                    </span>
+                </flux:heading>
+                <flux:text class="text-zinc-700 dark:text-zinc-300">{{ $pageOverview['description'] }}</flux:text>
+            </div>
+
+            <dl class="grid gap-2 text-sm sm:grid-cols-2">
+                @forelse($pageOverview['facts'] as $fact)
+                    <div class="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                        <dt class="text-xs text-zinc-500">{{ $fact['label'] }}</dt>
+                        <dd class="font-medium text-zinc-900 dark:text-zinc-100">{{ $fact['value'] }}</dd>
+                    </div>
+                @empty
+                @endforelse
+            </dl>
+
+            <div class="space-y-2">
+                <div class="text-xs font-medium uppercase tracking-normal text-zinc-500">{{ __('listing.detail.overview.sections_label') }}</div>
+                <div class="flex gap-2 overflow-x-auto pb-1" aria-label="{{ __('listing.detail.overview.sections_label') }}">
+                    @forelse($pageOverview['sections'] as $section)
+                        <a
+                            href="{{ $section['href'] }}"
+                            class="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md border border-zinc-200 px-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                        >
+                            <flux:icon name="chevron-down" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span>{{ $section['label'] }}</span>
+                        </a>
+                    @empty
+                    @endforelse
+                </div>
+            </div>
+        </flux:card>
 
         <flux:card class="space-y-4">
             <div class="space-y-2">
@@ -134,7 +172,7 @@
 
     <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <aside class="space-y-4 lg:sticky lg:top-4 lg:order-2">
-            <flux:card class="space-y-4">
+            <flux:card id="booking-panel" data-detail-section="booking" class="space-y-4">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <flux:heading size="lg">
@@ -375,7 +413,7 @@
                 </dl>
             </flux:card>
 
-            <flux:card data-detail-section="sleeping-place-details" class="space-y-4">
+            <flux:card id="sleeping-place-details" data-detail-section="sleeping-place-details" class="space-y-4">
                 <div class="space-y-2">
                     <flux:heading size="lg">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -434,7 +472,7 @@
                 @endif
             </flux:card>
 
-            <flux:card data-detail-section="room-details" class="space-y-4">
+            <flux:card id="room-details" data-detail-section="room-details" class="space-y-4">
                 <flux:heading size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -537,7 +575,7 @@
                 </div>
             </flux:card>
 
-            <flux:card class="space-y-4">
+            <flux:card id="nearby-occupants" data-detail-section="nearby-occupants" class="space-y-4">
                 <flux:heading size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -580,7 +618,7 @@
 
             <x-listings.detail.description-sections :sections="$extendedContent['sections']" />
 
-            <flux:card class="space-y-4">
+            <flux:card id="property-details" data-detail-section="property-details" class="space-y-4">
                 <flux:heading size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -643,7 +681,7 @@
                 </div>
             </flux:card>
 
-            <flux:card class="space-y-4">
+            <flux:card id="amenities" data-detail-section="amenities" class="space-y-4">
                 <flux:heading size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -681,7 +719,7 @@
                 @endif
             </flux:card>
 
-            <flux:card class="space-y-4">
+            <flux:card id="rules" data-detail-section="rules" class="space-y-4">
                 <flux:heading size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -715,7 +753,7 @@
                 @endif
             </flux:card>
 
-            <flux:card class="space-y-4">
+            <flux:card id="calendar" data-detail-section="calendar" class="space-y-4">
                 <div>
                     <flux:heading size="lg">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -763,7 +801,7 @@
                 </flux:callout>
             </flux:card>
 
-            <flux:card class="space-y-4">
+            <flux:card id="neighborhood-map" data-detail-section="neighborhood-map" class="space-y-4">
                 <div>
                     <flux:heading size="lg">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -799,7 +837,7 @@
                 </flux:callout>
             </flux:card>
 
-            <section aria-labelledby="host-card-title" class="space-y-3">
+            <section id="host-info" data-detail-section="host-info" aria-labelledby="host-card-title" class="space-y-3">
                 <flux:heading id="host-card-title" size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -809,7 +847,7 @@
                 <x-host.public-card :host="$place->property?->host" />
             </section>
 
-            <section aria-labelledby="reviews-title" class="space-y-3">
+            <section id="reviews" data-detail-section="reviews" aria-labelledby="reviews-title" class="space-y-3">
                 <flux:heading id="reviews-title" size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="star" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
@@ -819,7 +857,7 @@
                 <livewire:places.sleeping-place-reviews :sleeping-place-id="$place->id" lazy />
             </section>
 
-            <flux:card class="space-y-4">
+            <flux:card id="safety" data-detail-section="safety" class="space-y-4">
                 <div>
                     <flux:heading size="lg">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -844,7 +882,7 @@
                 </flux:callout>
             </flux:card>
 
-            <flux:card class="space-y-4">
+            <flux:card id="cancellation" data-detail-section="cancellation" class="space-y-4">
                 <div>
                     <flux:heading size="lg">
                         <span class="inline-flex min-w-0 items-center gap-2">
@@ -866,7 +904,7 @@
                 </dl>
             </flux:card>
 
-            <section aria-labelledby="similar-title" class="space-y-3">
+            <section id="similar" data-detail-section="similar" aria-labelledby="similar-title" class="space-y-3">
                 <flux:heading id="similar-title" size="lg">
                     <span class="inline-flex min-w-0 items-center gap-2">
                         <flux:icon name="home-modern" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />

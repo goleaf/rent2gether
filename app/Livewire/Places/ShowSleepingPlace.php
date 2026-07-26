@@ -337,13 +337,16 @@ class ShowSleepingPlace extends Component
         $gallery = $this->gallery();
         $dateEvaluation = $this->dateEvaluation;
         $quote = $dateEvaluation['quote'];
+        $nearbySummary = $this->nearbySummary($place);
 
         return view('livewire.places.show-sleeping-place', [
             'place' => $place,
             'title' => $title,
+            'pageOverview' => $this->pageOverview($place, $quote, $nearbySummary),
             'summary' => $this->summary($place),
             'gallery' => $gallery,
             'primaryImage' => $gallery[0] ?? null,
+            'secondaryImages' => array_slice($gallery, 1),
             'decisionFlow' => $this->decisionFlow($place, $quote),
             'priceBreakdown' => $this->priceBreakdown($place, $quote),
             'availabilityWarning' => $dateEvaluation['availabilityWarning'],
@@ -351,10 +354,10 @@ class ShowSleepingPlace extends Component
             'extendedContent' => app(ListingDetailContentService::class)->forSleepingPlace($place, auth()->user()),
             'exactFeatures' => $this->exactFeatures($place),
             'sleepingPlaceProfile' => app(SleepingPlaceGuestSummaryService::class)->build($place, auth()->user()),
-            'roomDetails' => $this->roomDetails($place),
+            'roomDetails' => $this->roomDetails($place, $nearbySummary['count']),
             'propertyDetails' => $this->propertyDetails($place),
             'amenityGroups' => $this->amenityGroups($place),
-            'nearbySummary' => $this->nearbySummary($place),
+            'nearbySummary' => $nearbySummary,
             'rulesByGroup' => $this->rulesByGroup($place),
             'calendarPreview' => $this->calendarPreview($place, $quote),
             'mapDetails' => $this->mapDetails($place),
@@ -699,6 +702,76 @@ class ShowSleepingPlace extends Component
     }
 
     /**
+     * @param  array<string, mixed>|null  $quote
+     * @param  array{count:int,summary:string,privacy:string,privacy_note:string,badges:list<string>,messages:list<string>,warnings:list<array<string,mixed>>}  $nearbySummary
+     * @return array{description:string,facts:list<array{label:string,value:string}>,sections:list<array{key:string,label:string,href:string}>}
+     */
+    private function pageOverview(SleepingPlace $place, ?array $quote, array $nearbySummary): array
+    {
+        return [
+            'description' => $this->shortDescription($place),
+            'facts' => [
+                $this->row('listing.detail.overview.facts.location', $this->location($place->property)),
+                $this->row('listing.detail.overview.facts.dates', $this->staySummary()),
+                $this->row('listing.detail.overview.facts.price', $this->priceSummary($place, $quote)),
+                $this->row('listing.detail.overview.facts.nearby', trans_choice('listing.detail.nearby.count', $nearbySummary['count'], [
+                    'count' => $nearbySummary['count'],
+                ])),
+                $this->row('listing.detail.overview.facts.booking', $this->bookingModeLabel($place)),
+                $this->row('listing.detail.overview.facts.cancellation', $this->cancellationPolicyLabel((string) ($place->property?->host?->hostProfile?->default_cancellation_policy ?: 'flexible'))),
+            ],
+            'sections' => $this->detailSectionIndex(),
+        ];
+    }
+
+    private function shortDescription(SleepingPlace $place): string
+    {
+        $placeTranslation = $this->translation($place->translations);
+        $roomTranslation = $this->translation($place->room?->translations ?? collect());
+        $propertyTranslation = $this->translation($place->property?->translations ?? collect());
+
+        return $this->firstText([
+            $placeTranslation?->short_description,
+            $placeTranslation?->summary,
+            $placeTranslation?->description,
+            $roomTranslation?->summary,
+            $propertyTranslation?->short_description,
+            $propertyTranslation?->summary,
+        ]) ?? __('listing.detail.overview.description_missing');
+    }
+
+    /**
+     * @return list<array{key:string,label:string,href:string}>
+     */
+    private function detailSectionIndex(): array
+    {
+        return collect([
+            'photos' => '#place-photos',
+            'booking' => '#booking-panel',
+            'sleeping_place' => '#sleeping-place-details',
+            'room' => '#room-details',
+            'nearby' => '#nearby-occupants',
+            'property' => '#property-details',
+            'amenities' => '#amenities',
+            'rules' => '#rules',
+            'calendar' => '#calendar',
+            'map' => '#neighborhood-map',
+            'host' => '#host-info',
+            'reviews' => '#reviews',
+            'safety' => '#safety',
+            'cancellation' => '#cancellation',
+            'similar' => '#similar',
+        ])
+            ->map(fn (string $href, string $key): array => [
+                'key' => $key,
+                'label' => __('listing.detail.overview.sections.'.$key),
+                'href' => $href,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * @return list<array{url:string,thumb_url:string,alt:string,is_primary:bool}>
      */
     private function gallery(): array
@@ -910,12 +983,12 @@ class ShowSleepingPlace extends Component
     /**
      * @return array<string, mixed>
      */
-    private function roomDetails(SleepingPlace $place): array
+    private function roomDetails(SleepingPlace $place, ?int $peopleOnDates = null): array
     {
         $room = $place->room;
 
         return [
-            'people_on_dates' => $this->nearbyGuestCount($place),
+            'people_on_dates' => $peopleOnDates ?? $this->nearbyGuestCount($place),
             'total_places' => (int) ($room?->active_sleeping_places_count ?: $room?->beds_count ?: 0),
             'occupied_places' => (int) ($room?->occupied_places_count ?: 0),
             'gender_policy' => $this->label($room?->gender_policy ?: $room?->gender_type),
@@ -1375,6 +1448,20 @@ class ShowSleepingPlace extends Component
         );
     }
 
+    /**
+     * @param  list<?string>  $values
+     */
+    private function firstText(array $values): ?string
+    {
+        foreach ($values as $value) {
+            if (is_string($value) && trim($value) !== '') {
+                return trim($value);
+            }
+        }
+
+        return null;
+    }
+
     private function dateRangeSummary(): string
     {
         $checkIn = $this->parseDateOrNull($this->checkIn);
@@ -1387,6 +1474,24 @@ class ShowSleepingPlace extends Component
         return __('listing.detail.flow.dates_value', [
             'check_in' => $checkIn->translatedFormat('d M'),
             'check_out' => $checkOut->translatedFormat('d M'),
+        ]);
+    }
+
+    private function staySummary(): string
+    {
+        $checkIn = $this->parseDateOrNull($this->checkIn);
+        $checkOut = $this->parseDateOrNull($this->checkOut);
+
+        if (! $checkIn instanceof CarbonImmutable || ! $checkOut instanceof CarbonImmutable || $checkOut->lessThanOrEqualTo($checkIn)) {
+            return __('listing.detail.overview.dates_empty');
+        }
+
+        $nights = (int) $checkIn->diffInDays($checkOut);
+        $calendarDays = $nights + 1;
+
+        return trans_choice('listing.detail.overview.stay_summary', $nights, [
+            'nights' => $nights,
+            'days' => $calendarDays,
         ]);
     }
 

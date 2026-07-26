@@ -96,6 +96,71 @@ class PublicSleepingPlaceDetailTest extends TestCase
         $this->assertLessThan($roomPosition, $pricePosition);
     }
 
+    public function test_full_listing_page_renders_required_public_blocks(): void
+    {
+        $place = $this->createPlace('Full page place');
+        $place->property->forceFill([
+            'address_line_1' => 'Secret Street 10',
+            'house_number' => '12',
+            'access_instructions' => 'Private access code 5555.',
+            'show_exact_address_before_booking' => false,
+        ])->save();
+        $place->property->translations()->where('locale', 'en')->update([
+            'key_pickup_instructions' => 'Private key safe behind the blue door.',
+            'host_contact_instructions' => 'Private host phone +370 600 00000.',
+        ]);
+
+        $response = $this->get(route('places.show', [
+            'locale' => 'en',
+            'sleepingPlace' => $place,
+            'in' => '2026-07-10',
+            'out' => '2026-07-13',
+            'guests' => 1,
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertSee(__('listing.detail.overview.title'))
+            ->assertSee('A comfortable lower bunk.')
+            ->assertSee('3 nights / 4 calendar days')
+            ->assertSee(__('listing.detail.booking.check_in'))
+            ->assertSee(__('listing.detail.booking.price_breakdown_title'))
+            ->assertSee(__('listing.detail.booking.request_action'))
+            ->assertSee(__('listing.detail.property.title'))
+            ->assertSee(__('listing.detail.room.title'))
+            ->assertSee(__('sleeping_place.public.title'))
+            ->assertSee(__('occupants.title'))
+            ->assertSee(__('listing.detail.amenities.title'))
+            ->assertSee(__('listing.detail.rules.title'))
+            ->assertSee(__('listing.detail.calendar.title'))
+            ->assertSee(__('listing.detail.map.title'))
+            ->assertSee(__('listing.detail.host.title'))
+            ->assertSee(__('listing.detail.reviews.title'))
+            ->assertSee(__('listing.detail.safety.title'))
+            ->assertSee(__('listing.detail.cancellation.title'))
+            ->assertSee(__('listing.detail.similar.title'))
+            ->assertSee('data-detail-section="photos"', false)
+            ->assertSee('data-detail-section="short-description"', false)
+            ->assertSee('data-detail-section="booking"', false)
+            ->assertSee('data-detail-section="sleeping-place-details"', false)
+            ->assertSee('data-detail-section="room-details"', false)
+            ->assertSee('data-detail-section="nearby-occupants"', false)
+            ->assertSee('data-detail-section="property-details"', false)
+            ->assertSee('data-detail-section="amenities"', false)
+            ->assertSee('data-detail-section="rules"', false)
+            ->assertSee('data-detail-section="calendar"', false)
+            ->assertSee('data-detail-section="neighborhood-map"', false)
+            ->assertSee('data-detail-section="host-info"', false)
+            ->assertSee('data-detail-section="reviews"', false)
+            ->assertSee('data-detail-section="safety"', false)
+            ->assertSee('data-detail-section="cancellation"', false)
+            ->assertSee('data-detail-section="similar"', false)
+            ->assertDontSee('Secret Street 10')
+            ->assertDontSee('Private access code 5555.')
+            ->assertDontSee('Private key safe behind the blue door.')
+            ->assertDontSee('Private host phone +370 600 00000.');
+    }
+
     public function test_extended_instruction_sections_render_translated_content_with_field_fallbacks(): void
     {
         $this->assertTrue(Schema::hasColumn('property_translations', 'short_description'));
