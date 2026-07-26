@@ -66,8 +66,10 @@ class VisibleListingCardsQueryTest extends TestCase
         $this->assertTrue($loaded->relationLoaded('translations'));
         $this->assertTrue($loaded->relationLoaded('room'));
         $this->assertTrue($loaded->room->relationLoaded('translations'));
+        $this->assertTrue($loaded->room->relationLoaded('currentOccupancySnapshot'));
         $this->assertTrue($loaded->relationLoaded('property'));
         $this->assertTrue($loaded->property->relationLoaded('host'));
+        $this->assertTrue($loaded->property->relationLoaded('accessDetails'));
         $this->assertSame(1, $loaded->published_reviews_count);
         $this->assertSame(4.0, (float) $loaded->published_reviews_rating);
         $this->assertSame(5.0, (float) $loaded->published_cleanliness_rating);

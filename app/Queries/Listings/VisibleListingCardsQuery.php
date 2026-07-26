@@ -232,6 +232,19 @@ final readonly class VisibleListingCardsQuery
                     'rules' => $rules,
                     'rules.translations' => $ruleTranslations,
                     'compatibilityProfile' => fn ($profile) => $profile->select($roomCompatibilitySelect),
+                    'currentOccupancySnapshot' => fn ($snapshot) => $snapshot
+                        ->select([
+                            'id',
+                            'room_id',
+                            'current_occupants_count',
+                            'occupied_sleeping_places_count',
+                            'free_sleeping_places_count',
+                            'students_count',
+                            'workers_count',
+                            'tourists_count',
+                            'long_term_residents_count',
+                            'short_term_guests_count',
+                        ]),
                 ]),
             'property' => fn ($query) => $query
                 ->select([
@@ -268,6 +281,18 @@ final readonly class VisibleListingCardsQuery
                     'rules.translations' => $ruleTranslations,
                     'host:id,name,rating_as_host,identity_verified,identity_verified_at',
                     'host.hostProfile:id,user_id,rating_average,reviews_count,response_time_minutes,verified_at,default_cancellation_policy',
+                    'accessDetails' => fn ($access) => $access
+                        ->select([
+                            'id',
+                            'property_id',
+                            'self_check_in_available',
+                            'has_key_safe',
+                            'has_electronic_lock',
+                            'has_smart_lock',
+                            'has_door_code',
+                            'meet_host_required',
+                            'host_meeting_required',
+                        ]),
                 ]),
         ];
 

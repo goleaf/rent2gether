@@ -25,8 +25,10 @@ use App\Models\GuestCompatibilityVisibilitySetting;
 use App\Models\HostProfile;
 use App\Models\MediaItem;
 use App\Models\Property;
+use App\Models\PropertyAccessDetail;
 use App\Models\Review;
 use App\Models\Room;
+use App\Models\RoomCurrentOccupancySnapshot;
 use App\Models\RoomOccupantSnapshot;
 use App\Models\Rule;
 use App\Models\SleepingPlace;
@@ -95,6 +97,97 @@ class ListingCardFeatureTest extends TestCase
         $this->assertTrue($card->instantBookingEnabled);
         $this->assertTrue($card->isAvailable);
         $this->assertContains('verified_host', collect($card->badges)->pluck('key')->all());
+    }
+
+    public function test_listing_card_renders_required_advertisement_fields(): void
+    {
+        $place = $this->createPlace('Complete listing card', [
+            'base_price_per_night' => 25,
+            'weekly_price' => 150,
+            'deposit_amount' => 45,
+            'instant_booking_enabled' => true,
+            'extensions_allowed' => true,
+            'can_extend' => true,
+        ]);
+
+        PropertyAccessDetail::factory()->for($place->property)->create([
+            'self_check_in_available' => true,
+            'has_key_safe' => true,
+            'has_electronic_lock' => false,
+            'has_smart_lock' => false,
+        ]);
+
+        RoomCurrentOccupancySnapshot::factory()
+            ->for($place->room)
+            ->for($place->property)
+            ->for($place->property->host, 'host')
+            ->create([
+                'current_occupants_count' => 2,
+                'occupied_sleeping_places_count' => 2,
+                'free_sleeping_places_count' => 2,
+                'students_count' => 1,
+                'workers_count' => 1,
+            ]);
+
+        Review::factory()->count(2)->for($place, 'sleepingPlace')->create([
+            'bed_id' => null,
+            'property_id' => $place->property_id,
+            'room_id' => $place->room_id,
+            'status' => ReviewStatus::Published,
+            'overall_rating' => 4.8,
+            'cleanliness_rating' => 4.9,
+            'safety_rating' => 4.7,
+        ]);
+
+        $place->amenities()->attach($this->amenity('wifi'));
+        $place->rules()->attach($this->rule('quiet_hours'));
+
+        $context = $this->context(checkIn: '2026-07-10', checkOut: '2026-07-17');
+        $loaded = app(ListingCardQueryService::class)->forComparison([$place->id], $context)->firstOrFail();
+        $card = app(ListingCardService::class)->build($loaded, $context)->toArray();
+
+        $this->assertSame('Vilnius', $card['city_name']);
+        $this->assertSame('Center', $card['district']);
+        $this->assertSame(__('listing_card.values.apartment'), $card['property_type']);
+        $this->assertSame(__('listing_card.values.shared'), $card['room_type']);
+        $this->assertSame(__('listing_card.values.bunk_bottom'), $card['sleeping_place_type']);
+        $this->assertSame(4, $card['room_places_count']);
+        $this->assertSame(2, $card['room_available_places_count']);
+        $this->assertSame(2, $card['room_occupied_places_count']);
+        $this->assertTrue($card['has_discount']);
+        $this->assertTrue($card['has_deposit']);
+        $this->assertTrue($card['has_free_cancellation']);
+        $this->assertTrue($card['host_verified']);
+        $this->assertTrue($card['instant_booking_enabled']);
+        $this->assertTrue($card['can_extend']);
+        $this->assertTrue($card['self_check_in']);
+        $this->assertStringContainsString('student', $card['people_in_room_summary']);
+        $this->assertStringContainsString('worker', $card['people_in_room_summary']);
+
+        $this->blade('<x-listings.card :card="$card" card-variant="search" />', [
+            'card' => $card,
+        ])
+            ->assertSee('Complete listing card')
+            ->assertSee(__('listing_card.city_label', ['city' => 'Vilnius']))
+            ->assertSee(__('listing_card.district_label', ['district' => 'Center']))
+            ->assertSee(__('listing_card.values.apartment'))
+            ->assertSee(__('listing_card.values.shared'))
+            ->assertSee(__('listing_card.values.bunk_bottom'))
+            ->assertSee(trans_choice('listing_card.places_in_room', 4, ['count' => 4]))
+            ->assertSee(__('listing_card.available_places', ['count' => 2]))
+            ->assertSee(trans_choice('listing_card.stay_days', 7, ['count' => 7]))
+            ->assertSee(trans_choice('listing_card.calendar_days', 8, ['count' => 8]))
+            ->assertSee(__('listing_card.discount'))
+            ->assertSee(__('listing_card.has_deposit'))
+            ->assertSee(__('listing_card.free_cancellation'))
+            ->assertSee(__('listing_card.verified_host'))
+            ->assertSee(__('listing_card.instant_booking'))
+            ->assertSee(__('listing_card.can_extend'))
+            ->assertSee(__('listing_card.self_check_in'))
+            ->assertSee(__('listing_card.rating_metric', ['label' => __('listing_card.ratings.cleanliness'), 'rating' => '4.9']))
+            ->assertSee(__('listing_card.rating_metric', ['label' => __('listing_card.ratings.safety'), 'rating' => '4.7']))
+            ->assertSee('Wifi')
+            ->assertSee('Quiet Hours');
     }
 
     public function test_guest_hint_calculator_covers_prompted_search_hint_keys(): void

@@ -9,13 +9,35 @@
 
         <flux:field>
             <flux:label>
-    <span class="inline-flex min-w-0 items-center gap-1.5">
-        <flux:icon name="clock" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-        <span class="min-w-0">{{ __('search.fields.district') }}</span>
-    </span>
-</flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="map-pin" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('search.fields.district') }}</span>
+                </span>
+            </flux:label>
             <flux:input wire:model.blur="district" placeholder="{{ __('search.placeholders.district') }}" icon="map-pin" />
         </flux:field>
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="map" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('search.fields.street') }}</span>
+                    </span>
+                </flux:label>
+                <flux:input wire:model.blur="street" placeholder="{{ __('search.placeholders.street') }}" icon="map" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <flux:icon name="map-pin" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                        <span class="min-w-0">{{ __('search.fields.landmark') }}</span>
+                    </span>
+                </flux:label>
+                <flux:input wire:model.blur="landmark" placeholder="{{ __('search.placeholders.landmark') }}" icon="map-pin" />
+            </flux:field>
+        </div>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             <flux:field>
@@ -448,37 +470,33 @@
             </flux:select>
         </flux:field>
 
-        <div class="space-y-2">
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="noDeposit" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="banknotes" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.no_deposit') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="noDeposit" />
-            </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="freeCancellation" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="scale" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.free_cancellation') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="freeCancellation" />
-            </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="longStayAllowed" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.long_stay_allowed') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="longStayAllowed" />
-            </flux:field>
+        <flux:field>
+            <flux:label>
+                <span class="inline-flex min-w-0 items-center gap-1.5">
+                    <flux:icon name="calculator" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                    <span class="min-w-0">{{ __('search.fields.price_basis') }}</span>
+                </span>
+            </flux:label>
+            <flux:select wire:model.change="priceBasis">
+                @foreach($this->priceBasisOptions as $value => $label)
+                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                @endforeach
+            </flux:select>
+        </flux:field>
+
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            @foreach($this->priceFilterOptions as $priceFilter)
+                <flux:field variant="inline" wire:key="price-filter-{{ $priceFilter['property'] }}">
+                    <flux:checkbox wire:model.change="{{ $priceFilter['property'] }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="{{ $priceFilter['icon'] }}" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $priceFilter['label'] }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $priceFilter['property'] }}" />
+                </flux:field>
+            @endforeach
         </div>
     </div>
 
@@ -512,26 +530,50 @@
                 </flux:label>
                 <flux:error name="hostApprovalRequired" />
             </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="availableToday" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.available_today') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="availableToday" />
-            </flux:field>
-                        <flux:field variant="inline">
-                <flux:checkbox wire:model.change="flexibleDates" />
-                <flux:label>
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                        <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                        <span class="min-w-0">{{ __('search.filters_flags.flexible_dates') }}</span>
-                    </span>
-                </flux:label>
-                <flux:error name="flexibleDates" />
-            </flux:field>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.fields.minimum_stay_nights') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="minimumStayNights">
+                        @foreach($this->minimumStayOptions as $value => $label)
+                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="minimumStayNights" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="calendar-days" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ __('search.fields.maximum_stay_nights') }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:select wire:model.change="maximumStayNights">
+                        @foreach($this->maximumStayOptions as $value => $label)
+                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="maximumStayNights" />
+                </flux:field>
+            </div>
+
+            @foreach($this->dateFilterOptions as $dateFilter)
+                <flux:field variant="inline">
+                    <flux:checkbox wire:model.change="{{ $dateFilter['property'] }}" />
+                    <flux:label>
+                        <span class="inline-flex min-w-0 items-center gap-1.5">
+                            <flux:icon name="{{ $dateFilter['icon'] }}" variant="mini" class="size-4 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
+                            <span class="min-w-0">{{ $dateFilter['label'] }}</span>
+                        </span>
+                    </flux:label>
+                    <flux:error name="{{ $dateFilter['property'] }}" />
+                </flux:field>
+            @endforeach
         </div>
     </div>
 

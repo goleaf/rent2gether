@@ -54,6 +54,18 @@
                 <span class="truncate">{{ $card['location'] }}</span>
             </div>
 
+            @if(! $isCompact && (($card['city_name'] ?? null) || ($card['district'] ?? null)))
+                <div class="flex flex-wrap gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    @if($card['city_name'] ?? null)
+                        <span>{{ __('listing_card.city_label', ['city' => $card['city_name']]) }}</span>
+                    @endif
+
+                    @if($card['district'] ?? null)
+                        <span>{{ __('listing_card.district_label', ['district' => $card['district']]) }}</span>
+                    @endif
+                </div>
+            @endif
+
             <a href="{{ $card['url'] }}" wire:navigate>
                 <flux:heading size="sm" class="line-clamp-2 hover:text-emerald-700 dark:hover:text-emerald-300">
                     {{ $card['title'] }}
@@ -67,8 +79,17 @@
             @endif
 
             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                {{ $card['room_type'] }} · {{ $card['sleeping_place_type'] }} · {{ $card['room_gender_policy'] }}
+                {{ $card['property_type'] }} · {{ $card['room_type'] }} · {{ $card['sleeping_place_type'] }} · {{ $card['room_gender_policy'] }}
             </flux:text>
+
+            <div class="flex flex-wrap gap-1.5 text-xs text-zinc-600 dark:text-zinc-300" aria-label="{{ __('listing_card.occupancy_label') }}">
+                <span class="rounded-md bg-zinc-100 px-2 py-1 dark:bg-zinc-800">
+                    {{ trans_choice('listing_card.places_in_room', (int) $card['room_places_count'], ['count' => (int) $card['room_places_count']]) }}
+                </span>
+                <span class="rounded-md bg-zinc-100 px-2 py-1 dark:bg-zinc-800">
+                    {{ __('listing_card.available_places', ['count' => (int) $card['room_available_places_count']]) }}
+                </span>
+            </div>
 
             @if(! $isCompact)
                 <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
@@ -80,10 +101,47 @@
         @if(! empty($card['badges']) && ! $isCompact)
             <div class="flex flex-wrap gap-1.5">
                 <x-listings.card-badges :badges="array_slice($card['badges'], 3, 3)" />
-                @if($card['rating_average'])
+            </div>
+        @endif
+
+        @if(($card['rating_average'] ?? null) || ($card['cleanliness_rating'] ?? null) || ($card['safety_rating'] ?? null))
+            <div class="flex flex-wrap gap-1.5" aria-label="{{ __('listing_card.ratings_label') }}">
+                @if($card['rating_average'] ?? null)
                     <flux:badge size="sm" icon="star">
-                        {{ __('listing_card.rating_summary', ['rating' => number_format((float) $card['rating_average'], 1), 'count' => $card['reviews_count']]) }}
+                        {{ __('listing_card.rating_summary', ['rating' => $rating($card['rating_average']), 'count' => $card['reviews_count']]) }}
                     </flux:badge>
+                @endif
+
+                @if(! $isCompact && ($card['cleanliness_rating'] ?? null))
+                    <flux:badge size="sm" color="zinc" icon="sparkles">
+                        {{ __('listing_card.rating_metric', ['label' => __('listing_card.ratings.cleanliness'), 'rating' => $rating($card['cleanliness_rating'])]) }}
+                    </flux:badge>
+                @endif
+
+                @if(! $isCompact && ($card['safety_rating'] ?? null))
+                    <flux:badge size="sm" color="zinc" icon="shield-check">
+                        {{ __('listing_card.rating_metric', ['label' => __('listing_card.ratings.safety'), 'rating' => $rating($card['safety_rating'])]) }}
+                    </flux:badge>
+                @endif
+            </div>
+        @endif
+
+        @if(! $isCompact && (($card['host_verified'] ?? false) || ($card['instant_booking_enabled'] ?? false) || ($card['can_extend'] ?? false) || ($card['self_check_in'] ?? false)))
+            <div class="flex flex-wrap gap-1.5" aria-label="{{ __('listing_card.conditions_label') }}">
+                @if($card['host_verified'] ?? false)
+                    <flux:badge size="sm" color="blue" icon="shield-check">{{ __('listing_card.verified_host') }}</flux:badge>
+                @endif
+
+                @if($card['instant_booking_enabled'] ?? false)
+                    <flux:badge size="sm" color="green" icon="bolt">{{ __('listing_card.instant_booking') }}</flux:badge>
+                @endif
+
+                @if($card['can_extend'] ?? false)
+                    <flux:badge size="sm" color="zinc" icon="calendar-days">{{ __('listing_card.can_extend') }}</flux:badge>
+                @endif
+
+                @if($card['self_check_in'] ?? false)
+                    <flux:badge size="sm" color="zinc" icon="key">{{ __('listing_card.self_check_in') }}</flux:badge>
                 @endif
             </div>
         @endif

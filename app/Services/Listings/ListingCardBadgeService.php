@@ -62,7 +62,6 @@ class ListingCardBadgeService
 
         return collect($badges)
             ->unique('key')
-            ->take(6)
             ->map(fn (ListingCardBadgeData $badge): array => $badge->toArray())
             ->values()
             ->all();

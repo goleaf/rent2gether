@@ -36,6 +36,11 @@ class Card extends Component
         };
     }
 
+    public function rating(float|int|string|null $rating): string
+    {
+        return number_format((float) $rating, 1);
+    }
+
     public function render(): View
     {
         return view('components.listings.card');

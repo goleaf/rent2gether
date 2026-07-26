@@ -18,6 +18,7 @@ use App\Models\City;
 use App\Models\ComplaintCase;
 use App\Models\Country;
 use App\Models\HostProfile;
+use App\Models\PromoCode;
 use App\Models\Property;
 use App\Models\PropertyAccessDetail;
 use App\Models\PropertyAddress;
@@ -32,6 +33,8 @@ use App\Models\RoomOccupantSnapshot;
 use App\Models\RoomRatingSnapshot;
 use App\Models\Rule;
 use App\Models\SleepingPlace;
+use App\Models\SleepingPlaceDiscountRule;
+use App\Models\SleepingPlacePricingSetting;
 use App\Models\SleepingPlaceRatingSnapshot;
 use App\Models\User;
 use Carbon\Carbon;
@@ -117,6 +120,181 @@ class SearchPageTest extends TestCase
         $this->assertTrue($open->exists);
     }
 
+    public function test_search_accepts_extended_date_query_keys(): void
+    {
+        $city = $this->city('Date Criteria City');
+        $tomorrow = CarbonImmutable::tomorrow();
+        [$weekendStart, $weekendEnd] = $this->nextWeekendRange();
+
+        $matched = $this->createSearchPlace('Matched Date Criteria Place', $city, [
+            'min_nights' => 1,
+            'max_nights' => 90,
+            'can_extend' => true,
+            'extensions_allowed' => true,
+            'early_check_in_allowed' => true,
+            'late_check_out_allowed' => true,
+        ]);
+        $matched->calendarSettings()->create([
+            'min_nights' => 1,
+            'max_nights' => 90,
+            'can_extend' => true,
+            'check_in_time_from' => '06:00',
+            'check_in_time_until' => '23:30',
+            'check_out_time_until' => '22:30',
+            'earliest_check_in_time' => '06:00',
+            'latest_check_out_time' => '22:30',
+        ]);
+
+        $blockedTomorrow = $this->createSearchPlace('Blocked Tomorrow Date Criteria Place', $city, [
+            'min_nights' => 1,
+            'max_nights' => 90,
+            'can_extend' => true,
+            'extensions_allowed' => true,
+            'early_check_in_allowed' => true,
+            'late_check_out_allowed' => true,
+        ]);
+        $blockedTomorrow->calendarSettings()->create([
+            'can_extend' => true,
+            'check_in_time_from' => '06:00',
+            'check_in_time_until' => '23:30',
+            'check_out_time_until' => '22:30',
+            'earliest_check_in_time' => '06:00',
+            'latest_check_out_time' => '22:30',
+        ]);
+        AvailabilityDay::factory()->for($blockedTomorrow)->create([
+            'date' => $tomorrow->toDateString(),
+            'status' => AvailabilityStatus::BlockedByHost,
+        ]);
+
+        $tooLongMinimum = $this->createSearchPlace('Too Long Minimum Date Criteria Place', $city, [
+            'min_nights' => 14,
+            'max_nights' => 90,
+            'can_extend' => true,
+            'extensions_allowed' => true,
+            'early_check_in_allowed' => true,
+            'late_check_out_allowed' => true,
+        ]);
+        $tooLongMinimum->calendarSettings()->create([
+            'can_extend' => true,
+            'check_in_time_from' => '06:00',
+            'check_in_time_until' => '23:30',
+            'check_out_time_until' => '22:30',
+            'earliest_check_in_time' => '06:00',
+            'latest_check_out_time' => '22:30',
+        ]);
+
+        $cannotExtend = $this->createSearchPlace('Cannot Extend Date Criteria Place', $city, [
+            'min_nights' => 1,
+            'max_nights' => 90,
+            'can_extend' => false,
+            'extensions_allowed' => false,
+            'early_check_in_allowed' => true,
+            'late_check_out_allowed' => true,
+        ]);
+        $cannotExtend->calendarSettings()->create([
+            'can_extend' => false,
+            'check_in_time_from' => '06:00',
+            'check_in_time_until' => '23:30',
+            'check_out_time_until' => '22:30',
+            'earliest_check_in_time' => '06:00',
+            'latest_check_out_time' => '22:30',
+        ]);
+
+        $noNightTimes = $this->createSearchPlace('No Night Times Date Criteria Place', $city, [
+            'min_nights' => 1,
+            'max_nights' => 90,
+            'can_extend' => true,
+            'extensions_allowed' => true,
+            'early_check_in_allowed' => false,
+            'late_check_out_allowed' => false,
+        ]);
+        $noNightTimes->calendarSettings()->create([
+            'can_extend' => true,
+            'check_in_time_from' => '12:00',
+            'check_in_time_until' => '18:00',
+            'check_out_time_until' => '11:00',
+            'earliest_check_in_time' => '12:00',
+            'latest_check_out_time' => '11:00',
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'tomorrow' => true,
+            'weekend' => true,
+            'short_stay' => true,
+            'min_nights' => 3,
+            'max_nights' => 7,
+            'can_extend' => true,
+            'free_after_checkout' => true,
+            'night_checkin' => true,
+            'night_checkout' => true,
+            'early_morning_checkin' => true,
+            'late_evening_checkout' => true,
+            'in' => $weekendStart->toDateString(),
+            'out' => $weekendEnd->toDateString(),
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Date Criteria Place');
+        $response->assertDontSee('Blocked Tomorrow Date Criteria Place');
+        $response->assertDontSee('Too Long Minimum Date Criteria Place');
+        $response->assertDontSee('Cannot Extend Date Criteria Place');
+        $response->assertDontSee('No Night Times Date Criteria Place');
+    }
+
+    public function test_flexible_date_search_uses_nearby_available_range(): void
+    {
+        $city = $this->city('Flexible Date City');
+        $checkIn = CarbonImmutable::parse('2026-07-10');
+        $checkOut = CarbonImmutable::parse('2026-07-12');
+
+        $nearbyAvailable = $this->createSearchPlace('Nearby Flexible Date Place', $city);
+        AvailabilityDay::factory()->for($nearbyAvailable)->create([
+            'date' => $checkIn->toDateString(),
+            'status' => AvailabilityStatus::BlockedByHost,
+        ]);
+
+        $fullyBlocked = $this->createSearchPlace('Fully Blocked Flexible Date Place', $city);
+        foreach ([
+            $checkIn->subDay(),
+            $checkIn,
+            $checkIn->addDay(),
+        ] as $blockedCheckIn) {
+            AvailabilityDay::factory()->for($fullyBlocked)->create([
+                'date' => $blockedCheckIn->toDateString(),
+                'status' => AvailabilityStatus::BlockedByHost,
+            ]);
+        }
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'in' => $checkIn->toDateString(),
+            'out' => $checkOut->toDateString(),
+            'flexible' => true,
+            'flex_1' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Nearby Flexible Date Place');
+        $response->assertDontSee('Fully Blocked Flexible Date Place');
+    }
+
+    public function test_extended_date_search_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'min_nights', 'max_nights']));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'can_extend']));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'early_check_in_allowed']));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'late_check_out_allowed']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_calendar_settings', ['can_extend', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_calendar_settings', ['check_in_time_until', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_calendar_settings', ['check_out_time_until', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_calendar_settings', ['check_in_time_from', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_calendar_settings', ['earliest_check_in_time', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_calendar_settings', ['latest_check_out_time', 'sleeping_place_id']));
+    }
+
     public function test_search_filters_by_price(): void
     {
         $city = $this->city('Riga');
@@ -132,6 +310,220 @@ class SearchPageTest extends TestCase
         $response->assertOk();
         $response->assertSee('Budget Place');
         $response->assertDontSee('Premium Place');
+    }
+
+    public function test_search_filters_by_extended_price_criteria(): void
+    {
+        $city = $this->city('Vilnius Price Criteria');
+        $matched = $this->createSearchPlace('Transparent Weekly Deal', $city, [
+            'base_price_per_night' => 25,
+            'weekly_price' => 140,
+            'monthly_price' => 520,
+            'cleaning_fee' => 0,
+            'deposit_amount' => 20,
+            'cancellation_policy' => 'flexible',
+        ]);
+        $hiddenFees = $this->createSearchPlace('Hidden Fees Weekly Deal', $city, [
+            'base_price_per_night' => 24,
+            'weekly_price' => 130,
+            'cleaning_fee' => 0,
+            'deposit_amount' => 20,
+            'cancellation_policy' => 'flexible',
+        ]);
+        $highDeposit = $this->createSearchPlace('High Deposit Weekly Deal', $city, [
+            'base_price_per_night' => 26,
+            'weekly_price' => 150,
+            'cleaning_fee' => 0,
+            'deposit_amount' => 120,
+            'cancellation_policy' => 'flexible',
+        ]);
+        $noPromo = $this->createSearchPlace('No Promo Weekly Deal', $city, [
+            'base_price_per_night' => 27,
+            'weekly_price' => 145,
+            'cleaning_fee' => 0,
+            'deposit_amount' => 20,
+            'cancellation_policy' => 'flexible',
+        ]);
+
+        $this->createSearchPlace('Average Price Anchor', $city, [
+            'base_price_per_night' => 220,
+            'weekly_price' => 900,
+            'cancellation_policy' => 'strict',
+        ]);
+
+        foreach ([$matched, $hiddenFees, $highDeposit, $noPromo] as $place) {
+            SleepingPlaceDiscountRule::factory()->for($place)->create();
+        }
+
+        foreach ([$matched, $hiddenFees, $highDeposit] as $place) {
+            PromoCode::factory()->create(['sleeping_place_id' => $place->id]);
+        }
+
+        SleepingPlacePricingSetting::factory()->for($matched)->create([
+            'weekly_price' => 140,
+            'monthly_price' => 520,
+            'cleaning_fee' => 0,
+            'deposit_required' => true,
+            'deposit_amount' => 20,
+            'installment_payment_allowed' => true,
+            'pay_later_allowed' => true,
+            'pay_on_arrival_allowed' => true,
+            'all_fees_included' => true,
+            'show_total_price_upfront' => true,
+            'hidden_fees_disclosed' => true,
+        ]);
+        SleepingPlacePricingSetting::factory()->for($hiddenFees)->create([
+            'weekly_price' => 130,
+            'cleaning_fee' => 0,
+            'deposit_required' => true,
+            'deposit_amount' => 20,
+            'installment_payment_allowed' => true,
+            'pay_later_allowed' => true,
+            'pay_on_arrival_allowed' => true,
+            'all_fees_included' => false,
+            'show_total_price_upfront' => false,
+            'hidden_fees_disclosed' => false,
+        ]);
+        SleepingPlacePricingSetting::factory()->for($highDeposit)->create([
+            'weekly_price' => 150,
+            'cleaning_fee' => 0,
+            'deposit_required' => true,
+            'deposit_amount' => 120,
+            'installment_payment_allowed' => true,
+            'pay_later_allowed' => true,
+            'pay_on_arrival_allowed' => true,
+            'all_fees_included' => true,
+            'show_total_price_upfront' => true,
+            'hidden_fees_disclosed' => true,
+        ]);
+        SleepingPlacePricingSetting::factory()->for($noPromo)->create([
+            'weekly_price' => 145,
+            'cleaning_fee' => 0,
+            'deposit_required' => true,
+            'deposit_amount' => 20,
+            'installment_payment_allowed' => true,
+            'pay_later_allowed' => true,
+            'pay_on_arrival_allowed' => true,
+            'all_fees_included' => true,
+            'show_total_price_upfront' => true,
+            'hidden_fees_disclosed' => true,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'price_min' => 100,
+            'price_max' => 160,
+            'price_basis' => 'weekly',
+            'with_deposit' => true,
+            'low_deposit' => true,
+            'no_cleaning_fee' => true,
+            'free_cancel' => true,
+            'full_refund' => true,
+            'installments' => true,
+            'pay_later' => true,
+            'pay_on_arrival' => true,
+            'has_discount' => true,
+            'has_promo' => true,
+            'below_avg_price' => true,
+            'all_fees' => true,
+            'show_total_now' => true,
+            'no_hidden_fees' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Transparent Weekly Deal');
+        $response->assertDontSee('Hidden Fees Weekly Deal');
+        $response->assertDontSee('High Deposit Weekly Deal');
+        $response->assertDontSee('No Promo Weekly Deal');
+    }
+
+    public function test_best_value_sort_prioritizes_rating_before_instant_booking(): void
+    {
+        $city = $this->city('Kaunas Value Sort');
+        $bestValue = $this->createSearchPlace('Best Value Place', $city, [
+            'base_price_per_night' => 30,
+            'instant_booking_enabled' => false,
+        ]);
+        $cheapInstant = $this->createSearchPlace('Cheap Instant Place', $city, [
+            'base_price_per_night' => 20,
+            'instant_booking_enabled' => true,
+        ]);
+
+        HostProfile::where('user_id', $bestValue->property->host_user_id)->update([
+            'rating_average' => 4.9,
+            'reviews_count' => 40,
+        ]);
+        HostProfile::where('user_id', $cheapInstant->property->host_user_id)->update([
+            'rating_average' => 3.2,
+            'reviews_count' => 2,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'city' => $city->id,
+            'sort' => 'best_value',
+        ]));
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Best Value Place', 'Cheap Instant Place']);
+    }
+
+    public function test_extended_price_query_state_is_bound_to_livewire(): void
+    {
+        Livewire::test(SleepingPlaceSearch::class)
+            ->set('priceBasis', 'monthly')
+            ->set('withDeposit', true)
+            ->set('lowDeposit', true)
+            ->set('noCleaningFee', true)
+            ->set('partialRefund', true)
+            ->set('fullRefund', true)
+            ->set('installmentPayment', true)
+            ->set('payLater', true)
+            ->set('payOnArrival', true)
+            ->set('hasDiscount', true)
+            ->set('hasPromoCode', true)
+            ->set('belowAveragePrice', true)
+            ->set('priceIncludesAllFees', true)
+            ->set('showTotalPriceImmediately', true)
+            ->set('hideHiddenFees', true)
+            ->assertSet('priceBasis', 'monthly')
+            ->assertSet('withDeposit', true)
+            ->assertSet('lowDeposit', true)
+            ->assertSet('noCleaningFee', true)
+            ->assertSet('partialRefund', true)
+            ->assertSet('fullRefund', true)
+            ->assertSet('installmentPayment', true)
+            ->assertSet('payLater', true)
+            ->assertSet('payOnArrival', true)
+            ->assertSet('hasDiscount', true)
+            ->assertSet('hasPromoCode', true)
+            ->assertSet('belowAveragePrice', true)
+            ->assertSet('priceIncludesAllFees', true)
+            ->assertSet('showTotalPriceImmediately', true)
+            ->assertSet('hideHiddenFees', true);
+    }
+
+    public function test_extended_price_search_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasColumn('sleeping_place_pricing_settings', 'installment_payment_allowed'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_pricing_settings', 'pay_later_allowed'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_pricing_settings', 'pay_on_arrival_allowed'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_pricing_settings', 'all_fees_included'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_pricing_settings', 'show_total_price_upfront'));
+        $this->assertTrue(Schema::hasColumn('sleeping_place_pricing_settings', 'hidden_fees_disclosed'));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'weekly_price']));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'monthly_price']));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'cleaning_fee']));
+        $this->assertTrue(Schema::hasIndex('sleeping_places', ['status', 'cancellation_policy']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_pricing_settings', ['active', 'weekly_price', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_pricing_settings', ['active', 'monthly_price', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_pricing_settings', ['active', 'deposit_amount', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_pricing_settings', ['active', 'cleaning_fee', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_pricing_settings', ['active', 'installment_payment_allowed', 'pay_later_allowed', 'pay_on_arrival_allowed', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_pricing_settings', ['active', 'all_fees_included', 'show_total_price_upfront', 'hidden_fees_disclosed', 'sleeping_place_id']));
+        $this->assertTrue(Schema::hasIndex('sleeping_place_discount_rules', ['active', 'sleeping_place_id', 'discount_type']));
+        $this->assertTrue(Schema::hasIndex('promo_codes', ['active', 'sleeping_place_id', 'starts_at', 'ends_at']));
     }
 
     public function test_search_filters_by_amenity(): void
@@ -403,6 +795,149 @@ class SearchPageTest extends TestCase
         $this->assertTrue(Schema::hasIndex('property_access_details', ['guest_rules_enabled', 'property_id']));
         $this->assertTrue(Schema::hasIndex('property_access_details', ['delivery_allowed', 'property_id']));
         $this->assertTrue(Schema::hasIndex('property_access_details', ['access_24_7', 'property_id']));
+    }
+
+    public function test_advanced_place_location_search_fields_and_indexes_exist(): void
+    {
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'nearest_landmark'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'near_work_area'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'near_sea'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'near_nightlife'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_residential'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_city_center'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_suburb'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_industrial'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_tourist'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_students'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_workers'));
+        $this->assertTrue(Schema::hasColumn('property_location_details', 'area_long_stay'));
+
+        $this->assertTrue(Schema::hasIndex('properties', ['country_id', 'city_id', 'status']));
+        $this->assertTrue(Schema::hasIndex('properties', ['city_id', 'street']));
+        $this->assertTrue(Schema::hasIndex('properties', ['city_id', 'street_name']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['nearest_landmark', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['nearest_train_station', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['nearest_park', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['nearest_mall', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['nearest_gym', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['nearest_coworking', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['near_work_area', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['near_sea', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['near_nightlife', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_residential', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_city_center', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_suburb', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_industrial', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_tourist', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_students', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_workers', 'property_id']));
+        $this->assertTrue(Schema::hasIndex('property_location_details', ['area_long_stay', 'property_id']));
+    }
+
+    public function test_search_accepts_advanced_place_location_query_keys(): void
+    {
+        $city = $this->city('Advanced Location City');
+        $matched = $this->createSearchPlace('Matched Advanced Location Place', $city, [], [
+            'district' => 'Central Riverside',
+            'street' => 'River Road',
+            'street_name' => 'River Road',
+            'distance_to_center_meters' => 700,
+        ]);
+        PropertyLocationDetail::factory()->for($matched->property)->create([
+            'nearest_landmark' => 'Museum Square',
+            'nearest_bus_stop' => 'River Stop',
+            'nearest_bus_stop_distance_meters' => 250,
+            'nearest_train_station' => 'Central Station',
+            'nearest_railway_station' => 'Central Station',
+            'railway_station_distance_meters' => 1200,
+            'nearest_park' => 'Riverside Park',
+            'nearest_mall' => 'Europa Mall',
+            'nearest_gym' => 'Fit Club',
+            'nearest_coworking' => 'Desk Hub',
+            'nearest_hospital' => 'City Hospital',
+            'nearest_university' => 'City University',
+            'nearest_airport' => 'City Airport',
+            'airport_distance_meters' => 10000,
+            'district_noise_level' => 'quiet',
+            'district_safety_level' => 'good',
+            'near_work_area' => true,
+            'near_sea' => true,
+            'near_nightlife' => true,
+            'area_residential' => true,
+            'area_city_center' => true,
+            'area_suburb' => false,
+            'area_industrial' => false,
+            'area_tourist' => true,
+            'area_students' => true,
+            'area_workers' => true,
+            'area_long_stay' => true,
+        ]);
+
+        $filtered = $this->createSearchPlace('Filtered Advanced Location Place', $city, [], [
+            'district' => 'Central Riverside',
+            'street' => 'River Road',
+            'street_name' => 'River Road',
+            'distance_to_center_meters' => 9000,
+        ]);
+        PropertyLocationDetail::factory()->for($filtered->property)->create([
+            'nearest_landmark' => 'Warehouse Gate',
+            'nearest_bus_stop' => null,
+            'nearest_bus_stop_distance_meters' => null,
+            'nearest_train_station' => null,
+            'nearest_railway_station' => null,
+            'railway_station_distance_meters' => null,
+            'nearest_park' => null,
+            'nearest_mall' => null,
+            'nearest_gym' => null,
+            'nearest_coworking' => null,
+            'nearest_hospital' => null,
+            'nearest_university' => null,
+            'nearest_airport' => null,
+            'airport_distance_meters' => null,
+            'district_noise_level' => 'loud',
+            'district_safety_level' => 'low',
+            'near_work_area' => false,
+            'near_sea' => false,
+            'near_nightlife' => false,
+            'area_residential' => false,
+            'area_city_center' => false,
+            'area_suburb' => false,
+            'area_industrial' => true,
+            'area_tourist' => false,
+            'area_students' => false,
+            'area_workers' => false,
+            'area_long_stay' => false,
+        ]);
+
+        $response = $this->get(route('search.index', [
+            'locale' => 'en',
+            'country_id' => $city->country_id,
+            'city_id' => $city->id,
+            'district' => 'Central',
+            'street' => 'River',
+            'landmark' => 'Museum',
+            'near_bus_stop' => true,
+            'near_train_station' => true,
+            'near_park' => true,
+            'near_shopping_center' => true,
+            'near_gym' => true,
+            'near_coworking' => true,
+            'near_work' => true,
+            'near_sea' => true,
+            'near_nightlife' => true,
+            'area_quiet' => true,
+            'area_safe' => true,
+            'area_residential' => true,
+            'area_city_center' => true,
+            'area_tourist' => true,
+            'area_students' => true,
+            'area_workers' => true,
+            'area_long_stay' => true,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Matched Advanced Location Place');
+        $response->assertDontSee('Filtered Advanced Location Place');
     }
 
     public function test_search_filters_by_private_room_criteria(): void
@@ -1529,6 +2064,18 @@ class SearchPageTest extends TestCase
         }
 
         return $place;
+    }
+
+    /**
+     * @return array{0:CarbonImmutable,1:CarbonImmutable}
+     */
+    private function nextWeekendRange(): array
+    {
+        $today = CarbonImmutable::today();
+        $daysUntilFriday = (5 - (int) $today->dayOfWeek + 7) % 7;
+        $checkIn = $today->addDays($daysUntilFriday);
+
+        return [$checkIn, $checkIn->addDays(2)];
     }
 
     private function amenity(string $slug, string $label): Amenity

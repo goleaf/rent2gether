@@ -103,7 +103,7 @@ class ListingCardService
         [$isAvailable, $availabilityStatus, $availabilityMessage] = $this->availabilityState($place, $context);
         $keyAmenities = $this->amenitiesAndRules->keyAmenities($place, $context->locale);
         $keyRules = $this->amenitiesAndRules->keyRules($place, $context->locale);
-        $selfCheckIn = $this->amenitiesAndRules->hasAmenity($place, ['self_check_in', 'key_safe', 'electronic_lock']);
+        $selfCheckIn = $this->selfCheckInAvailable($place);
         $compatibility = $this->compatibilityData($place, $context);
 
         return new ListingCardData(
@@ -399,5 +399,20 @@ class ListingCardService
         $value = $place->getAttribute($attribute);
 
         return $value === null ? null : (float) $value;
+    }
+
+    private function selfCheckInAvailable(SleepingPlace $place): bool
+    {
+        $access = $place->property?->relationLoaded('accessDetails')
+            ? $place->property->getRelation('accessDetails')
+            : null;
+
+        return (bool) (
+            $access?->self_check_in_available
+            || $access?->has_key_safe
+            || $access?->has_electronic_lock
+            || $access?->has_smart_lock
+            || $this->amenitiesAndRules->hasAmenity($place, ['self_check_in', 'key_safe', 'electronic_lock'])
+        );
     }
 }

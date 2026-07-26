@@ -6,12 +6,14 @@ use App\Data\Listings\ListingCardContext;
 use App\Enums\GenderType;
 use App\Enums\PropertyType;
 use App\Enums\RoomType;
+use App\Enums\SleepingPlaceStatus;
 use App\Enums\SleepingPlaceType;
 use App\Models\City;
 use App\Models\CompatibilityResult;
 use App\Models\Complaint;
 use App\Models\ComplaintCase;
 use App\Models\RoomOccupantSnapshot;
+use App\Models\SleepingPlace;
 use App\Services\Geo\GeoSearchService;
 use App\Services\Listings\ListingCardQueryService;
 use App\Services\Listings\ListingCardService;
@@ -77,6 +79,32 @@ class SleepingPlaceSearch extends Component
     ];
 
     private const GOOD_STREET_LIGHTING_LEVELS = ['good', 'high', 'bright'];
+
+    private const FLEXIBLE_DATE_DEFAULT_WINDOW_DAYS = 3;
+
+    private const SHORT_STAY_MAX_NIGHTS = 7;
+
+    private const LONG_STAY_MIN_NIGHTS = 30;
+
+    private const LOW_DEPOSIT_MAX_AMOUNT = 50.0;
+
+    private const PRICE_BASIS_NIGHTLY = 'nightly';
+
+    private const PRICE_BASIS_WEEKLY = 'weekly';
+
+    private const PRICE_BASIS_MONTHLY = 'monthly';
+
+    private const FULL_REFUND_POLICIES = ['flexible'];
+
+    private const PARTIAL_REFUND_POLICIES = ['flexible', 'moderate', 'strict'];
+
+    private const NIGHT_CHECK_IN_TIME = '22:00';
+
+    private const NIGHT_CHECK_OUT_TIME = '22:00';
+
+    private const EARLY_MORNING_CHECK_IN_TIME = '08:00';
+
+    private const LATE_EVENING_CHECK_OUT_TIME = '20:00';
 
     private const CLEAN_PROPERTY_LEVELS = ['good', 'high', 'clean'];
 
@@ -245,11 +273,23 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'city', except: '')]
     public string $city = '';
 
+    #[Url(as: 'country_id', except: '')]
+    public string $countryId = '';
+
+    #[Url(as: 'city_id', except: '')]
+    public string $cityId = '';
+
     #[Url(as: 'city_name', except: '')]
     public string $cityQuery = '';
 
     #[Url(as: 'district', except: '')]
     public string $district = '';
+
+    #[Url(as: 'street', except: '')]
+    public string $street = '';
+
+    #[Url(as: 'landmark', except: '')]
+    public string $landmark = '';
 
     #[Url(as: 'in', except: '')]
     public string $checkIn = '';
@@ -268,6 +308,9 @@ class SleepingPlaceSearch extends Component
 
     #[Url(as: 'currency', except: '')]
     public string $currency = '';
+
+    #[Url(as: 'price_basis', except: '')]
+    public string $priceBasis = '';
 
     #[Url(as: 'property_type', except: '')]
     public string $propertyType = '';
@@ -713,7 +756,7 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'near_metro', except: false)]
     public bool $nearMetro = false;
 
-    #[Url(as: 'near_bus', except: false)]
+    #[Url(as: 'near_bus_stop', except: false)]
     public bool $nearBusStop = false;
 
     #[Url(as: 'near_shop', except: false)]
@@ -728,8 +771,29 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'near_university', except: false)]
     public bool $nearUniversity = false;
 
-    #[Url(as: 'near_railway', except: false)]
+    #[Url(as: 'near_train_station', except: false)]
     public bool $nearRailwayStation = false;
+
+    #[Url(as: 'near_park', except: false)]
+    public bool $nearPark = false;
+
+    #[Url(as: 'near_shopping_center', except: false)]
+    public bool $nearShoppingCenter = false;
+
+    #[Url(as: 'near_gym', except: false)]
+    public bool $nearGym = false;
+
+    #[Url(as: 'near_coworking', except: false)]
+    public bool $nearCoworking = false;
+
+    #[Url(as: 'near_work', except: false)]
+    public bool $nearWork = false;
+
+    #[Url(as: 'near_sea', except: false)]
+    public bool $nearSea = false;
+
+    #[Url(as: 'near_nightlife', except: false)]
+    public bool $nearNightlife = false;
 
     #[Url(as: 'near_airport', except: false)]
     public bool $nearAirport = false;
@@ -737,11 +801,35 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'transport', except: false)]
     public bool $easyTransport = false;
 
-    #[Url(as: 'quiet_district', except: false)]
+    #[Url(as: 'area_quiet', except: false)]
     public bool $quietDistrict = false;
 
-    #[Url(as: 'safe_district', except: false)]
+    #[Url(as: 'area_safe', except: false)]
     public bool $safeDistrict = false;
+
+    #[Url(as: 'area_residential', except: false)]
+    public bool $areaResidential = false;
+
+    #[Url(as: 'area_city_center', except: false)]
+    public bool $areaCityCenter = false;
+
+    #[Url(as: 'area_suburb', except: false)]
+    public bool $areaSuburb = false;
+
+    #[Url(as: 'area_industrial', except: false)]
+    public bool $areaIndustrial = false;
+
+    #[Url(as: 'area_tourist', except: false)]
+    public bool $areaTourist = false;
+
+    #[Url(as: 'area_students', except: false)]
+    public bool $areaStudents = false;
+
+    #[Url(as: 'area_workers', except: false)]
+    public bool $areaWorkers = false;
+
+    #[Url(as: 'area_long_stay', except: false)]
+    public bool $areaLongStay = false;
 
     #[Url(as: 'street_light', except: false)]
     public bool $goodStreetLighting = false;
@@ -812,8 +900,50 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'no_deposit', except: false)]
     public bool $noDeposit = false;
 
+    #[Url(as: 'with_deposit', except: false)]
+    public bool $withDeposit = false;
+
+    #[Url(as: 'low_deposit', except: false)]
+    public bool $lowDeposit = false;
+
+    #[Url(as: 'no_cleaning_fee', except: false)]
+    public bool $noCleaningFee = false;
+
     #[Url(as: 'free_cancel', except: false)]
     public bool $freeCancellation = false;
+
+    #[Url(as: 'partial_refund', except: false)]
+    public bool $partialRefund = false;
+
+    #[Url(as: 'full_refund', except: false)]
+    public bool $fullRefund = false;
+
+    #[Url(as: 'installments', except: false)]
+    public bool $installmentPayment = false;
+
+    #[Url(as: 'pay_later', except: false)]
+    public bool $payLater = false;
+
+    #[Url(as: 'pay_on_arrival', except: false)]
+    public bool $payOnArrival = false;
+
+    #[Url(as: 'has_discount', except: false)]
+    public bool $hasDiscount = false;
+
+    #[Url(as: 'has_promo', except: false)]
+    public bool $hasPromoCode = false;
+
+    #[Url(as: 'below_avg_price', except: false)]
+    public bool $belowAveragePrice = false;
+
+    #[Url(as: 'all_fees', except: false)]
+    public bool $priceIncludesAllFees = false;
+
+    #[Url(as: 'show_total_now', except: false)]
+    public bool $showTotalPriceImmediately = false;
+
+    #[Url(as: 'no_hidden_fees', except: false)]
+    public bool $hideHiddenFees = false;
 
     #[Url(as: 'long_stay', except: false)]
     public bool $longStayAllowed = false;
@@ -821,8 +951,53 @@ class SleepingPlaceSearch extends Component
     #[Url(as: 'today', except: false)]
     public bool $availableToday = false;
 
+    #[Url(as: 'tomorrow', except: false)]
+    public bool $availableTomorrow = false;
+
+    #[Url(as: 'weekend', except: false)]
+    public bool $availableWeekend = false;
+
     #[Url(as: 'flexible', except: false)]
     public bool $flexibleDates = false;
+
+    #[Url(as: 'flex_1', except: false)]
+    public bool $flexiblePlusMinusOneDay = false;
+
+    #[Url(as: 'flex_3', except: false)]
+    public bool $flexiblePlusMinusThreeDays = false;
+
+    #[Url(as: 'flex_7', except: false)]
+    public bool $flexiblePlusMinusSevenDays = false;
+
+    #[Url(as: 'short_stay', except: false)]
+    public bool $shortStayAllowed = false;
+
+    #[Url(as: 'min_nights', except: '')]
+    public string $minimumStayNights = '';
+
+    #[Url(as: 'max_nights', except: '')]
+    public string $maximumStayNights = '';
+
+    #[Url(as: 'can_extend', except: false)]
+    public bool $canExtendStay = false;
+
+    #[Url(as: 'no_extend', except: false)]
+    public bool $cannotExtendStay = false;
+
+    #[Url(as: 'free_after_checkout', except: false)]
+    public bool $availableAfterCheckout = false;
+
+    #[Url(as: 'night_checkin', except: false)]
+    public bool $nightCheckIn = false;
+
+    #[Url(as: 'night_checkout', except: false)]
+    public bool $nightCheckOut = false;
+
+    #[Url(as: 'early_morning_checkin', except: false)]
+    public bool $earlyMorningCheckIn = false;
+
+    #[Url(as: 'late_evening_checkout', except: false)]
+    public bool $lateEveningCheckOut = false;
 
     #[Url(as: 'fit', except: '')]
     public string $minimumCompatibilityFit = '';
@@ -844,6 +1019,8 @@ class SleepingPlaceSearch extends Component
 
     public function mount(): void
     {
+        $this->normalizeLocationQueryState();
+
         if ($this->cityQuery === '' && $this->city !== '') {
             $this->cityQuery = $this->selectedCity()?->name ?: $this->city;
         }
@@ -853,6 +1030,7 @@ class SleepingPlaceSearch extends Component
     {
         if ($property === 'cityQuery') {
             $this->city = $this->cityQuery;
+            $this->cityId = '';
             $this->cityOpen = true;
         }
 
@@ -873,6 +1051,7 @@ class SleepingPlaceSearch extends Component
         }
 
         $this->city = (string) $city->id;
+        $this->cityId = (string) $city->id;
         $this->cityQuery = $city->name;
         $this->cityOpen = false;
         $this->visibleCount = self::INITIAL_VISIBLE_COUNT;
@@ -881,6 +1060,7 @@ class SleepingPlaceSearch extends Component
     public function clearCity(): void
     {
         $this->city = '';
+        $this->cityId = '';
         $this->cityQuery = '';
         $this->cityOpen = false;
         $this->visibleCount = self::INITIAL_VISIBLE_COUNT;
@@ -890,14 +1070,19 @@ class SleepingPlaceSearch extends Component
     {
         $this->reset([
             'city',
+            'countryId',
+            'cityId',
             'cityQuery',
             'district',
+            'street',
+            'landmark',
             'checkIn',
             'checkOut',
             'guestsCount',
             'priceMin',
             'priceMax',
             'currency',
+            'priceBasis',
             'propertyType',
             'roomType',
             'sleepingPlaceType',
@@ -980,10 +1165,25 @@ class SleepingPlaceSearch extends Component
             'nearHospital',
             'nearUniversity',
             'nearRailwayStation',
+            'nearPark',
+            'nearShoppingCenter',
+            'nearGym',
+            'nearCoworking',
+            'nearWork',
+            'nearSea',
+            'nearNightlife',
             'nearAirport',
             'easyTransport',
             'quietDistrict',
             'safeDistrict',
+            'areaResidential',
+            'areaCityCenter',
+            'areaSuburb',
+            'areaIndustrial',
+            'areaTourist',
+            'areaStudents',
+            'areaWorkers',
+            'areaLongStay',
             'goodStreetLighting',
             'freeParking',
             'paidParking',
@@ -1007,10 +1207,39 @@ class SleepingPlaceSearch extends Component
             'verifiedHost',
             'hasReviews',
             'noDeposit',
+            'withDeposit',
+            'lowDeposit',
+            'noCleaningFee',
             'freeCancellation',
+            'partialRefund',
+            'fullRefund',
+            'installmentPayment',
+            'payLater',
+            'payOnArrival',
+            'hasDiscount',
+            'hasPromoCode',
+            'belowAveragePrice',
+            'priceIncludesAllFees',
+            'showTotalPriceImmediately',
+            'hideHiddenFees',
             'longStayAllowed',
             'availableToday',
+            'availableTomorrow',
+            'availableWeekend',
             'flexibleDates',
+            'flexiblePlusMinusOneDay',
+            'flexiblePlusMinusThreeDays',
+            'flexiblePlusMinusSevenDays',
+            'shortStayAllowed',
+            'minimumStayNights',
+            'maximumStayNights',
+            'canExtendStay',
+            'cannotExtendStay',
+            'availableAfterCheckout',
+            'nightCheckIn',
+            'nightCheckOut',
+            'earlyMorningCheckIn',
+            'lateEveningCheckOut',
             'minimumCompatibilityFit',
             'hideNotSuitableCompatibility',
             'showCompatibilityWarnings',
@@ -1196,10 +1425,25 @@ class SleepingPlaceSearch extends Component
             ['property' => 'nearHospital', 'label' => __('search.filters_flags.near_hospital'), 'icon' => 'plus-circle'],
             ['property' => 'nearUniversity', 'label' => __('search.filters_flags.near_university'), 'icon' => 'academic-cap'],
             ['property' => 'nearRailwayStation', 'label' => __('search.filters_flags.near_railway_station'), 'icon' => 'map-pin'],
+            ['property' => 'nearPark', 'label' => __('search.filters_flags.near_park'), 'icon' => 'map-pin'],
+            ['property' => 'nearShoppingCenter', 'label' => __('search.filters_flags.near_shopping_center'), 'icon' => 'shopping-bag'],
+            ['property' => 'nearGym', 'label' => __('search.filters_flags.near_gym'), 'icon' => 'sparkles'],
+            ['property' => 'nearCoworking', 'label' => __('search.filters_flags.near_coworking'), 'icon' => 'briefcase'],
+            ['property' => 'nearWork', 'label' => __('search.filters_flags.near_work'), 'icon' => 'briefcase'],
+            ['property' => 'nearSea', 'label' => __('search.filters_flags.near_sea'), 'icon' => 'map'],
+            ['property' => 'nearNightlife', 'label' => __('search.filters_flags.near_nightlife'), 'icon' => 'moon'],
             ['property' => 'nearAirport', 'label' => __('search.filters_flags.near_airport'), 'icon' => 'paper-airplane'],
             ['property' => 'easyTransport', 'label' => __('search.filters_flags.easy_transport'), 'icon' => 'arrows-right-left'],
             ['property' => 'quietDistrict', 'label' => __('search.filters_flags.quiet_district'), 'icon' => 'speaker-x-mark'],
             ['property' => 'safeDistrict', 'label' => __('search.filters_flags.safe_district'), 'icon' => 'shield-check'],
+            ['property' => 'areaResidential', 'label' => __('search.filters_flags.area_residential'), 'icon' => 'home-modern'],
+            ['property' => 'areaCityCenter', 'label' => __('search.filters_flags.area_city_center'), 'icon' => 'map-pin'],
+            ['property' => 'areaSuburb', 'label' => __('search.filters_flags.area_suburb'), 'icon' => 'map'],
+            ['property' => 'areaIndustrial', 'label' => __('search.filters_flags.area_industrial'), 'icon' => 'building-office'],
+            ['property' => 'areaTourist', 'label' => __('search.filters_flags.area_tourist'), 'icon' => 'map'],
+            ['property' => 'areaStudents', 'label' => __('search.filters_flags.area_students'), 'icon' => 'academic-cap'],
+            ['property' => 'areaWorkers', 'label' => __('search.filters_flags.area_workers'), 'icon' => 'briefcase'],
+            ['property' => 'areaLongStay', 'label' => __('search.filters_flags.area_long_stay'), 'icon' => 'calendar-days'],
             ['property' => 'goodStreetLighting', 'label' => __('search.filters_flags.good_street_lighting'), 'icon' => 'sun'],
             ['property' => 'freeParking', 'label' => __('search.filters_flags.free_parking'), 'icon' => 'truck'],
             ['property' => 'paidParking', 'label' => __('search.filters_flags.paid_parking'), 'icon' => 'truck'],
@@ -1399,10 +1643,22 @@ class SleepingPlaceSearch extends Component
         return [
             'recommended' => __('search.sort_options.recommended'),
             'cheapest' => __('search.sort_options.cheapest'),
+            'best_value' => __('search.sort_options.best_value'),
             'highest_rating' => __('search.sort_options.highest_rating'),
             'closest_to_center' => __('search.sort_options.closest_to_center'),
             'fewer_people' => __('search.sort_options.fewer_people'),
             'newest' => __('search.sort_options.newest'),
+        ];
+    }
+
+    #[Computed]
+    public function priceBasisOptions(): array
+    {
+        return [
+            '' => __('search.options.any'),
+            self::PRICE_BASIS_NIGHTLY => __('search.price_basis.nightly'),
+            self::PRICE_BASIS_WEEKLY => __('search.price_basis.weekly'),
+            self::PRICE_BASIS_MONTHLY => __('search.price_basis.monthly'),
         ];
     }
 
@@ -1418,12 +1674,85 @@ class SleepingPlaceSearch extends Component
         ];
     }
 
+    #[Computed]
+    public function minimumStayOptions(): array
+    {
+        return [
+            '' => __('search.options.any'),
+            '1' => __('search.stay_length.minimum_1'),
+            '3' => __('search.stay_length.minimum_3'),
+            '7' => __('search.stay_length.minimum_7'),
+            '30' => __('search.stay_length.minimum_30'),
+        ];
+    }
+
+    #[Computed]
+    public function maximumStayOptions(): array
+    {
+        return [
+            '' => __('search.options.any'),
+            '7' => __('search.stay_length.maximum_7'),
+            '30' => __('search.stay_length.maximum_30'),
+            '90' => __('search.stay_length.maximum_90'),
+        ];
+    }
+
+    #[Computed]
+    public function dateFilterOptions(): array
+    {
+        return [
+            ['property' => 'availableToday', 'label' => __('search.filters_flags.available_today'), 'icon' => 'calendar-days'],
+            ['property' => 'availableTomorrow', 'label' => __('search.filters_flags.available_tomorrow'), 'icon' => 'calendar-days'],
+            ['property' => 'availableWeekend', 'label' => __('search.filters_flags.available_weekend'), 'icon' => 'calendar-days'],
+            ['property' => 'flexibleDates', 'label' => __('search.filters_flags.flexible_dates'), 'icon' => 'arrows-right-left'],
+            ['property' => 'flexiblePlusMinusOneDay', 'label' => __('search.filters_flags.flexible_plus_minus_1'), 'icon' => 'arrows-right-left'],
+            ['property' => 'flexiblePlusMinusThreeDays', 'label' => __('search.filters_flags.flexible_plus_minus_3'), 'icon' => 'arrows-right-left'],
+            ['property' => 'flexiblePlusMinusSevenDays', 'label' => __('search.filters_flags.flexible_plus_minus_7'), 'icon' => 'arrows-right-left'],
+            ['property' => 'shortStayAllowed', 'label' => __('search.filters_flags.short_stay_allowed'), 'icon' => 'clock'],
+            ['property' => 'longStayAllowed', 'label' => __('search.filters_flags.long_stay_allowed'), 'icon' => 'calendar-days'],
+            ['property' => 'canExtendStay', 'label' => __('search.filters_flags.can_extend_stay'), 'icon' => 'arrow-path'],
+            ['property' => 'cannotExtendStay', 'label' => __('search.filters_flags.cannot_extend_stay'), 'icon' => 'x-circle'],
+            ['property' => 'availableAfterCheckout', 'label' => __('search.filters_flags.available_after_checkout'), 'icon' => 'calendar-days'],
+            ['property' => 'nightCheckIn', 'label' => __('search.filters_flags.night_check_in'), 'icon' => 'moon'],
+            ['property' => 'nightCheckOut', 'label' => __('search.filters_flags.night_check_out'), 'icon' => 'moon'],
+            ['property' => 'earlyMorningCheckIn', 'label' => __('search.filters_flags.early_morning_check_in'), 'icon' => 'sun'],
+            ['property' => 'lateEveningCheckOut', 'label' => __('search.filters_flags.late_evening_check_out'), 'icon' => 'clock'],
+        ];
+    }
+
+    #[Computed]
+    public function priceFilterOptions(): array
+    {
+        return [
+            ['property' => 'noDeposit', 'label' => __('search.filters_flags.no_deposit'), 'icon' => 'banknotes'],
+            ['property' => 'withDeposit', 'label' => __('search.filters_flags.with_deposit'), 'icon' => 'banknotes'],
+            ['property' => 'lowDeposit', 'label' => __('search.filters_flags.low_deposit'), 'icon' => 'banknotes'],
+            ['property' => 'noCleaningFee', 'label' => __('search.filters_flags.no_cleaning_fee'), 'icon' => 'sparkles'],
+            ['property' => 'freeCancellation', 'label' => __('search.filters_flags.free_cancellation'), 'icon' => 'scale'],
+            ['property' => 'partialRefund', 'label' => __('search.filters_flags.partial_refund'), 'icon' => 'receipt-refund'],
+            ['property' => 'fullRefund', 'label' => __('search.filters_flags.full_refund'), 'icon' => 'receipt-refund'],
+            ['property' => 'installmentPayment', 'label' => __('search.filters_flags.installment_payment'), 'icon' => 'credit-card'],
+            ['property' => 'payLater', 'label' => __('search.filters_flags.pay_later'), 'icon' => 'clock'],
+            ['property' => 'payOnArrival', 'label' => __('search.filters_flags.pay_on_arrival'), 'icon' => 'key'],
+            ['property' => 'hasDiscount', 'label' => __('search.filters_flags.has_discount'), 'icon' => 'tag'],
+            ['property' => 'hasPromoCode', 'label' => __('search.filters_flags.has_promo_code'), 'icon' => 'ticket'],
+            ['property' => 'belowAveragePrice', 'label' => __('search.filters_flags.below_average_price'), 'icon' => 'arrow-trending-down'],
+            ['property' => 'priceIncludesAllFees', 'label' => __('search.filters_flags.price_includes_all_fees'), 'icon' => 'document-check'],
+            ['property' => 'showTotalPriceImmediately', 'label' => __('search.filters_flags.show_total_price_immediately'), 'icon' => 'calculator'],
+            ['property' => 'hideHiddenFees', 'label' => __('search.filters_flags.hide_hidden_fees'), 'icon' => 'eye-slash'],
+        ];
+    }
+
     public function activeFilterCount(): int
     {
         return collect($this->filterPropertyNames())
             ->reject(fn (string $property): bool => in_array($property, ['cityQuery', 'checkIn', 'checkOut', 'sort'], true))
             ->filter(function (string $property): bool {
                 $value = $this->{$property};
+
+                if ($property === 'city' && $this->cityId !== '') {
+                    return false;
+                }
 
                 if ($property === 'showCompatibilityWarnings') {
                     return $value === false;
@@ -1464,7 +1793,7 @@ class SleepingPlaceSearch extends Component
 
     private function saveSearchCityId(): ?int
     {
-        return ctype_digit((string) $this->city) ? (int) $this->city : null;
+        return $this->selectedCityId();
     }
 
     private function cityHasEnoughCharacters(): bool
@@ -1508,7 +1837,7 @@ class SleepingPlaceSearch extends Component
             source: 'search',
             filters: [
                 'variant' => 'search',
-                'search_filtered_available' => $this->dateRange() !== null && ! $this->flexibleDates,
+                'search_filtered_available' => $this->dateRange() !== null && $this->flexibleDateWindowDays() === 0,
                 'comparison_ids' => session('comparison_places', []),
                 'show_compatibility_warnings' => $this->showCompatibilityWarnings,
             ],
@@ -1517,6 +1846,10 @@ class SleepingPlaceSearch extends Component
 
     private function applyLocationFilters(Builder $query): void
     {
+        if ($countryId = $this->selectedCountryId()) {
+            $query->where('search_properties.country_id', $countryId);
+        }
+
         if ($cityId = $this->selectedCityId()) {
             $query->where('search_properties.city_id', $cityId);
         } elseif ($this->city !== '') {
@@ -1527,7 +1860,20 @@ class SleepingPlaceSearch extends Component
         }
 
         if ($this->district !== '') {
-            $query->where('search_properties.district', 'like', '%'.$this->district.'%');
+            $this->wherePrefixText($query, ['search_properties.district'], $this->district);
+        }
+
+        if ($this->street !== '') {
+            $this->wherePrefixText($query, [
+                'search_properties.street',
+                'search_properties.street_name',
+            ], $this->street);
+        }
+
+        if ($this->landmark !== '') {
+            $this->wherePrefixText($query, [
+                'search_property_location_details.nearest_landmark',
+            ], $this->landmark);
         }
 
         $this->applyLocationDetailFilters($query);
@@ -1588,6 +1934,42 @@ class SleepingPlaceSearch extends Component
             });
         }
 
+        if ($this->nearPark) {
+            $this->whereFilledText($query, 'search_property_location_details.nearest_park');
+        }
+
+        if ($this->nearShoppingCenter) {
+            $query->where(function (Builder $builder): void {
+                $this->whereFilledText($builder, 'search_property_location_details.nearest_mall');
+                $this->orWhereFilledText($builder, 'search_property_location_details.nearest_shop');
+                $this->orWhereFilledText($builder, 'search_property_location_details.nearest_supermarket');
+            });
+        }
+
+        if ($this->nearGym) {
+            $this->whereFilledText($query, 'search_property_location_details.nearest_gym');
+        }
+
+        if ($this->nearCoworking) {
+            $this->whereFilledText($query, 'search_property_location_details.nearest_coworking');
+        }
+
+        if ($this->nearWork) {
+            $query->where('search_property_location_details.near_work_area', true);
+        }
+
+        if ($this->nearSea) {
+            $query->where('search_property_location_details.near_sea', true);
+        }
+
+        if ($this->nearNightlife) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_property_location_details.near_nightlife', true)
+                    ->orWhere('search_property_location_details.has_bar_noise', true);
+                $this->orWhereFilledText($builder, 'search_property_location_details.nearest_cafe');
+            });
+        }
+
         if ($this->nearAirport) {
             $query->where(function (Builder $builder): void {
                 $this->whereFilledText($builder, 'search_property_location_details.nearest_airport');
@@ -1607,6 +1989,42 @@ class SleepingPlaceSearch extends Component
             $query->whereIn('search_property_location_details.district_safety_level', self::SAFE_DISTRICT_LEVELS);
         }
 
+        if ($this->areaResidential) {
+            $query->where('search_property_location_details.area_residential', true);
+        }
+
+        if ($this->areaCityCenter) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('search_property_location_details.area_city_center', true)
+                    ->orWhere('search_property_location_details.distance_to_center_meters', '<=', self::NEAR_CENTER_DISTANCE_METERS)
+                    ->orWhere('search_properties.distance_to_center_meters', '<=', self::NEAR_CENTER_DISTANCE_METERS);
+            });
+        }
+
+        if ($this->areaSuburb) {
+            $query->where('search_property_location_details.area_suburb', true);
+        }
+
+        if ($this->areaIndustrial) {
+            $query->where('search_property_location_details.area_industrial', true);
+        }
+
+        if ($this->areaTourist) {
+            $query->where('search_property_location_details.area_tourist', true);
+        }
+
+        if ($this->areaStudents) {
+            $query->where('search_property_location_details.area_students', true);
+        }
+
+        if ($this->areaWorkers) {
+            $query->where('search_property_location_details.area_workers', true);
+        }
+
+        if ($this->areaLongStay) {
+            $query->where('search_property_location_details.area_long_stay', true);
+        }
+
         if ($this->goodStreetLighting) {
             $query->whereIn('search_property_location_details.street_lighting_level', self::GOOD_STREET_LIGHTING_LEVELS);
         }
@@ -1624,38 +2042,228 @@ class SleepingPlaceSearch extends Component
     {
         $dates = $this->dateRange();
 
-        if ($dates && ! $this->flexibleDates) {
-            $nights = (int) $dates[0]->diffInDays($dates[1]);
+        if ($dates) {
+            $flexibleWindowDays = $this->flexibleDateWindowDays();
 
-            $query->availableBetween($dates[0]->toDateString(), $dates[1]->toDateString())
-                ->where('sleeping_places.min_nights', '<=', $nights)
-                ->where(function (Builder $builder) use ($nights): void {
-                    $builder->whereNull('sleeping_places.max_nights')
-                        ->orWhere('sleeping_places.max_nights', '>=', $nights);
-                });
+            if ($flexibleWindowDays > 0) {
+                $this->applyFlexibleDateAvailability($query, $dates[0], $dates[1], $flexibleWindowDays);
+            } else {
+                $this->applyStayAvailability($query, $dates[0], $dates[1]);
+            }
         }
 
         if ($this->availableToday) {
             $today = CarbonImmutable::today();
 
-            $query->availableBetween($today->toDateString(), $today->addDay()->toDateString())
-                ->where('sleeping_places.min_nights', '<=', 1);
+            $this->applyStayAvailability($query, $today, $today->addDay());
         }
+
+        if ($this->availableTomorrow) {
+            $tomorrow = CarbonImmutable::tomorrow();
+
+            $this->applyStayAvailability($query, $tomorrow, $tomorrow->addDay());
+        }
+
+        if ($this->availableWeekend) {
+            [$weekendStart, $weekendEnd] = $this->nextWeekendRange();
+
+            $this->applyStayAvailability($query, $weekendStart, $weekendEnd);
+        }
+
+        if ($this->availableAfterCheckout && ($checkOut = $this->selectedCheckoutDate())) {
+            $this->applyStayAvailability($query, $checkOut, $checkOut->addDay());
+        }
+
+        $this->applyStayLengthCriteria($query);
+        $this->applyDateCapabilityCriteria($query);
+    }
+
+    private function applyStayAvailability(Builder $query, CarbonImmutable $start, CarbonImmutable $end): void
+    {
+        $nights = (int) $start->diffInDays($end);
+
+        if ($nights < 1) {
+            $query->where('sleeping_places.id', '<', 0);
+
+            return;
+        }
+
+        $query->availableBetween($start->toDateString(), $end->toDateString());
+        $this->applyStayLengthSupport($query, $nights);
+    }
+
+    private function applyFlexibleDateAvailability(Builder $query, CarbonImmutable $start, CarbonImmutable $end, int $windowDays): void
+    {
+        $today = CarbonImmutable::today();
+
+        $query->where(function (Builder $builder) use ($end, $start, $today, $windowDays): void {
+            $hasCandidate = false;
+
+            for ($offset = -$windowDays; $offset <= $windowDays; $offset++) {
+                $candidateStart = $start->addDays($offset);
+                $candidateEnd = $end->addDays($offset);
+
+                if ($candidateStart->isBefore($today) || $candidateEnd->lessThanOrEqualTo($candidateStart)) {
+                    continue;
+                }
+
+                $method = $hasCandidate ? 'orWhere' : 'where';
+                $builder->{$method}(function (Builder $candidate) use ($candidateEnd, $candidateStart): void {
+                    $this->applyStayAvailability($candidate, $candidateStart, $candidateEnd);
+                });
+
+                $hasCandidate = true;
+            }
+
+            if (! $hasCandidate) {
+                $builder->where('sleeping_places.id', '<', 0);
+            }
+        });
+    }
+
+    private function applyStayLengthSupport(Builder $query, int $nights): void
+    {
+        $query->where('sleeping_places.min_nights', '<=', $nights)
+            ->where(function (Builder $builder) use ($nights): void {
+                $builder->whereNull('sleeping_places.max_nights')
+                    ->orWhere('sleeping_places.max_nights', '>=', $nights);
+            });
+    }
+
+    private function applyStayLengthCriteria(Builder $query): void
+    {
+        $minimumStayNights = $this->selectedMinimumStayNights();
+        $maximumStayNights = $this->selectedMaximumStayNights();
+
+        if ($minimumStayNights !== null && $maximumStayNights !== null && $minimumStayNights > $maximumStayNights) {
+            $query->where('sleeping_places.id', '<', 0);
+
+            return;
+        }
+
+        if ($this->shortStayAllowed) {
+            $query->where('sleeping_places.min_nights', '<=', self::SHORT_STAY_MAX_NIGHTS);
+        }
+
+        if ($minimumStayNights !== null) {
+            $query->where(function (Builder $builder) use ($minimumStayNights): void {
+                $builder->whereNull('sleeping_places.max_nights')
+                    ->orWhere('sleeping_places.max_nights', '>=', $minimumStayNights);
+            });
+        }
+
+        if ($maximumStayNights !== null) {
+            $query->where('sleeping_places.min_nights', '<=', $maximumStayNights);
+        }
+    }
+
+    private function applyDateCapabilityCriteria(Builder $query): void
+    {
+        if ($this->canExtendStay && $this->cannotExtendStay) {
+            $query->where('sleeping_places.id', '<', 0);
+
+            return;
+        }
+
+        if ($this->canExtendStay) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('sleeping_places.can_extend', true)
+                    ->orWhere('sleeping_places.extensions_allowed', true)
+                    ->orWhereHas('calendarSettings', fn (Builder $settings) => $settings->where('can_extend', true));
+            });
+        }
+
+        if ($this->cannotExtendStay) {
+            $query->where('sleeping_places.can_extend', false)
+                ->where('sleeping_places.extensions_allowed', false)
+                ->whereDoesntHave('calendarSettings', fn (Builder $settings) => $settings->where('can_extend', true));
+        }
+
+        if ($this->nightCheckIn) {
+            $query->whereHas('calendarSettings', function (Builder $settings): void {
+                $this->whereAnyCalendarTimeAtOrAfter($settings, ['check_in_time_until', 'default_check_in_time'], self::NIGHT_CHECK_IN_TIME);
+            });
+        }
+
+        if ($this->nightCheckOut) {
+            $query->whereHas('calendarSettings', function (Builder $settings): void {
+                $this->whereAnyCalendarTimeAtOrAfter($settings, ['check_out_time_until', 'latest_check_out_time', 'default_check_out_time'], self::NIGHT_CHECK_OUT_TIME);
+            });
+        }
+
+        if ($this->earlyMorningCheckIn) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('sleeping_places.early_check_in_allowed', true)
+                    ->orWhereHas('calendarSettings', function (Builder $settings): void {
+                        $this->whereAnyCalendarTimeAtOrBefore($settings, ['earliest_check_in_time', 'check_in_time_from', 'default_check_in_time'], self::EARLY_MORNING_CHECK_IN_TIME);
+                    });
+            });
+        }
+
+        if ($this->lateEveningCheckOut) {
+            $query->where(function (Builder $builder): void {
+                $builder->where('sleeping_places.late_check_out_allowed', true)
+                    ->orWhereHas('calendarSettings', function (Builder $settings): void {
+                        $this->whereAnyCalendarTimeAtOrAfter($settings, ['check_out_time_until', 'latest_check_out_time', 'default_check_out_time'], self::LATE_EVENING_CHECK_OUT_TIME);
+                    });
+            });
+        }
+    }
+
+    /**
+     * @param  list<string>  $columns
+     */
+    private function whereAnyCalendarTimeAtOrAfter(Builder $query, array $columns, string $time): void
+    {
+        $query->where(function (Builder $builder) use ($columns, $time): void {
+            foreach ($columns as $index => $column) {
+                $method = $index === 0 ? 'where' : 'orWhere';
+
+                $builder->{$method}(function (Builder $timeQuery) use ($column, $time): void {
+                    $timeQuery->whereNotNull($column)
+                        ->where($column, '>=', $time);
+                });
+            }
+        });
+    }
+
+    /**
+     * @param  list<string>  $columns
+     */
+    private function whereAnyCalendarTimeAtOrBefore(Builder $query, array $columns, string $time): void
+    {
+        $query->where(function (Builder $builder) use ($columns, $time): void {
+            foreach ($columns as $index => $column) {
+                $method = $index === 0 ? 'where' : 'orWhere';
+
+                $builder->{$method}(function (Builder $timeQuery) use ($column, $time): void {
+                    $timeQuery->whereNotNull($column)
+                        ->where($column, '<=', $time);
+                });
+            }
+        });
     }
 
     private function applyPriceAndTypeFilters(Builder $query): void
     {
         if (($priceMin = $this->decimal($this->priceMin)) !== null) {
-            $query->where('sleeping_places.base_price_per_night', '>=', $priceMin);
+            $this->wherePriceAmount($query, '>=', $priceMin);
         }
 
         if (($priceMax = $this->decimal($this->priceMax)) !== null) {
-            $query->where('sleeping_places.base_price_per_night', '<=', $priceMax);
+            $this->wherePriceAmount($query, '<=', $priceMax);
         }
 
         if ($this->currency !== '') {
-            $query->where('sleeping_places.currency', strtoupper($this->currency));
+            $currency = strtoupper($this->currency);
+
+            $query->where(function (Builder $builder) use ($currency): void {
+                $builder->where('sleeping_places.currency', $currency)
+                    ->orWhereHas('pricingSettings', fn (Builder $settings): Builder => $settings->where('currency', $currency));
+            });
         }
+
+        $this->applyExtendedPriceFilters($query);
 
         if ($this->propertyType !== '') {
             $query->where(function (Builder $builder): void {
@@ -1683,6 +2291,291 @@ class SleepingPlaceSearch extends Component
         }
 
         $query->where('sleeping_places.max_guests', '>=', max(1, $this->guestsCount));
+    }
+
+    private function applyExtendedPriceFilters(Builder $query): void
+    {
+        $this->applyPriceBasisFilter($query);
+        $this->applyDepositFilters($query);
+
+        if ($this->noCleaningFee) {
+            $this->whereNoCleaningFee($query);
+        }
+
+        if ($this->partialRefund) {
+            $this->whereCancellationPolicyIn($query, self::PARTIAL_REFUND_POLICIES);
+        }
+
+        if ($this->fullRefund) {
+            $this->whereCancellationPolicyIn($query, self::FULL_REFUND_POLICIES);
+        }
+
+        if ($this->installmentPayment) {
+            $this->wherePricingSettingFlag($query, 'installment_payment_allowed');
+        }
+
+        if ($this->payLater) {
+            $this->wherePricingSettingFlag($query, 'pay_later_allowed');
+        }
+
+        if ($this->payOnArrival) {
+            $this->wherePricingSettingFlag($query, 'pay_on_arrival_allowed');
+        }
+
+        if ($this->hasDiscount) {
+            $this->whereHasActiveDiscount($query);
+        }
+
+        if ($this->hasPromoCode) {
+            $this->whereHasActivePromoCode($query);
+        }
+
+        if ($this->belowAveragePrice) {
+            $average = $this->averageVisibleNightlyPrice();
+
+            if ($average !== null) {
+                $query->where('sleeping_places.base_price_per_night', '<=', $average);
+            }
+        }
+
+        if ($this->priceIncludesAllFees) {
+            $this->wherePricingSettingFlag($query, 'all_fees_included');
+        }
+
+        if ($this->showTotalPriceImmediately) {
+            $this->wherePricingSettingFlag($query, 'show_total_price_upfront');
+        }
+
+        if ($this->hideHiddenFees) {
+            $this->wherePricingSettingFlag($query, 'hidden_fees_disclosed');
+        }
+    }
+
+    private function applyPriceBasisFilter(Builder $query): void
+    {
+        $basis = $this->explicitPriceBasis();
+
+        if ($basis === null) {
+            return;
+        }
+
+        [$placeColumn, $settingsColumn] = $this->priceColumnsForBasis($basis);
+
+        $query->where(function (Builder $builder) use ($basis, $placeColumn, $settingsColumn): void {
+            $builder->where($placeColumn, '>', 0)
+                ->orWhereHas('pricingSettings', function (Builder $settings) use ($basis, $settingsColumn): void {
+                    $settings->where(function (Builder $pricing) use ($basis, $settingsColumn): void {
+                        $pricing->where($settingsColumn, '>', 0);
+
+                        if ($basis === self::PRICE_BASIS_WEEKLY) {
+                            $pricing->orWhereIn('pricing_strategy', [
+                                'weekly_package',
+                                'best_price',
+                            ]);
+                        }
+
+                        if ($basis === self::PRICE_BASIS_MONTHLY) {
+                            $pricing->orWhereIn('pricing_strategy', [
+                                'monthly_package',
+                                'best_price',
+                            ]);
+                        }
+                    });
+                });
+        });
+    }
+
+    private function applyDepositFilters(Builder $query): void
+    {
+        if ($this->noDeposit && ($this->withDeposit || $this->lowDeposit)) {
+            $query->where('sleeping_places.id', -1);
+
+            return;
+        }
+
+        if ($this->noDeposit) {
+            $this->whereNoDeposit($query);
+        }
+
+        if ($this->withDeposit) {
+            $this->whereWithDeposit($query);
+        }
+
+        if ($this->lowDeposit) {
+            $this->whereLowDeposit($query);
+        }
+    }
+
+    private function wherePriceAmount(Builder $query, string $operator, float $amount): void
+    {
+        [$placeColumn, $settingsColumn] = $this->priceColumnsForBasis($this->selectedPriceBasis());
+
+        $query->where(function (Builder $builder) use ($amount, $operator, $placeColumn, $settingsColumn): void {
+            $builder->where($placeColumn, $operator, $amount)
+                ->orWhereHas('pricingSettings', fn (Builder $settings): Builder => $settings->where($settingsColumn, $operator, $amount));
+        });
+    }
+
+    private function whereNoDeposit(Builder $query): void
+    {
+        $query->where(function (Builder $builder): void {
+            $builder->whereNull('sleeping_places.deposit_amount')
+                ->orWhere('sleeping_places.deposit_amount', '<=', 0)
+                ->orWhereHas('pricingSettings', function (Builder $settings): void {
+                    $settings->where(function (Builder $pricing): void {
+                        $pricing->where('deposit_required', false)
+                            ->orWhereNull('deposit_amount')
+                            ->orWhere('deposit_amount', '<=', 0);
+                    });
+                });
+        });
+    }
+
+    private function whereWithDeposit(Builder $query): void
+    {
+        $query->where(function (Builder $builder): void {
+            $builder->where('sleeping_places.deposit_amount', '>', 0)
+                ->orWhereHas('pricingSettings', function (Builder $settings): void {
+                    $settings->where('deposit_required', true)
+                        ->where('deposit_amount', '>', 0);
+                });
+        });
+    }
+
+    private function whereLowDeposit(Builder $query): void
+    {
+        $query->where(function (Builder $builder): void {
+            $builder->where(function (Builder $place): void {
+                $place->where('sleeping_places.deposit_amount', '>', 0)
+                    ->where('sleeping_places.deposit_amount', '<=', self::LOW_DEPOSIT_MAX_AMOUNT);
+            })->orWhereHas('pricingSettings', function (Builder $settings): void {
+                $settings->where('deposit_required', true)
+                    ->where('deposit_amount', '>', 0)
+                    ->where('deposit_amount', '<=', self::LOW_DEPOSIT_MAX_AMOUNT);
+            });
+        });
+    }
+
+    private function whereNoCleaningFee(Builder $query): void
+    {
+        $query->where(function (Builder $builder): void {
+            $builder->whereNull('sleeping_places.cleaning_fee')
+                ->orWhere('sleeping_places.cleaning_fee', '<=', 0)
+                ->orWhereHas('pricingSettings', function (Builder $settings): void {
+                    $settings->where(function (Builder $pricing): void {
+                        $pricing->whereNull('cleaning_fee')
+                            ->orWhere('cleaning_fee', '<=', 0);
+                    });
+                });
+        });
+    }
+
+    private function whereCancellationPolicyIn(Builder $query, array $policies): void
+    {
+        $query->where(function (Builder $builder) use ($policies): void {
+            $builder->whereIn('sleeping_places.cancellation_policy', $policies)
+                ->orWhere(function (Builder $fallback) use ($policies): void {
+                    $fallback->whereNull('sleeping_places.cancellation_policy')
+                        ->whereIn('search_host_profiles.default_cancellation_policy', $policies);
+                });
+        });
+    }
+
+    private function wherePricingSettingFlag(Builder $query, string $column): void
+    {
+        $query->whereHas('pricingSettings', fn (Builder $settings): Builder => $settings->where($column, true));
+    }
+
+    private function whereHasActiveDiscount(Builder $query): void
+    {
+        $now = CarbonImmutable::now();
+        $today = $now->toDateString();
+
+        $query->where(function (Builder $builder) use ($now, $today): void {
+            $builder->where('sleeping_places.weekly_price', '>', 0)
+                ->orWhere('sleeping_places.monthly_price', '>', 0)
+                ->orWhereHas('pricingSettings', function (Builder $settings): void {
+                    $settings->where(function (Builder $pricing): void {
+                        $pricing->where('weekly_price', '>', 0)
+                            ->orWhere('monthly_price', '>', 0);
+                    });
+                })
+                ->orWhereHas('pricingDiscountRules', function (Builder $discount) use ($now): void {
+                    $discount->where('active', true)
+                        ->where(function (Builder $dates) use ($now): void {
+                            $dates->whereNull('starts_at')
+                                ->orWhere('starts_at', '<=', $now);
+                        })
+                        ->where(function (Builder $dates) use ($now): void {
+                            $dates->whereNull('ends_at')
+                                ->orWhere('ends_at', '>=', $now);
+                        });
+                })
+                ->orWhereHas('discountRules', function (Builder $discount) use ($today): void {
+                    $discount->where('status', 'active')
+                        ->where(function (Builder $dates) use ($today): void {
+                            $dates->whereNull('starts_on')
+                                ->orWhere('starts_on', '<=', $today);
+                        })
+                        ->where(function (Builder $dates) use ($today): void {
+                            $dates->whereNull('ends_on')
+                                ->orWhere('ends_on', '>=', $today);
+                        });
+                });
+        });
+    }
+
+    private function whereHasActivePromoCode(Builder $query): void
+    {
+        $now = CarbonImmutable::now();
+
+        $query->whereHas('promoCodes', function (Builder $promoCode) use ($now): void {
+            $promoCode->active()
+                ->where(function (Builder $dates) use ($now): void {
+                    $dates->whereNull('starts_at')
+                        ->orWhere('starts_at', '<=', $now);
+                })
+                ->where(function (Builder $dates) use ($now): void {
+                    $dates->whereNull('ends_at')
+                        ->orWhere('ends_at', '>=', $now);
+                });
+        });
+    }
+
+    private function averageVisibleNightlyPrice(): ?float
+    {
+        $average = SleepingPlace::query()
+            ->where('status', SleepingPlaceStatus::Active->value)
+            ->whereNotNull('base_price_per_night')
+            ->avg('base_price_per_night');
+
+        return $average === null ? null : (float) $average;
+    }
+
+    /**
+     * @return array{0:string,1:string}
+     */
+    private function priceColumnsForBasis(string $basis): array
+    {
+        return match ($basis) {
+            self::PRICE_BASIS_WEEKLY => ['sleeping_places.weekly_price', 'weekly_price'],
+            self::PRICE_BASIS_MONTHLY => ['sleeping_places.monthly_price', 'monthly_price'],
+            default => ['sleeping_places.base_price_per_night', 'base_nightly_price'],
+        };
+    }
+
+    private function selectedPriceBasis(): string
+    {
+        return $this->explicitPriceBasis() ?? self::PRICE_BASIS_NIGHTLY;
+    }
+
+    private function explicitPriceBasis(): ?string
+    {
+        return in_array($this->priceBasis, [
+            self::PRICE_BASIS_NIGHTLY,
+            self::PRICE_BASIS_WEEKLY,
+            self::PRICE_BASIS_MONTHLY,
+        ], true) ? $this->priceBasis : null;
     }
 
     private function applyPremiseCriteriaFilters(Builder $query): void
@@ -2475,14 +3368,10 @@ class SleepingPlaceSearch extends Component
             });
         }
 
-        if ($this->noDeposit) {
-            $query->where('sleeping_places.deposit_amount', '<=', 0);
-        }
-
         if ($this->longStayAllowed) {
             $query->where(function (Builder $builder): void {
                 $builder->whereNull('sleeping_places.max_nights')
-                    ->orWhere('sleeping_places.max_nights', '>=', 28)
+                    ->orWhere('sleeping_places.max_nights', '>=', self::LONG_STAY_MIN_NIGHTS)
                     ->orWhereNotNull('sleeping_places.monthly_price');
             });
         }
@@ -2518,7 +3407,7 @@ class SleepingPlaceSearch extends Component
         }
 
         if ($this->freeCancellation) {
-            $query->where('search_host_profiles.default_cancellation_policy', 'flexible');
+            $this->whereCancellationPolicyIn($query, self::FULL_REFUND_POLICIES);
         }
     }
 
@@ -2549,6 +3438,7 @@ class SleepingPlaceSearch extends Component
     {
         match ($this->sort) {
             'cheapest' => $query->orderBy('sleeping_places.base_price_per_night')->orderByDesc('sleeping_places.id'),
+            'best_value' => $query->orderByDesc('search_host_profiles.rating_average')->orderByDesc('search_host_profiles.reviews_count')->orderBy('sleeping_places.base_price_per_night')->orderByDesc('sleeping_places.id'),
             'highest_rating' => $query->orderByDesc('search_host_profiles.rating_average')->orderByDesc('search_host_profiles.reviews_count')->orderByDesc('sleeping_places.id'),
             'closest_to_center' => $query->orderBy('search_properties.distance_to_center_meters')->orderByDesc('sleeping_places.id'),
             'fewer_people' => $query->orderBy('search_rooms.max_guests')->orderBy('search_rooms.occupied_places_count')->orderByDesc('sleeping_places.id'),
@@ -2573,6 +3463,37 @@ class SleepingPlaceSearch extends Component
     {
         $query->whereNotNull($column)
             ->where($column, '!=', '');
+    }
+
+    /**
+     * @param  list<string>  $columns
+     */
+    private function wherePrefixText(Builder $query, array $columns, string $value): void
+    {
+        $pattern = $this->prefixSearchPattern($value);
+
+        if ($pattern === null) {
+            return;
+        }
+
+        $query->where(function (Builder $builder) use ($columns, $pattern): void {
+            foreach ($columns as $index => $column) {
+                $method = $index === 0 ? 'where' : 'orWhere';
+
+                $builder->{$method}($column, 'like', $pattern);
+            }
+        });
+    }
+
+    private function prefixSearchPattern(string $value): ?string
+    {
+        $term = trim(str_replace(['%', '_'], ' ', $value));
+
+        if ($term === '') {
+            return null;
+        }
+
+        return $term.'%';
     }
 
     private function orWhereFilledText(Builder $query, string $column): void
@@ -2845,7 +3766,16 @@ class SleepingPlaceSearch extends Component
 
     private function selectedCityId(): ?int
     {
+        if (ctype_digit($this->cityId)) {
+            return (int) $this->cityId;
+        }
+
         return ctype_digit($this->city) ? (int) $this->city : null;
+    }
+
+    private function selectedCountryId(): ?int
+    {
+        return ctype_digit($this->countryId) ? (int) $this->countryId : null;
     }
 
     private function selectedCity(): ?City
@@ -2883,6 +3813,60 @@ class SleepingPlaceSearch extends Component
         }
 
         return [$start, $end];
+    }
+
+    private function selectedCheckoutDate(): ?CarbonImmutable
+    {
+        if ($this->checkOut === '') {
+            return null;
+        }
+
+        try {
+            $checkOut = CarbonImmutable::parse($this->checkOut)->startOfDay();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $checkOut->isBefore(CarbonImmutable::today()) ? null : $checkOut;
+    }
+
+    private function selectedMinimumStayNights(): ?int
+    {
+        return in_array($this->minimumStayNights, ['1', '3', '7', '30'], true) ? (int) $this->minimumStayNights : null;
+    }
+
+    private function selectedMaximumStayNights(): ?int
+    {
+        return in_array($this->maximumStayNights, ['7', '30', '90'], true) ? (int) $this->maximumStayNights : null;
+    }
+
+    private function flexibleDateWindowDays(): int
+    {
+        if ($this->flexiblePlusMinusSevenDays) {
+            return 7;
+        }
+
+        if ($this->flexiblePlusMinusThreeDays) {
+            return 3;
+        }
+
+        if ($this->flexiblePlusMinusOneDay) {
+            return 1;
+        }
+
+        return $this->flexibleDates ? self::FLEXIBLE_DATE_DEFAULT_WINDOW_DAYS : 0;
+    }
+
+    /**
+     * @return array{0:CarbonImmutable,1:CarbonImmutable}
+     */
+    private function nextWeekendRange(): array
+    {
+        $today = CarbonImmutable::today();
+        $daysUntilFriday = (5 - (int) $today->dayOfWeek + 7) % 7;
+        $checkIn = $today->addDays($daysUntilFriday);
+
+        return [$checkIn, $checkIn->addDays(2)];
     }
 
     private function decimal(string $value): ?float
@@ -2957,14 +3941,19 @@ class SleepingPlaceSearch extends Component
     {
         return [
             'city',
+            'countryId',
+            'cityId',
             'cityQuery',
             'district',
+            'street',
+            'landmark',
             'checkIn',
             'checkOut',
             'guestsCount',
             'priceMin',
             'priceMax',
             'currency',
+            'priceBasis',
             'propertyType',
             'roomType',
             'sleepingPlaceType',
@@ -3047,10 +4036,25 @@ class SleepingPlaceSearch extends Component
             'nearHospital',
             'nearUniversity',
             'nearRailwayStation',
+            'nearPark',
+            'nearShoppingCenter',
+            'nearGym',
+            'nearCoworking',
+            'nearWork',
+            'nearSea',
+            'nearNightlife',
             'nearAirport',
             'easyTransport',
             'quietDistrict',
             'safeDistrict',
+            'areaResidential',
+            'areaCityCenter',
+            'areaSuburb',
+            'areaIndustrial',
+            'areaTourist',
+            'areaStudents',
+            'areaWorkers',
+            'areaLongStay',
             'goodStreetLighting',
             'freeParking',
             'paidParking',
@@ -3074,14 +4078,67 @@ class SleepingPlaceSearch extends Component
             'verifiedHost',
             'hasReviews',
             'noDeposit',
+            'withDeposit',
+            'lowDeposit',
+            'noCleaningFee',
             'freeCancellation',
+            'partialRefund',
+            'fullRefund',
+            'installmentPayment',
+            'payLater',
+            'payOnArrival',
+            'hasDiscount',
+            'hasPromoCode',
+            'belowAveragePrice',
+            'priceIncludesAllFees',
+            'showTotalPriceImmediately',
+            'hideHiddenFees',
             'longStayAllowed',
             'availableToday',
+            'availableTomorrow',
+            'availableWeekend',
             'flexibleDates',
+            'flexiblePlusMinusOneDay',
+            'flexiblePlusMinusThreeDays',
+            'flexiblePlusMinusSevenDays',
+            'shortStayAllowed',
+            'minimumStayNights',
+            'maximumStayNights',
+            'canExtendStay',
+            'cannotExtendStay',
+            'availableAfterCheckout',
+            'nightCheckIn',
+            'nightCheckOut',
+            'earlyMorningCheckIn',
+            'lateEveningCheckOut',
             'minimumCompatibilityFit',
             'hideNotSuitableCompatibility',
             'showCompatibilityWarnings',
             'sort',
         ];
+    }
+
+    private function normalizeLocationQueryState(): void
+    {
+        if ($this->cityId === '' && ctype_digit($this->city)) {
+            $this->cityId = $this->city;
+        }
+
+        if ($this->city === '' && $this->cityId !== '') {
+            $this->city = $this->cityId;
+        }
+
+        $legacyBooleanAliases = [
+            'near_bus' => 'nearBusStop',
+            'near_railway' => 'nearRailwayStation',
+            'quiet_district' => 'quietDistrict',
+            'safe_district' => 'safeDistrict',
+        ];
+
+        foreach ($legacyBooleanAliases as $queryKey => $property) {
+            if (! $this->{$property} && request()->boolean($queryKey)) {
+                $this->{$property} = true;
+            }
+        }
     }
 }
