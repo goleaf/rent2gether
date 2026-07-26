@@ -46,10 +46,10 @@ class FavoriteCollectionsList extends Component
             ->get()
             ->map(fn (FavoriteCollection $collection): array => [
                 'id' => $collection->id,
-                'title' => $collection->title,
+                'title' => $collection->displayTitle(),
                 'description' => $collection->description,
-                'icon' => $collection->icon ?: 'folder',
-                'color' => $collection->color ?: 'zinc',
+                'icon' => $collection->displayIcon(),
+                'color' => $collection->displayColor(),
                 'favorites_count' => (int) $collection->favorites_count,
                 'available_count' => (int) $collection->available_favorites_count,
                 'unavailable_count' => (int) $collection->unavailable_favorites_count,

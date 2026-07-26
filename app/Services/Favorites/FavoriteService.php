@@ -12,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class FavoriteService
 {
@@ -157,7 +158,7 @@ class FavoriteService
     public function updateDecisionStatus(User $user, int $favoriteId, string $status): Favorite
     {
         $status = Validator::validate(['status' => $status], [
-            'status' => ['required', 'string', 'max:80'],
+            'status' => ['required', 'string', Rule::in(['saved', 'discuss', 'almost_chosen', 'backup'])],
         ])['status'];
         $favorite = $this->favoriteForUser($user, $favoriteId);
 

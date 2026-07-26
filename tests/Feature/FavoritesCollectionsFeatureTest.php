@@ -11,8 +11,12 @@ use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Enums\SleepingPlaceStatus;
 use App\Livewire\Favorites\CreateCollectionSheet;
+use App\Livewire\Favorites\FavoriteCard;
 use App\Livewire\Favorites\FavoriteCollectionPage;
+use App\Livewire\Favorites\FavoriteCollectionsList;
+use App\Livewire\Favorites\FavoritesPage;
 use App\Livewire\Favorites\FavoriteToggle;
+use App\Livewire\Favorites\MoveFavoriteSheet;
 use App\Models\AvailabilityDay;
 use App\Models\City;
 use App\Models\Country;
@@ -24,13 +28,17 @@ use App\Models\Room;
 use App\Models\SleepingPlace;
 use App\Models\User;
 use App\Services\Favorites\FavoriteAvailabilityService;
+use App\Services\Favorites\FavoriteCardPresenter;
+use App\Services\Favorites\FavoriteCardQuery;
 use App\Services\Favorites\FavoriteCollectionService;
 use App\Services\Favorites\FavoriteReminderService;
 use App\Services\Favorites\FavoriteService;
 use App\Services\Favorites\FavoriteSnapshotService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -59,6 +67,21 @@ class FavoritesCollectionsFeatureTest extends TestCase
             'title' => 'Work shortlist',
             'type' => 'custom',
         ]);
+    }
+
+    public function test_default_collection_titles_are_translated_at_render_time(): void
+    {
+        $guest = User::factory()->create();
+
+        app()->setLocale('en');
+        app(FavoriteCollectionService::class)->ensureDefaultCollections($guest);
+
+        app()->setLocale('ru');
+
+        Livewire::actingAs($guest)
+            ->test(FavoriteCollectionsList::class)
+            ->assertSee('Дешевые варианты')
+            ->assertDontSee('Cheap options');
     }
 
     public function test_favorite_adds_snapshot_and_prevents_duplicates(): void
@@ -153,6 +176,50 @@ class FavoritesCollectionsFeatureTest extends TestCase
         $this->assertNull($favorite->refresh()->remind_at);
     }
 
+    public function test_favorite_card_actions_update_organization_state(): void
+    {
+        $guest = User::factory()->create();
+        $place = $this->createPlace('Card action place');
+        $favorite = app(FavoriteService::class)->add($guest, $place->id, null, new FavoriteContext);
+        $card = app(FavoriteCardPresenter::class)
+            ->presentMany(app(FavoriteCardQuery::class)->forFavorite($guest, $favorite->id)->get())[0];
+
+        Livewire::actingAs($guest)
+            ->test(FavoriteCard::class, ['card' => $card])
+            ->call('openMoveSheet')
+            ->assertSet('moveSheetOpen', true)
+            ->call('openNoteSheet')
+            ->assertSet('noteSheetOpen', true)
+            ->call('openReminderSheet')
+            ->assertSet('reminderSheetOpen', true)
+            ->call('setPriority', 'high')
+            ->call('setDecisionStatus', 'almost_chosen')
+            ->assertHasNoErrors();
+
+        $favorite->refresh();
+
+        $this->assertSame(9, $favorite->priority);
+        $this->assertSame('almost_chosen', $favorite->decision_status);
+    }
+
+    public function test_move_favorite_sheet_moves_only_to_owned_active_collection(): void
+    {
+        $guest = User::factory()->create();
+        $place = $this->createPlace('Move sheet place');
+        $source = FavoriteCollection::factory()->for($guest)->create(['title' => 'Source']);
+        $target = FavoriteCollection::factory()->for($guest)->create(['title' => 'Target']);
+        $favorite = app(FavoriteService::class)->add($guest, $place->id, $source->id, new FavoriteContext);
+
+        Livewire::actingAs($guest)
+            ->test(MoveFavoriteSheet::class, ['favoriteId' => $favorite->id])
+            ->assertSet('collectionId', $source->id)
+            ->set('collectionId', $target->id)
+            ->call('move')
+            ->assertHasNoErrors();
+
+        $this->assertSame($target->id, $favorite->refresh()->favorite_collection_id);
+    }
+
     public function test_price_and_availability_changes_are_detected(): void
     {
         $guest = User::factory()->create();
@@ -202,6 +269,72 @@ class FavoritesCollectionsFeatureTest extends TestCase
             ->assertSet('selected', true)
             ->call('toggle')
             ->assertSet('selected', false);
+    }
+
+    public function test_favorite_collection_query_indexes_exist(): void
+    {
+        foreach ([
+            'favorites_user_added_index',
+            'favorites_collection_added_index',
+            'favorites_collection_available_added_index',
+            'favorites_collection_price_changed_added_index',
+            'favorites_collection_current_price_index',
+        ] as $index) {
+            $this->assertTrue(Schema::hasIndex('favorites', $index), $index.' is missing.');
+        }
+    }
+
+    public function test_favorites_summary_uses_one_aggregate_lookup_instead_of_repeated_counts(): void
+    {
+        $guest = User::factory()->create();
+
+        Favorite::factory()->for($guest)->create([
+            'bed_id' => null,
+            'sleeping_place_id' => null,
+            'is_currently_available' => true,
+            'price_changed' => true,
+            'became_available_again' => false,
+            'remind_at' => now()->addDay(),
+            'reminder_sent_at' => null,
+        ]);
+        Favorite::factory()->for($guest)->create([
+            'bed_id' => null,
+            'sleeping_place_id' => null,
+            'is_currently_available' => false,
+            'price_changed' => false,
+            'became_available_again' => true,
+            'remind_at' => null,
+            'reminder_sent_at' => null,
+        ]);
+        Favorite::factory()->for(User::factory())->create([
+            'bed_id' => null,
+            'sleeping_place_id' => null,
+            'is_currently_available' => true,
+            'price_changed' => true,
+            'became_available_again' => true,
+        ]);
+
+        $summaryCountQueries = 0;
+        DB::listen(static function ($query) use (&$summaryCountQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_starts_with($sql, 'select count(*) as "aggregate" from "favorites"')) {
+                $summaryCountQueries++;
+            }
+        });
+
+        $component = Livewire::actingAs($guest)
+            ->test(FavoritesPage::class)
+            ->assertSee(__('favorites.summary.total'));
+
+        $this->assertSame([
+            'total' => 2,
+            'available' => 1,
+            'price_changed' => 1,
+            'available_again' => 1,
+            'reminders' => 1,
+        ], $component->instance()->summary());
+        $this->assertLessThanOrEqual(1, $summaryCountQueries, 'Favorites summary should avoid repeated count queries on every render.');
     }
 
     /**

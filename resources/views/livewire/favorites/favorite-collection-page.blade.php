@@ -5,7 +5,7 @@
             <flux:heading size="xl" level="1">
                 <span class="inline-flex min-w-0 items-center gap-2">
                     <flux:icon name="heart" variant="mini" class="size-5 shrink-0 text-sky-500/80 dark:text-sky-300/80" />
-                    <span class="min-w-0">{{ $this->collection->title }}</span>
+                    <span class="min-w-0">{{ $this->collection->displayTitle() }}</span>
                 </span>
             </flux:heading>
             @if($this->collection->description)

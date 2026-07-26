@@ -23,9 +23,10 @@
                 <flux:select wire:model.change="collectionId">
                     <flux:select.option value="">{{ __('favorites.choose_collection') }}</flux:select.option>
                     @foreach($collections as $collection)
-                        <flux:select.option value="{{ $collection->id }}">{{ $collection->title }}</flux:select.option>
+                        <flux:select.option value="{{ $collection->id }}">{{ $collection->displayTitle() }}</flux:select.option>
                     @endforeach
                 </flux:select>
+                <flux:error name="collectionId" />
             </flux:field>
 
             <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled" icon="heart">

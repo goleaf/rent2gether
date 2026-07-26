@@ -63,8 +63,8 @@ class FavoriteCollectionService
         $validated = Validator::validate($data, [
             'title' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'icon' => ['nullable', 'string', 'max:80'],
-            'color' => ['nullable', 'string', 'max:40'],
+            'icon' => ['nullable', 'string', 'max:80', Rule::in(FavoriteCollection::allowedIcons())],
+            'color' => ['nullable', 'string', 'max:40', Rule::in(FavoriteCollection::allowedColors())],
             'type' => ['nullable', 'string', 'max:80'],
             'city_id' => ['nullable', 'integer', Rule::exists('cities', 'id')],
             'check_in_date' => ['nullable', 'date'],
@@ -78,12 +78,13 @@ class FavoriteCollectionService
         ]);
 
         $title = trim((string) $validated['title']);
+        $description = isset($validated['description']) ? trim((string) $validated['description']) : null;
 
         return FavoriteCollection::query()->create([
             'user_id' => $user->id,
             'title' => $title,
             'slug' => $this->uniqueSlug($user, $title),
-            'description' => Arr::get($validated, 'description'),
+            'description' => $description === '' ? null : $description,
             'icon' => Arr::get($validated, 'icon', 'heart'),
             'color' => Arr::get($validated, 'color', 'emerald'),
             'type' => Arr::get($validated, 'type', 'custom') ?: 'custom',

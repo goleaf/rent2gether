@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Favorites;
 
-use App\Models\Favorite;
 use App\Models\User;
 use App\Services\Favorites\FavoriteCardPresenter;
 use App\Services\Favorites\FavoriteCardQuery;
@@ -43,14 +42,33 @@ class FavoritesPage extends Component
     #[Computed]
     public function summary(): array
     {
-        $query = Favorite::query()->forUser((int) auth()->id());
+        $user = User::query()
+            ->select(['id'])
+            ->withCount([
+                'favorites as favorites_total_count',
+                'favorites as favorites_available_count' => fn (Builder $query) => $query->where('is_currently_available', true),
+                'favorites as favorites_price_changed_count' => fn (Builder $query) => $query->where('price_changed', true),
+                'favorites as favorites_available_again_count' => fn (Builder $query) => $query->where('became_available_again', true),
+                'favorites as favorites_reminders_count' => fn (Builder $query) => $query->whereNotNull('remind_at')->whereNull('reminder_sent_at'),
+            ])
+            ->find((int) auth()->id());
+
+        if (! $user instanceof User) {
+            return [
+                'total' => 0,
+                'available' => 0,
+                'price_changed' => 0,
+                'available_again' => 0,
+                'reminders' => 0,
+            ];
+        }
 
         return [
-            'total' => (clone $query)->count(),
-            'available' => (clone $query)->where('is_currently_available', true)->count(),
-            'price_changed' => (clone $query)->where('price_changed', true)->count(),
-            'available_again' => (clone $query)->where('became_available_again', true)->count(),
-            'reminders' => (clone $query)->whereNotNull('remind_at')->whereNull('reminder_sent_at')->count(),
+            'total' => (int) $user->favorites_total_count,
+            'available' => (int) $user->favorites_available_count,
+            'price_changed' => (int) $user->favorites_price_changed_count,
+            'available_again' => (int) $user->favorites_available_again_count,
+            'reminders' => (int) $user->favorites_reminders_count,
         ];
     }
 

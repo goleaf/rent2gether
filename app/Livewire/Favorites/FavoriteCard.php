@@ -9,6 +9,7 @@ use App\Services\Favorites\FavoriteService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
 use Livewire\Component;
 
@@ -24,6 +25,12 @@ class FavoriteCard extends Component
     public int $placeId = 0;
 
     public bool $selectedForCompare = false;
+
+    public bool $moveSheetOpen = false;
+
+    public bool $noteSheetOpen = false;
+
+    public bool $reminderSheetOpen = false;
 
     /**
      * @param  array<string, mixed>  $card
@@ -50,10 +57,71 @@ class FavoriteCard extends Component
         $this->dispatch('favorite-removed');
     }
 
+    public function openMoveSheet(FavoriteService $favorites): void
+    {
+        if ($this->canEdit($favorites)) {
+            $this->moveSheetOpen = true;
+            $this->noteSheetOpen = false;
+            $this->reminderSheetOpen = false;
+        }
+    }
+
+    public function openNoteSheet(FavoriteService $favorites): void
+    {
+        if ($this->canEdit($favorites)) {
+            $this->noteSheetOpen = true;
+            $this->moveSheetOpen = false;
+            $this->reminderSheetOpen = false;
+        }
+    }
+
+    public function openReminderSheet(FavoriteService $favorites): void
+    {
+        if ($this->canEdit($favorites)) {
+            $this->reminderSheetOpen = true;
+            $this->moveSheetOpen = false;
+            $this->noteSheetOpen = false;
+        }
+    }
+
+    public function setPriority(string $priority, FavoriteService $favorites): void
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User || $this->favoriteId <= 0) {
+            return;
+        }
+
+        $favorites->updatePriority($user, $this->favoriteId, $priority);
+        $this->afterCardMutation();
+    }
+
+    public function setDecisionStatus(string $status, FavoriteService $favorites): void
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User || $this->favoriteId <= 0) {
+            return;
+        }
+
+        $favorites->updateDecisionStatus($user, $this->favoriteId, $status);
+        $this->afterCardMutation();
+    }
+
     public function toggleCompare(): void
     {
         $this->selectedForCompare = ! $this->selectedForCompare;
         $this->dispatch('favorite-compare-toggled', sleepingPlaceId: $this->placeId);
+    }
+
+    #[On('favorite-collections-changed')]
+    public function closeSheets(): void
+    {
+        $this->moveSheetOpen = false;
+        $this->noteSheetOpen = false;
+        $this->reminderSheetOpen = false;
+
+        unset($this->card);
     }
 
     public function render(): View
@@ -89,5 +157,26 @@ class FavoriteCard extends Component
 
         return app(FavoriteCardPresenter::class)
             ->presentMany(collect([$favorite]))[0] ?? [];
+    }
+
+    private function canEdit(FavoriteService $favorites): bool
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User || $this->favoriteId <= 0) {
+            return false;
+        }
+
+        $favorites->favoriteForUser($user, $this->favoriteId);
+
+        return true;
+    }
+
+    private function afterCardMutation(): void
+    {
+        $this->mountedCard = [];
+        unset($this->card);
+
+        $this->dispatch('favorite-collections-changed');
     }
 }

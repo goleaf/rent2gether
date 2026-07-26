@@ -108,11 +108,13 @@ class FavoriteCollectionPage extends Component
                 'id',
                 'user_id',
                 'title',
+                'type',
                 'description',
                 'check_in_date',
                 'check_out_date',
                 'nights_count',
                 'guests_count',
+                'is_default',
                 'is_archived',
                 'updated_at',
             ])
@@ -140,7 +142,7 @@ class FavoriteCollectionPage extends Component
     {
         return view('livewire.favorites.favorite-collection-page')
             ->layout('layouts.app', [
-                'title' => $this->collection->title,
+                'title' => $this->collection->displayTitle(),
             ]);
     }
 

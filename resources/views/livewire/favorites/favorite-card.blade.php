@@ -120,6 +120,55 @@
             {{ __('favorites.compare') }}
         </flux:button>
 
+        <flux:dropdown align="end">
+            <flux:button type="button" size="sm" variant="ghost" icon="ellipsis-horizontal">
+                {{ __('favorites.organize') }}
+            </flux:button>
+
+            <flux:menu>
+                <flux:menu.item icon="folder" wire:click="openMoveSheet">
+                    {{ __('favorites.move_to_collection') }}
+                </flux:menu.item>
+                <flux:menu.item icon="chat-bubble-left-right" wire:click="openNoteSheet">
+                    {{ __('favorites.edit_note') }}
+                </flux:menu.item>
+                <flux:menu.item icon="clock" wire:click="openReminderSheet">
+                    {{ __('favorites.remind_later') }}
+                </flux:menu.item>
+
+                <flux:menu.separator />
+
+                <flux:menu.group heading="{{ __('favorites.priority') }}">
+                    <flux:menu.item icon="arrow-down" wire:click="setPriority('low')">
+                        {{ __('favorites.priorities.low') }}
+                    </flux:menu.item>
+                    <flux:menu.item icon="minus" wire:click="setPriority('normal')">
+                        {{ __('favorites.priorities.normal') }}
+                    </flux:menu.item>
+                    <flux:menu.item icon="arrow-up" wire:click="setPriority('high')">
+                        {{ __('favorites.priorities.high') }}
+                    </flux:menu.item>
+                </flux:menu.group>
+
+                <flux:menu.separator />
+
+                <flux:menu.group heading="{{ __('favorites.decision_status') }}">
+                    <flux:menu.item icon="heart" wire:click="setDecisionStatus('saved')">
+                        {{ __('favorites.decision_statuses.saved') }}
+                    </flux:menu.item>
+                    <flux:menu.item icon="chat-bubble-left-right" wire:click="setDecisionStatus('discuss')">
+                        {{ __('favorites.decision_statuses.discuss') }}
+                    </flux:menu.item>
+                    <flux:menu.item icon="check-circle" wire:click="setDecisionStatus('almost_chosen')">
+                        {{ __('favorites.decision_statuses.almost_chosen') }}
+                    </flux:menu.item>
+                    <flux:menu.item icon="bookmark" wire:click="setDecisionStatus('backup')">
+                        {{ __('favorites.decision_statuses.backup') }}
+                    </flux:menu.item>
+                </flux:menu.group>
+            </flux:menu>
+        </flux:dropdown>
+
         @if(! empty($card['listing_card']))
             <flux:button
                 type="button"
@@ -144,4 +193,16 @@
             />
         @endif
     </div>
+
+    @if($moveSheetOpen)
+        <livewire:favorites.move-favorite-sheet :favorite-id="$favoriteId" :key="'favorite-move-'.$favoriteId" />
+    @endif
+
+    @if($noteSheetOpen)
+        <livewire:favorites.edit-favorite-note-sheet :favorite-id="$favoriteId" :key="'favorite-note-'.$favoriteId" />
+    @endif
+
+    @if($reminderSheetOpen)
+        <livewire:favorites.favorite-reminder-sheet :favorite-id="$favoriteId" :key="'favorite-reminder-'.$favoriteId" />
+    @endif
 </flux:card>

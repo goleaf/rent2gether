@@ -8,11 +8,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Lang;
 
 class FavoriteCollection extends Model
 {
     /** @use HasFactory<FavoriteCollectionFactory> */
     use HasFactory;
+
+    private const ALLOWED_ICONS = [
+        'academic-cap',
+        'bookmark',
+        'briefcase',
+        'calendar-days',
+        'chat-bubble-left-right',
+        'check-circle',
+        'folder',
+        'heart',
+        'star',
+        'sun',
+        'tag',
+    ];
+
+    private const ALLOWED_COLORS = [
+        'amber',
+        'blue',
+        'emerald',
+        'green',
+        'indigo',
+        'sky',
+        'violet',
+        'yellow',
+        'zinc',
+    ];
 
     protected $fillable = [
         'user_id',
@@ -77,6 +104,60 @@ class FavoriteCollection extends Model
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Returns the translated title used for built-in collections while preserving custom titles.
+     */
+    public function displayTitle(): string
+    {
+        $translationKey = 'favorites.default_collections.'.($this->type ?: '');
+
+        if ($this->is_default && Lang::has($translationKey)) {
+            return __($translationKey);
+        }
+
+        return $this->title;
+    }
+
+    /**
+     * Returns a whitelisted icon name safe for Flux icon rendering.
+     */
+    public function displayIcon(): string
+    {
+        $icon = (string) ($this->icon ?: 'folder');
+
+        return in_array($icon, self::ALLOWED_ICONS, true) ? $icon : 'folder';
+    }
+
+    /**
+     * Returns a whitelisted semantic color token for collection metadata.
+     */
+    public function displayColor(): string
+    {
+        $color = (string) ($this->color ?: 'zinc');
+
+        return in_array($color, self::ALLOWED_COLORS, true) ? $color : 'zinc';
+    }
+
+    /**
+     * Lists icon names accepted for user-created Favorite Collections.
+     *
+     * @return list<string>
+     */
+    public static function allowedIcons(): array
+    {
+        return self::ALLOWED_ICONS;
+    }
+
+    /**
+     * Lists color tokens accepted for user-created Favorite Collections.
+     *
+     * @return list<string>
+     */
+    public static function allowedColors(): array
+    {
+        return self::ALLOWED_COLORS;
     }
 
     /**
