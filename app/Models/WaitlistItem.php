@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Data\Waitlist\DateRange;
 use Database\Factories\WaitlistItemFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -126,10 +127,21 @@ class WaitlistItem extends Model
     protected static function booted(): void
     {
         static::saving(function (WaitlistItem $item): void {
-            $item->desired_check_in_date ??= $item->desired_check_in;
-            $item->desired_check_out_date ??= $item->desired_check_out;
-            $item->desired_check_in ??= $item->desired_check_in_date;
-            $item->desired_check_out ??= $item->desired_check_out_date;
+            if ($item->desired_check_in && ($item->desired_check_in_date === null || $item->isDirty('desired_check_in'))) {
+                $item->desired_check_in_date = $item->desired_check_in->toDateString();
+            }
+
+            if ($item->desired_check_out && ($item->desired_check_out_date === null || $item->isDirty('desired_check_out'))) {
+                $item->desired_check_out_date = $item->desired_check_out->toDateString();
+            }
+
+            if ($item->desired_check_in_date && ($item->desired_check_in === null || $item->isDirty('desired_check_in_date'))) {
+                $item->desired_check_in = $item->desired_check_in_date->toDateString();
+            }
+
+            if ($item->desired_check_out_date && ($item->desired_check_out === null || $item->isDirty('desired_check_out_date'))) {
+                $item->desired_check_out = $item->desired_check_out_date->toDateString();
+            }
 
             $item->max_price_per_night ??= $item->max_price;
             $item->max_price ??= $item->max_price_per_night;
@@ -154,8 +166,11 @@ class WaitlistItem extends Model
 
             if ($item->desired_check_in_date && $item->desired_check_out_date) {
                 $nights = max(0, (int) $item->desired_check_in_date->diffInDays($item->desired_check_out_date));
-                $item->nights_count ??= $nights;
-                $item->calendar_days_count ??= $nights + 1;
+
+                if ($item->isDirty('desired_check_in_date') || $item->isDirty('desired_check_out_date') || $item->nights_count === null) {
+                    $item->nights_count = $nights;
+                    $item->calendar_days_count = $nights + 1;
+                }
             }
         });
     }
@@ -245,6 +260,14 @@ class WaitlistItem extends Model
     }
 
     /**
+     * Adds every non-final queue status used to prevent duplicate live entries.
+     */
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['active', 'waiting', 'offered', 'awaiting_guest', 'awaiting_host', 'awaiting_payment']);
+    }
+
+    /**
      * Adds the expired query filter for reusable Waitlist Item lookups.
      */
     public function scopeExpired(Builder $query): Builder
@@ -260,6 +283,22 @@ class WaitlistItem extends Model
         $placeId = $place instanceof SleepingPlace ? $place->id : $place;
 
         return $query->where('sleeping_place_id', $placeId);
+    }
+
+    /**
+     * Adds the desired date range query filter for reusable Waitlist Item lookups.
+     */
+    public function scopeForDateRange(Builder $query, DateRange $range): Builder
+    {
+        return $query
+            ->whereIn('desired_check_in_date', [
+                $range->checkIn->toDateString(),
+                $range->checkIn->format('Y-m-d H:i:s'),
+            ])
+            ->whereIn('desired_check_out_date', [
+                $range->checkOut->toDateString(),
+                $range->checkOut->format('Y-m-d H:i:s'),
+            ]);
     }
 
     /**

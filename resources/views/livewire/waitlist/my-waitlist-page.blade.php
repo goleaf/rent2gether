@@ -52,12 +52,29 @@
                     </flux:callout>
                 @endif
 
+                <div class="flex flex-wrap gap-1">
+                    @if($card['item']->ready_to_book_immediately)
+                        <flux:badge size="sm" color="green" icon="check-circle">{{ __('waitlist.ready_to_book') }}</flux:badge>
+                    @endif
+                    @if($card['item']->auto_send_request)
+                        <flux:badge size="sm" icon="paper-airplane">{{ __('waitlist.auto_send_request') }}</flux:badge>
+                    @endif
+                    @if($card['item']->notify_available)
+                        <flux:badge size="sm" icon="bell">{{ __('waitlist.notify_available') }}</flux:badge>
+                    @endif
+                </div>
+
                 <div class="flex flex-wrap gap-2">
                     @if($card['place'])
                         <flux:button size="sm" variant="ghost" icon="eye" href="{{ route('places.show', ['locale' => app()->getLocale(), 'sleepingPlace' => $card['place']]) }}" wire:navigate>
                             {{ __('waitlist.open_listing') }}
                         </flux:button>
                     @endif
+                    <flux:modal.trigger name="edit-waitlist-item">
+                        <flux:button type="button" size="sm" variant="ghost" icon="pencil-square" wire:click="edit({{ $card['item']->id }})">
+                            {{ __('waitlist.edit') }}
+                        </flux:button>
+                    </flux:modal.trigger>
                     <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="cancel({{ $card['item']->id }})" wire:confirm="{{ __('waitlist.confirm_leave') }}">
                         {{ __('waitlist.leave') }}
                     </flux:button>
@@ -80,4 +97,14 @@
             </flux:card>
         @endforelse
     </section>
+
+    <flux:modal name="edit-waitlist-item" class="w-full max-w-[36rem]">
+        @if($this->editingItemId !== null)
+            <livewire:waitlist.edit-waitlist-item-sheet :waitlist-item-id="$this->editingItemId" :key="'edit-waitlist-'.$this->editingItemId" />
+        @else
+            <flux:card>
+                <flux:text>{{ __('waitlist.states.checking') }}</flux:text>
+            </flux:card>
+        @endif
+    </flux:modal>
 </x-ui.page>

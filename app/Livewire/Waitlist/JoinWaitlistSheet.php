@@ -69,7 +69,14 @@ class JoinWaitlistSheet extends Component
             'maxPricePerNight' => ['nullable', 'numeric', 'min:0', 'max:999999'],
             'maxTotalPrice' => ['nullable', 'numeric', 'min:0', 'max:999999'],
             'maxDeposit' => ['nullable', 'numeric', 'min:0', 'max:999999'],
+            'flexibleDates' => ['boolean'],
+            'flexibleDays' => ['nullable', 'integer', 'min:1', 'max:14'],
+            'readyToBookImmediately' => ['boolean'],
+            'autoSendRequest' => ['boolean'],
+            'notifyAvailable' => ['boolean'],
+            'notifyPriceDrop' => ['boolean'],
             'guestMessage' => ['nullable', 'string', 'max:1000'],
+            'expiresAt' => ['nullable', 'date', 'after:now'],
         ], attributes: [
             'desiredCheckIn' => __('waitlist.check_in'),
             'desiredCheckOut' => __('waitlist.check_out'),
@@ -77,7 +84,13 @@ class JoinWaitlistSheet extends Component
             'maxPricePerNight' => __('waitlist.max_price'),
             'maxTotalPrice' => __('waitlist.max_total_price'),
             'maxDeposit' => __('waitlist.max_deposit'),
+            'flexibleDates' => __('waitlist.flexible_dates'),
+            'readyToBookImmediately' => __('waitlist.ready_to_book'),
+            'autoSendRequest' => __('waitlist.auto_send_request'),
+            'notifyAvailable' => __('waitlist.notify_available'),
+            'notifyPriceDrop' => __('waitlist.notify_price_drop'),
             'guestMessage' => __('waitlist.guest_message'),
+            'expiresAt' => __('waitlist.expires_at'),
         ]);
 
         $place = SleepingPlace::query()
@@ -92,14 +105,14 @@ class JoinWaitlistSheet extends Component
             maxTotalPrice: $this->floatOrNull($validated['maxTotalPrice'] ?? null),
             maxDeposit: $this->floatOrNull($validated['maxDeposit'] ?? null),
             source: 'sheet',
-            flexibleDates: $this->flexibleDates,
-            flexibleDays: $this->flexibleDays,
-            readyToBookImmediately: $this->readyToBookImmediately,
-            autoSendRequest: $this->autoSendRequest,
-            notifyAvailable: $this->notifyAvailable,
-            notifyPriceDrop: $this->notifyPriceDrop,
+            flexibleDates: (bool) $validated['flexibleDates'],
+            flexibleDays: $validated['flexibleDays'] === null ? null : (int) $validated['flexibleDays'],
+            readyToBookImmediately: (bool) $validated['readyToBookImmediately'],
+            autoSendRequest: (bool) $validated['autoSendRequest'],
+            notifyAvailable: (bool) $validated['notifyAvailable'],
+            notifyPriceDrop: (bool) $validated['notifyPriceDrop'],
             guestMessage: $validated['guestMessage'] ?: null,
-            expiresAt: $this->expiresAt ?: null,
+            expiresAt: $validated['expiresAt'] ?: null,
         ));
 
         $this->joined = true;

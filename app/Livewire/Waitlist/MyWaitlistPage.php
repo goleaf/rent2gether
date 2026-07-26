@@ -3,21 +3,48 @@
 namespace App\Livewire\Waitlist;
 
 use App\Models\SleepingPlace;
+use App\Models\User;
 use App\Models\WaitlistItem;
+use App\Services\Waitlist\WaitlistService;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class MyWaitlistPage extends Component
 {
-    public function cancel(int $itemId): void
+    #[Locked]
+    public ?int $editingItemId = null;
+
+    public function edit(int $itemId): void
     {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
         WaitlistItem::query()
-            ->where('id', $itemId)
-            ->where('user_id', auth()->id())
-            ->update([
-                'status' => 'cancelled',
-                'cancelled_at' => now(),
-            ]);
+            ->where('user_id', $user->id)
+            ->findOrFail($itemId);
+
+        $this->editingItemId = $itemId;
+    }
+
+    public function cancel(int $itemId, WaitlistService $waitlist): void
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $item = WaitlistItem::query()
+            ->where('user_id', $user->id)
+            ->findOrFail($itemId);
+
+        $waitlist->cancel($user, $item);
+
+        $this->dispatch('waitlist-updated');
     }
 
     public function render(): View
@@ -37,6 +64,9 @@ class MyWaitlistPage extends Component
                 'max_price_per_night',
                 'max_total_price',
                 'currency',
+                'ready_to_book_immediately',
+                'auto_send_request',
+                'notify_available',
                 'position',
                 'last_offered_at',
                 'created_at',

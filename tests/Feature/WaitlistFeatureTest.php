@@ -28,12 +28,14 @@ use App\Models\User;
 use App\Models\WaitlistItem;
 use App\Models\WaitlistOffer;
 use App\Services\Waitlist\WaitlistAvailabilityService;
+use App\Services\Waitlist\WaitlistHostViewService;
 use App\Services\Waitlist\WaitlistOfferService;
 use App\Services\Waitlist\WaitlistQueueService;
 use App\Services\Waitlist\WaitlistService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -92,6 +94,16 @@ class WaitlistFeatureTest extends TestCase
         $this->assertSame($result->item->id, $again->item->id);
         $this->assertSame(1, WaitlistItem::query()->count());
 
+        $differentDates = app(WaitlistService::class)->join(
+            $guest,
+            $place,
+            $this->context(desiredCheckIn: '2026-07-13', desiredCheckOut: '2026-07-15'),
+        );
+
+        $this->assertFalse($differentDates->alreadyJoined);
+        $this->assertNotSame($result->item->id, $differentDates->item->id);
+        $this->assertSame(2, WaitlistItem::query()->count());
+
         $updated = app(WaitlistService::class)->update($guest, $result->item, [
             'max_total_price' => 150,
             'guest_message' => 'I can arrive quickly.',
@@ -112,14 +124,21 @@ class WaitlistFeatureTest extends TestCase
         ]);
     }
 
+    public function test_waitlist_schema_uses_date_range_uniqueness_and_queue_index(): void
+    {
+        $this->assertTrue(Schema::hasIndex('waitlist_items', 'waitlist_items_user_place_dates_unique'));
+        $this->assertTrue(Schema::hasIndex('waitlist_items', 'waitlist_items_place_status_dates_queue_idx'));
+        $this->assertFalse(Schema::hasIndex('waitlist_items', 'waitlist_items_user_id_sleeping_place_id_unique'));
+    }
+
     public function test_queue_selects_first_eligible_guest_and_skips_to_next(): void
     {
         $place = $this->createPlace('Popular place', ['base_price_per_night' => 20, 'deposit_amount' => 10]);
         $first = User::factory()->create();
         $second = User::factory()->create();
 
-        $firstItem = app(WaitlistService::class)->join($first, $place, $this->context())->item;
-        $secondItem = app(WaitlistService::class)->join($second, $place, $this->context())->item;
+        $firstItem = app(WaitlistService::class)->join($first, $place, $this->context(autoSendRequest: false))->item;
+        $secondItem = app(WaitlistService::class)->join($second, $place, $this->context(autoSendRequest: false))->item;
 
         $this->assertSame(1, app(WaitlistQueueService::class)->calculatePosition($firstItem->fresh()));
         $this->assertSame(2, app(WaitlistQueueService::class)->calculatePosition($secondItem->fresh()));
@@ -137,6 +156,15 @@ class WaitlistFeatureTest extends TestCase
             'type' => 'waitlist_offer_created',
             'title_key' => 'notifications.waitlist_offer_created.title',
         ]);
+
+        $duplicateOffer = app(WaitlistAvailabilityService::class)->handlePlaceBecameAvailable(
+            $place,
+            CarbonImmutable::parse('2026-07-10'),
+            CarbonImmutable::parse('2026-07-12'),
+        );
+
+        $this->assertNull($duplicateOffer);
+        $this->assertSame(1, WaitlistOffer::query()->where('status', 'active')->count());
 
         $nextOffer = app(WaitlistOfferService::class)->decline($first, $offer);
 
@@ -245,6 +273,58 @@ class WaitlistFeatureTest extends TestCase
         $this->assertSame($guest->id, $offer->user_id);
     }
 
+    public function test_auto_send_request_creates_host_approval_booking_when_place_opens(): void
+    {
+        $guest = User::factory()->create();
+        $place = $this->createPlace('Auto request place', [
+            'base_price_per_night' => 20,
+            'deposit_amount' => 0,
+            'instant_booking_enabled' => false,
+            'requires_host_approval' => true,
+        ]);
+        $item = app(WaitlistService::class)->join($guest, $place, $this->context(autoSendRequest: true))->item;
+
+        $offer = app(WaitlistAvailabilityService::class)->handlePlaceBecameAvailable(
+            $place,
+            CarbonImmutable::parse('2026-07-10'),
+            CarbonImmutable::parse('2026-07-12'),
+        );
+
+        $this->assertInstanceOf(WaitlistOffer::class, $offer);
+        $this->assertSame('converted_to_booking', $offer->fresh()->status);
+        $this->assertNotNull($offer->fresh()->booking_id);
+        $this->assertDatabaseHas('waitlist_items', [
+            'id' => $item->id,
+            'status' => 'awaiting_host',
+        ]);
+
+        $booking = Booking::query()->findOrFail($offer->fresh()->booking_id);
+
+        $this->assertSame($guest->id, $booking->guest_user_id);
+        $this->assertSame($place->id, $booking->sleeping_place_id);
+        $this->assertSame(BookingStatus::AwaitingHostApproval, $booking->status);
+        $this->assertSame(PaymentStatus::Unpaid, $booking->payment_status);
+    }
+
+    public function test_host_waitlist_summary_counts_more_than_limited_cards(): void
+    {
+        $place = $this->createPlace('Demand place', ['base_price_per_night' => 20, 'deposit_amount' => 0]);
+
+        for ($i = 0; $i < 21; $i++) {
+            app(WaitlistService::class)->join(
+                User::factory()->create(),
+                $place,
+                $this->context(autoSendRequest: false),
+            );
+        }
+
+        $summary = app(WaitlistHostViewService::class)->summaryForPlace($place);
+
+        $this->assertSame(21, $summary['total']);
+        $this->assertSame(21, $summary['ready_to_book_count']);
+        $this->assertCount(20, $summary['items']);
+    }
+
     public function test_livewire_waitlist_pages_and_host_panel_work(): void
     {
         $guest = User::factory()->create();
@@ -338,20 +418,23 @@ class WaitlistFeatureTest extends TestCase
     }
 
     private function context(
+        string $desiredCheckIn = '2026-07-10',
+        string $desiredCheckOut = '2026-07-12',
         ?float $maxPricePerNight = 35,
         ?float $maxTotalPrice = 120,
         ?float $maxDeposit = 20,
+        bool $autoSendRequest = true,
     ): WaitlistContext {
         return new WaitlistContext(
-            desiredCheckIn: '2026-07-10',
-            desiredCheckOut: '2026-07-12',
+            desiredCheckIn: $desiredCheckIn,
+            desiredCheckOut: $desiredCheckOut,
             guestsCount: 1,
             maxPricePerNight: $maxPricePerNight,
             maxTotalPrice: $maxTotalPrice,
             maxDeposit: $maxDeposit,
             source: 'test',
             readyToBookImmediately: true,
-            autoSendRequest: true,
+            autoSendRequest: $autoSendRequest,
             notifyAvailable: true,
             notifyPriceDrop: true,
             guestMessage: 'I am ready if it opens.',

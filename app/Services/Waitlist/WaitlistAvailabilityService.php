@@ -48,6 +48,10 @@ class WaitlistAvailabilityService
             ? $checkIn
             : new DateRange($checkIn, $checkOut);
 
+        if ($this->activeOfferExistsForRange($place, $range)) {
+            return null;
+        }
+
         $item = $this->queue->getNextEligibleGuest($place, $range);
 
         if (! $item instanceof WaitlistItem) {
@@ -89,5 +93,20 @@ class WaitlistAvailabilityService
     public function handleHostOpenedDates(SleepingPlace $place, DateRange $range): ?WaitlistOffer
     {
         return $this->handlePlaceBecameAvailable($place, $range);
+    }
+
+    private function activeOfferExistsForRange(SleepingPlace $place, DateRange $range): bool
+    {
+        return WaitlistOffer::query()
+            ->forSleepingPlace($place)
+            ->active()
+            ->where(function ($query): void {
+                $query->whereNull('offer_expires_at')
+                    ->orWhere('offer_expires_at', '>', now());
+            })
+            ->whereHas('waitlistItem', function ($query) use ($range): void {
+                $query->forDateRange($range);
+            })
+            ->exists();
     }
 }

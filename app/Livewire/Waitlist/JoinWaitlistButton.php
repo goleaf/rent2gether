@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Waitlist;
 
+use App\Data\Waitlist\DateRange;
 use App\Data\Waitlist\WaitlistContext;
 use App\Models\SleepingPlace;
 use App\Models\User;
@@ -87,10 +88,14 @@ class JoinWaitlistButton extends Component
         }
 
         $item = WaitlistItem::query()
-            ->select(['id', 'user_id', 'sleeping_place_id', 'status'])
+            ->select(['id', 'user_id', 'sleeping_place_id', 'status', 'desired_check_in_date', 'desired_check_out_date'])
             ->where('user_id', auth()->id())
             ->where('sleeping_place_id', $this->sleepingPlaceId)
-            ->whereIn('status', ['active', 'waiting', 'offered'])
+            ->forDateRange(new DateRange(
+                $this->checkIn ?: now()->addWeek()->toDateString(),
+                $this->checkOut ?: now()->addWeek()->addDay()->toDateString(),
+            ))
+            ->open()
             ->first();
 
         $this->joined = $item instanceof WaitlistItem;

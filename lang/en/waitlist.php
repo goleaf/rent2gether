@@ -7,6 +7,7 @@ return [
     'joined' => 'Joined waitlist',
     'leave' => 'Leave queue',
     'edit' => 'Edit wait',
+    'edit_helper' => 'Update your dates, budget, and notification preferences for this place.',
     'my_waitlist' => 'My waitlist',
     'desired_dates' => 'Desired dates',
     'check_in' => 'Check-in date',
@@ -23,6 +24,7 @@ return [
     'notify_price_drop' => 'Notify about price drops',
     'flexible_dates' => 'Flexible dates',
     'guest_message' => 'Message to host',
+    'expires_at' => 'Wait until',
     'position' => 'Queue position',
     'offer_available' => 'Place available',
     'offer_expires' => 'Offer is available until :time',
@@ -75,13 +77,17 @@ return [
 
     'messages' => [
         'joined' => 'Done. We will let you know if the place becomes available.',
+        'saved' => 'Your waitlist preferences were updated.',
         'already_joined' => 'You are already waiting for this place.',
+        'already_joined_for_dates' => 'You already have a queue entry for these dates.',
         'limit_reached' => 'You have too many active waits. Remove an old one to add another.',
         'price_too_high' => 'The place became available, but the current price is above your limit.',
         'not_available_anymore' => 'The place became unavailable again.',
         'offer_created' => 'The place became available. You have limited time to book it first.',
+        'auto_request_sent' => 'A booking request was sent automatically.',
         'offer_expired' => 'This offer has expired.',
         'detail_unavailable' => 'This place is unavailable for the selected dates. You can join the queue and we will notify you if it opens.',
+        'invalid' => 'Please check the waitlist details and try again.',
     ],
 
     'host' => [

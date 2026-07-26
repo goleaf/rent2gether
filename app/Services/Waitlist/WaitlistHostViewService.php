@@ -4,6 +4,7 @@ namespace App\Services\Waitlist;
 
 use App\Models\SleepingPlace;
 use App\Models\WaitlistItem;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class WaitlistHostViewService
@@ -13,7 +14,13 @@ class WaitlistHostViewService
      */
     public function summaryForPlace(SleepingPlace $place): array
     {
-        $items = WaitlistItem::query()
+        $total = $this->baseQueueQuery($place)->count();
+        $readyToBookCount = $this->baseQueueQuery($place)->readyToBook()->count();
+        $averageMaxPrice = $this->baseQueueQuery($place)
+            ->whereNotNull('max_price_per_night')
+            ->avg('max_price_per_night');
+
+        $items = $this->baseQueueQuery($place)
             ->select([
                 'id',
                 'user_id',
@@ -30,17 +37,22 @@ class WaitlistHostViewService
                 'added_at',
             ])
             ->with(['user:id,name,rating_as_guest,phone_verified,identity_verified,avatar'])
-            ->forSleepingPlace($place)
-            ->whereIn('status', ['active', 'waiting', 'offered'])
             ->orderedQueue()
             ->limit(20)
             ->get();
 
         return [
-            'total' => $items->count(),
-            'ready_to_book_count' => $items->where('ready_to_book_immediately', true)->count(),
-            'average_max_price' => $items->whereNotNull('max_price_per_night')->avg('max_price_per_night'),
+            'total' => $total,
+            'ready_to_book_count' => $readyToBookCount,
+            'average_max_price' => $averageMaxPrice,
             'items' => $items,
         ];
+    }
+
+    private function baseQueueQuery(SleepingPlace $place): Builder
+    {
+        return WaitlistItem::query()
+            ->forSleepingPlace($place)
+            ->whereIn('status', ['active', 'waiting', 'offered']);
     }
 }

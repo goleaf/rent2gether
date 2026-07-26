@@ -44,11 +44,14 @@ class WaitlistQueueService
                 'expires_at',
                 'added_at',
                 'ready_to_book_immediately',
+                'auto_send_request',
+                'auto_create_booking_draft',
+                'min_nights',
+                'max_nights',
             ])
             ->forSleepingPlace($place)
             ->active()
-            ->whereDate('desired_check_in_date', $range->checkIn->toDateString())
-            ->whereDate('desired_check_out_date', $range->checkOut->toDateString())
+            ->forDateRange($range)
             ->orderedQueue()
             ->get();
     }
